@@ -157,6 +157,7 @@
     <Compile Include="RavenDB-3509.cs" />
     <Compile Include="RavenDB-3530.cs" />
     <Compile Include="RavenDB-3632.cs" />
+    <Compile Include="RavenDB_1601_ScriptMultipleDocumentOutputs.cs" />
     <Compile Include="RavenDB_3230.cs" />
     <Compile Include="RavenDB_3400.cs" />
     <Compile Include="RavenDB_3543.cs" />
