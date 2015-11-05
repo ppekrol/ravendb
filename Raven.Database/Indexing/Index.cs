@@ -453,7 +453,9 @@ namespace Raven.Database.Indexing
 				searcher.Search(new TermQuery(term), collector);
 				var topDocs = collector.ToTopDocs();
 
-				foreach (var scoreDoc in topDocs.ScoreDocs)
+                Console.WriteLine("Found {0} items with term {1}", topDocs.TotalHits, term.ToString());
+
+                foreach (var scoreDoc in topDocs.ScoreDocs)
 				{
 					var document = searcher.Doc(scoreDoc.Doc);
 					batchers.ApplyAndIgnoreAllErrors(

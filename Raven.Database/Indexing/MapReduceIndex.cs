@@ -820,6 +820,7 @@ namespace Raven.Database.Indexing
 
                 using (StopwatchScope.For(addDocumentDutation))
                 {
+                    Console.WriteLine("Writing reduced result to index. Key: {0}", luceneDoc.Get(Constants.ReduceKeyFieldName));
                     parent.AddDocumentToIndex(indexWriter, luceneDoc, analyzer);
                 }
             }
@@ -828,6 +829,7 @@ namespace Raven.Database.Indexing
             {
                 foreach (var reduceKey in ReduceKeys)
                 {
+                    Console.WriteLine("Removing reduced result from index. Key: {0}", reduceKey);
                     var entryKey = reduceKey;
                     parent.InvokeOnIndexEntryDeletedOnAllBatchers(batchers, new Term(Constants.ReduceKeyFieldName, entryKey));
 
