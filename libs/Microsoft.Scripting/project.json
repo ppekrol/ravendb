@@ -1,0 +1,11 @@
+﻿{
+  "version": "1.0.0",
+  "frameworks": {
+    "netstandard1.6": {
+      "bin": {
+        "assembly": "Microsoft.Scripting.dll",
+        "pdb": "Microsoft.Scripting.pdb"
+      }
+    }
+  }
+}

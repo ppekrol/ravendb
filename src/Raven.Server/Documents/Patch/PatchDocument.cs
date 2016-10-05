@@ -6,15 +6,14 @@ using Jint;
 using Jint.Native;
 using Jint.Parser;
 using Jint.Runtime;
-using Raven.Abstractions.Logging;
+using Microsoft.Scripting.JavaScript;
+using Raven.Server.Documents.Patch.Chakra;
 using Raven.Server.Extensions;
-using Raven.Server.Json;
 using Raven.Server.ServerWide.Context;
 using Sparrow;
 using Sparrow.Json;
 using Voron.Exceptions;
 using Sparrow.Logging;
-using Voron;
 
 namespace Raven.Server.Documents.Patch
 {
@@ -22,11 +21,12 @@ namespace Raven.Server.Documents.Patch
     {
         protected static Logger _logger;
         private const int MaxRecursionDepth = 128;
-        private readonly int maxSteps;
-        private readonly int additionalStepsPerSize;
-        private readonly bool allowScriptsToAdjustNumberOfSteps;
+        private readonly int _maxSteps;
+        private readonly int _additionalStepsPerSize;
+        private readonly bool _allowScriptsToAdjustNumberOfSteps;
 
         private static readonly ScriptsCache ScriptsCache = new ScriptsCache();
+        private static readonly ChakraPatcherCache Cache = new ChakraPatcherCache();
 
         private readonly DocumentDatabase _database;
 
@@ -34,9 +34,9 @@ namespace Raven.Server.Documents.Patch
         {
             _database = database;
             _logger = LoggingSource.Instance.GetLogger<PatchDocument>(database.Name);
-            maxSteps = database.Configuration.Patching.MaxStepsForScript;
-            additionalStepsPerSize = database.Configuration.Patching.AdditionalStepsForScriptBasedOnDocumentSize;
-            allowScriptsToAdjustNumberOfSteps = database.Configuration.Patching.AllowScriptsToAdjustNumberOfSteps;
+            _maxSteps = database.Configuration.Patching.MaxStepsForScript;
+            _additionalStepsPerSize = database.Configuration.Patching.AdditionalStepsForScriptBasedOnDocumentSize;
+            _allowScriptsToAdjustNumberOfSteps = database.Configuration.Patching.AllowScriptsToAdjustNumberOfSteps;
         }
 
         public virtual PatchResultData Apply(DocumentsOperationContext context, Document document, PatchRequest patch)
@@ -54,6 +54,108 @@ namespace Raven.Server.Documents.Patch
                 ModifiedDocument = modifiedDocument ?? document.Data,
                 DebugInfo = scope.DebugInfo,
             };
+        }
+
+        public unsafe PatchResultData ApplyUsingChakra(DocumentsOperationContext context,
+            string documentKey,
+            long? etag,
+            PatchRequest patch,
+            PatchRequest patchIfMissing,
+            bool isTestOnly = false,
+            bool skipPatchIfEtagMismatch = false)
+        {
+            var document = _database.DocumentsStorage.Get(context, documentKey);
+            if (_logger.IsInfoEnabled)
+                _logger.Info(string.Format("Preparing to apply patch on ({0}). Document found?: {1}.", documentKey, document != null));
+
+            if (etag.HasValue && document != null && document.Etag != etag.Value)
+            {
+                System.Diagnostics.Debug.Assert(document.Etag > 0);
+
+                if (skipPatchIfEtagMismatch)
+                {
+                    return new PatchResultData
+                    {
+                        PatchResult = PatchResult.Skipped
+                    };
+                }
+
+                if (_logger.IsInfoEnabled)
+                    _logger.Info($"Got concurrent exception while tried to patch the following document: {documentKey}");
+                throw new ConcurrencyException($"Could not patch document '{documentKey}' because non current etag was used")
+                {
+                    ActualETag = document.Etag,
+                    ExpectedETag = etag.Value,
+                };
+            }
+
+            var patchRequest = patch;
+            if (document == null)
+            {
+                if (patchIfMissing == null)
+                {
+                    if (_logger.IsInfoEnabled)
+                        _logger.Info("Tried to patch a not exists document and patchIfMissing is null");
+
+                    return new PatchResultData
+                    {
+                        PatchResult = PatchResult.DocumentDoesNotExists
+                    };
+                }
+                patchRequest = patchIfMissing;
+            }
+            var patchResult = ApplySingleScriptUsingChakra(context, document, isTestOnly, patchRequest);
+
+            var result = new PatchResultData
+            {
+                PatchResult = PatchResult.NotModified,
+                OriginalDocument = document?.Data,
+                DebugInfo = patchResult.DebugInfo,
+            };
+
+            if (patchResult.Document == null)
+            {
+                if (_logger.IsInfoEnabled)
+                    _logger.Info($"After applying patch, modifiedDocument is null and document is null? {document == null}");
+
+                result.PatchResult = PatchResult.Skipped;
+                return result;
+            }
+
+            if (isTestOnly)
+            {
+                return new PatchResultData
+                {
+                    PatchResult = PatchResult.Tested,
+                    OriginalDocument = document?.Data,
+                    ModifiedDocument = patchResult.Document,
+                    DebugActions = patchResult.DebugActions.GetDebugActions(),
+                    DebugInfo = patchResult.DebugInfo,
+                };
+            }
+
+            if (document == null)
+            {
+                _database.DocumentsStorage.Put(context, documentKey, null, patchResult.Document);
+            }
+            else
+            {
+                var isModified = document.Data.Size != patchResult.Document.Size;
+                if (isModified == false) // optimization, if size different, no need to compute hash to check
+                {
+                    var originHash = Hashing.XXHash64.Calculate(document.Data.BasePointer, (ulong)document.Data.Size);
+                    var modifiedHash = Hashing.XXHash64.Calculate(patchResult.Document.BasePointer, (ulong)patchResult.Document.Size);
+                    isModified = originHash != modifiedHash;
+                }
+
+                if (isModified)
+                {
+                    _database.DocumentsStorage.Put(context, document.Key, document.Etag, patchResult.Document);
+                    result.PatchResult = PatchResult.Patched;
+                }
+            }
+
+            return result;
         }
 
         public unsafe PatchResultData Apply(DocumentsOperationContext context,
@@ -160,12 +262,78 @@ namespace Raven.Server.Documents.Patch
             return result;
         }
 
+        private ChakraPatcher.Result ApplySingleScriptUsingChakra(DocumentsOperationContext context, Document document, bool isTestOnly, PatchRequest patch)
+        {
+            ChakraPatcherCache.CacheResult cacheResult;
+
+            try
+            {
+                cacheResult = Cache.Get(patch, null);
+            }
+            catch (NotSupportedException e)
+            {
+                throw new ParseException("Could not parse script", e);
+            }
+            catch (Exception e)
+            {
+                throw new ParseException("Could not parse: " + Environment.NewLine + patch.Script, e);
+            }
+
+            ChakraPatcherOperationScope scope = null;
+            try
+            {
+                scope = cacheResult.Patcher.Prepare(_database, context, patch, debugMode: false);
+
+                //PrepareEngine(patch, document, scope, jintEngine);
+
+                var patchedDocument = cacheResult.Patcher.Patch(document, context, scope);
+
+                //CleanupEngine(patch, jintEngine, scope);
+
+                cacheResult.Patcher.OutputLog(scope);
+                //if (scope.DebugMode)
+                //    scope.DebugInfo.Add(string.Format("Statements executed: {0}", jintEngine.StatementsCount));
+
+                return new ChakraPatcher.Result
+                {
+                    Document = patchedDocument,
+                    DebugActions = scope.DebugActions,
+                    DebugInfo = scope.DebugInfo
+                };
+            }
+            catch (ConcurrencyException)
+            {
+                throw;
+            }
+            catch (Exception errorEx)
+            {
+                if (scope != null)
+                    cacheResult.Patcher.OutputLog(scope);
+
+                var errorMsg = "Unable to execute JavaScript: " + Environment.NewLine + patch.Script + Environment.NewLine;
+                var error = errorEx as ChakraException;
+                if (error != null)
+                    errorMsg += Environment.NewLine + "Error: " + Environment.NewLine + string.Join(Environment.NewLine, error.Message);
+
+                if (scope?.DebugInfo.Items.Count != 0)
+                    errorMsg += Environment.NewLine + "Debug information: " + Environment.NewLine + string.Join(Environment.NewLine, scope.DebugInfo.Items);
+
+                throw new InvalidOperationException(errorMsg, errorEx);
+            }
+            finally
+            {
+                scope?.Dispose();
+
+                Cache.Return(cacheResult);
+            }
+        }
+
         protected PatcherOperationScope ApplySingleScript(DocumentsOperationContext context, Document document, bool isTestOnly, PatchRequest patch)
         {
             var scope = new PatcherOperationScope(_database, context, isTestOnly)
             {
-                AdditionalStepsPerSize = additionalStepsPerSize,
-                MaxSteps = maxSteps,
+                AdditionalStepsPerSize = _additionalStepsPerSize,
+                MaxSteps = _maxSteps,
             };
 
             Engine jintEngine;
@@ -250,22 +418,22 @@ namespace Raven.Server.Documents.Patch
             int totalScriptSteps = 0;
             if (document.Data.Size != 0)
             {
-                totalScriptSteps = maxSteps + (document.Data.Size * additionalStepsPerSize);
+                totalScriptSteps = _maxSteps + (document.Data.Size * _additionalStepsPerSize);
                 jintEngine.Options.MaxStatements(totalScriptSteps);
             }
 
-            
+
             jintEngine.Global.Delete("LoadDocument", false);
             jintEngine.Global.Delete("IncreaseNumberOfAllowedStepsBy", false);
 
             CustomizeEngine(jintEngine, scope);
-            
+
             jintEngine.SetValue("LoadDocument", (Func<string, JsValue>)(key => scope.LoadDocument(key, jintEngine, ref totalScriptSteps)));
             jintEngine.SetValue("__document_id", document.Key);
 
             jintEngine.SetValue("IncreaseNumberOfAllowedStepsBy", (Action<int>)(number =>
             {
-                if (allowScriptsToAdjustNumberOfSteps == false)
+                if (_allowScriptsToAdjustNumberOfSteps == false)
                     throw new InvalidOperationException("Cannot use 'IncreaseNumberOfAllowedStepsBy' method, because `Raven/AllowScriptsToAdjustNumberOfSteps` is set to false.");
 
                 scope.MaxSteps += number;
@@ -281,8 +449,35 @@ namespace Raven.Server.Documents.Patch
                     jintEngine.SetValue(property.Item1, scope.ToJsValue(jintEngine, property.Item2, property.Item3));
                 }
             }
-            
+
             jintEngine.ResetStatementsCount();
+        }
+
+        private static readonly JavaScriptRuntime _runtime = new JavaScriptRuntime();
+
+        private static JavaScriptEngine CreateChakraEngine(PatchRequest patch)
+        {
+            var scriptWithProperLines = patch.Script.NormalizeLineEnding();
+            // NOTE: we merged few first lines of wrapping script to make sure {0} is at line 0.
+            // This will all us to show proper line number using user lines locations.
+            var wrapperScript = string.Format(@"function ExecutePatchScript(docInner){{ return (function(doc){{ {0} }}).apply(docInner); }};", scriptWithProperLines);
+
+            var chakraEngine = _runtime.CreateEngine();
+
+            using (chakraEngine.AcquireContext())
+            {
+                AddScript(chakraEngine, "Raven.Server.Documents.Patch.lodash.js");
+                AddScript(chakraEngine, "Raven.Server.Documents.Patch.ToJson.js");
+                AddScript(chakraEngine, "Raven.Server.Documents.Patch.RavenDB.js");
+
+                var f = chakraEngine.EvaluateScriptText(wrapperScript);
+                chakraEngine.SetGlobalFunction("ExecutePatchScript", (engine, constructor, thisValue, arguments) =>
+                {
+                    return f.Invoke(arguments);
+                });
+            }
+
+            return chakraEngine;
         }
 
         private Engine CreateEngine(PatchRequest patch)
@@ -308,7 +503,7 @@ namespace Raven.Server.Documents.Patch
             AddScript(jintEngine, "Raven.Server.Documents.Patch.ToJson.js");
             AddScript(jintEngine, "Raven.Server.Documents.Patch.RavenDB.js");
 
-            jintEngine.Options.MaxStatements(maxSteps);
+            jintEngine.Options.MaxStatements(_maxSteps);
 
             jintEngine.Execute(wrapperScript, new ParserOptions
             {
@@ -316,6 +511,11 @@ namespace Raven.Server.Documents.Patch
             });
 
             return jintEngine;
+        }
+
+        private static void AddScript(JavaScriptEngine chakraEngine, string ravenDatabaseJsonMapJs)
+        {
+            chakraEngine.EvaluateScriptText(GetFromResources(ravenDatabaseJsonMapJs));
         }
 
         private static void AddScript(Engine jintEngine, string ravenDatabaseJsonMapJs)

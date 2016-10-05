@@ -344,8 +344,8 @@ namespace FastTests.Server.Documents.Patching
                     });
                 });
 
-                Assert.Contains("Unable to execute JavaScript", exception.Message);
-                Assert.Contains("The maximum number of statements executed have been reached.", exception.Message);
+                Assert.Contains("Script timed-out", exception.Message);
+                Assert.Contains("A script was terminated", exception.Message);
             }
         }
 
@@ -586,7 +586,7 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
                         Script = @"PutDocument('Items/1', { Property: 1}, null, 'invalid-etag');",
                     });
                 });
-                Assert.Contains("Invalid ETag value for document 'Items/1'", exception.Message);
+                Assert.Contains("Supplied etag for document 'Items/1' must be a number.", exception.Message);
             }
         }
 
@@ -650,7 +650,7 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
                         Script = @"PutDocument('Items/1', null);",
                     });
                 });
-                Assert.Contains("Created document must be a valid object which is not null or empty. Document key: 'Items/1'", exception.Message);
+                Assert.Contains("Supplied document data for document 'Items/1' must be an non-null object.", exception.Message);
             }
         }
 

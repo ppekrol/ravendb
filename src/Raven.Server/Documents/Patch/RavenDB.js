@@ -8,7 +8,6 @@ function output(msg) {
         number_of_outputs++;
         debug_outputs.push(msg);
     }
-    
 }
 
 function dump(obj) {
@@ -38,13 +37,13 @@ Array.prototype.indexOf = Array.prototype.indexOf || function (value) {
     return _.indexOf(this, value);
 };
 
-Array.prototype.filter = Array.prototype.filter || function(callback, thisArg) {
+Array.prototype.filter = Array.prototype.filter || function (callback, thisArg) {
     return _.filter(this, callback, thisArg);
 };
 
 Array.prototype.Where = Array.prototype.filter;
 
-Array.prototype.RemoveWhere = function(callback, thisArg) {
+Array.prototype.RemoveWhere = function (callback, thisArg) {
     _.remove(this, callback, thisArg);
     return this;
 };

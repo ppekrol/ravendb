@@ -431,7 +431,7 @@ namespace Raven.Server.Documents.Handlers
                 PatchResultData patchResult;
                 using (context.OpenWriteTransaction())
                 {
-                    patchResult = Database.Patch.Apply(context, id, etag, patch, patchIfMissing, isTestOnly);
+                    patchResult = Database.Patch.ApplyUsingChakra(context, id, etag, patch, patchIfMissing, isTestOnly);
                     context.Transaction.Commit();
                 }
 
