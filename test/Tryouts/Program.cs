@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
+using FastTests.Server.Documents.Patching;
 using Raven.Abstractions.Indexing;
 using Raven.Client.Data;
 using Raven.Client.Document;
@@ -20,16 +21,16 @@ namespace Tryouts
     {
         public static void Main(string[] args)
         {
-            for (int i = 0; i < 15; i++)
+            using (var x = new AdvancedPatching())
             {
-                Console.WriteLine(i);
-                using (var a = new FastTests.Server.Documents.Patching.AdvancedPatching())
-                {
-                    a.CanUpdateBasedOnAnotherDocumentProperty().Wait();
-                }
+                var sw = Stopwatch.StartNew();
+                x.Performance().Wait();
+                Console.WriteLine("Total: " + sw.Elapsed);
             }
-            if (DateTime.Today.Day != -1)
+
+            if (DateTime.Now.Year > 1)
                 return;
+
             using (var store = new DocumentStore
             {
                 Url = "http://localhost:8080",

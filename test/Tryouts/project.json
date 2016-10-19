@@ -37,10 +37,13 @@
     "FastTests": "4.0.0-*",
     "SlowTests": "4.0.0-*",
     "Microsoft.CSharp": "4.0.1",
-    "Microsoft.NETCore.App": {
-      "type": "platform",
-      "version": "1.0.1"
-    },
-    "AsyncFriendlyStackTrace": "1.4.1"
+    "Microsoft.NETCore.App": "1.0.1"
+  },
+
+  "runtimes": {
+    "win7-x64": {},
+    "win8-x64": {},
+    "win10-x64": {},
+    "ubuntu.14.04-x64": {}
   }
 }

@@ -1,15 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Raven.Abstractions.Connection;
 using Raven.Abstractions.Data;
 using Raven.Abstractions.Indexing;
 using Raven.Client.Data;
+using Raven.Client.Indexes;
 using Raven.Client.Indexing;
 using Raven.Imports.Newtonsoft.Json;
 using Raven.Json.Linq;
+using Raven.Server.ServerWide.Context;
 using Raven.Tests.Core;
+using Sparrow.Json;
 using Xunit;
 
 namespace FastTests.Server.Documents.Patching
@@ -31,7 +35,7 @@ namespace FastTests.Server.Documents.Patching
             Id = "someId",
             Owner = "bob",
             Value = 12143,
-            Comments = new List<string>(new[] {"one", "two", "seven"})
+            Comments = new List<string>(new[] { "one", "two", "seven" })
         };
 
         //splice(2, 1) will remove 1 elements from position 2 onwards (zero-based)
@@ -186,7 +190,7 @@ namespace FastTests.Server.Documents.Patching
                 });
 
                 var resultDoc = await store.AsyncDatabaseCommands.GetAsync("doc");
-                Assert.Equal(new[] {"somebody@somewhere.com0", "somebody@somewhere.com1", "somebody@somewhere.com2"}, resultDoc.DataAsJson.Value<RavenJArray>("Emails").Select(x => x.Value<string>()));
+                Assert.Equal(new[] { "somebody@somewhere.com0", "somebody@somewhere.com1", "somebody@somewhere.com2" }, resultDoc.DataAsJson.Value<RavenJArray>("Emails").Select(x => x.Value<string>()));
             }
         }
 
@@ -197,7 +201,7 @@ namespace FastTests.Server.Documents.Patching
             {
                 await store.AsyncDatabaseCommands.PutAsync("doc", null, RavenJObject.FromObject(_test), null);
 
-                var variable = new {NewComment = "New Comment"};
+                var variable = new { NewComment = "New Comment" };
                 await store.AsyncDatabaseCommands.PatchAsync("doc", new PatchRequest
                 {
                     Script = "this.Comments[0] = variable.NewComment;",
@@ -227,7 +231,7 @@ namespace FastTests.Server.Documents.Patching
 
                 var resultDoc = await store.AsyncDatabaseCommands.GetAsync("doc");
                 var result = JsonConvert.DeserializeObject<CustomType>(resultDoc.DataAsJson.ToString());
-                Assert.Equal(new[] {"one", "seven"}.ToList(), result.Comments);
+                Assert.Equal(new[] { "one", "seven" }.ToList(), result.Comments);
             }
         }
 
@@ -245,7 +249,7 @@ namespace FastTests.Server.Documents.Patching
 
                 var resultDoc = await store.AsyncDatabaseCommands.GetAsync("doc");
                 var result = JsonConvert.DeserializeObject<CustomType>(resultDoc.DataAsJson.ToString());
-                Assert.Equal(new[] {"one", "two"}.ToList(), result.Comments);
+                Assert.Equal(new[] { "one", "two" }.ToList(), result.Comments);
             }
         }
 
@@ -285,7 +289,7 @@ namespace FastTests.Server.Documents.Patching
                     });
                 });
 
-                Assert.Contains("Raven.Server.Documents.Patch.ParseException: Could not parse: " + Environment.NewLine 
+                Assert.Contains("Raven.Server.Documents.Patch.ParseException: Could not parse: " + Environment.NewLine
                                 + "this.Id = 'Something", parseException.Message);
             }
         }
@@ -356,7 +360,7 @@ namespace FastTests.Server.Documents.Patching
             {
                 var date = DateTime.UtcNow;
                 var dateOffset = DateTime.Now.AddMilliseconds(100);
-                var testObject = new CustomType {Date = date, DateOffset = dateOffset};
+                var testObject = new CustomType { Date = date, DateOffset = dateOffset };
                 await store.AsyncDatabaseCommands.PutAsync("doc", null, RavenJObject.FromObject(testObject), null);
 
                 await store.AsyncDatabaseCommands.PatchAsync("doc", new PatchRequest
@@ -380,8 +384,8 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
             {
                 using (var session = store.OpenAsyncSession())
                 {
-                    await session.StoreAsync(new CustomType {Value = 2});
-                    await session.StoreAsync(new CustomType {Value = 1});
+                    await session.StoreAsync(new CustomType { Value = 2 });
+                    await session.StoreAsync(new CustomType { Value = 1 });
                     await session.SaveChangesAsync();
                 }
 
@@ -410,8 +414,8 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
             {
                 using (var session = store.OpenAsyncSession())
                 {
-                    await session.StoreAsync(new CustomType {Value = 2});
-                    await session.StoreAsync(new CustomType {Value = 1});
+                    await session.StoreAsync(new CustomType { Value = 2 });
+                    await session.StoreAsync(new CustomType { Value = 1 });
                     await session.SaveChangesAsync();
                 }
 
@@ -437,7 +441,7 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
             {
                 using (var session = store.OpenAsyncSession())
                 {
-                    await session.StoreAsync(new {Name = "Ayende"}, "products/1");
+                    await session.StoreAsync(new { Name = "Ayende" }, "products/1");
                     await session.SaveChangesAsync();
                 }
 
@@ -471,7 +475,7 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
             {
                 using (var session = store.OpenAsyncSession())
                 {
-                    await session.StoreAsync(new CustomType {Value = 10});
+                    await session.StoreAsync(new CustomType { Value = 10 });
                     await session.SaveChangesAsync();
                 }
 
@@ -496,7 +500,7 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
             {
                 using (var session = store.OpenAsyncSession())
                 {
-                    await session.StoreAsync(new CustomType {Value = 10});
+                    await session.StoreAsync(new CustomType { Value = 10 });
                     await session.SaveChangesAsync();
                 }
 
@@ -526,7 +530,7 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
             {
                 using (var session = store.OpenAsyncSession())
                 {
-                    await session.StoreAsync(new CustomType {Id = "Items/1", Value = 10, Comments = new List<string>(new[] {"one", "two", "three"})});
+                    await session.StoreAsync(new CustomType { Id = "Items/1", Value = 10, Comments = new List<string>(new[] { "one", "two", "three" }) });
                     await session.SaveChangesAsync();
                 }
 
@@ -540,7 +544,7 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
                 var resultDocs = await store.AsyncDatabaseCommands.GetDocumentsAsync(0, 10);
                 Assert.Equal(4, resultDocs.Length);
 
-                var docs = await store.AsyncDatabaseCommands.GetAsync(new[] {"Comments/1", "Comments/2", "Comments/3"}, null);
+                var docs = await store.AsyncDatabaseCommands.GetAsync(new[] { "Comments/1", "Comments/2", "Comments/3" }, null);
                 Assert.Equal("one", docs.Results[0].Value<string>("Comment"));
                 Assert.Equal("two", docs.Results[1].Value<string>("Comment"));
                 Assert.Equal("three", docs.Results[2].Value<string>("Comment"));
@@ -597,7 +601,7 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
             {
                 using (var session = store.OpenAsyncSession())
                 {
-                    await session.StoreAsync(new CustomType {Value = 10});
+                    await session.StoreAsync(new CustomType { Value = 10 });
                     await session.SaveChangesAsync();
                 }
 
@@ -622,7 +626,7 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
             {
                 using (var session = store.OpenAsyncSession())
                 {
-                    await session.StoreAsync(new CustomType {Value = 10});
+                    await session.StoreAsync(new CustomType { Value = 10 });
                     await session.SaveChangesAsync();
                 }
 
@@ -688,8 +692,8 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
                 }
 
                 var operation = await store.AsyncDatabaseCommands.UpdateByIndexAsync("TestIndex",
-                    new IndexQuery {Query = "Value:1"},
-                    new PatchRequest {Script = @"PutDocument('NewItem/3', {'CopiedValue': this.Value });"});
+                    new IndexQuery { Query = "Value:1" },
+                    new PatchRequest { Script = @"PutDocument('NewItem/3', {'CopiedValue': this.Value });" });
                 await operation.WaitForCompletionAsync();
 
                 var documents = await store.AsyncDatabaseCommands.GetDocumentsAsync(0, 10);
@@ -723,7 +727,7 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
                 var resultDoc = await store.AsyncDatabaseCommands.GetAsync("Item/1");
                 Assert.Equal("1", resultDoc.DataAsJson["Value"]);
 
-                var patchedField = (RavenJObject) resultDoc.DataAsJson["Test"];
+                var patchedField = (RavenJObject)resultDoc.DataAsJson["Test"];
                 Assert.Equal("1", patchedField["Value"]);
 
                 patchedField = patchedField["Test"] as RavenJObject;
@@ -785,7 +789,7 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
                     await session.StoreAsync(item2);
                     await session.SaveChangesAsync();
                 }
-                
+
                 store.DatabaseCommands.PutIndex("TestIndex",
                     new IndexDefinition
                     {
@@ -799,8 +803,8 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
                     .WaitForNonStaleResults().ToList();
 
                 store.DatabaseCommands.UpdateByIndex("TestIndex",
-                    new IndexQuery {Query = "Owner:Bob"},
-                    new PatchRequest {Script = sampleScript})
+                    new IndexQuery { Query = "Owner:Bob" },
+                    new PatchRequest { Script = sampleScript })
                     .WaitForCompletion();
 
                 var item1ResultJson = store.DatabaseCommands.Get(item1.Id).DataAsJson;
@@ -818,6 +822,50 @@ this.DateOffsetOutput = new Date(this.DateOffset).toISOString();
                 Assert.Equal("one", item2Result.Comments[0]);
                 Assert.Equal("two", item2Result.Comments[1]);
                 Assert.Equal("seven", item2Result.Comments[2]);
+            }
+        }
+
+        [Fact]
+        public async Task Performance()
+        {
+            using (var store = GetDocumentStore())
+            {
+                using (var bulkInsert = store.BulkInsert())
+                {
+                    for (var i = 0; i < 100000; i++)
+                    {
+                        bulkInsert.Store(new CustomType
+                        {
+                            Owner = i.ToString()
+                        });
+                    }
+                }
+
+                var patch = new Raven.Server.Documents.Patch.PatchRequest
+                {
+                    Script = "this.NewProperty = '123';"
+                };
+
+                var database = await GetDatabase(store.DefaultDatabase);
+
+                
+                DocumentsOperationContext context;
+                using (database.DocumentsStorage.ContextPool.AllocateOperationContext(out context))
+                {
+                    using (context.OpenWriteTransaction())
+                    {
+                        Console.WriteLine("Fetching");
+                        var docs = database.DocumentsStorage.GetDocumentsFrom(context, 0).ToList();
+
+                        Console.WriteLine("Patching");
+                        var sw = Stopwatch.StartNew();
+                        foreach (var document in docs)
+                        {
+                            database.Patch.Apply(context, document.Key, null, patch, null);
+                        }
+                        Console.WriteLine("Patch: " + sw.Elapsed);
+                    }
+                }
             }
         }
     }
