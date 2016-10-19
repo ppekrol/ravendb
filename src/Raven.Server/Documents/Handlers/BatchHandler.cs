@@ -160,7 +160,7 @@ namespace Raven.Server.Documents.Handlers
                             // TODO: Move this code out of the merged transaction
                             // TODO: We should have an object that handles this externally, 
                             // TODO: and apply it there
-                            var patchResult = Database.Patch.ApplyUsingChakra(context, cmd.Key, cmd.Etag, cmd.Patch, null, cmd.IsDebugMode);
+                            var patchResult = Database.Patch.Apply(context, cmd.Key, cmd.Etag, cmd.Patch, null, cmd.IsDebugMode);
                             var additionalData = new DynamicJsonValue
                             {
                                 ["Debug"] = patchResult.DebugInfo,

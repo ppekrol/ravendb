@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Microsoft.Scripting.JavaScript;
+using Raven.Abstractions.Data;
 using Raven.Client.Extensions;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Json;
@@ -20,9 +21,7 @@ namespace Raven.Server.Documents.Patch.Chakra
         private JavaScriptFunction _patchFn;
         private PatchRequest _patchRequest;
 
-        private readonly TimeSpan _timeout = Debugger.IsAttached
-            ? TimeSpan.FromMinutes(15)
-            : TimeSpan.FromSeconds(5); // this should go from config
+        private TimeSpan _timeout;
 
         public ChakraPatcher(JavaScriptRuntime runtime, JavaScriptEngine engine, JavaScriptFunction patchFn)
         {
@@ -38,6 +37,9 @@ namespace Raven.Server.Documents.Patch.Chakra
             _engine.SetGlobalFunction("PutDocument", (engine, constructor, thisValue, arguments) => scope.PutDocument(arguments));
             _engine.SetGlobalFunction("LoadDocument", (engine, constructor, thisValue, arguments) => scope.LoadDocument(arguments));
             _patchRequest = patchRequest;
+            _timeout = Debugger.IsAttached
+                ? TimeSpan.FromMinutes(15)
+                : database.Configuration.Patching.Timeout.AsTimeSpan;
 
             if (_patchRequest.Values != null)
             {
@@ -55,6 +57,8 @@ namespace Raven.Server.Documents.Patch.Chakra
 
         public BlittableJsonReaderObject Patch(Document document, JsonOperationContext context, ChakraPatcherOperationScope scope)
         {
+            _engine.SetGlobalVariable(Constants.Indexing.Fields.DocumentIdFieldName, _engine.Converter.FromString(document.Key));
+
             var input = scope.ToJsObject(document.Data);
 
             Timer timer = null;

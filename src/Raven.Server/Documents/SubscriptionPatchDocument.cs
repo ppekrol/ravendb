@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Jint;
-using Jint.Native;
-using Jint.Parser;
-using Jint.Runtime;
-using Raven.Server.Documents.Patch;
+﻿using Raven.Server.Documents.Patch;
 using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents
 {
-    public class SubscriptionPatchDocument:PatchDocument
+    public class SubscriptionPatchDocument : PatchDocument
     {
         private readonly PatchRequest _patchRequest;
 
@@ -19,19 +11,21 @@ namespace Raven.Server.Documents
         {
             _patchRequest = new PatchRequest
             {
-                Script =  filterJavaScript
+                Script = filterJavaScript
             };
-            
+
         }
 
-        protected override void CustomizeEngine(Engine engine, PatcherOperationScope scope)
-        {
-            // override to make it "no-op"
-        }
+        //protected override void CustomizeEngine(Engine engine, PatcherOperationScope scope)
+        //{
+        //    // override to make it "no-op"
+        //}
+
         public bool MatchCriteria(DocumentsOperationContext context, Document document)
         {
-            var actualPatchResult = ApplySingleScript(context, document, false, _patchRequest).ActualPatchResult;
-            return actualPatchResult.AsBoolean();
+            return false;
+            //var actualPatchResult = ApplySingleScript(context, document, false, _patchRequest).ActualPatchResult;
+            //return actualPatchResult.AsBoolean();
         }
     }
 }
