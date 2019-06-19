@@ -63,8 +63,13 @@ namespace Raven.Client.Extensions
 
             writer.WritePropertyName(nameof(query.QueryParameters));
             if (query.QueryParameters != null)
-                writer.WriteObject(EntityToBlittable.ConvertCommandToBlittable(query.QueryParameters, context));
+            {
+                writer.WriteObject(conventions.UseConvertersForQueryParametersSerialization
+                    ? EntityToBlittable.ConvertEntityToBlittable(query.QueryParameters, conventions, context, conventions.CreateSerializer(), documentInfo: null)
+                    : EntityToBlittable.ConvertCommandToBlittable(query.QueryParameters, context));
+            }
             else
+
                 writer.WriteNull();
 
             writer.WriteEndObject();
