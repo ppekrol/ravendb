@@ -35,6 +35,9 @@ namespace Raven.Server.Documents.PeriodicBackup.Aws
         public RavenAwsS3Client(S3Settings s3Settings, Progress progress = null, CancellationToken? cancellationToken = null)
             : base(s3Settings, progress, cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(s3Settings.BucketName))
+                throw new ArgumentException("AWS Bucket name cannot be null or empty");
+
             _bucketName = s3Settings.BucketName;
         }
 
@@ -711,6 +714,16 @@ namespace Raven.Server.Documents.PeriodicBackup.Aws
             return $"{baseUrl}/{_bucketName}";
         }
 
+        private string GetFileName(string fullPath)
+        {
+            return fullPath.Split('/').Last();
+        }
+
+        private string GetFolderName(string fullPath)
+        {
+            return fullPath.Replace(fullPath.Substring(fullPath.LastIndexOf('/')), "");
+        }
+
         public override string GetHost()
         {
             if (AwsRegion == DefaultRegion || IsRegionInvariantRequest)
@@ -731,5 +744,12 @@ namespace Raven.Server.Documents.PeriodicBackup.Aws
             AwsRegion = regionToUse;
             return new DisposableAction(() => AwsRegion = oldRegion);
         }
+    }
+
+    public class AwsObjectProperties
+    {
+        public string File { get; set; }
+        public string PathToFile { get; set; }
+        public DateTime LastModified { get; set; }
     }
 }
