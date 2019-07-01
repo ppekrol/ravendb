@@ -151,7 +151,10 @@ namespace Raven.Server.Documents.PeriodicBackup.Aws
             var doc = CreateCompleteMultiUploadDocument(partNumbersWithEtag);
             var xmlString = doc.OuterXml;
 
-            var requestMessage = new HttpRequestMessage(HttpMethods.Post, url) {Content = new StringContent(xmlString, Encoding.UTF8, "text/plain")};
+            var requestMessage = new HttpRequestMessage(HttpMethods.Post, url)
+            {
+                Content = new StringContent(xmlString, Encoding.UTF8, "text/plain")
+            };
 
             UpdateHeaders(requestMessage.Headers, now, stream: null, RavenAwsHelper.CalculatePayloadHashFromString(xmlString));
 
@@ -208,7 +211,10 @@ namespace Raven.Server.Documents.PeriodicBackup.Aws
                 // stream is disposed by the HttpClient
                 var content = new ProgressableStreamContent(subStream, Progress)
                 {
-                    Headers = {{"Content-Length", subStream.Length.ToString(CultureInfo.InvariantCulture)}}
+                    Headers =
+                    {
+                        {"Content-Length", subStream.Length.ToString(CultureInfo.InvariantCulture)}
+                    }
                 };
 
                 UpdateHeaders(content.Headers, now, subStream);
@@ -421,11 +427,15 @@ namespace Raven.Server.Documents.PeriodicBackup.Aws
                 var now = SystemTime.UtcNow;
 
                 var hasLocationConstraint = AwsRegion != DefaultRegion;
-                var payloadHash = hasLocationConstraint ? RavenAwsHelper.CalculatePayloadHashFromString(xmlString) : RavenAwsHelper.CalculatePayloadHash(null);
+                var payloadHash = hasLocationConstraint ? 
+                    RavenAwsHelper.CalculatePayloadHashFromString(xmlString) :
+                    RavenAwsHelper.CalculatePayloadHash(null);
 
                 var requestMessage = new HttpRequestMessage(HttpMethods.Put, url)
                 {
-                    Content = hasLocationConstraint == false ? null : new StringContent(xmlString, Encoding.UTF8, "text/plain")
+                    Content = hasLocationConstraint == false ?
+                        null :
+                        new StringContent(xmlString, Encoding.UTF8, "text/plain")
                 };
 
                 UpdateHeaders(requestMessage.Headers, now, stream: null, payloadHash: payloadHash);
@@ -557,7 +567,7 @@ namespace Raven.Server.Documents.PeriodicBackup.Aws
                             isFirst = false;
                         }
 
-                        yield return new FileInfoDetails { FullPath = commonPrefix.Value };
+                        yield return new FileInfoDetails {FullPath = commonPrefix.Value};
                     }
                 }
 
@@ -571,7 +581,7 @@ namespace Raven.Server.Documents.PeriodicBackup.Aws
                     if (BackupLocationDegree(fullPath) - BackupLocationDegree(prefix) > 2)
                         continue; // backup not in current folder or in sub folder
 
-                    yield return new FileInfoDetails { FullPath = fullPath, LastModified = Convert.ToDateTime(content.Element(ns + "LastModified").Value) };
+                    yield return new FileInfoDetails {FullPath = fullPath, LastModified = Convert.ToDateTime(content.Element(ns + "LastModified").Value)};
                 }
             }
 
