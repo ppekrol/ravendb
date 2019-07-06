@@ -73,7 +73,7 @@ namespace Raven.Server.Documents.PeriodicBackup.Restore
         }
 
         public override void Dispose()
-        {            
+        {
         }
 
         private static DateTime ExtractDateFromFileName(string filePath)
@@ -90,7 +90,7 @@ namespace Raven.Server.Documents.PeriodicBackup.Restore
 
             if (DateTime.TryParseExact(
                     fileNameWithoutExtension,
-                    BackupTask.DateTimeFormat,
+                    new[] { BackupTask.DateTimeFormat, BackupTask.LegacyDateTimeFormat },
                     CultureInfo.InvariantCulture,
                     DateTimeStyles.None,
                     out DateTime result) == false)

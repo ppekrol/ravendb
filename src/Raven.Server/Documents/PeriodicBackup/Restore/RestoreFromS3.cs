@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -41,7 +40,7 @@ namespace Raven.Server.Documents.PeriodicBackup.Restore
         protected override async Task<List<string>> GetFilesForRestore()
         {
             var files = await _client.ListObjects(string.IsNullOrEmpty(_remoteFolderName) ? "" : _remoteFolderName + "/", string.Empty, false);
-            return files.Select(x => x.FullPath).ToList();
+            return files.FileInfoDetails.Select(x => x.FullPath).ToList();
         }
 
         protected override string GetBackupPath(string fileName)

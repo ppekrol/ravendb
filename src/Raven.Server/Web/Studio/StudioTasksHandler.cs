@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Formatting;
 using NCrontab.Advanced;
-using Raven.Client.Documents.Operations.Backups;
 using Raven.Client.Exceptions;
 using Raven.Client.ServerWide.Operations.Migration;
 using Raven.Client.Util;
@@ -106,7 +103,7 @@ namespace Raven.Server.Web.Studio
                         {
                             var folders = await client.ListObjects(s3Settings.RemoteFolderName , "/", true);
                             folderPathOptions = new FolderPathOptions();
-                            foreach (var folder in folders)
+                            foreach (var folder in folders.FileInfoDetails)
                             {
                                 var fullPath = folder.FullPath;
                                 if (string.IsNullOrWhiteSpace(fullPath))

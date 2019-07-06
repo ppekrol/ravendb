@@ -23,7 +23,7 @@ namespace Raven.Server.Documents.PeriodicBackup.Restore
             path = path.TrimEnd('/');
 
             var files = await _client.ListObjects(path + "/", string.Empty, false);
-            var folders = files.GroupBy(x => GetFolderName(x.FullPath));
+            var folders = files.FileInfoDetails.GroupBy(x => GetFolderName(x.FullPath));
 
             foreach (var folder in folders)
             {
@@ -36,7 +36,7 @@ namespace Raven.Server.Documents.PeriodicBackup.Restore
             path = path.TrimEnd('/');
 
             var files = await _client.ListObjects(path + "/", string.Empty, false);
-            return files.ToList();
+            return files.FileInfoDetails.ToList();
         }
 
         protected override (string DatabaseName, string NodeTag) ParseFolderName(string path)
