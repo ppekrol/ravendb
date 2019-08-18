@@ -883,6 +883,62 @@ namespace Raven.Server.Rachis
             });
         }
         
+        private bool CanHandleLogDivergence(TransactionOperationContext context, LogLengthNegotiation negotiation, ref long midpointIndex, ref long midpointTerm,
+            ref long minIndex, ref long maxIndex)
+        {
+            if (_engine.Log.IsInfoEnabled)
+            {
+                _engine.Log.Info(
+                    $"{ToString()}: Our appended entries has been diverged, same index with different terms. " +
+                    $"My index/term {midpointIndex}/{midpointTerm}, while yours is {negotiation.PrevLogIndex}/{negotiation.PrevLogTerm}.");
+            }
+
+            using (context.OpenReadTransaction())
+            {
+                do 
+                {
+                    // try to find any log in the previous term
+                    midpointIndex--;
+                    midpointTerm = _engine.GetTermFor(context, midpointIndex) ?? 0;
+                } while (midpointTerm >= negotiation.PrevLogTerm && midpointIndex > 0);
+
+                if (midpointTerm == 0 || midpointIndex == 0)
+                    return false;
+
+                // start the binary search again with those boundaries
+                minIndex = Math.Min(midpointIndex, _engine.GetFirstEntryIndex(context));
+                maxIndex = midpointIndex;
+                midpointIndex = (minIndex + maxIndex) / 2;
+                midpointTerm = _engine.GetTermForKnownExisting(context, midpointIndex);
+
+                if (maxIndex < minIndex)
+                {
+                    if (_engine.Log.IsInfoEnabled)
+                    {
+                        _engine.Log.Info($"{ToString()}: Got minIndex: {minIndex} bigger than maxIndex: {maxIndex} will request the entire snapshot. " +
+                                         $"midpointIndex: {midpointIndex}, midpointTerm: {midpointTerm}.");
+                    }
+
+                    Debug.Assert(false, "This is a safeguard against any potential bug here, so in worst case we request the entire snapshot");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private void RequestAllEntries(TransactionOperationContext context, RemoteConnection connection, string message)
+        {
+            connection.Send(context,
+                new LogLengthNegotiationResponse
+                {
+                    Status = LogLengthNegotiationResponse.ResponseStatus.Acceptable,
+                    Message = message,
+                    CurrentTerm = _term,
+                    LastLogIndex = 0
+                });
+        }
+
         public void AcceptConnection(LogLengthNegotiation negotiation)
         {
             if(_engine.CurrentState != RachisState.Passive)
