@@ -2389,7 +2389,7 @@ namespace Raven.Server.Documents.Indexes
                                 var skippedResults = new Reference<int>();
                                 IncludeCountersCommand includeCountersCommand = null;
 
-                                var fieldsToFetch = new FieldsToFetch(query, Definition);
+                                var fieldsToFetch = new FieldsToFetch(query, Definition, Configuration);
 
                                 var includeDocumentsCommand = new IncludeDocumentsCommand(
                                     DocumentDatabase.DocumentsStorage, documentsContext,

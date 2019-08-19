@@ -178,6 +178,11 @@ namespace Raven.Server.Config.Categories
         [ConfigurationEntry("Indexing.MaxTimeToWaitAfterFlushAndSyncWhenExceedingScratchSpaceLimit", ConfigurationEntryScope.ServerWideOnly)]
         public TimeSetting MaxTimeToWaitAfterFlushAndSyncWhenExceedingScratchSpaceLimit { get; protected set; }
 
+        [DefaultValue(false)]
+        [IndexUpdateType(IndexUpdateType.None)]
+        [ConfigurationEntry("Indexing.ThrowIfProjectedFieldCannotBeExtractedFromIndex", ConfigurationEntryScope.ServerWideOrPerDatabase)]
+        public bool ThrowIfProjectedFieldCannotBeExtractedFromIndex { get; set; }
+
         protected override void ValidateProperty(PropertyInfo property)
         {
             var updateTypeAttribute = property.GetCustomAttribute<IndexUpdateTypeAttribute>();

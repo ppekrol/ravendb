@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
+using Raven.Client.Exceptions;
+using Raven.Server.Config.Categories;
 using Raven.Server.Documents.Indexes;
+using Raven.Server.Documents.Indexes.Configuration;
 using Sparrow;
 
 namespace Raven.Server.Documents.Queries
@@ -22,9 +25,9 @@ namespace Raven.Server.Documents.Queries
 
         public readonly bool IsDistinct;
 
-        public FieldsToFetch(IndexQueryServerSide query, IndexDefinitionBase indexDefinition)
+        public FieldsToFetch(IndexQueryServerSide query, IndexDefinitionBase indexDefinition, IndexingConfiguration configuration = null)
         {
-            Fields = GetFieldsToFetch(query.Metadata, indexDefinition, out AnyExtractableFromIndex, out bool extractAllStoredFields, out SingleBodyOrMethodWithNoAlias);
+            Fields = GetFieldsToFetch(query.Metadata, indexDefinition, configuration, out AnyExtractableFromIndex, out bool extractAllStoredFields, out SingleBodyOrMethodWithNoAlias);
             IsProjection = Fields != null && Fields.Count > 0;
 
             if (extractAllStoredFields)
@@ -179,6 +182,7 @@ namespace Raven.Server.Documents.Queries
         private static Dictionary<string, FieldToFetch> GetFieldsToFetch(
             QueryMetadata metadata,
             IndexDefinitionBase indexDefinition,
+            IndexingConfiguration configuration,
             out bool anyExtractableFromIndex,
             out bool extractAllStoredFields,
             out bool singleFieldNoAlias)
@@ -209,6 +213,8 @@ namespace Raven.Server.Documents.Queries
                     return result;
                 if (val == null)
                     continue;
+                if (val.CanExtractFromIndex == false && metadata.IsDynamic == false && metadata.IsCollectionQuery == false && configuration.ThrowIfProjectedFieldCannotBeExtractedFromIndex)
+                    throw new InvalidQueryException($"Field '{val.Name}' cannot be extracted from index");
                 result[key] = val;
             }
 
