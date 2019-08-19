@@ -777,6 +777,7 @@ namespace Raven.Server.Rachis
         private DisposeLock _disposerLock = new DisposeLock("Leader");
         public void Dispose()
         {
+
             using (_disposerLock.StartDisposing())
             {
                 bool lockTaken = false;
@@ -821,6 +822,9 @@ namespace Raven.Server.Rachis
                     if (_leaderLongRunningWork != null && _leaderLongRunningWork.ManagedThreadId != Thread.CurrentThread.ManagedThreadId)
                         _leaderLongRunningWork.Join(int.MaxValue);
 
+
+                    _engine.ForTestingPurposes?.LeaderDispose();
+
                     var ae = new ExceptionAggregator("Could not properly dispose Leader");
                     foreach (var ambassador in _nonVoters)
                     {
@@ -835,7 +839,6 @@ namespace Raven.Server.Rachis
                     {
                         ae.Execute(ambassador.Value.Dispose);
                     }
-
 
                     _newEntry.Dispose();
                     _voterResponded.Dispose();
