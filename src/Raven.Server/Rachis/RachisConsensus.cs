@@ -635,7 +635,10 @@ namespace Raven.Server.Rachis
                     return;
 
                 Mre.Reset();
-                Mre.Wait();
+                if (Mre.Wait(TimeSpan.FromSeconds(60)) == false)
+                {
+                    throw new TimeoutException("Something is wrong, throwing to avoid hanging");
+                }
                 Mre.Reset();
             }
 
@@ -651,7 +654,10 @@ namespace Raven.Server.Rachis
 
             public void BeforeNegotiatingWithFollower()
             {
-                Mre?.Wait();
+                if (Mre?.Wait(TimeSpan.FromSeconds(60)) == false)
+                {
+                    throw new TimeoutException("Something is wrong, throwing to avoid hanging");
+                }
             }
         }
 
