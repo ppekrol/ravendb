@@ -14,6 +14,7 @@ using Raven.Server.Documents.Queries.Parser;
 using SlowTests.Cluster;
 using SlowTests.Issues;
 using Sparrow;
+using StressTests.Cluster;
 using StressTests.Server.Replication;
 using Xunit.Sdk;
 
@@ -28,9 +29,9 @@ namespace Tryouts
             for (int i = 0; i < 1000; i++)
             {
                 Console.WriteLine(i);
-                using (var test = new ClusterTransactionTests())
+                using (var test = new ClusterStressTests())
                 {
-                    test.CreateUniqueUser().Wait();
+                    test.ParallelClusterTransactions().Wait();
                 }
             }
         }
