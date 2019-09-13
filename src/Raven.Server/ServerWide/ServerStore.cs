@@ -270,7 +270,7 @@ namespace Raven.Server.ServerWide
                                     }
 
                                     ws.ConnectAsync(leaderWsUrl, cts.Token).Wait(cts.Token);
-                                    while (cancelTask.IsCompleted == false && 
+                                    while (cancelTask.IsCompleted == false &&
                                            (ws.State == WebSocketState.Open || ws.State == WebSocketState.CloseSent))
                                     {
                                         context.Reset();
@@ -680,6 +680,8 @@ namespace Raven.Server.ServerWide
                 EntityToBlittable.ConvertCommandToBlittable(new DatabaseRecord(), ctx);
             }
 
+            _server.Statistics.Load(ContextPool, Logger);
+
             _timer = new Timer(IdleOperations, null, _frequencyToCheckForIdleDatabases, TimeSpan.FromDays(7));
             _notificationsStorage.Initialize(_env, ContextPool);
             _operationsStorage.Initialize(_env, ContextPool);
@@ -814,16 +816,16 @@ namespace Raven.Server.ServerWide
 
             NotifyAboutClusterTopologyAndConnectivityChanges();
 
-                // if we are in passive/candidate state, we prevent from tasks to be performed by this node.
-                if (state.From == RachisState.Passive || state.To == RachisState.Passive ||
-                    state.From == RachisState.Candidate || state.To == RachisState.Candidate)
+            // if we are in passive/candidate state, we prevent from tasks to be performed by this node.
+            if (state.From == RachisState.Passive || state.To == RachisState.Passive ||
+                state.From == RachisState.Candidate || state.To == RachisState.Candidate)
+            {
+                TaskExecutor.Execute(async _ =>
                 {
-                    TaskExecutor.Execute(async _ =>
-                    {
-                        await RefreshOutgoingTasksAsync();
-                    }, null);
-                }
+                    await RefreshOutgoingTasksAsync();
+                }, null);
             }
+        }
 
         private async Task RefreshOutgoingTasksAsync()
         {
@@ -897,37 +899,37 @@ namespace Raven.Server.ServerWide
                         if (ServerShutdown.IsCancellationRequested)
                             return;
 
-                var clusterTopology = GetClusterTopology();
+                        var clusterTopology = GetClusterTopology();
 
-                if (_engine.CurrentState != RachisState.Follower)
-                {
-                    OnTopologyChangeInternal(clusterTopology);
-                    return;
-                }
+                        if (_engine.CurrentState != RachisState.Follower)
+                        {
+                            OnTopologyChangeInternal(clusterTopology);
+                            return;
+                        }
 
-                // need to get it from the leader
-                var leaderTag = LeaderTag;
-                if (leaderTag == null)
-                    return;
+                        // need to get it from the leader
+                        var leaderTag = LeaderTag;
+                        if (leaderTag == null)
+                            return;
 
-                var leaderUrl = clusterTopology.GetUrlFromTag(leaderTag);
-                if (leaderUrl == null)
-                    return;
+                        var leaderUrl = clusterTopology.GetUrlFromTag(leaderTag);
+                        if (leaderUrl == null)
+                            return;
 
-                using (var clusterRequestExecutor = CreateNewClusterRequestExecutor(leaderUrl))
-                using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-                {
-                    var command = new GetClusterTopologyCommand(NodeTag);
+                        using (var clusterRequestExecutor = CreateNewClusterRequestExecutor(leaderUrl))
+                        using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
+                        {
+                            var command = new GetClusterTopologyCommand(NodeTag);
                             await clusterRequestExecutor.ExecuteAsync(command, context, token: ServerShutdown);
-                    var response = command.Result;
+                            var response = command.Result;
 
-                    OnTopologyChangeInternal(response.Topology, response.Status);
-                }
-        }
+                            OnTopologyChangeInternal(response.Topology, response.Status);
+                        }
+                    }
                     catch (TaskCanceledException)
-        {
+                    {
                         // shutdown
-        }
+                    }
                     catch (Exception e)
                     {
                         if (Logger.IsInfoEnabled)
@@ -1874,6 +1876,8 @@ namespace Raven.Server.ServerWide
 
                     _shutdownNotification.Cancel();
 
+                    _server.Statistics.Persist(ContextPool, Logger);
+
                     _server.ServerCertificateChanged -= OnServerCertificateChanged;
 
                     var toDispose = new List<IDisposable>
@@ -1959,6 +1963,8 @@ namespace Raven.Server.ServerWide
 
                 try
                 {
+                    _server.Statistics.MaybePersist(ContextPool, Logger);
+
                     var maxTimeDatabaseCanBeIdle = Configuration.Databases.MaxIdleTime.AsTimeSpan;
 
                     var databasesToCleanup = DatabasesLandlord.LastRecentlyUsed.ForceEnumerateInThreadSafeManner()
@@ -2635,7 +2641,7 @@ namespace Raven.Server.ServerWide
         {
             UriSetting[] urls = forExternalUse ? Configuration.Core.ExternalPublicTcpServerUrl : Configuration.Core.ClusterPublicTcpServerUrl;
             if (urls == null)
-                return new[] {GetNodeTcpServerUrl(clientRequestedNodeUrl)};
+                return new[] { GetNodeTcpServerUrl(clientRequestedNodeUrl) };
             var length = urls.Length;
             var res = new string[length];
             for (var i = 0; i < length; i++)
@@ -2748,7 +2754,7 @@ namespace Raven.Server.ServerWide
             }
 
             res[nameof(TcpConnectionInfo.Urls)] = array;
-           
+
             return res;
         }
 
@@ -2773,18 +2779,18 @@ namespace Raven.Server.ServerWide
             };
             return json;
         }
-        
+
         public static IEnumerable<Raven.Client.ServerWide.Operations.MountPointUsage> GetMountPointUsageDetailsFor(StorageEnvironmentWithType environment)
         {
             var fullPath = environment?.Environment.Options.BasePath.FullPath;
             if (fullPath == null)
                 yield break;
-                
+
             var driveInfo = environment.Environment.Options.DriveInfoByPath?.Value;
             var diskSpaceResult = DiskSpaceChecker.GetDiskSpaceInfo(fullPath, driveInfo?.BasePath);
             if (diskSpaceResult == null)
                 yield break;
-            
+
             var sizeOnDisk = environment.Environment.GenerateSizeReport();
             var usage = new Raven.Client.ServerWide.Operations.MountPointUsage
             {
