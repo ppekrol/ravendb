@@ -183,7 +183,11 @@ namespace Raven.Server.Documents.Queries
         {
             QueryFieldName indexFieldName;
 
-            if (spatial == null && IsDynamic)
+            if (spatial != null && IsDynamic)
+            {
+                indexFieldName = new QueryFieldName(fieldName, true);
+            }
+            else
             {
                 var split = fieldName.Value.Split(".");
                 if (split.Length > 1 && NotInRootAliasPaths(split[0]))
@@ -192,11 +196,6 @@ namespace Raven.Server.Documents.Queries
                 }
                 indexFieldName = GetIndexFieldName(fieldName, parameters);
             }
-            else
-            {
-                indexFieldName = new QueryFieldName(fieldName, true);
-            }
-
 
             if (operatorType == null &&
                 // to support startsWith(id(), ...)
