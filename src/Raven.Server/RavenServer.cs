@@ -10,23 +10,21 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Org.BouncyCastle.Pkcs;
-using Raven.Client;
 using Raven.Client.Exceptions.Database;
 using Raven.Client.Exceptions.Security;
 using Raven.Client.Extensions;
@@ -38,7 +36,6 @@ using Raven.Client.Util;
 using Raven.Server.Commercial;
 using Raven.Server.Config;
 using Raven.Server.Documents;
-using Raven.Server.Documents.Indexes.Static.Extensions;
 using Raven.Server.Documents.Patch;
 using Raven.Server.Documents.TcpHandlers;
 using Raven.Server.Https;
@@ -54,7 +51,6 @@ using Raven.Server.ServerWide.Context;
 using Raven.Server.ServerWide.Maintenance;
 using Raven.Server.Utils;
 using Raven.Server.Utils.Cpu;
-using Raven.Server.Web.Authentication;
 using Raven.Server.Web.ResponseCompression;
 using Sparrow;
 using Sparrow.Json;
@@ -128,7 +124,6 @@ namespace Raven.Server
         {
             return _tcpListenerStatus;
         }
-
         public void Initialize()
         {
             var sp = Stopwatch.StartNew();
@@ -172,15 +167,20 @@ namespace Raven.Server
 
                     if (Certificate.Certificate != null)
                     {
-                        _httpsConnectionAdapter = new HttpsConnectionAdapter();
-                        _httpsConnectionAdapter.SetCertificate(Certificate.Certificate);
-                        _refreshClusterCertificate = new Timer(RefreshClusterCertificateTimerCallback);
-                        var adapter = new AuthenticatingAdapter(this, _httpsConnectionAdapter);
+                        _httpsConnectionMiddleware = new HttpsConnectionMiddleware(this, options);
+                        _httpsConnectionMiddleware.SetCertificate(Certificate.Certificate);
 
                         foreach (var address in ListenEndpoints.Addresses)
                         {
-                            options.Listen(address, ListenEndpoints.Port, listenOptions => { listenOptions.ConnectionAdapters.Add(adapter); });
+                            options.Listen(address, ListenEndpoints.Port, listenOptions =>
+                            {
+                                listenOptions
+                                    .UseHttps()
+                                    .Use(_httpsConnectionMiddleware.OnConnectionAsync);
+                            });
                         }
+
+                        _refreshClusterCertificate = new Timer(RefreshClusterCertificateTimerCallback);
                     }
                 }
 
@@ -765,12 +765,12 @@ namespace Raven.Server
             }
         }
 
-        bool CertificateCallback(object sender, X509Certificate cert, X509Chain chain, SslPolicyErrors errors)
+        private bool CertificateCallback(object sender, X509Certificate cert, X509Chain chain, SslPolicyErrors errors)
         {
             if (errors == SslPolicyErrors.None || errors == SslPolicyErrors.RemoteCertificateChainErrors) // self-signed is acceptable
                 return true;
 
-            var cert2 = HttpsConnectionAdapter.ConvertToX509Certificate2(cert);
+            var cert2 = HttpsConnectionMiddleware.ConvertToX509Certificate2(cert);
             // We trust ourselves
             return cert2?.Thumbprint == Certificate?.Certificate?.Thumbprint;
         }
@@ -851,7 +851,7 @@ namespace Raven.Server
                 if (newCertificate.Certificate.Thumbprint != currentCertificate.Certificate.Thumbprint)
                 {
                     if (Interlocked.CompareExchange(ref Certificate, newCertificate, currentCertificate) == currentCertificate)
-                        _httpsConnectionAdapter.SetCertificate(newCertificate.Certificate);
+                        _httpsConnectionMiddleware.SetCertificate(newCertificate.Certificate);
                     ServerCertificateChanged?.Invoke(this, EventArgs.Empty);
                     return;
                 }
@@ -1298,8 +1298,6 @@ namespace Raven.Server
             }
 
             ClaimsPrincipal IHttpAuthenticationFeature.User { get; set; }
-
-            IAuthenticationHandler IHttpAuthenticationFeature.Handler { get; set; }
 
             public string WrongProtocolMessage;
 
@@ -2070,7 +2068,7 @@ namespace Raven.Server
         private TcpListenerStatus _tcpListenerStatus;
         public SnmpWatcher SnmpWatcher;
         private Timer _refreshClusterCertificate;
-        private HttpsConnectionAdapter _httpsConnectionAdapter;
+        private HttpsConnectionMiddleware _httpsConnectionMiddleware;
         private PoolOfThreads.LongRunningWork _cpuCreditsMonitoring;
         public readonly ServerMetricCacher MetricCacher;
 
@@ -2082,7 +2080,7 @@ namespace Raven.Server
             var newCertHolder = SecretProtection.ValidateCertificateAndCreateCertificateHolder("Auto Update", certificate, rawBytes, password, ServerStore);
             if (Interlocked.CompareExchange(ref Certificate, newCertHolder, certificateHolder) == certificateHolder)
             {
-                _httpsConnectionAdapter.SetCertificate(certificate);
+                _httpsConnectionMiddleware.SetCertificate(certificate);
                 ServerCertificateChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -2203,7 +2201,7 @@ namespace Raven.Server
 
                 await sslStream.AuthenticateAsServerAsync(Certificate.Certificate, true, SslProtocols.Tls12, false);
 
-                return (sslStream, HttpsConnectionAdapter.ConvertToX509Certificate2(sslStream.RemoteCertificate));
+                return (sslStream, HttpsConnectionMiddleware.ConvertToX509Certificate2(sslStream.RemoteCertificate));
             }
 
             return (stream, null);
