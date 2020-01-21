@@ -477,15 +477,27 @@ namespace Raven.Server.Documents.Queries.Results
             if (fieldToFetch.QueryField.ValueTokenType != null)
             {
                 var val = fieldToFetch.QueryField.Value;
-                if (fieldToFetch.QueryField.ValueTokenType.Value == ValueTokenType.Parameter)
+                switch (fieldToFetch.QueryField.ValueTokenType.Value)
                 {
-                    if (_query == null)
-                    {
-                        value = null;
-                        return false; // only happens for debug endpoints and more like this
-                    }
-                    _query.QueryParameters.TryGet((string)val, out val);
+                    case ValueTokenType.Parameter:
+                        {
+                            if (_query == null)
+                            {
+                                value = null;
+                                return false; // only happens for debug endpoints and more like this
+                            }
+                            _query.QueryParameters.TryGet((string)val, out val);
+                            break;
+                        }
+                    case ValueTokenType.String: // this might be either constant or field name
+                        {
+                            if (TryGetFieldValueFromDocument(document, fieldToFetch, out value))
+                                return true;
+
+                            break;
+                        }
                 }
+
                 value = val;
                 return true;
             }
