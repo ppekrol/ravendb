@@ -170,7 +170,7 @@ namespace Raven.Server.ServerWide.Maintenance
                 if (_server.DatabasesLandlord.DatabasesCache.TryGetValue(dbName, out var dbTask) == false)
                 {
                     DatabaseTopology topology;
-                    using (var rawRecord = _server.Cluster.ReadRawDatabaseRecord(ctx, dbName))
+                    using (var rawRecord = _server.Cluster.ReadDatabaseRecord(ctx, dbName))
                     {
                         if (rawRecord == null)
                         {

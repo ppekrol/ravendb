@@ -123,26 +123,26 @@ namespace Raven.Server.Web.System
             ServerStore.EnsureNotPassive();
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
+            using (var databaseRecord = ServerStore.Cluster.ReadDatabaseRecord(context, name, out var index))
             {
-                var databaseRecord = ServerStore.Cluster.ReadDatabase(context, name, out var index);
                 if (databaseRecord == null)
-                {
                     throw new DatabaseDoesNotExistException("Database Record not found when trying to add a node to the database topology");
-                }
+
+                var record = databaseRecord.GetMaterializedRecord();
 
                 var clusterTopology = ServerStore.GetClusterTopology(context);
 
-                if (databaseRecord.Encrypted)
+                if (record.Encrypted)
                     ServerStore.LicenseManager.AssertCanCreateEncryptedDatabase();
 
                 // the case where an explicit node was requested 
                 if (string.IsNullOrEmpty(node) == false)
                 {
-                    if (databaseRecord.Topology.RelevantFor(node))
+                    if (record.Topology.RelevantFor(node))
                         throw new InvalidOperationException($"Can't add node {node} to {name} topology because it is already part of it");
 
-                    var databaseIsBeenDeleted = databaseRecord.DeletionInProgress != null &&
-                                                databaseRecord.DeletionInProgress.TryGetValue(node, out var deletionInProgress) &&
+                    var databaseIsBeenDeleted = record.DeletionInProgress != null &&
+                                                record.DeletionInProgress.TryGetValue(node, out var deletionInProgress) &&
                                                 deletionInProgress != DeletionInProgressStatus.No;
                     if (databaseIsBeenDeleted)
                         throw new InvalidOperationException($"Can't add node {node} to database '{name}' topology because the it is currently being deleted from node '{node}'");
@@ -151,7 +151,7 @@ namespace Raven.Server.Web.System
                     if (url == null)
                         throw new InvalidOperationException($"Can't add node {node} to database '{name}' topology because node {node} is not part of the cluster");
 
-                    if (databaseRecord.Encrypted && NotUsingHttps(url))
+                    if (record.Encrypted && NotUsingHttps(url))
                         throw new InvalidOperationException($"Can't add node {node} to database '{name}' topology because database {name} is encrypted but node {node} doesn't have an SSL certificate.");
                 }
 
@@ -163,9 +163,9 @@ namespace Raven.Server.Web.System
                         .Concat(clusterTopology.Watchers.Keys)
                         .ToList();
 
-                    allNodes.RemoveAll(n => databaseRecord.Topology.AllNodes.Contains(n) || (databaseRecord.Encrypted && NotUsingHttps(clusterTopology.GetUrlFromTag(n))));
+                    allNodes.RemoveAll(n => record.Topology.AllNodes.Contains(n) || (record.Encrypted && NotUsingHttps(clusterTopology.GetUrlFromTag(n))));
 
-                    if (databaseRecord.Encrypted && allNodes.Count == 0)
+                    if (record.Encrypted && allNodes.Count == 0)
                         throw new InvalidOperationException($"Database {name} is encrypted and requires a node which supports SSL. There is no such node available in the cluster.");
 
                     if (allNodes.Count == 0)
@@ -175,21 +175,21 @@ namespace Raven.Server.Web.System
                     node = allNodes[rand % allNodes.Count];
                 }
 
-                databaseRecord.Topology.Promotables.Add(node);
-                databaseRecord.Topology.DemotionReasons[node] = "Joined the DB-Group as a new promotable node";
-                databaseRecord.Topology.PromotablesStatus[node] = DatabasePromotionStatus.WaitingForFirstPromotion;
+                record.Topology.Promotables.Add(node);
+                record.Topology.DemotionReasons[node] = "Joined the DB-Group as a new promotable node";
+                record.Topology.PromotablesStatus[node] = DatabasePromotionStatus.WaitingForFirstPromotion;
 
                 if (mentor != null)
                 {
-                    if (databaseRecord.Topology.RelevantFor(mentor) == false)
+                    if (record.Topology.RelevantFor(mentor) == false)
                         throw new ArgumentException($"The node {mentor} is not part of the database group");
-                    if (databaseRecord.Topology.Members.Contains(mentor) == false)
+                    if (record.Topology.Members.Contains(mentor) == false)
                         throw new ArgumentException($"The node {mentor} is not valid for the operation because it is not a member");
-                    databaseRecord.Topology.PredefinedMentors.Add(node, mentor);
+                    record.Topology.PredefinedMentors.Add(node, mentor);
                 }
 
-                databaseRecord.Topology.ReplicationFactor++;
-                var (newIndex, _) = await ServerStore.WriteDatabaseRecordAsync(name, databaseRecord, index, raftRequestId);
+                record.Topology.ReplicationFactor++;
+                var (newIndex, _) = await ServerStore.WriteDatabaseRecordAsync(name, record, index, raftRequestId);
 
                 try
                 {
@@ -210,7 +210,7 @@ namespace Raven.Server.Web.System
                     {
                         [nameof(DatabasePutResult.RaftCommandIndex)] = newIndex,
                         [nameof(DatabasePutResult.Name)] = name,
-                        [nameof(DatabasePutResult.Topology)] = databaseRecord.Topology.ToJson()
+                        [nameof(DatabasePutResult.Topology)] = record.Topology.ToJson()
                     });
                     writer.Flush();
                 }
@@ -226,7 +226,7 @@ namespace Raven.Server.Web.System
         public async Task Put()
         {
             var raftRequestId = GetRaftRequestIdFromQuery();
-            
+
             ServerStore.EnsureNotPassive();
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
@@ -235,7 +235,7 @@ namespace Raven.Server.Web.System
                 var replicationFactor = GetIntValueQueryString("replicationFactor", required: false) ?? 1;
                 var json = context.ReadForDisk(RequestBodyStream(), "Database Record");
                 var databaseRecord = JsonDeserializationCluster.DatabaseRecord(json);
-               
+
                 if (LoggingSource.AuditLog.IsInfoEnabled)
                 {
                     var clientCert = GetCurrentCertificate();
@@ -243,15 +243,15 @@ namespace Raven.Server.Web.System
                     var auditLog = LoggingSource.AuditLog.GetLogger("DbMgmt", "Audit");
                     auditLog.Info($"Database {databaseRecord.DatabaseName} PUT by {clientCert?.Subject} ({clientCert?.Thumbprint})");
                 }
-                
+
                 if (databaseRecord.Encrypted)
                     ServerStore.LicenseManager.AssertCanCreateEncryptedDatabase();
-                
+
                 // Validate Directory
-                var dataDirectoryThatWillBeUsed = databaseRecord.Settings.TryGetValue(RavenConfiguration.GetKey(x => x.Core.DataDirectory), out var dir) == false ? 
+                var dataDirectoryThatWillBeUsed = databaseRecord.Settings.TryGetValue(RavenConfiguration.GetKey(x => x.Core.DataDirectory), out var dir) == false ?
                                                   ServerStore.Configuration.Core.DataDirectory.FullPath :
                                                   new PathSetting(dir, ServerStore.Configuration.Core.DataDirectory.FullPath).FullPath;
-                
+
                 if (string.IsNullOrWhiteSpace(dir) == false)
                 {
                     if (ServerStore.Configuration.Core.EnforceDataDirectoryPath)
@@ -268,7 +268,7 @@ namespace Raven.Server.Web.System
                         throw new InvalidOperationException($"Cannot access path '{dataDirectoryThatWillBeUsed}'. {error}");
                     }
                 }
-                
+
                 // Validate Name
                 databaseRecord.DatabaseName = databaseRecord.DatabaseName.Trim();
                 if (ResourceNameValidator.IsValidResourceName(databaseRecord.DatabaseName, dataDirectoryThatWillBeUsed, out string errorMessage) == false)
@@ -432,8 +432,9 @@ namespace Raven.Server.Web.System
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext ctx))
             using (ctx.OpenReadTransaction())
+            using (var record = ServerStore.Cluster.ReadDatabaseRecord(ctx, name))
             {
-                var topology = ServerStore.Cluster.ReadDatabaseTopology(ctx, name);
+                var topology = record.GetTopology();
                 return (newIndex, topology, nodeUrlsAddedTo);
             }
         }
@@ -446,7 +447,7 @@ namespace Raven.Server.Web.System
             {
                 DatabaseTopology topology;
                 using (context.OpenReadTransaction())
-                using (var rawRecord = ServerStore.Cluster.ReadRawDatabaseRecord(context, name))
+                using (var rawRecord = ServerStore.Cluster.ReadDatabaseRecord(context, name))
                 {
                     if (rawRecord == null)
                         DatabaseDoesNotExistException.Throw(name);
@@ -554,7 +555,7 @@ namespace Raven.Server.Web.System
                         {
                             await azureRestoreUtils.FetchRestorePoints(azureSettings.RemoteFolderName);
                         }
-                        break;  
+                        break;
                     case PeriodicBackupConnectionType.GoogleCloud:
                         var googleCloudSettings = JsonDeserializationServer.GoogleCloudSettings(restorePathBlittable);
                         using (var googleCloudRestoreUtils = new GoogleCloudRestorePoints(sortedList, context, googleCloudSettings))
@@ -624,16 +625,16 @@ namespace Raven.Server.Web.System
                         break;
                     case RestoreType.Azure:
                         var azureConfiguration = JsonDeserializationCluster.RestoreAzureBackupConfiguration(restoreConfiguration);
-                        restoreBackupTask  = new RestoreFromAzure(
+                        restoreBackupTask = new RestoreFromAzure(
                             ServerStore,
                             azureConfiguration,
                             ServerStore.NodeTag,
                             cancelToken);
                         databaseName = await ValidateFreeSpace(azureConfiguration, restoreBackupTask);
-                        break;      
+                        break;
                     case RestoreType.GoogleCloud:
                         var googlCloudConfiguration = JsonDeserializationCluster.RestoreGoogleCloudBackupConfiguration(restoreConfiguration);
-                        restoreBackupTask  = new RestoreFromGoogleCloud(
+                        restoreBackupTask = new RestoreFromGoogleCloud(
                             ServerStore,
                             googlCloudConfiguration,
                             ServerStore.NodeTag,
@@ -732,7 +733,7 @@ namespace Raven.Server.Web.System
                         foreach (var databaseName in parameters.DatabaseNames)
                         {
                             DatabaseTopology topology;
-                            using (var rawRecord = ServerStore.Cluster.ReadRawDatabaseRecord(context, databaseName))
+                            using (var rawRecord = ServerStore.Cluster.ReadDatabaseRecord(context, databaseName))
                             {
                                 if (rawRecord == null)
                                     continue;
@@ -846,31 +847,32 @@ namespace Raven.Server.Web.System
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
-                DatabaseRecord databaseRecord;
-                long index;
                 using (context.OpenReadTransaction())
-                    databaseRecord = ServerStore.Cluster.ReadDatabase(context, name, out index);
-
-                if (databaseRecord.Encrypted)
+                using (var databaseRecord = ServerStore.Cluster.ReadDatabaseRecord(context, name, out var index))
                 {
-                    throw new InvalidOperationException($"Cannot toggle '{nameof(DatabaseTopology.DynamicNodesDistribution)}' for encrypted database: " + name);
+                    var record = databaseRecord.GetMaterializedRecord();
+
+                    if (record.Encrypted)
+                    {
+                        throw new InvalidOperationException($"Cannot toggle '{nameof(DatabaseTopology.DynamicNodesDistribution)}' for encrypted database: " + name);
+                    }
+
+                    if (enable == record.Topology.DynamicNodesDistribution)
+                        return;
+
+                    if (enable &&
+                        Server.ServerStore.LicenseManager.CanDynamicallyDistributeNodes(withNotification: false, out var licenseLimit) == false)
+                    {
+                        throw licenseLimit;
+                    }
+
+                    record.Topology.DynamicNodesDistribution = enable;
+
+                    var (commandResultIndex, _) = await ServerStore.WriteDatabaseRecordAsync(name, record, index, raftRequestId);
+                    await ServerStore.Cluster.WaitForIndexNotification(commandResultIndex);
+
+                    NoContentStatus();
                 }
-
-                if (enable == databaseRecord.Topology.DynamicNodesDistribution)
-                    return;
-
-                if (enable &&
-                    Server.ServerStore.LicenseManager.CanDynamicallyDistributeNodes(withNotification: false, out var licenseLimit) == false)
-                {
-                    throw licenseLimit;
-                }
-
-                databaseRecord.Topology.DynamicNodesDistribution = enable;
-
-                var (commandResultIndex, _) = await ServerStore.WriteDatabaseRecordAsync(name, databaseRecord, index, raftRequestId);
-                await ServerStore.Cluster.WaitForIndexNotification(commandResultIndex);
-
-                NoContentStatus();
             }
         }
 
@@ -885,22 +887,25 @@ namespace Raven.Server.Web.System
                 var raftRequestId = GetRaftRequestIdFromQuery();
                 foreach (var name in parameters.DatabaseNames)
                 {
-                    DatabaseRecord databaseRecord;
+                    DatabaseRecord record;
                     using (context.OpenReadTransaction())
-                        databaseRecord = ServerStore.Cluster.ReadDatabase(context, name);
-
-                    if (databaseRecord == null)
+                    using (var databaseRecord = ServerStore.Cluster.ReadDatabaseRecord(context, name))
                     {
-                        resultList.Add(new DynamicJsonValue
+                        if (databaseRecord == null)
                         {
-                            ["Name"] = name,
-                            ["Success"] = false,
-                            ["Reason"] = "database not found"
-                        });
-                        continue;
+                            resultList.Add(new DynamicJsonValue
+                            {
+                                ["Name"] = name,
+                                ["Success"] = false,
+                                ["Reason"] = "database not found"
+                            });
+                            continue;
+                        }
+
+                        record = databaseRecord.GetMaterializedRecord();
                     }
 
-                    if (databaseRecord.Disabled == disable)
+                    if (record.Disabled == disable)
                     {
                         var state = disable ? "disabled" : "enabled";
                         resultList.Add(new DynamicJsonValue
@@ -913,9 +918,9 @@ namespace Raven.Server.Web.System
                         continue;
                     }
 
-                    databaseRecord.Disabled = disable;
+                    record.Disabled = disable;
 
-                    var (index, _) = await ServerStore.WriteDatabaseRecordAsync(name, databaseRecord, null, $"{raftRequestId}/{name}");
+                    var (index, _) = await ServerStore.WriteDatabaseRecordAsync(name, record, null, $"{raftRequestId}/{name}");
                     await ServerStore.Cluster.WaitForIndexNotification(index);
 
                     resultList.Add(new DynamicJsonValue
@@ -923,7 +928,7 @@ namespace Raven.Server.Web.System
                         ["Name"] = name,
                         ["Success"] = true,
                         ["Disabled"] = disable,
-                        ["Reason"] = $"Database state={databaseRecord.Disabled} was propagated on the cluster"
+                        ["Reason"] = $"Database state={record.Disabled} was propagated on the cluster"
                     });
                 }
 
@@ -1053,7 +1058,7 @@ namespace Raven.Server.Web.System
                 await ServerStore.Cluster.WaitForIndexNotification(index);
 
                 using (context.OpenReadTransaction())
-                using (var rawRecord = ServerStore.Cluster.ReadRawDatabaseRecord(context, name))
+                using (var rawRecord = ServerStore.Cluster.ReadDatabaseRecord(context, name))
                 {
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
                     var conflictSolverConfig = rawRecord.GetConflictSolverConfiguration();
@@ -1090,7 +1095,7 @@ namespace Raven.Server.Web.System
                     throw new InvalidOperationException($"{nameof(compactSettings.Documents)} is false in compact settings and no indexes were supplied. Nothing to compact.");
 
                 using (context.OpenReadTransaction())
-                using (var rawRecord = ServerStore.Cluster.ReadRawDatabaseRecord(context, compactSettings.DatabaseName))
+                using (var rawRecord = ServerStore.Cluster.ReadDatabaseRecord(context, compactSettings.DatabaseName))
                 {
                     if (rawRecord == null)
                         throw new InvalidOperationException($"Cannot compact database {compactSettings.DatabaseName}, it doesn't exist.");
@@ -1227,12 +1232,12 @@ namespace Raven.Server.Web.System
             }
 
             var dataDir = configuration.DataDirectory;
-            var dataDirectoryThatWillBeUsed =  string.IsNullOrWhiteSpace(dataDir) ? 
+            var dataDirectoryThatWillBeUsed = string.IsNullOrWhiteSpace(dataDir) ?
                                                ServerStore.Configuration.Core.DataDirectory.FullPath :
                                                new PathSetting(dataDir, ServerStore.Configuration.Core.DataDirectory.FullPath).FullPath;
-            
+
             OfflineMigrationConfiguration.ValidateDataDirectory(dataDirectoryThatWillBeUsed);
-            
+
             var dataExporter = OfflineMigrationConfiguration.EffectiveDataExporterFullPath(configuration.DataExporterFullPath);
             OfflineMigrationConfiguration.ValidateExporterPath(dataExporter);
 

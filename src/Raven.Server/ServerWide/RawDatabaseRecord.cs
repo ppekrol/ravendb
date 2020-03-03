@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations.Backups;
+using Raven.Client.Documents.Operations.Configuration;
 using Raven.Client.Documents.Operations.ETL;
 using Raven.Client.Documents.Operations.ETL.SQL;
 using Raven.Client.Documents.Operations.Expiration;
@@ -9,6 +10,7 @@ using Raven.Client.Documents.Operations.Refresh;
 using Raven.Client.Documents.Operations.Replication;
 using Raven.Client.Documents.Operations.Revisions;
 using Raven.Client.Documents.Queries.Sorting;
+using Raven.Client.Json.Converters;
 using Raven.Client.ServerWide;
 using Sparrow.Json;
 
@@ -16,7 +18,11 @@ namespace Raven.Server.ServerWide
 {
     public class RawDatabaseRecord : IDisposable
     {
+        private int? _indexesCount;
+
         private readonly BlittableJsonReaderObject _record;
+
+        private DatabaseRecord _materializedRecord;
 
         public RawDatabaseRecord(BlittableJsonReaderObject record)
         {
@@ -26,6 +32,14 @@ namespace Raven.Server.ServerWide
         public BlittableJsonReaderObject GetRecord()
         {
             return _record;
+        }
+
+        public DatabaseRecord GetMaterializedRecord()
+        {
+            if (_materializedRecord == null)
+                _materializedRecord = JsonDeserializationCluster.DatabaseRecord(_record);
+
+            return _materializedRecord;
         }
 
         public bool IsDisabled()
@@ -105,7 +119,7 @@ namespace Raven.Server.ServerWide
 
             return JsonDeserializationCluster.ExpirationConfiguration(config);
         }
-        
+
         public RefreshConfiguration GetRefreshConfiguration()
         {
             if (_record.TryGet(nameof(DatabaseRecord.Refresh), out BlittableJsonReaderObject config) == false || config == null)
@@ -150,6 +164,10 @@ namespace Raven.Server.ServerWide
             return list;
         }
 
+        public PullReplicationDefinition GetHubPullReplication()
+        {
+        }
+
         public List<long> GetPeriodicBackupsTaskIds()
         {
             if (_record.TryGet(nameof(DatabaseRecord.PeriodicBackups), out BlittableJsonReaderArray bjra) == false || bjra == null)
@@ -183,6 +201,23 @@ namespace Raven.Server.ServerWide
             }
 
             return null;
+        }
+
+        public List<PeriodicBackupConfiguration> GetPeriodicBackupConfigurations()
+        {
+            if (_record.TryGet(nameof(DatabaseRecord.PeriodicBackups), out BlittableJsonReaderArray bjra) == false || bjra == null)
+                return null;
+
+            var result = new List<PeriodicBackupConfiguration>();
+            foreach (BlittableJsonReaderObject element in bjra)
+            {
+                if (element.TryGet(nameof(PeriodicBackupConfiguration.TaskId), out long configurationTaskId) == false)
+                    continue;
+
+                result.Add(JsonDeserializationCluster.PeriodicBackupConfiguration(element));
+            }
+
+            return result;
         }
 
         public List<RavenEtlConfiguration> GetRavenEtls()
@@ -294,6 +329,32 @@ namespace Raven.Server.ServerWide
             }
 
             return dictionary;
+        }
+
+        public int GetIndexesCount()
+        {
+            if (_indexesCount == null)
+            {
+                var count = 0;
+
+                if (_record.TryGet(nameof(DatabaseRecord.Indexes), out BlittableJsonReaderObject obj) && obj != null)
+                {
+                    var propertyDetails = new BlittableJsonReaderObject.PropertyDetails();
+                    for (var i = 0; i < obj.Count; i++)
+                    {
+                        obj.GetPropertyByIndex(i, ref propertyDetails);
+
+                        if (propertyDetails.Value == null)
+                            continue;
+
+                        count++;
+                    }
+                }
+
+                _indexesCount = count;
+            }
+
+            return _indexesCount.Value;
         }
 
         public Dictionary<string, IndexDefinition> GetIndexes()
@@ -426,9 +487,55 @@ namespace Raven.Server.ServerWide
             return dictionary;
         }
 
+        private ClientConfiguration _clientConfiguration;
+
+        private StudioConfiguration _studioConfiguration;
+
+        public ClientConfiguration GetClientConfiguration()
+        {
+            if (_clientConfiguration == null)
+            {
+                if (_record.TryGet(nameof(DatabaseRecord.Client), out BlittableJsonReaderObject obj) && obj != null)
+                    _clientConfiguration = JsonDeserializationCluster.ClientConfiguration(obj);
+            }
+
+            return _clientConfiguration;
+        }
+
+        public StudioConfiguration GetStudioConfiguration()
+        {
+            if (_studioConfiguration == null)
+            {
+                if (_record.TryGet(nameof(DatabaseRecord.Client), out BlittableJsonReaderObject obj) && obj != null)
+                    _studioConfiguration = JsonDeserializationClient.StudioConfiguration(obj);
+            }
+
+            return _studioConfiguration;
+        }
+
+        private HashSet<string> _unusedDatabaseIds;
+
+        public HashSet<string> GetUnusedDatabaseIds()
+        {
+            if (_unusedDatabaseIds == null)
+            {
+                _unusedDatabaseIds = new HashSet<string>();
+
+                if (_record.TryGet(nameof(DatabaseRecord.UnusedDatabaseIds), out BlittableJsonReaderArray array) && array != null)
+                {
+                    foreach (var item in array)
+                        _unusedDatabaseIds.Add(item.ToString());
+                }
+            }
+
+            return _unusedDatabaseIds;
+        }
+
         public void Dispose()
         {
             _record?.Dispose();
         }
+
+
     }
 }

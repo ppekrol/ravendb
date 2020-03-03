@@ -1,5 +1,5 @@
 ﻿using System.Net;
-﻿using System;
+using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,14 +30,14 @@ namespace Raven.Server.Documents.Handlers
             await DatabaseConfigurations((_, databaseName, blittableJson, guid) =>
                 {
                     pullReplication = JsonDeserializationClient.PullReplicationDefinition(blittableJson);
-                    
+
                     pullReplication.Validate(ServerStore.Server.Certificate?.Certificate != null);
                     var updatePullReplication = new UpdatePullReplicationAsHubCommand(databaseName, guid)
                     {
                         Definition = pullReplication
                     };
                     return ServerStore.SendToLeaderAsync(updatePullReplication);
-                }, "update-hub-pull-replication", 
+                }, "update-hub-pull-replication",
                 GetRaftRequestIdFromQuery(),
                 fillJson: (json, _, index) =>
                 {
@@ -62,8 +62,9 @@ namespace Raven.Server.Documents.Handlers
                     fillJson: (json, _, index) =>
                     {
                         using (context.OpenReadTransaction())
+                        using (var databaseRecord = ServerStore.Cluster.ReadDatabaseRecord(context, Database.Name))
                         {
-                            var topology = ServerStore.Cluster.ReadDatabaseTopology(context, Database.Name);
+                            var topology = databaseRecord.GetTopology();
                             json[nameof(OngoingTask.ResponsibleNode)] = Database.WhoseTaskIsIt(topology, pullReplication, null);
                         }
 
@@ -72,7 +73,7 @@ namespace Raven.Server.Documents.Handlers
             }
         }
 
-        [RavenAction("/databases/*/admin/pull-replication/generate-certificate", "POST", AuthorizationStatus.Operator, DisableOnCpuCreditsExhaustion =true)]
+        [RavenAction("/databases/*/admin/pull-replication/generate-certificate", "POST", AuthorizationStatus.Operator, DisableOnCpuCreditsExhaustion = true)]
         public Task GeneratePullReplicationCertificate()
         {
             if (ServerStore.Server.Certificate?.Certificate == null)
@@ -114,7 +115,7 @@ namespace Raven.Server.Documents.Handlers
 
                 writer.WriteEndObject();
             }
-            
+
             return Task.CompletedTask;
         }
 

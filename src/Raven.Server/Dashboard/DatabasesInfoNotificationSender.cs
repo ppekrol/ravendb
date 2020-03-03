@@ -323,7 +323,7 @@ namespace Raven.Server.Dashboard
             DrivesUsage existingDrivesUsage,
             bool disabled)
         {
-            using (var rawRecord = serverStore.Cluster.ReadRawDatabaseRecord(context, databaseName))
+            using (var rawRecord = serverStore.Cluster.ReadDatabaseRecord(context, databaseName))
             {
                 if (rawRecord == null)
                 {
@@ -346,14 +346,14 @@ namespace Raven.Server.Dashboard
                 if (irrelevant == false)
                 {
                     // nothing to fetch if irrelevant on this node
-                    UpdateDatabaseInfo(rawRecord.GetRecord(), serverStore, databaseName, existingDrivesUsage, databaseInfoItem);
+                    UpdateDatabaseInfo(rawRecord, serverStore, databaseName, existingDrivesUsage, databaseInfoItem);
                 }
 
                 existingDatabasesInfo.Items.Add(databaseInfoItem);
             }
         }
 
-        private static void UpdateDatabaseInfo(BlittableJsonReaderObject databaseRecord, ServerStore serverStore, string databaseName, DrivesUsage existingDrivesUsage,
+        private static void UpdateDatabaseInfo(RawDatabaseRecord databaseRecord, ServerStore serverStore, string databaseName, DrivesUsage existingDrivesUsage,
             DatabaseInfoItem databaseInfoItem)
         {
             DatabaseInfo databaseInfo = null;
@@ -362,9 +362,8 @@ namespace Raven.Server.Dashboard
                 return;
 
             Debug.Assert(databaseInfo != null);
-            var databaseTopology = serverStore.Cluster.ReadDatabaseTopology(databaseRecord);
-            databaseRecord.TryGet(nameof(DatabaseRecord.Indexes), out BlittableJsonReaderObject indexes);
-            var indexesCount = indexes?.Count ?? 0;
+            var databaseTopology = databaseRecord.GetTopology();
+            var indexesCount = databaseRecord.GetIndexesCount();
 
             databaseInfoItem.DocumentsCount = databaseInfo.DocumentsCount ?? 0;
             databaseInfoItem.IndexesCount = databaseInfo.IndexesCount ?? indexesCount;

@@ -1071,7 +1071,7 @@ namespace Raven.Server.ServerWide
                 DatabaseTopology topology;
                 using (ContextPool.AllocateOperationContext(out TransactionOperationContext ctx))
                 using (ctx.OpenReadTransaction())
-                using (var rawRecord = Cluster.ReadRawDatabaseRecord(ctx, db))
+                using (var rawRecord = Cluster.ReadDatabaseRecord(ctx, db))
                 {
                     topology = rawRecord.GetTopology();
                     backupConfig = rawRecord.GetPeriodicBackupConfiguration(taskId);
@@ -1496,7 +1496,7 @@ namespace Raven.Server.ServerWide
             if (overwrite == false && tree.Read(name) != null)
                 throw new InvalidOperationException($"Attempt to overwrite secret key {name}, which isn\'t permitted (you\'ll lose access to the encrypted db).");
 
-            using (var rawRecord = Cluster.ReadRawDatabaseRecord(context, name))
+            using (var rawRecord = Cluster.ReadDatabaseRecord(context, name))
             {
                 if (rawRecord != null && rawRecord.IsEncrypted() == false)
                     throw new InvalidOperationException($"Cannot modify key {name} where there is an existing database that is not encrypted");
@@ -1538,7 +1538,7 @@ namespace Raven.Server.ServerWide
         {
             Debug.Assert(context.Transaction != null);
 
-            using (var rawRecord = Cluster.ReadRawDatabaseRecord(context, name))
+            using (var rawRecord = Cluster.ReadDatabaseRecord(context, name))
             {
                 if (CanDeleteSecretKey() == false)
                 {
@@ -1731,7 +1731,7 @@ namespace Raven.Server.ServerWide
 
             using (ContextPool.AllocateOperationContext(out TransactionOperationContext ctx))
             using (ctx.OpenReadTransaction())
-            using (var rawRecord = Cluster.ReadRawDatabaseRecord(ctx, databaseName))
+            using (var rawRecord = Cluster.ReadDatabaseRecord(ctx, databaseName))
             {
                 switch (EtlConfiguration<ConnectionString>.GetEtlType(etlConfiguration))
                 {
@@ -1869,7 +1869,7 @@ namespace Raven.Server.ServerWide
             UpdateDatabaseCommand command;
             using (ContextPool.AllocateOperationContext(out TransactionOperationContext ctx))
             using (ctx.OpenReadTransaction())
-            using (var rawRecord = Cluster.ReadRawDatabaseRecord(ctx, databaseName))
+            using (var rawRecord = Cluster.ReadDatabaseRecord(ctx, databaseName))
             {
                 switch (connectionStringType)
                 {

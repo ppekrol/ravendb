@@ -315,7 +315,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             {
                 foreach (var databaseName in ServerStore.Cluster.GetDatabaseNames(transactionOperationContext))
                 {
-                    using (var rawRecord = ServerStore.Cluster.ReadRawDatabaseRecord(transactionOperationContext, databaseName))
+                    using (var rawRecord = ServerStore.Cluster.ReadDatabaseRecord(transactionOperationContext, databaseName))
                     {
                         if (rawRecord == null ||
                             rawRecord.GetTopology().RelevantFor(ServerStore.NodeTag) == false ||
@@ -379,7 +379,10 @@ namespace Raven.Server.Documents.Handlers.Debugging
             var clusterTopology = ServerStore.GetClusterTopology(transactionOperationContext);
             foreach (var databaseName in databaseNames)
             {
-                var topology = ServerStore.Cluster.ReadDatabaseTopology(transactionOperationContext, databaseName);
+                DatabaseTopology topology;
+                using (var databaseRecord = ServerStore.Cluster.ReadDatabaseRecord(transactionOperationContext, databaseName))
+                    topology = databaseRecord.GetTopology();
+
                 var nodeUrlsAndTags = topology.AllNodes.Select(tag => (clusterTopology.GetUrlFromTag(tag), tag));
                 foreach (var urlAndTag in nodeUrlsAndTags)
                 {

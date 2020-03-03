@@ -16,10 +16,10 @@ using Raven.Client.Exceptions;
 using Raven.Client.Exceptions.Database;
 using Raven.Client.Exceptions.Documents.Subscriptions;
 using Raven.Client.Http;
-using Raven.Client.Util;
 using Raven.Client.Json.Converters;
 using Raven.Client.ServerWide;
 using Raven.Client.ServerWide.Operations;
+using Raven.Client.Util;
 using Raven.Server.Config.Settings;
 using Raven.Server.Documents;
 using Raven.Server.Documents.ETL;
@@ -58,40 +58,32 @@ namespace Raven.Server.Web.System
             var ongoingTasksResult = new OngoingTasksResult();
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
-                DatabaseTopology dbTopology;
-                ClusterTopology clusterTopology;
-                DatabaseRecord databaseRecord;
-
                 using (context.OpenReadTransaction())
+                using (var databaseRecord = ServerStore.Cluster.ReadDatabaseRecord(context, Database.Name))
                 {
-                    databaseRecord = ServerStore.Cluster.ReadDatabase(context, Database.Name);
-
                     if (databaseRecord == null)
-                    {
                         return ongoingTasksResult;
+
+                    var topology = databaseRecord.GetTopology();
+                    var clusterTopology = ServerStore.GetClusterTopology(context);
+                    ongoingTasksResult.OngoingTasksList.AddRange(CollectSubscriptionTasks(context, databaseRecord, clusterTopology));
+
+                    foreach (var tasks in new[]
+                    {
+                        CollectPullReplicationAsHubTasks(clusterTopology),
+                        CollectPullReplicationAsSinkTasks(databaseRecord.GetSinkPullReplications(), topology, clusterTopology, databaseRecord.GetRavenConnectionStrings()),
+                        CollectExternalReplicationTasks(databaseRecord.GetExternalReplications(), topology, clusterTopology, databaseRecord.GetRavenConnectionStrings()),
+                        CollectEtlTasks(databaseRecord, topology, clusterTopology),
+                        CollectBackupTasks(databaseRecord, topology, clusterTopology)
+                    })
+                    {
+                        ongoingTasksResult.OngoingTasksList.AddRange(tasks);
                     }
 
-                    dbTopology = databaseRecord.Topology;
-                    clusterTopology = ServerStore.GetClusterTopology(context);
-                    ongoingTasksResult.OngoingTasksList.AddRange(CollectSubscriptionTasks(context, databaseRecord, clusterTopology));
+                    ongoingTasksResult.SubscriptionsCount = (int)Database.SubscriptionStorage.GetAllSubscriptionsCount();
+
+                    ongoingTasksResult.PullReplications = databaseRecord.GetHubPullReplications();
                 }
-
-                foreach (var tasks in new[]
-                {
-                    CollectPullReplicationAsHubTasks(clusterTopology),
-                    CollectPullReplicationAsSinkTasks(databaseRecord.SinkPullReplications, dbTopology, clusterTopology, databaseRecord.RavenConnectionStrings),
-                    CollectExternalReplicationTasks(databaseRecord.ExternalReplications, dbTopology, clusterTopology, databaseRecord.RavenConnectionStrings),
-                    CollectEtlTasks(databaseRecord, dbTopology, clusterTopology),
-                    CollectBackupTasks(databaseRecord, dbTopology, clusterTopology)
-                })
-                {
-                    ongoingTasksResult.OngoingTasksList.AddRange(tasks);
-                }
-
-                ongoingTasksResult.SubscriptionsCount = (int)Database.SubscriptionStorage.GetAllSubscriptionsCount();
-
-                ongoingTasksResult.PullReplications = databaseRecord.HubPullReplications.ToList();
-
                 return ongoingTasksResult;
             }
         }
@@ -109,10 +101,10 @@ namespace Raven.Server.Web.System
         }
 
         private OngoingTaskPullReplicationAsSink GetSinkTaskInfo(
-            DatabaseTopology dbTopology, 
-            ClusterTopology clusterTopology, 
+            DatabaseTopology dbTopology,
+            ClusterTopology clusterTopology,
             Dictionary<string, RavenConnectionString> connectionStrings,
-            PullReplicationAsSink sinkReplication, 
+            PullReplicationAsSink sinkReplication,
             List<IncomingReplicationHandler> handlers)
         {
             var tag = Database.WhoseTaskIsIt(dbTopology, sinkReplication, null);
@@ -142,7 +134,7 @@ namespace Raven.Server.Web.System
             {
                 TaskId = sinkReplication.TaskId,
                 TaskName = sinkReplication.Name,
-                ResponsibleNode = new NodeId {NodeTag = tag, NodeUrl = clusterTopology.GetUrlFromTag(tag)},
+                ResponsibleNode = new NodeId { NodeTag = tag, NodeUrl = clusterTopology.GetUrlFromTag(tag) },
                 ConnectionStringName = sinkReplication.ConnectionStringName,
                 TaskState = sinkReplication.Disabled ? OngoingTaskState.Disabled : OngoingTaskState.Enabled,
                 DestinationDatabase = connection?.Database,
@@ -157,8 +149,8 @@ namespace Raven.Server.Web.System
             {
                 // fetch public key of certificate
                 var certBytes = Convert.FromBase64String(sinkReplication.CertificateWithPrivateKey);
-                var certificate = new X509Certificate2(certBytes, 
-                    sinkReplication.CertificatePassword, 
+                var certificate = new X509Certificate2(certBytes,
+                    sinkReplication.CertificatePassword,
                     X509KeyStorageFlags.Exportable | X509KeyStorageFlags.MachineKeySet);
 
                 sinkInfo.CertificatePublicKey = Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
@@ -189,7 +181,7 @@ namespace Raven.Server.Web.System
             {
                 TaskId = ex.TaskId,
                 TaskName = ex.Name,
-                ResponsibleNode = new NodeId {NodeTag = tag, NodeUrl = clusterTopology.GetUrlFromTag(tag)},
+                ResponsibleNode = new NodeId { NodeTag = tag, NodeUrl = clusterTopology.GetUrlFromTag(tag) },
                 TaskState = ex.Disabled ? OngoingTaskState.Disabled : OngoingTaskState.Enabled,
                 DestinationDatabase = ex.Database,
                 DestinationUrl = connectionResult.Url,
@@ -199,12 +191,12 @@ namespace Raven.Server.Web.System
             };
         }
 
-        private IEnumerable<OngoingTask> CollectSubscriptionTasks(TransactionOperationContext context, DatabaseRecord databaseRecord, ClusterTopology clusterTopology)
+        private IEnumerable<OngoingTask> CollectSubscriptionTasks(TransactionOperationContext context, RawDatabaseRecord databaseRecord, ClusterTopology clusterTopology)
         {
             foreach (var keyValue in ClusterStateMachine.ReadValuesStartingWith(context, SubscriptionState.SubscriptionPrefix(databaseRecord.DatabaseName)))
             {
                 var subscriptionState = JsonDeserializationClient.SubscriptionState(keyValue.Value);
-                var tag = Database.WhoseTaskIsIt(databaseRecord.Topology, subscriptionState, subscriptionState);
+                var tag = Database.WhoseTaskIsIt(databaseRecord.GetTopology(), subscriptionState, subscriptionState);
                 OngoingTaskConnectionStatus connectionStatus;
                 if (tag != ServerStore.NodeTag)
                 {
@@ -221,7 +213,7 @@ namespace Raven.Server.Web.System
 
                 yield return new OngoingTaskSubscription
                 {
-                    // Supply only needed fields for List View  
+                    // Supply only needed fields for List View
                     ResponsibleNode = new NodeId
                     {
                         NodeTag = tag,
@@ -264,7 +256,7 @@ namespace Raven.Server.Web.System
             {
                 res.Status = OngoingTaskConnectionStatus.NotOnThisNode;
             }
-            
+
             connectionStrings.TryGetValue(watcher.ConnectionStringName, out var connection);
 
             var taskInfo = new OngoingTaskReplication
@@ -482,7 +474,7 @@ namespace Raven.Server.Web.System
         }
 
         private IEnumerable<OngoingTask> CollectBackupTasks(
-            DatabaseRecord databaseRecord,
+            RawDatabaseRecord databaseRecord,
             DatabaseTopology dbTopology,
             ClusterTopology clusterTopology)
         {
@@ -503,7 +495,7 @@ namespace Raven.Server.Web.System
 
         private OngoingTaskBackup GetOngoingTaskBackup(
             long taskId,
-            DatabaseRecord databaseRecord,
+            RawDatabaseRecord databaseRecord,
             PeriodicBackupConfiguration backupConfiguration,
             ClusterTopology clusterTopology)
         {
@@ -592,13 +584,12 @@ namespace Raven.Server.Web.System
                 Dictionary<string, SqlConnectionString> sqlConnectionStrings;
 
                 using (context.OpenReadTransaction())
-                using (var rawRecord = ServerStore.Cluster.ReadRawDatabaseRecord(context, Database.Name))
+                using (var rawRecord = ServerStore.Cluster.ReadDatabaseRecord(context, Database.Name))
                 {
                     if (connectionStringName != null)
                     {
                         if (string.IsNullOrWhiteSpace(connectionStringName))
                             throw new ArgumentException($"connectionStringName {connectionStringName}' must have a non empty value");
-
 
                         if (Enum.TryParse<ConnectionStringType>(type, true, out var connectionStringType) == false)
                             throw new NotSupportedException($"Unknown connection string type: {connectionStringType}");
@@ -682,7 +673,7 @@ namespace Raven.Server.Web.System
 
             if (id == null)
             {
-                await DatabaseConfigurations((_, databaseName, etlConfiguration, guid) => ServerStore.AddEtl(_, databaseName, etlConfiguration, guid), "etl-add", 
+                await DatabaseConfigurations((_, databaseName, etlConfiguration, guid) => ServerStore.AddEtl(_, databaseName, etlConfiguration, guid), "etl-add",
                     GetRaftRequestIdFromQuery(), beforeSetupConfiguration: AssertCanAddOrUpdateEtl, fillJson: (json, _, index) => json[nameof(EtlConfiguration<ConnectionString>.TaskId)] = index);
 
                 return;
@@ -695,11 +686,9 @@ namespace Raven.Server.Web.System
                 var task = ServerStore.UpdateEtl(_, databaseName, id.Value, etlConfiguration, guid);
                 etlConfiguration.TryGet(nameof(RavenEtlConfiguration.Name), out etlConfigurationName);
                 return task;
-
-            }, "etl-update", 
+            }, "etl-update",
                 GetRaftRequestIdFromQuery(),
                 fillJson: (json, _, index) => json[nameof(EtlConfiguration<ConnectionString>.TaskId)] = index);
-
 
             // Reset scripts if needed
             var scriptsToReset = HttpContext.Request.Query["reset"];
@@ -730,7 +719,7 @@ namespace Raven.Server.Web.System
             }
         }
 
-        private IEnumerable<OngoingTask> CollectEtlTasks(DatabaseRecord databaseRecord, DatabaseTopology dbTopology, ClusterTopology clusterTopology)
+        private IEnumerable<OngoingTask> CollectEtlTasks(RawDatabaseRecord databaseRecord, DatabaseTopology dbTopology, ClusterTopology clusterTopology)
         {
             if (dbTopology == null)
                 yield break;
@@ -739,7 +728,6 @@ namespace Raven.Server.Web.System
             {
                 foreach (var ravenEtl in databaseRecord.RavenEtls)
                 {
-
                     var taskState = GetEtlTaskState(ravenEtl);
 
                     databaseRecord.RavenConnectionStrings.TryGetValue(ravenEtl.ConnectionStringName, out var connection);
@@ -809,7 +797,7 @@ namespace Raven.Server.Web.System
             }
         }
 
-        private OngoingTaskConnectionStatus GetEtlTaskConnectionStatus<T>(DatabaseRecord record, EtlConfiguration<T> config, out string tag, out string error)
+        private OngoingTaskConnectionStatus GetEtlTaskConnectionStatus<T>(RawDatabaseRecord record, EtlConfiguration<T> config, out string tag, out string error)
             where T : ConnectionString
         {
             var connectionStatus = OngoingTaskConnectionStatus.None;
@@ -832,7 +820,6 @@ namespace Raven.Server.Web.System
                     else
                         error = $"ETL process '{config.Name}' was not found.";
                 }
-
             }
             else
             {
@@ -862,13 +849,13 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
                 using (context.OpenReadTransaction())
+                using (var databaseRecord = ServerStore.Cluster.ReadDatabaseRecord(context, Database.Name))
                 {
                     var clusterTopology = ServerStore.GetClusterTopology(context);
-                    var record = ServerStore.Cluster.ReadDatabase(context, Database.Name);
-                    if (record == null)
+                    if (databaseRecord == null)
                         throw new DatabaseDoesNotExistException(Database.Name);
 
-                    var dbTopology = record.Topology;
+                    var dbTopology = databaseRecord.GetTopology();
 
                     if (Enum.TryParse<OngoingTaskType>(typeStr, true, out var type) == false)
                         throw new ArgumentException($"Unknown task type: {type}", "type");
@@ -876,42 +863,43 @@ namespace Raven.Server.Web.System
                     switch (type)
                     {
                         case OngoingTaskType.Replication:
-
-                            var watcher = name != null ?
-                                record.ExternalReplications.Find(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-                                : record.ExternalReplications.Find(x => x.TaskId == key);
+                            var externalReplications = databaseRecord.GetExternalReplications();
+                            var watcher = name != null
+                                ? externalReplications.Find(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                                : externalReplications.Find(x => x.TaskId == key);
 
                             if (watcher == null)
                             {
                                 HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                                 break;
                             }
-                            var taskInfo = GetExternalReplicationInfo(dbTopology, clusterTopology, watcher, record.RavenConnectionStrings);
+                            var taskInfo = GetExternalReplicationInfo(dbTopology, clusterTopology, watcher, databaseRecord.GetRavenConnectionStrings());
 
                             WriteResult(context, taskInfo);
 
                             break;
-                        
+
                         case OngoingTaskType.PullReplicationAsHub:
                             throw new BadRequestException("Getting task info for " + OngoingTaskType.PullReplicationAsHub + " is not supported");
 
                         case OngoingTaskType.PullReplicationAsSink:
-                            var edge = record.SinkPullReplications.Find(x => x.TaskId == key);
+                            var sinkPullReplications = databaseRecord.SinkPullReplications();
+                            var edge = sinkPullReplications.Find(x => x.TaskId == key);
                             if (edge == null)
                             {
                                 HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                                 break;
                             }
-                            var sinkTaskInfo = GetSinkTaskInfo(dbTopology, clusterTopology, record.RavenConnectionStrings, edge, Database.ReplicationLoader.IncomingHandlers.ToList());
+                            var sinkTaskInfo = GetSinkTaskInfo(dbTopology, clusterTopology, databaseRecord.GetRavenConnectionStrings(), edge, Database.ReplicationLoader.IncomingHandlers.ToList());
 
                             WriteResult(context, sinkTaskInfo);
                             break;
 
                         case OngoingTaskType.Backup:
-
-                            var backupConfiguration = name != null ?
-                                record.PeriodicBackups.Find(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-                                : record.PeriodicBackups?.Find(x => x.TaskId == key);
+                            var periodicBackups = databaseRecord.GetPeriodicBackupConfigurations();
+                            var backupConfiguration = name != null
+                                ? periodicBackups.Find(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                                : periodicBackups?.Find(x => x.TaskId == key);
 
                             if (backupConfiguration == null)
                             {
@@ -919,16 +907,16 @@ namespace Raven.Server.Web.System
                                 break;
                             }
 
-                            var backupTaskInfo = GetOngoingTaskBackup(key, record, backupConfiguration, clusterTopology);
+                            var backupTaskInfo = GetOngoingTaskBackup(key, databaseRecord, backupConfiguration, clusterTopology);
 
                             WriteResult(context, backupTaskInfo);
                             break;
 
                         case OngoingTaskType.SqlEtl:
-
-                            var sqlEtl = name != null ?
-                                record.SqlEtls.Find(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-                                : record.SqlEtls?.Find(x => x.TaskId == key);
+                            var sqlEtls = databaseRecord.GetSqlEtls();
+                            var sqlEtl = name != null
+                                ? sqlEtls.Find(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                                : sqlEtls?.Find(x => x.TaskId == key);
 
                             if (sqlEtl == null)
                             {
@@ -1026,7 +1014,7 @@ namespace Raven.Server.Web.System
 
                             WriteResult(context, subscriptionStateInfo);
                             break;
-                       
+
                         default:
                             HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                             break;
@@ -1036,7 +1024,7 @@ namespace Raven.Server.Web.System
 
             return Task.CompletedTask;
         }
-        
+
         [RavenAction("/databases/*/tasks/pull-replication/hub", "GET", AuthorizationStatus.ValidUser)]
         public Task GetHubTasksInfo()
         {
@@ -1051,7 +1039,7 @@ namespace Raven.Server.Web.System
                 {
                     var clusterTopology = ServerStore.GetClusterTopology(context);
                     List<PullReplicationDefinition> hubPullReplications;
-                    using (var rawRecord = ServerStore.Cluster.ReadRawDatabaseRecord(context, Database.Name))
+                    using (var rawRecord = ServerStore.Cluster.ReadDatabaseRecord(context, Database.Name))
                     {
                         if (rawRecord == null)
                             throw new DatabaseDoesNotExistException(Database.Name);
@@ -1068,7 +1056,7 @@ namespace Raven.Server.Web.System
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                         return Task.CompletedTask;
                     }
-                            
+
                     var currentHandlers = Database.ReplicationLoader.OutgoingHandlers.Where(o => o.Destination is ExternalReplication ex && ex.TaskId == key)
                         .Select(x => GetPullReplicationAsHubTaskInfo(clusterTopology, x.Destination as ExternalReplication))
                         .ToList();
@@ -1078,7 +1066,7 @@ namespace Raven.Server.Web.System
                         Definition = hubReplicationDefinition,
                         OngoingTasks = currentHandlers
                     };
-                            
+
                     WriteResult(context, response.ToJson());
                 }
             }
@@ -1107,7 +1095,7 @@ namespace Raven.Server.Web.System
                 writer.Flush();
             }
         }
-        
+
         [RavenAction("/databases/*/subscription-tasks/state", "POST", AuthorizationStatus.ValidUser)]
         public async Task ToggleSubscriptionTaskState()
         {
@@ -1171,8 +1159,9 @@ namespace Raven.Server.Web.System
                     fillJson: (json, _, index) =>
                     {
                         using (context.OpenReadTransaction())
+                        using (var databaseRecord = ServerStore.Cluster.ReadDatabaseRecord(context, Database.Name))
                         {
-                            var topology = ServerStore.Cluster.ReadDatabaseTopology(context, Database.Name);
+                            var topology = databaseRecord.GetTopology();
                             var taskStatus = ReplicationLoader.GetExternalReplicationState(ServerStore, Database.Name, watcher.TaskId);
                             json[nameof(OngoingTask.ResponsibleNode)] = Database.WhoseTaskIsIt(topology, watcher, taskStatus);
                         }
@@ -1270,7 +1259,7 @@ namespace Raven.Server.Web.System
                     case OngoingTaskType.RavenEtl:
                     case OngoingTaskType.SqlEtl:
                         using (context.Transaction == null ? context.OpenReadTransaction() : null)
-                        using (var rawRecord = _serverStore.Cluster.ReadRawDatabaseRecord(context, database.Name))
+                        using (var rawRecord = _serverStore.Cluster.ReadDatabaseRecord(context, database.Name))
                         {
                             if (rawRecord == null)
                                 break;
@@ -1313,7 +1302,7 @@ namespace Raven.Server.Web.System
     {
         public List<OngoingTask> OngoingTasksList { get; set; }
         public int SubscriptionsCount { get; set; }
-        
+
         public List<PullReplicationDefinition> PullReplications { get; set; }
 
         public OngoingTasksResult()

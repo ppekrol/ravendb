@@ -326,7 +326,7 @@ namespace Raven.Server.Smuggler.Migration
         {
             using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
-            using (var rawRecord = _serverStore.Cluster.ReadRawDatabaseRecord(context, databaseName))
+            using (var rawRecord = _serverStore.Cluster.ReadDatabaseRecord(context, databaseName))
             {
                 if (rawRecord != null)
                 {

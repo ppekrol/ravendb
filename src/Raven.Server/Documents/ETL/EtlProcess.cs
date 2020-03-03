@@ -906,7 +906,7 @@ namespace Raven.Server.Documents.ETL
                         Dictionary<string, SqlConnectionString> sqlConnectionStrings;
                         using (serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext ctx))
                         using (ctx.OpenReadTransaction())
-                        using (var rawRecord = serverStore.Cluster.ReadRawDatabaseRecord(ctx, database.Name))
+                        using (var rawRecord = serverStore.Cluster.ReadDatabaseRecord(ctx, database.Name))
                         {
                             sqlConnectionStrings = rawRecord.GetSqlConnectionStrings();
                             if (sqlConnectionStrings == null)

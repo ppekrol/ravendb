@@ -48,7 +48,7 @@ namespace Raven.Server.Monitoring.Snmp.Objects.Database
 
         private static DateTime? GetLastBackup(TransactionOperationContext context, ServerStore serverStore, string databaseName)
         {
-            using (var databaseRecord = serverStore.Cluster.ReadRawDatabaseRecord(context, databaseName, out _))
+            using (var databaseRecord = serverStore.Cluster.ReadDatabaseRecord(context, databaseName, out _))
             {
                 if (databaseRecord == null)
                     return null; // should not happen

@@ -112,7 +112,7 @@ namespace Raven.Server.Documents.Handlers
             List<IndexHistoryEntry> history;
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext ctx))
             using (ctx.OpenReadTransaction())
-            using (var rawRecord = ServerStore.Cluster.ReadRawDatabaseRecord(ctx, Database.Name))
+            using (var rawRecord = ServerStore.Cluster.ReadDatabaseRecord(ctx, Database.Name))
             {
                 var indexesHistory = rawRecord.GetIndexesHistory();
                 if (indexesHistory.TryGetValue(name, out history) == false)

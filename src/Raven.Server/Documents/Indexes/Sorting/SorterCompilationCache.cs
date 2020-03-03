@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using Raven.Client.Documents.Queries.Sorting;
 using Raven.Client.Exceptions.Documents.Sorters;
 using Raven.Client.ServerWide;
+using Raven.Server.ServerWide;
 using Raven.Server.Utils;
 
 namespace Raven.Server.Documents.Indexes.Sorting
@@ -36,7 +37,7 @@ namespace Raven.Server.Documents.Indexes.Sorting
             AddSorterInternal(definition.Name, definition.Code, databaseName);
         }
 
-        public static void AddSorters(DatabaseRecord databaseRecord)
+        public static void AddSorters(RawDatabaseRecord databaseRecord)
         {
             foreach (var kvp in SortersPerDatabaseCache)
             {

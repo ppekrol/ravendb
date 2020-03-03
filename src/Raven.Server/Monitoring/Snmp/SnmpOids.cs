@@ -397,7 +397,7 @@ namespace Raven.Server.Monitoring.Snmp
 
                 foreach (var kvp in mapping)
                 {
-                    using (var record = serverStore.Cluster.ReadRawDatabaseRecord(context, kvp.Key))
+                    using (var record = serverStore.Cluster.ReadDatabaseRecord(context, kvp.Key))
                     {
                         if (record == null)
                             continue;

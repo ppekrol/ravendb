@@ -29,8 +29,6 @@ namespace Raven.Server.Documents.ETL
         private EtlProcess[] _processes = new EtlProcess[0];
         private readonly HashSet<string> _uniqueConfigurationNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase); // read and modified under a lock.
 
-        private DatabaseRecord _databaseRecord;
-
         private readonly object _loadProcessedLock = new object();
         private readonly DocumentDatabase _database;
         private readonly ServerStore _serverStore;
@@ -80,16 +78,15 @@ namespace Raven.Server.Documents.ETL
             ProcessRemoved?.Invoke(process);
         }
 
-        private void LoadProcesses(DatabaseRecord record,
+        private void LoadProcesses(RawDatabaseRecord record,
             List<RavenEtlConfiguration> newRavenDestinations,
             List<SqlEtlConfiguration> newSqlDestinations,
             List<EtlProcess> toRemove)
         {
             lock (_loadProcessedLock)
             {
-                _databaseRecord = record;
-                RavenDestinations = _databaseRecord.RavenEtls;
-                SqlDestinations = _databaseRecord.SqlEtls;
+                RavenDestinations = record.GetRavenEtls();
+                SqlDestinations = record.GetSqlEtls();
 
                 var processes = new List<EtlProcess>(_processes);
 
@@ -358,19 +355,19 @@ namespace Raven.Server.Documents.ETL
             ea.ThrowIfNeeded();
         }
 
-        private bool IsMyEtlTask<T, TConnectionString>(DatabaseRecord record, T etlTask, ref Dictionary<string, string> responsibleNodes)
+        private bool IsMyEtlTask<T, TConnectionString>(RawDatabaseRecord record, T etlTask, ref Dictionary<string, string> responsibleNodes)
             where TConnectionString : ConnectionString
             where T : EtlConfiguration<TConnectionString>
         {
             var processState = GetProcessState(etlTask.Transforms, _database, etlTask.Name);
-            var whoseTaskIsIt = _database.WhoseTaskIsIt(record.Topology, etlTask, processState);
+            var whoseTaskIsIt = _database.WhoseTaskIsIt(record.GetTopology(), etlTask, processState);
 
             responsibleNodes[etlTask.Name] = whoseTaskIsIt;
 
             return whoseTaskIsIt == _serverStore.NodeTag;
         }
 
-        public void HandleDatabaseRecordChange(DatabaseRecord record)
+        public void HandleDatabaseRecordChange(RawDatabaseRecord record)
         {
             if (record == null)
                 return;
@@ -380,7 +377,7 @@ namespace Raven.Server.Documents.ETL
 
             var responsibleNodes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var config in record.RavenEtls)
+            foreach (var config in record.GetRavenEtls())
             {
                 if (IsMyEtlTask<RavenEtlConfiguration, RavenConnectionString>(record, config, ref responsibleNodes))
                 {
@@ -388,7 +385,7 @@ namespace Raven.Server.Documents.ETL
                 }
             }
 
-            foreach (var config in record.SqlEtls)
+            foreach (var config in record.GetSqlEtls())
             {
                 if (IsMyEtlTask<SqlEtlConfiguration, SqlConnectionString>(record, config, ref responsibleNodes))
                 {
@@ -537,14 +534,14 @@ namespace Raven.Server.Documents.ETL
             return reason;
         }
 
-        public void HandleDatabaseValueChanged(DatabaseRecord record)
+        public void HandleDatabaseValueChanged(RawDatabaseRecord record)
         {
             using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
             {
                 foreach (var process in _processes)
                 {
-                    var state = _serverStore.Cluster.Read(context, EtlProcessState.GenerateItemName(record.DatabaseName, process.ConfigurationName, process.TransformationName));
+                    var state = _serverStore.Cluster.Read(context, EtlProcessState.GenerateItemName(record.GetDatabaseName(), process.ConfigurationName, process.TransformationName));
 
                     if (state == null)
                     {

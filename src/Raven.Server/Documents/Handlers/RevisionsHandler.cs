@@ -32,7 +32,7 @@ namespace Raven.Server.Documents.Handlers
             using (context.OpenReadTransaction())
             {
                 RevisionsConfiguration revisionsConfig;
-                using (var rawRecord = Server.ServerStore.Cluster.ReadRawDatabaseRecord(context, Database.Name))
+                using (var rawRecord = Server.ServerStore.Cluster.ReadDatabaseRecord(context, Database.Name))
                 {
                     revisionsConfig = rawRecord?.GetRevisionsConfiguration();
                 }

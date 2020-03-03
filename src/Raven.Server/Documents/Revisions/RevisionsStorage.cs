@@ -181,14 +181,14 @@ namespace Raven.Server.Documents.Revisions
             }
         }
 
-        public void InitializeFromDatabaseRecord(DatabaseRecord dbRecord)
+        public void InitializeFromDatabaseRecord(RawDatabaseRecord record)
         {
             try
             {
-                if (dbRecord.RevisionsForConflicts != null)
-                    ConflictConfiguration.Default = dbRecord.RevisionsForConflicts;
+                if (record.RevisionsForConflicts != null)
+                    ConflictConfiguration.Default = record.RevisionsForConflicts;
 
-                var revisions = dbRecord.Revisions;
+                var revisions = record.Revisions;
                 if (revisions == null ||
                     (revisions.Default == null && revisions.Collections.Count == 0))
                 {

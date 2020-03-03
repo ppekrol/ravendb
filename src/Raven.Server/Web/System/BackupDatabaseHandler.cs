@@ -24,7 +24,7 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
             using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
-            using (var rawRecord = ServerStore.Cluster.ReadRawDatabaseRecord(context, name))
+            using (var rawRecord = ServerStore.Cluster.ReadDatabaseRecord(context, name))
             {
                 var periodicBackup = rawRecord.GetPeriodicBackupConfiguration(taskId);
                 if (periodicBackup == null)

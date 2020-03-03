@@ -43,10 +43,10 @@ namespace Raven.Server.ServerWide.Commands.ETL
             return EtlProcessState.GenerateItemName(DatabaseName, ConfigurationName, TransformationName);
         }
 
-        private IDatabaseTask GetMatchingConfiguration(DatabaseRecord record)
+        private IDatabaseTask GetMatchingConfiguration(RawDatabaseRecord record)
         {
             var taskName = GetItemId();
-            for (var i=0; i< record.RavenEtls.Count; i++)
+            for (var i = 0; i < record.RavenEtls.Count; i++)
             {
                 if (record.RavenEtls[i].Name == ConfigurationName)
                 {
@@ -65,7 +65,7 @@ namespace Raven.Server.ServerWide.Commands.ETL
             return null;
         }
 
-        protected override BlittableJsonReaderObject GetUpdatedValue(long index, DatabaseRecord record, JsonOperationContext context, BlittableJsonReaderObject existingValue)
+        protected override BlittableJsonReaderObject GetUpdatedValue(long index, RawDatabaseRecord record, JsonOperationContext context, BlittableJsonReaderObject existingValue)
         {
             EtlProcessState etlState;
 
@@ -78,12 +78,10 @@ namespace Raven.Server.ServerWide.Commands.ETL
                 if (databaseTask == null)
                     throw new RachisApplyException($"Can't update progress of ETL {ConfigurationName} by node {NodeTag}, because it's configuration can't be found");
 
-
                 var lastResponsibleNode = GetLastResponsibleNode(HasHighlyAvailableTasks, record.Topology, NodeTag);
                 if (record.Topology.WhoseTaskIsIt(RachisState.Follower, databaseTask, lastResponsibleNode) != NodeTag)
                     throw new RachisApplyException($"Can't update progress of ETL {ConfigurationName} by node {NodeTag}, because it's not its task to update this ETL");
             }
-                
             else
             {
                 etlState = new EtlProcessState
@@ -91,7 +89,7 @@ namespace Raven.Server.ServerWide.Commands.ETL
                     ConfigurationName = ConfigurationName,
                     TransformationName = TransformationName
                 };
-            }            
+            }
 
             etlState.LastProcessedEtagPerNode[NodeTag] = LastProcessedEtag;
             etlState.ChangeVector = ChangeVector;

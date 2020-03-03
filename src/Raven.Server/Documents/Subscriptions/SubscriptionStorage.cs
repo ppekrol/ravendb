@@ -126,8 +126,11 @@ namespace Raven.Server.Documents.Subscriptions
 
         public string GetResponsibleNode(TransactionOperationContext serverContext, string name)
         {
+            DatabaseTopology topology;
             var subscription = GetSubscriptionFromServerStore(serverContext, name);
-            var topology = _serverStore.Cluster.ReadDatabaseTopology(serverContext, _db.Name);
+            using (var databaseRecord = _serverStore.Cluster.ReadDatabaseRecord(serverContext, _db.Name))
+                topology = databaseRecord.GetTopology();
+
             return _db.WhoseTaskIsIt(topology, subscription, subscription);
         }
 
@@ -135,14 +138,16 @@ namespace Raven.Server.Documents.Subscriptions
         {
             await _serverStore.WaitForCommitIndexChange(RachisConsensus.CommitIndexModification.GreaterOrEqual, id);
 
-            using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext serverStoreContext))
-            using (serverStoreContext.OpenReadTransaction())
+            using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext serverContext))
+            using (serverContext.OpenReadTransaction())
             {
-                var subscription = GetSubscriptionFromServerStore(serverStoreContext, name);
-                var topology = _serverStore.Cluster.ReadDatabaseTopology(serverStoreContext, _db.Name);
-                
+                DatabaseTopology topology;
+                var subscription = GetSubscriptionFromServerStore(serverContext, name);
+                using (var databaseRecord = _serverStore.Cluster.ReadDatabaseRecord(serverContext, _db.Name))
+                    topology = databaseRecord.GetTopology();
+
                 var whoseTaskIsIt = _db.WhoseTaskIsIt(topology, subscription, subscription);
-                
+
                 if (whoseTaskIsIt != _serverStore.NodeTag)
                 {
                     var databaseTopologyAvailabilityExplanation = new Dictionary<string, string>();
@@ -157,9 +162,9 @@ namespace Raven.Server.Documents.Subscriptions
                     {
                         generalState = currentState.ToString();
                     }
-                    databaseTopologyAvailabilityExplanation["NodeState"] = generalState;                    
+                    databaseTopologyAvailabilityExplanation["NodeState"] = generalState;
 
-                    FillNodesAvailabilityReportForState(subscription, topology, databaseTopologyAvailabilityExplanation, stateGroup:topology.Rehabs, stateName:"rehab");
+                    FillNodesAvailabilityReportForState(subscription, topology, databaseTopologyAvailabilityExplanation, stateGroup: topology.Rehabs, stateName: "rehab");
                     FillNodesAvailabilityReportForState(subscription, topology, databaseTopologyAvailabilityExplanation, stateGroup: topology.Promotables, stateName: "promotable");
 
                     //whoseTaskIsIt!= null && whoseTaskIsIt == subscription.MentorNode 
@@ -179,14 +184,14 @@ namespace Raven.Server.Documents.Subscriptions
                             {
                                 databaseTopologyAvailabilityExplanation[member] = "Is a valid member of the topology and is chosen to be running the subscription";
                             }
-                        }                        
+                        }
                         else
                         {
                             databaseTopologyAvailabilityExplanation[member] = "Is a valid member of the topology but was not chosen to run the subscription, we didn't find any other match either";
                         }
                     }
                     throw new SubscriptionDoesNotBelongToNodeException(
-                        $"Subscription with id {id} and name {name} can't be processed on current node ({_serverStore.NodeTag}), because it belongs to {whoseTaskIsIt}",                    
+                        $"Subscription with id {id} and name {name} can't be processed on current node ({_serverStore.NodeTag}), because it belongs to {whoseTaskIsIt}",
                         whoseTaskIsIt,
                         databaseTopologyAvailabilityExplanation);
                 }
@@ -469,7 +474,7 @@ namespace Raven.Server.Documents.Subscriptions
             }
         }
 
-        public void HandleDatabaseRecordChange(DatabaseRecord databaseRecord)
+        public void HandleDatabaseRecordChange(RawDatabaseRecord databaseRecord)
         {
             using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
@@ -480,7 +485,7 @@ namespace Raven.Server.Documents.Subscriptions
                     if (subscriptionName == null)
                         continue;
 
-                    var subscriptionBlittable = _serverStore.Cluster.Read(context, SubscriptionState.GenerateSubscriptionItemKeyName(databaseRecord.DatabaseName, subscriptionName));
+                    var subscriptionBlittable = _serverStore.Cluster.Read(context, SubscriptionState.GenerateSubscriptionItemKeyName(databaseRecord.GetDatabaseName(), subscriptionName));
                     if (subscriptionBlittable == null)
                     {
                         DropSubscriptionConnection(subscriptionStateKvp.Key, new SubscriptionDoesNotExistException($"The subscription {subscriptionName} had been deleted"));
@@ -501,7 +506,7 @@ namespace Raven.Server.Documents.Subscriptions
                         continue;
                     }
 
-                    var whoseTaskIsIt = _db.WhoseTaskIsIt(databaseRecord.Topology, subscriptionState, subscriptionState);
+                    var whoseTaskIsIt = _db.WhoseTaskIsIt(databaseRecord.GetTopology(), subscriptionState, subscriptionState);
                     if (whoseTaskIsIt != _serverStore.NodeTag)
                     {
                         DropSubscriptionConnection(subscriptionStateKvp.Key,

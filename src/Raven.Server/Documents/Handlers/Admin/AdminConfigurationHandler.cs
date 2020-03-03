@@ -5,6 +5,7 @@ using Raven.Client;
 using Raven.Client.ServerWide;
 using Raven.Server.Json;
 using Raven.Server.Routing;
+using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.Handlers.Admin
@@ -61,8 +62,9 @@ namespace Raven.Server.Documents.Handlers.Admin
                 throw new ArgumentNullException(nameof(action));
 
             using (context.OpenReadTransaction())
+            using (var databaseRecord = ServerStore.Cluster.ReadDatabaseRecord(context, Database.Name, out long index))
             {
-                var record = ServerStore.Cluster.ReadDatabase(context, Database.Name, out long index);
+                var record = databaseRecord.GetMaterializedRecord();
 
                 action(record);
 

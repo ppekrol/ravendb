@@ -13,6 +13,7 @@ using Raven.Client.Documents.Operations.Refresh;
 using Raven.Client.ServerWide;
 using Raven.Server.Background;
 using Raven.Server.NotificationCenter.Notifications;
+using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Json;
 using Sparrow.Logging;
@@ -43,11 +44,14 @@ namespace Raven.Server.Documents.Expiration
             _refreshPeriod = TimeSpan.FromSeconds(RefreshConfiguration?.RefreshFrequencyInSec ?? 60);
         }
 
-        public static ExpiredDocumentsCleaner LoadConfigurations(DocumentDatabase database, DatabaseRecord dbRecord, ExpiredDocumentsCleaner expiredDocumentsCleaner)
+        public static ExpiredDocumentsCleaner LoadConfigurations(DocumentDatabase database, RawDatabaseRecord databaseRecord, ExpiredDocumentsCleaner expiredDocumentsCleaner)
         {
             try
             {
-                if (dbRecord.Expiration == null && dbRecord.Refresh == null)
+                var expiration = databaseRecord.GetExpirationConfiguration();
+                var refresh = databaseRecord.GetRefreshConfiguration();
+
+                if (expiration == null && refresh == null)
                 {
                     expiredDocumentsCleaner?.Dispose();
                     return null;
@@ -56,20 +60,20 @@ namespace Raven.Server.Documents.Expiration
                 if (expiredDocumentsCleaner != null)
                 {
                     // no changes
-                    if (Equals(expiredDocumentsCleaner.ExpirationConfiguration, dbRecord.Expiration) &&
-                        Equals(expiredDocumentsCleaner.RefreshConfiguration, dbRecord.Refresh))
+                    if (Equals(expiredDocumentsCleaner.ExpirationConfiguration, expiration) &&
+                        Equals(expiredDocumentsCleaner.RefreshConfiguration, refresh))
                         return expiredDocumentsCleaner;
                 }
 
                 expiredDocumentsCleaner?.Dispose();
 
-                var hasExpiration = dbRecord.Expiration?.Disabled == false;
-                var hasRefresh = dbRecord.Refresh?.Disabled == false;
+                var hasExpiration = expiration?.Disabled == false;
+                var hasRefresh = refresh?.Disabled == false;
 
                 if (hasExpiration == false && hasRefresh == false)
                     return null;
 
-                var cleaner = new ExpiredDocumentsCleaner(database, dbRecord.Expiration, dbRecord.Refresh);
+                var cleaner = new ExpiredDocumentsCleaner(database, expiration, refresh);
                 cleaner.Start();
                 return cleaner;
             }
@@ -136,8 +140,9 @@ namespace Raven.Server.Documents.Expiration
                 DatabaseTopology topology;
                 using (_database.ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext serverContext))
                 using (serverContext.OpenReadTransaction())
+                using (var databaseRecord = _database.ServerStore.Cluster.ReadDatabaseRecord(serverContext, _database.Name))
                 {
-                    topology = _database.ServerStore.Cluster.ReadDatabaseTopology(serverContext, _database.Name);
+                    topology = databaseRecord.GetTopology();
                 }
 
                 var isFirstInTopology = string.Equals(topology.AllNodes.FirstOrDefault(), _database.ServerStore.NodeTag, StringComparison.OrdinalIgnoreCase);

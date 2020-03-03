@@ -82,7 +82,7 @@ namespace Raven.Server.Documents.Indexes
             StoppedConcurrentIndexBatches = new SemaphoreSlim(stoppedConcurrentIndexBatches);
         }
 
-        public void HandleDatabaseRecordChange(DatabaseRecord record, long raftIndex)
+        public void HandleDatabaseRecordChange(RawDatabaseRecord record, long raftIndex)
         {
             if (record == null)
                 return;
@@ -156,7 +156,7 @@ namespace Raven.Server.Documents.Indexes
                 : ProcessorInfo.ProcessorCount;
         }
 
-        private void HandleSorters(DatabaseRecord record, long index)
+        private void HandleSorters(RawDatabaseRecord record, long index)
         {
             try
             {
@@ -170,9 +170,9 @@ namespace Raven.Server.Documents.Indexes
             }
         }
 
-        private void HandleChangesForAutoIndexes(DatabaseRecord record, long index, List<Index> indexesToStart)
+        private void HandleChangesForAutoIndexes(RawDatabaseRecord record, long index, List<Index> indexesToStart)
         {
-            foreach (var kvp in record.AutoIndexes)
+            foreach (var kvp in record.GetAutoIndexes())
             {
                 _documentDatabase.DatabaseShutdown.ThrowIfCancellationRequested();
 
@@ -305,9 +305,9 @@ namespace Raven.Server.Documents.Indexes
             throw new NotSupportedException("Cannot create auto-index from " + definition.Type);
         }
 
-        private void HandleChangesForStaticIndexes(DatabaseRecord record, long index, List<Index> indexesToStart)
+        private void HandleChangesForStaticIndexes(RawDatabaseRecord record, long index, List<Index> indexesToStart)
         {
-            foreach (var kvp in record.Indexes)
+            foreach (var kvp in record.GetIndexes())
             {
                 _documentDatabase.DatabaseShutdown.ThrowIfCancellationRequested();
 
@@ -497,7 +497,7 @@ namespace Raven.Server.Documents.Indexes
             }
         }
 
-        private void HandleDeletes(DatabaseRecord record, long raftLogIndex)
+        private void HandleDeletes(RawDatabaseRecord record, long raftLogIndex)
         {
             foreach (var index in _indexes)
             {
@@ -508,7 +508,10 @@ namespace Raven.Server.Documents.Indexes
                 {
                     indexNormalizedName = indexNormalizedName.Remove(0, Constants.Documents.Indexing.SideBySideIndexNamePrefix.Length);
                 }
-                if (record.Indexes.ContainsKey(indexNormalizedName) || record.AutoIndexes.ContainsKey(indexNormalizedName))
+
+                var indexes = record.GetIndexes();
+                var autoIndexes = record.GetAutoIndexes();
+                if (indexes.ContainsKey(indexNormalizedName) || autoIndexes.ContainsKey(indexNormalizedName))
                     continue;
 
                 try
@@ -1413,7 +1416,7 @@ namespace Raven.Server.Documents.Indexes
             long etag;
             using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
-                _serverStore.Cluster.ReadRawDatabase(context, _documentDatabase.Name, out etag);
+                _serverStore.Cluster.ReadDatabaseRecord(context, _documentDatabase.Name, out etag);
 
             AsyncHelpers.RunSync(() => RunIdleOperationsAsync(etag));
         }

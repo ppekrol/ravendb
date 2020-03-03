@@ -95,7 +95,7 @@ namespace Raven.Server.Documents
                     DatabaseTopology topology;
                     using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
                     using (context.OpenReadTransaction())
-                    using (var rawRecord = _serverStore.Cluster.ReadRawDatabaseRecord(context, databaseName))
+                    using (var rawRecord = _serverStore.Cluster.ReadDatabaseRecord(context, databaseName))
                     {
                         if (rawRecord == null)
                         {
@@ -242,21 +242,23 @@ namespace Raven.Server.Documents
                         using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
                         using (context.OpenReadTransaction())
                         {
-                            var rawRecord = _serverStore.Cluster.ReadRawDatabase(context, databaseName, out _);
-
-                            // unload only if DB is still disabled
-                            if (IsDatabaseDisabled(rawRecord))
-                                UnloadDatabaseInternal(databaseName);
+                            using (var rawRecord = _serverStore.Cluster.ReadDatabaseRecord(context, databaseName))
+                            {
+                                // unload only if DB is still disabled
+                                if (IsDatabaseDisabled(rawRecord))
+                                    UnloadDatabaseInternal(databaseName);
+                            }
                         }
                     }
                 });
             }
         }
 
-        public static bool IsDatabaseDisabled(BlittableJsonReaderObject databaseRecordBlittable)
+        public static bool IsDatabaseDisabled(RawDatabaseRecord databaseRecord)
         {
-            var noDisabled = databaseRecordBlittable.TryGet(nameof(DatabaseRecord.Disabled), out bool disabled) == false;
-            var noDatabaseState = databaseRecordBlittable.TryGet(nameof(DatabaseRecord.DatabaseState), out DatabaseStateStatus dbState) == false;
+            var databaseRecordJson = databaseRecord.GetRecord();
+            var noDisabled = databaseRecordJson.TryGet(nameof(DatabaseRecord.Disabled), out bool disabled) == false;
+            var noDatabaseState = databaseRecordJson.TryGet(nameof(DatabaseRecord.DatabaseState), out DatabaseStateStatus dbState) == false;
 
             if (noDisabled && noDatabaseState)
                 return false;
@@ -682,7 +684,7 @@ namespace Raven.Server.Documents
 
                         using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
                         using (context.OpenReadTransaction())
-                        using (var rawRecord = _serverStore.Cluster.ReadRawDatabaseRecord(context, databaseName.Value))
+                        using (var rawRecord = _serverStore.Cluster.ReadDatabaseRecord(context, databaseName.Value))
                         {
                             if (rawRecord == null)
                                 return;

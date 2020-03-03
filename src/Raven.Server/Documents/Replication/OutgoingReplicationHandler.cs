@@ -168,7 +168,7 @@ namespace Raven.Server.Documents.Replication
             using (_parent._server.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
             {
-                using (var rawRecord = _parent._server.Cluster.ReadRawDatabaseRecord(context, _parent.Database.Name))
+                using (var rawRecord = _parent._server.Cluster.ReadDatabaseRecord(context, _parent.Database.Name))
                 {
                     if (rawRecord == null)
                         throw new InvalidOperationException($"The database record for {_parent.Database.Name} does not exist?!");

@@ -322,7 +322,7 @@ namespace Raven.Server.Documents.Indexes
 
                     using (documentDatabase.ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext ctx))
                     using (ctx.OpenReadTransaction())
-                    using (var rawRecord = documentDatabase.ServerStore.Cluster.ReadRawDatabaseRecord(ctx, documentDatabase.Name))
+                    using (var rawRecord = documentDatabase.ServerStore.Cluster.ReadDatabaseRecord(ctx, documentDatabase.Name))
                     {
                         tryFindIndexDefinition = TryFindIndexDefinition(name, rawRecord, out staticDef, out autoDef);
                     }

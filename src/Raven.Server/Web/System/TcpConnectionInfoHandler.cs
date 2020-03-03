@@ -47,12 +47,13 @@ namespace Raven.Server.Web.System
             List<string> nodes;
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
+            using (var databaseRecord = ServerStore.Cluster.ReadDatabaseRecord(context, database))
             {
-                var pullReplication = ServerStore.Cluster.ReadPullReplicationDefinition(database, remoteTask, context);
+                var pullReplication = ServerStore.Cluster.ReadPullReplicationDefinition(database, remoteTask, context); // TODO [ppekrol]
                 if (pullReplication.Disabled)
                     throw new InvalidOperationException($"The pull replication '{remoteTask}' is disabled.");
 
-                var topology = ServerStore.Cluster.ReadDatabaseTopology(context, database);
+                var topology = databaseRecord.GetTopology();
                 nodes = GetResponsibleNodes(topology, databaseGroupId, pullReplication);
             }
 
@@ -96,7 +97,7 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                var output = Server.ServerStore.GetTcpInfoAndCertificates(HttpContext.Request.GetClientRequestedNodeUrl(), forExternalUse:true);
+                var output = Server.ServerStore.GetTcpInfoAndCertificates(HttpContext.Request.GetClientRequestedNodeUrl(), forExternalUse: true);
                 context.Write(writer, output);
             }
         }

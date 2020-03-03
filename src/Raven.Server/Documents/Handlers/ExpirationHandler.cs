@@ -23,7 +23,7 @@ namespace Raven.Server.Documents.Handlers
             using (context.OpenReadTransaction())
             {
                 ExpirationConfiguration expirationConfig;
-                using (var recordRaw = Server.ServerStore.Cluster.ReadRawDatabaseRecord(context, Database.Name))
+                using (var recordRaw = Server.ServerStore.Cluster.ReadDatabaseRecord(context, Database.Name))
                 {
                     expirationConfig = recordRaw?.GetExpirationConfiguration();
                 }

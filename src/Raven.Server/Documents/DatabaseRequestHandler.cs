@@ -66,8 +66,9 @@ namespace Raven.Server.Documents
                 var (index, _) = await setupConfigurationFunc(context, Database.Name, configurationJson, raftRequestId);
                 DatabaseTopology dbTopology;
                 using (context.OpenReadTransaction())
+                using (var databaseRecord = ServerStore.Cluster.ReadDatabaseRecord(context, Database.Name))
                 {
-                    dbTopology = ServerStore.Cluster.ReadDatabaseTopology(context, Database.Name);
+                    dbTopology = databaseRecord.GetTopology();
                 }
 
                 if (dbTopology.RelevantFor(ServerStore.NodeTag))

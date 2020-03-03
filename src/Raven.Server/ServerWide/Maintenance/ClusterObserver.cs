@@ -188,7 +188,7 @@ namespace Raven.Server.ServerWide.Maintenance
                     var clusterTopology = _server.GetClusterTopology(context);
                     foreach (var database in _engine.StateMachine.GetDatabaseNames(context))
                     {
-                        using (var rawRecord = _engine.StateMachine.ReadRawDatabaseRecord(context, database, out long etag))
+                        using (var rawRecord = _engine.StateMachine.ReadDatabaseRecord(context, database, out long etag))
                         {
                             if (rawRecord == null)
                             {
@@ -432,7 +432,7 @@ namespace Raven.Server.ServerWide.Maintenance
             List<long> periodicBackupTaskIds;
             var maxEtag = long.MaxValue;
 
-            using (var rawRecord = _server.Cluster.ReadRawDatabaseRecord(context, dbName))
+            using (var rawRecord = _server.Cluster.ReadDatabaseRecord(context, dbName))
             {
                 periodicBackupTaskIds = rawRecord.GetPeriodicBackupsTaskIds();
                 if (periodicBackupTaskIds == null || periodicBackupTaskIds.Count == 0)

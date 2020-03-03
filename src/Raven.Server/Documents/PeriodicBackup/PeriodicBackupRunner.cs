@@ -490,7 +490,7 @@ namespace Raven.Server.Documents.PeriodicBackup
 
                     periodicBackup.RunningBackupTaskId = operationId;
                     periodicBackup.CancelToken = backupTask.TaskCancelToken;
-                    var backupTaskName = $"{backupTypeText} backup task: '{periodicBackup.Configuration.Name}'. Database: '{_database.Name}'" ;
+                    var backupTaskName = $"{backupTypeText} backup task: '{periodicBackup.Configuration.Name}'. Database: '{_database.Name}'";
 
                     var task = _database.Operations.AddOperation(
                         null,
@@ -611,7 +611,7 @@ namespace Raven.Server.Documents.PeriodicBackup
             DatabaseTopology topology;
             using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
-            using (var rawRecord = _serverStore.Cluster.ReadRawDatabaseRecord(context, _database.Name))
+            using (var rawRecord = _serverStore.Cluster.ReadDatabaseRecord(context, _database.Name))
             {
                 if (rawRecord == null)
                     return false;
@@ -680,7 +680,7 @@ namespace Raven.Server.Documents.PeriodicBackup
             using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
             {
-                var record = _serverStore.Cluster.ReadRawDatabaseRecord(context, _database.Name);
+                var record = _serverStore.Cluster.ReadDatabaseRecord(context, _database.Name);
                 foreach (var taskId in record.GetPeriodicBackupsTaskIds())
                 {
                     var config = record.GetPeriodicBackupConfiguration(taskId);
@@ -696,12 +696,14 @@ namespace Raven.Server.Documents.PeriodicBackup
             }
         }
 
-        public void UpdateConfigurations(DatabaseRecord databaseRecord)
+        public void UpdateConfigurations(RawDatabaseRecord databaseRecord)
         {
             if (_disposed)
                 return;
 
-            if (databaseRecord.PeriodicBackups == null)
+            var periodicBackups = databaseRecord.GetPeriodicBackupConfigurations();
+
+            if (periodicBackups == null)
             {
                 foreach (var periodicBackup in _periodicBackups)
                 {
@@ -712,12 +714,12 @@ namespace Raven.Server.Documents.PeriodicBackup
             }
 
             var allBackupTaskIds = new List<long>();
-            foreach (var periodicBackupConfiguration in databaseRecord.PeriodicBackups)
+            foreach (var periodicBackupConfiguration in periodicBackups)
             {
                 var newBackupTaskId = periodicBackupConfiguration.TaskId;
                 allBackupTaskIds.Add(newBackupTaskId);
 
-                var taskState = GetTaskStatus(databaseRecord.Topology, periodicBackupConfiguration);
+                var taskState = GetTaskStatus(databaseRecord.GetTopology(), periodicBackupConfiguration);
 
                 UpdatePeriodicBackup(newBackupTaskId, periodicBackupConfiguration, taskState);
             }
