@@ -71,7 +71,7 @@ namespace Raven.Server.Documents.Replication
             TcpConnectionOptions options,
             ReplicationLatestEtagRequest replicatedLastEtag,
             ReplicationLoader parent,
-            JsonOperationContext.ManagedPinnedBuffer bufferToCopy,
+            JsonOperationContext.MemoryBuffer bufferToCopy,
             string pullReplicationName)
         {
             _disposeOnce = new DisposeOnce<SingleAttempt>(DisposeInternal);
@@ -437,9 +437,7 @@ namespace Raven.Server.Documents.Replication
                 var available = _copiedBuffer.Buffer.Valid - _copiedBuffer.Buffer.Used;
                 if (available == 0)
                 {
-                    var read = _connectionOptions.Stream.Read(_copiedBuffer.Buffer.Buffer.Array,
-                      _copiedBuffer.Buffer.Buffer.Offset,
-                      _copiedBuffer.Buffer.Buffer.Count);
+                    var read = _connectionOptions.Stream.Read(_copiedBuffer.Buffer.Memory.Span);
                     if (read == 0)
                         throw new EndOfStreamException();
 
@@ -448,9 +446,7 @@ namespace Raven.Server.Documents.Replication
                     continue;
                 }
                 var min = (int)Math.Min(size, available);
-                file.Write(_copiedBuffer.Buffer.Buffer.Array,
-                    _copiedBuffer.Buffer.Buffer.Offset + _copiedBuffer.Buffer.Used,
-                    min);
+                file.Write(_copiedBuffer.Buffer.Memory.Slice(_copiedBuffer.Buffer.Used, min).Span);
                 _copiedBuffer.Buffer.Used += min;
                 size -= min;
             }
@@ -465,9 +461,7 @@ namespace Raven.Server.Documents.Replication
                 var available = _copiedBuffer.Buffer.Valid - _copiedBuffer.Buffer.Used;
                 if (available == 0)
                 {
-                    var read = _connectionOptions.Stream.Read(_copiedBuffer.Buffer.Buffer.Array,
-                      _copiedBuffer.Buffer.Buffer.Offset,
-                      _copiedBuffer.Buffer.Buffer.Count);
+                    var read = _connectionOptions.Stream.Read(_copiedBuffer.Buffer.Memory.Span);
                     if (read == 0)
                         throw new EndOfStreamException();
 
@@ -507,9 +501,7 @@ namespace Raven.Server.Documents.Replication
             _copiedBuffer.Buffer.Used = 0;
             while (diff < size)
             {
-                var read = _connectionOptions.Stream.Read(_copiedBuffer.Buffer.Buffer.Array,
-                    _copiedBuffer.Buffer.Buffer.Offset + diff,
-                    _copiedBuffer.Buffer.Buffer.Count - diff);
+                var read = _connectionOptions.Stream.Read(_copiedBuffer.Buffer.Memory.Span.Slice(diff));
                 if (read == 0)
                     throw new EndOfStreamException();
 
@@ -727,7 +719,7 @@ namespace Raven.Server.Documents.Replication
         private readonly TcpConnectionOptions _connectionOptions;
         private readonly ConflictManager _conflictManager;
         private IDisposable _connectionOptionsDisposable;
-        private (IDisposable ReleaseBuffer, JsonOperationContext.ManagedPinnedBuffer Buffer) _copiedBuffer;
+        private (IDisposable ReleaseBuffer, JsonOperationContext.MemoryBuffer Buffer) _copiedBuffer;
         public TcpConnectionHeaderMessage.SupportedFeatures SupportedFeatures { get; set; }
 
         public struct ReplicationItem : IDisposable
@@ -1517,9 +1509,9 @@ namespace Raven.Server.Documents.Replication
                     foreach (BlittableJsonReaderObject attachment in attachments)
                     {
                         yield return attachment;
-                        }
                     }
                 }
+            }
 
             public override TransactionOperationsMerger.IReplayableCommandDto<TransactionOperationsMerger.MergedTransactionCommand> ToDto(JsonOperationContext context)
             {

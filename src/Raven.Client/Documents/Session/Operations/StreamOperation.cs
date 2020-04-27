@@ -109,9 +109,9 @@ namespace Raven.Client.Documents.Session.Operations
             private readonly InMemoryDocumentSessionOperations _session;
             private JsonParserState _state;
             private UnmanagedJsonParser _parser;
-            private JsonOperationContext.ManagedPinnedBuffer _buffer;
+            private JsonOperationContext.MemoryBuffer _buffer;
             private bool _initialized;
-            private JsonOperationContext.ReturnBuffer _returnBuffer;
+            private JsonOperationContext.MemoryBuffer.ReturnBuffer _returnBuffer;
             private readonly bool _isQueryStream;
             private readonly bool _isAsync;
             private readonly StreamQueryStatistics _streamQueryStatistics;
@@ -202,7 +202,7 @@ namespace Raven.Client.Documents.Session.Operations
 
                     _state = new JsonParserState();
                     _parser = new UnmanagedJsonParser(_session.Context, _state, "stream contents");
-                    _returnBuffer = _session.Context.GetManagedBuffer(out _buffer);
+                    _returnBuffer = _session.Context.GetMemoryBuffer(out _buffer);
 
                     if (UnmanagedJsonParserHelper.Read(_peepingTomStream, _parser, _state, _buffer) == false)
                         UnmanagedJsonParserHelper.ThrowInvalidJson(_peepingTomStream);
@@ -242,7 +242,7 @@ namespace Raven.Client.Documents.Session.Operations
 
                     _state = new JsonParserState();
                     _parser = new UnmanagedJsonParser(_session.Context, _state, "stream contents");
-                    _returnBuffer = _session.Context.GetManagedBuffer(out _buffer);
+                    _returnBuffer = _session.Context.GetMemoryBuffer(out _buffer);
 
                     if (await UnmanagedJsonParserHelper.ReadAsync(_peepingTomStream, _parser, _state, _buffer).ConfigureAwait(false) == false)
                         UnmanagedJsonParserHelper.ThrowInvalidJson(_peepingTomStream);
@@ -281,7 +281,7 @@ namespace Raven.Client.Documents.Session.Operations
 
             object IEnumerator.Current => Current;
 
-            private static void HandleStreamQueryStats(JsonOperationContext context, StreamResult response, UnmanagedJsonParser parser, JsonParserState state, JsonOperationContext.ManagedPinnedBuffer buffer, StreamQueryStatistics streamQueryStatistics = null)
+            private static void HandleStreamQueryStats(JsonOperationContext context, StreamResult response, UnmanagedJsonParser parser, JsonParserState state, JsonOperationContext.MemoryBuffer buffer, StreamQueryStatistics streamQueryStatistics = null)
             {
                 using (var peepingTomStream = new PeepingTomStream(response.Stream, context))
                 {
