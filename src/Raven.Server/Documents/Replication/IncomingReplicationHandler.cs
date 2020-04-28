@@ -13,25 +13,26 @@ using System.Threading.Tasks;
 using Raven.Client.Documents.Operations.Attachments;
 using Raven.Client.Documents.Replication;
 using Raven.Client.Documents.Replication.Messages;
+using Raven.Client.Extensions;
 using Raven.Client.ServerWide.Tcp;
 using Raven.Client.Util;
 using Raven.Server.Documents.TcpHandlers;
 using Raven.Server.Exceptions;
 using Raven.Server.NotificationCenter.Notifications;
+using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
 using Sparrow;
+using Sparrow.Extensions;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Logging;
 using Sparrow.Platform;
+using Sparrow.Server;
+using Sparrow.Threading;
 using Sparrow.Utils;
 using Voron;
-using Raven.Server.ServerWide;
-using Sparrow.Server;
 using Size = Sparrow.Size;
-using Raven.Client.Extensions;
-using Sparrow.Threading;
 
 namespace Raven.Server.Documents.Replication
 {
@@ -44,8 +45,11 @@ namespace Raven.Server.Documents.Replication
         private PoolOfThreads.LongRunningWork _incomingWork;
         private readonly CancellationTokenSource _cts;
         private readonly Logger _log;
+
         public event Action<IncomingReplicationHandler, Exception> Failed;
+
         public event Action<IncomingReplicationHandler> DocumentsReceived;
+
         public event Action<LiveReplicationPulsesCollector.ReplicationPulse> HandleReplicationPulse;
 
         public void ClearEvents()
@@ -71,7 +75,7 @@ namespace Raven.Server.Documents.Replication
             TcpConnectionOptions options,
             ReplicationLatestEtagRequest replicatedLastEtag,
             ReplicationLoader parent,
-            JsonOperationContext.MemoryBuffer bufferToCopy,
+            MemoryBuffer bufferToCopy,
             string pullReplicationName)
         {
             _disposeOnce = new DisposeOnce<SingleAttempt>(DisposeInternal);
@@ -424,7 +428,6 @@ namespace Raven.Server.Documents.Replication
                 throw new InvalidDataException($"Expected the '{nameof(ReplicationMessageHeader.AttachmentStreamsCount)}' field, " +
                                                $"but had no numeric field of this value, this is likely a bug");
 
-
             ReceiveSingleDocumentsBatch(documentsContext, itemsCount, attachmentStreamCount, lastDocumentEtag, stats);
 
             OnDocumentsReceived(this);
@@ -434,83 +437,59 @@ namespace Raven.Server.Documents.Replication
         {
             while (size > 0)
             {
-                var available = _copiedBuffer.Buffer.Valid - _copiedBuffer.Buffer.Used;
-                if (available == 0)
-                {
-                    var read = _connectionOptions.Stream.Read(_copiedBuffer.Buffer.Memory.Span);
-                    if (read == 0)
-                        throw new EndOfStreamException();
+                var toRead = (int)Math.Min(size, _copiedBuffer.Buffer.Base.Length);
+                var buffer = _copiedBuffer.Buffer.Base.Memory.Span.Slice(0, toRead);
+                var read = _connectionOptions.Stream.Read(buffer);
+                if (read == 0)
+                    throw new EndOfStreamException();
 
-                    _copiedBuffer.Buffer.Valid = read;
-                    _copiedBuffer.Buffer.Used = 0;
-                    continue;
-                }
-                var min = (int)Math.Min(size, available);
-                file.Write(_copiedBuffer.Buffer.Memory.Slice(_copiedBuffer.Buffer.Used, min).Span);
-                _copiedBuffer.Buffer.Used += min;
-                size -= min;
+                if (toRead != read)
+                    buffer = buffer.Slice(0, read);
+
+                file.Write(buffer);
+                size -= toRead;
             }
         }
 
         private unsafe void ReadExactly(byte* ptr, int size)
         {
+            var destination = new Span<byte>(ptr, size);
             var written = 0;
-
             while (size > 0)
             {
-                var available = _copiedBuffer.Buffer.Valid - _copiedBuffer.Buffer.Used;
-                if (available == 0)
-                {
-                    var read = _connectionOptions.Stream.Read(_copiedBuffer.Buffer.Memory.Span);
-                    if (read == 0)
-                        throw new EndOfStreamException();
+                var toRead = Math.Min(size, _copiedBuffer.Buffer.Base.Length);
+                var buffer = _copiedBuffer.Buffer.Base.Memory.Span.Slice(0, toRead);
+                var read = _connectionOptions.Stream.Read(buffer);
+                if (read == 0)
+                    throw new EndOfStreamException();
 
-                    _copiedBuffer.Buffer.Valid = read;
-                    _copiedBuffer.Buffer.Used = 0;
-                    continue;
-                }
+                if (toRead != read)
+                    buffer = buffer.Slice(0, read);
 
-                var min = Math.Min(size, available);
-                var result = _copiedBuffer.Buffer.Pointer + _copiedBuffer.Buffer.Used;
-                Memory.Copy(ptr + written, result, (uint)min);
-                written += min;
-                _copiedBuffer.Buffer.Used += min;
-                size -= min;
+                buffer.CopyTo(destination.Slice(written));
+
+                written += buffer.Length;
+                size -= toRead;
             }
         }
 
         private unsafe byte* ReadExactly(int size)
         {
-            var diff = _copiedBuffer.Buffer.Valid - _copiedBuffer.Buffer.Used;
-            if (diff >= size)
-            {
-                var result = _copiedBuffer.Buffer.Pointer + _copiedBuffer.Buffer.Used;
-                _copiedBuffer.Buffer.Used += size;
-                return result;
-            }
-            return ReadExactlyUnlikely(size, diff);
-        }
+            if (size > _copiedBuffer.Buffer.Base.Length)
+                throw new InvalidOperationException($"Exceeded maximum allowed length of stream. Requested size: '{size}'. Maximum size: '{_copiedBuffer.Buffer.Base.Length}'.");
 
-        private unsafe byte* ReadExactlyUnlikely(int size, int diff)
-        {
-            Memory.Move(
-                _copiedBuffer.Buffer.Pointer,
-                _copiedBuffer.Buffer.Pointer + _copiedBuffer.Buffer.Used,
-                diff);
-            _copiedBuffer.Buffer.Valid = diff;
-            _copiedBuffer.Buffer.Used = 0;
-            while (diff < size)
+            var written = 0;
+            while (size > 0)
             {
-                var read = _connectionOptions.Stream.Read(_copiedBuffer.Buffer.Memory.Span.Slice(diff));
+                var read = _connectionOptions.Stream.Read(_copiedBuffer.Buffer.Base.Memory.Span.Slice(written));
                 if (read == 0)
                     throw new EndOfStreamException();
 
-                _copiedBuffer.Buffer.Valid += read;
-                diff += read;
+                written += read;
+                size -= read;
             }
-            var result = _copiedBuffer.Buffer.Pointer + _copiedBuffer.Buffer.Used;
-            _copiedBuffer.Buffer.Used += size;
-            return result;
+
+            return _copiedBuffer.Buffer.Base.Pointer;
         }
 
         public class DataForReplicationCommand : IDisposable
@@ -657,7 +636,7 @@ namespace Raven.Server.Documents.Replication
                     catch (Exception)
                     {
                         // ignore this failure, if this failed, we are already
-                        // in a bad state and likely in the process of shutting 
+                        // in a bad state and likely in the process of shutting
                         // down
                     }
 
@@ -678,7 +657,7 @@ namespace Raven.Server.Documents.Replication
                 // we need to get both of them in a transaction, the other side will check if its known change vector
                 // is the same or higher then ours, and if so, we'll update the change vector on the sibling to reflect
                 // our own latest etag. This allows us to have effective synchronization points, since each change will
-                // be able to tell (roughly) where it is at on the entire cluster. 
+                // be able to tell (roughly) where it is at on the entire cluster.
                 databaseChangeVector = DocumentsStorage.GetDatabaseChangeVector(documentsContext);
                 currentLastEtagMatchingChangeVector = DocumentsStorage.ReadLastEtag(documentsContext.Transaction.InnerTransaction);
             }
@@ -697,7 +676,6 @@ namespace Raven.Server.Documents.Replication
                 [nameof(ReplicationMessageReply.DatabaseChangeVector)] = databaseChangeVector,
                 [nameof(ReplicationMessageReply.DatabaseId)] = _database.DbId.ToString(),
                 [nameof(ReplicationMessageReply.NodeTag)] = _parent._server.NodeTag
-
             };
 
             documentsContext.Write(writer, heartbeat);
@@ -719,7 +697,7 @@ namespace Raven.Server.Documents.Replication
         private readonly TcpConnectionOptions _connectionOptions;
         private readonly ConflictManager _conflictManager;
         private IDisposable _connectionOptionsDisposable;
-        private (IDisposable ReleaseBuffer, JsonOperationContext.MemoryBuffer Buffer) _copiedBuffer;
+        private (IDisposable ReleaseBuffer, MemoryBuffer Buffer) _copiedBuffer;
         public TcpConnectionHeaderMessage.SupportedFeatures SupportedFeatures { get; set; }
 
         public struct ReplicationItem : IDisposable
@@ -737,7 +715,7 @@ namespace Raven.Server.Documents.Replication
             public DocumentFlags Flags;
             public BlittableJsonReaderObject Document;
 
-            #endregion
+            #endregion Document
 
             #region Counter
 
@@ -745,7 +723,7 @@ namespace Raven.Server.Documents.Replication
 
             public BlittableJsonReaderObject CounterValues;
 
-            #endregion
+            #endregion Counter
 
             #region Attachment
 
@@ -761,8 +739,7 @@ namespace Raven.Server.Documents.Replication
             public Slice Base64Hash;
             public ByteStringContext.InternalScope Base64HashDispose;
 
-
-            #endregion
+            #endregion Attachment
 
             public void Dispose()
             {
@@ -1156,7 +1133,6 @@ namespace Raven.Server.Documents.Replication
                 _cts.Dispose();
 
                 _attachmentStreamsTempFile.Dispose();
-
             }
             finally
             {
@@ -1169,10 +1145,10 @@ namespace Raven.Server.Documents.Replication
                     // can't do anything about it...
                 }
             }
-
         }
 
         protected void OnFailed(Exception exception, IncomingReplicationHandler instance) => Failed?.Invoke(instance, exception);
+
         protected void OnDocumentsReceived(IncomingReplicationHandler instance) => DocumentsReceived?.Invoke(instance);
 
         internal class MergedUpdateDatabaseChangeVectorCommand : TransactionOperationsMerger.MergedTransactionCommand
@@ -1645,7 +1621,7 @@ namespace Raven.Server.Documents.Replication
         public long LastModifiedTicks;
         public DocumentFlags Flags;
 
-        #endregion
+        #endregion Document
 
         #region Attachment
 
@@ -1654,7 +1630,7 @@ namespace Raven.Server.Documents.Replication
         public string ContentType;
         public string Base64Hash;
 
-        #endregion
+        #endregion Attachment
 
         public IncomingReplicationHandler.ReplicationItem ToItem(DocumentsOperationContext context)
         {

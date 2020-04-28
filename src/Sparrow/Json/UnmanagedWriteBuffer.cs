@@ -22,8 +22,8 @@ namespace Sparrow.Json
         private readonly Stream _stream;
         private int _sizeInBytes;
         public int Used;
-        private readonly JsonOperationContext.MemoryBuffer _buffer;
-        private readonly JsonOperationContext.MemoryBuffer.ReturnBuffer _returnBuffer;
+        private readonly MemoryBuffer _buffer;
+        private readonly MemoryBuffer.ReturnBuffer _returnBuffer;
         public int SizeInBytes => _sizeInBytes;
 
         public UnmanagedStreamBuffer(JsonOperationContext context, Stream stream)
@@ -49,9 +49,9 @@ namespace Sparrow.Json
             if (count == 0)
                 return;
 
-            if (_buffer.Length - Used > count)
+            if (_buffer.Base.Length - Used > count)
             {
-                Memory.Copy(_buffer.Pointer + Used, buffer, (uint)count);
+                Memory.Copy(_buffer.Base.Pointer + Used, buffer, (uint)count);
                 _sizeInBytes += count;
                 Used += count;
             }
@@ -68,15 +68,15 @@ namespace Sparrow.Json
             var lengthLeft = count;
             do
             {
-                if (Used == _buffer.Length)
+                if (Used == _buffer.Base.Length)
                 {
-                    _stream.Write(_buffer.Memory.Span.Slice(0, Used));
+                    _stream.Write(_buffer.Base.Memory.Span.Slice(0, Used));
                     Used = 0;
                 }
 
-                var bytesToWrite = Math.Min(lengthLeft, _buffer.Length - Used);
+                var bytesToWrite = Math.Min(lengthLeft, _buffer.Base.Length - Used);
 
-                Memory.Copy(_buffer.Pointer + Used, buffer, (uint)bytesToWrite);
+                Memory.Copy(_buffer.Base.Pointer + Used, buffer, (uint)bytesToWrite);
 
                 _sizeInBytes += bytesToWrite;
                 lengthLeft -= bytesToWrite;
@@ -91,13 +91,13 @@ namespace Sparrow.Json
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteByte(byte data)
         {
-            if (Used == _buffer.Length)
+            if (Used == _buffer.Base.Length)
             {
-                _stream.Write(_buffer.Memory.Span.Slice(0, Used));
+                _stream.Write(_buffer.Base.Memory.Span.Slice(0, Used));
                 Used = 0;
             }
             _sizeInBytes++;
-            *(_buffer.Pointer + Used) = data;
+            *(_buffer.Base.Pointer + Used) = data;
             Used++;
         }
 
@@ -116,7 +116,7 @@ namespace Sparrow.Json
             using (_returnBuffer)
             {
                 if (Used != 0)
-                    _stream.Write(_buffer.Memory.Span.Slice(0, Used));
+                    _stream.Write(_buffer.Base.Memory.Span.Slice(0, Used));
                 Used = 0;
             }            
         }

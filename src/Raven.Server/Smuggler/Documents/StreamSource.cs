@@ -41,10 +41,10 @@ namespace Raven.Server.Smuggler.Documents
         private readonly DocumentDatabase _database;
         private readonly Logger _log;
 
-        private JsonOperationContext.MemoryBuffer _buffer;
-        private JsonOperationContext.MemoryBuffer.ReturnBuffer _returnBuffer;
-        private JsonOperationContext.MemoryBuffer _writeBuffer;
-        private JsonOperationContext.MemoryBuffer.ReturnBuffer _returnWriteBuffer;
+        private MemoryBuffer _buffer;
+        private MemoryBuffer.ReturnBuffer _returnBuffer;
+        private MemoryBuffer _writeBuffer;
+        private MemoryBuffer.ReturnBuffer _returnWriteBuffer;
         private JsonParserState _state;
         private UnmanagedJsonParser _parser;
         private DatabaseItemType? _currentType;
@@ -844,11 +844,11 @@ namespace Raven.Server.Smuggler.Documents
                 var read = _parser.Skip(sizeToRead);
                 if (read.Done == false)
                 {
-                    var read2 = _peepingTomStream.Read(_buffer.Memory.Span);
-                    if (read2 == 0)
+                    var read2 = _peepingTomStream.Read(_buffer);
+                    if (read2.Memory.IsEmpty)
                         throw new EndOfStreamException("Stream ended without reaching end of stream content");
 
-                    _parser.SetBuffer(_buffer, 0, read2);
+                    _parser.SetBuffer(read2);
                 }
                 size -= read.BytesRead;
             }
@@ -1409,16 +1409,16 @@ namespace Raven.Server.Smuggler.Documents
 
             while (size > 0)
             {
-                var sizeToRead = (int)Math.Min(_writeBuffer.Length, size);
-                var read = _parser.Copy(_writeBuffer.Pointer, sizeToRead);
-                attachment.Stream.Write(_writeBuffer.Memory.Slice(0, read.BytesRead).Span);
+                var sizeToRead = (int)Math.Min(_writeBuffer.Base.Length, size);
+                var read = _parser.Copy(_writeBuffer.Base.Pointer, sizeToRead);
+                attachment.Stream.Write(_writeBuffer.Base.Memory.Span.Slice(0, read.BytesRead));
                 if (read.Done == false)
                 {
-                    var read2 = _peepingTomStream.Read(_buffer.Memory.Span);
-                    if (read2 == 0)
+                    var read2 = _peepingTomStream.Read(_buffer);
+                    if (read2.Memory.IsEmpty)
                         throw new EndOfStreamException("Stream ended without reaching end of stream content");
 
-                    _parser.SetBuffer(_buffer, 0, read2);
+                    _parser.SetBuffer(read2);
                 }
                 size -= read.BytesRead;
             }

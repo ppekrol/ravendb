@@ -11,6 +11,7 @@ using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Raven.Client.Extensions;
 using Raven.Server.Routing;
+using Sparrow.Extensions;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 
@@ -100,14 +101,14 @@ namespace Raven.Server.Documents.Handlers
             Database.Changes.Connect(connection);
             var sendTask = connection.StartSendingNotifications(throttleConnection);
             var debugTag = "changes/" + connection.Id;
-            using (context.GetMemoryBuffer(out JsonOperationContext.MemoryBuffer segment1))
-            using (context.GetMemoryBuffer(out JsonOperationContext.MemoryBuffer segment2))
+            using (context.GetMemoryBuffer(out MemoryBuffer segment1))
+            using (context.GetMemoryBuffer(out MemoryBuffer segment2))
             {
                 try
                 {
                     var segments = new[] { segment1, segment2 };
                     int index = 0;
-                    var receiveAsync = webSocket.ReceiveAsync(segments[index].Memory, Database.DatabaseShutdown);
+                    var receiveAsync = webSocket.ReceiveAsync(segments[index], Database.DatabaseShutdown);
                     var jsonParserState = new JsonParserState();
                     using (var parser = new UnmanagedJsonParser(context, jsonParserState, debugTag))
                     {
@@ -116,9 +117,9 @@ namespace Raven.Server.Documents.Handlers
                         var result = await receiveAsync;
                         Database.DatabaseShutdown.ThrowIfCancellationRequested();
 
-                        parser.SetBuffer(segments[index], 0, result.Count);
+                        parser.SetBuffer(result);
                         index++;
-                        receiveAsync = webSocket.ReceiveAsync(segments[index].Memory, Database.DatabaseShutdown);
+                        receiveAsync = webSocket.ReceiveAsync(segments[index], Database.DatabaseShutdown);
 
                         while (true)
                         {
@@ -133,10 +134,10 @@ namespace Raven.Server.Documents.Handlers
                                     result = await receiveAsync;
                                     Database.DatabaseShutdown.ThrowIfCancellationRequested();
 
-                                    parser.SetBuffer(segments[index], 0, result.Count);
+                                    parser.SetBuffer(result);
                                     if (++index >= segments.Length)
                                         index = 0;
-                                    receiveAsync = webSocket.ReceiveAsync(segments[index].Memory, Database.DatabaseShutdown);
+                                    receiveAsync = webSocket.ReceiveAsync(segments[index], Database.DatabaseShutdown);
                                 }
 
 

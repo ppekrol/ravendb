@@ -80,8 +80,9 @@ namespace FastTests.Blittable
                         {
                             token.ThrowIfCancellationRequested();
 
-                            var buffer = new Span<byte>(new byte[originalSize + offset]);
-                            read = peeping.Read(buffer.Slice(offset, chunkSizeToRead));
+                            var buffer = new MemoryBuffer(new Memory<byte>(new byte[originalSize + offset]), 0, null);
+                            var bufferFragment = peeping.Read(buffer);
+                            read = bufferFragment.Length;
                             totalRead += read;
                             Assert.True(read <= chunkSizeToRead);
                         } while (read != 0);

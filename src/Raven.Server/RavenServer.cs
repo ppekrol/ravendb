@@ -1807,7 +1807,7 @@ namespace Raven.Server
                     (stream, cert) = await AuthenticateAsServerIfSslNeeded(stream);
 
                     using (_tcpContextPool.AllocateOperationContext(out JsonOperationContext context))
-                    using (context.GetMemoryBuffer(out JsonOperationContext.MemoryBuffer buffer))
+                    using (context.GetMemoryBuffer(out MemoryBuffer buffer))
                     {
                         var tcp = new TcpConnectionOptions
                         {
@@ -1871,7 +1871,7 @@ namespace Raven.Server
 
         private async Task<TcpConnectionHeaderMessage> NegotiateOperationVersion(
             Stream stream,
-            JsonOperationContext.MemoryBuffer buffer,
+            MemoryBuffer buffer,
             TcpClient tcpClient,
             Logger tcpAuditLog,
             X509Certificate2 cert,
@@ -1891,11 +1891,11 @@ namespace Raven.Server
                         "tcp-header",
                         BlittableJsonDocumentBuilder.UsageMode.None,
                         buffer,
-                        ServerStore.ServerShutdown,
                         // we don't want to allow external (and anonymous) users to send us unlimited data
                         // a maximum of 2 KB for the header is big enough to include any valid header that
                         // we can currently think of
-                        maxSize: 1024 * 2
+                        maxSize: 1024 * 2,
+                        ServerStore.ServerShutdown
                     ))
                     {
                         if (count++ > maxRetries)
@@ -2142,7 +2142,7 @@ namespace Raven.Server
             }
         }
 
-        private async Task<bool> DispatchServerWideTcpConnection(TcpConnectionOptions tcp, TcpConnectionHeaderMessage header, JsonOperationContext.MemoryBuffer buffer)
+        private async Task<bool> DispatchServerWideTcpConnection(TcpConnectionOptions tcp, TcpConnectionHeaderMessage header, MemoryBuffer buffer)
         {
             tcp.Operation = header.Operation;
             if (tcp.Operation == TcpConnectionHeaderMessage.OperationTypes.Cluster)
@@ -2191,7 +2191,7 @@ namespace Raven.Server
             return false;
         }
 
-        private async Task<bool> DispatchDatabaseTcpConnection(TcpConnectionOptions tcp, TcpConnectionHeaderMessage header, JsonOperationContext.MemoryBuffer bufferToCopy)
+        private async Task<bool> DispatchDatabaseTcpConnection(TcpConnectionOptions tcp, TcpConnectionHeaderMessage header, MemoryBuffer bufferToCopy)
         {
             var databaseLoadingTask = ServerStore.DatabasesLandlord.TryGetOrCreateResourceStore(header.DatabaseName);
             if (databaseLoadingTask == null)

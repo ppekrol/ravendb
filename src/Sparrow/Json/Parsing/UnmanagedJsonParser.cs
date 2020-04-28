@@ -95,14 +95,9 @@ namespace Sparrow.Json.Parsing
             _unmanagedWriteBuffer = ctx.GetStream(JsonOperationContext.InitialStreamSize);
         }
 
-        public void SetBuffer(JsonOperationContext.MemoryBuffer inputBuffer)
+        public void SetBuffer(MemoryBufferFragment inputBuffer)
         {
-            SetBuffer(inputBuffer.Pointer + inputBuffer.Used, inputBuffer.Valid - inputBuffer.Used);
-        }
-
-        public void SetBuffer(JsonOperationContext.MemoryBuffer inputBuffer, int offset, int size)
-        {
-            SetBuffer(inputBuffer.Pointer + offset, size);
+            SetBuffer(inputBuffer.Pointer, inputBuffer.Length);
         }
 
         public void SetBuffer(byte* inputBuffer, int size)

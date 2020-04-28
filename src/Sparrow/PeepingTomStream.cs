@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Sparrow.Extensions;
 using Sparrow.Json;
 
 namespace Sparrow
@@ -11,11 +12,11 @@ namespace Sparrow
     {
         public const int BufferWindowSize = 4096;
 
-        private readonly JsonOperationContext.MemoryBuffer _bufferWindow;
+        private readonly MemoryBuffer _bufferWindow;
         private int _pos;
         private readonly Stream _stream;
         private bool _firstWindow = true;
-        private JsonOperationContext.MemoryBuffer.ReturnBuffer _returnedBuffer;
+        private MemoryBuffer.ReturnBuffer _returnedBuffer;
 
         public PeepingTomStream(Stream stream, JsonOperationContext context)
         {
@@ -23,42 +24,46 @@ namespace Sparrow
             _returnedBuffer = context.GetMemoryBuffer(out _bufferWindow);
         }
 
-        public int Read(Span<byte> buffer)
+        public MemoryBufferFragment Read(MemoryBuffer buffer)
         {
             var read = _stream.Read(buffer);
-            return ReadInternal(buffer, read);
+            return ReadInternal(read);
         }
 
-        private unsafe int ReadInternal(Span<byte> buffer, int read)
+        public async ValueTask<MemoryBufferFragment> ReadAsync(MemoryBuffer buffer, CancellationToken token = default)
         {
-            var totalToRead = read < BufferWindowSize ? read : BufferWindowSize;
+            var read = await _stream.ReadAsync(buffer, token).ConfigureAwait(false);
+            return ReadInternal(read);
+        }
 
-            var pDest = _bufferWindow.Pointer;
-            fixed (byte* pSrc = buffer)
+        private unsafe MemoryBufferFragment ReadInternal(MemoryBufferFragment buffer)
+        {
+            var totalToRead = buffer.Length < BufferWindowSize ? buffer.Length : BufferWindowSize;
+
+            var pDest = _bufferWindow.Base.Pointer;
+            var pSrc = buffer.Pointer;
+            var pBufferWindowStart = pDest + _pos;
+            var pBufferStart = pSrc + buffer.Length - totalToRead;
+
+            _pos += totalToRead;
+
+            if (_pos > BufferWindowSize) // copy in two parts
             {
-                var pBufferWindowStart = pDest + _pos;
-                var pBufferStart = pSrc + read - totalToRead;
+                var newTotal = BufferWindowSize - (_pos - totalToRead);
+                Memory.Copy(pBufferWindowStart, pBufferStart, newTotal);
+                var nextLength = totalToRead - newTotal;
+                Debug.Assert(nextLength <= BufferWindowSize);
+                Memory.Copy(pDest, pBufferStart + newTotal, nextLength);
 
-                _pos += totalToRead;
-
-                if (_pos > BufferWindowSize) // copy in two parts
-                {
-                    var newTotal = BufferWindowSize - (_pos - totalToRead);
-                    Memory.Copy(pBufferWindowStart, pBufferStart, newTotal);
-                    var nextLength = totalToRead - newTotal;
-                    Debug.Assert(nextLength <= BufferWindowSize);
-                    Memory.Copy(pDest, pBufferStart + newTotal, nextLength);
-
-                    _firstWindow = false;
-                    _pos %= BufferWindowSize;
-                }
-                else
-                {
-                    Memory.Copy(pBufferWindowStart, pBufferStart, totalToRead);
-                }
+                _firstWindow = false;
+                _pos %= BufferWindowSize;
+            }
+            else
+            {
+                Memory.Copy(pBufferWindowStart, pBufferStart, totalToRead);
             }
 
-            return read;
+            return buffer;
         }
 
         public unsafe byte[] PeepInReadStream()
@@ -83,7 +88,7 @@ namespace Sparrow
             // representing single character, so 0x80 represent start of char in utf8)
             var originalStart = start;
 
-            for (var p = _bufferWindow.Pointer; (*(p + start) & 0x80) != 0; p++)
+            for (var p = _bufferWindow.Base.Pointer; (*(p + start) & 0x80) != 0; p++)
             {
                 start++;
                 size--;
@@ -102,7 +107,7 @@ namespace Sparrow
             var buf = new byte[size];
             if (size == 0)
                 return buf;
-            byte* pSrc = _bufferWindow.Pointer;
+            byte* pSrc = _bufferWindow.Base.Pointer;
             fixed (byte* pDest = buf)
             {
                 var firstSize = size - start;
@@ -110,14 +115,6 @@ namespace Sparrow
                 Memory.Copy(pDest + firstSize, pSrc, start);
                 return buf;
             }
-        }
-
-        public async Task<int> ReadAsync(Memory<byte> buffer, CancellationToken token = default)
-        {
-            var read = await _stream.ReadAsync(buffer, token).ConfigureAwait(false);
-            var rc = ReadInternal(buffer.Span, read);
-
-            return rc;
         }
 
         public void Dispose()

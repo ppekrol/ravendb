@@ -175,12 +175,12 @@ namespace Raven.Server.Documents.Handlers
                 using (var stream = attachment.Stream)
                 {
                     var responseStream = ResponseBodyStream();
-                    var count = stream.Read(buffer.Memory.Span); // can never wait, so no need for async
+                    var count = stream.Read(buffer.Base.Memory.Span); // can never wait, so no need for async
                     while (count > 0)
                     {
-                        await responseStream.WriteAsync(buffer.Memory.Slice(0, count), Database.DatabaseShutdown);
+                        await responseStream.WriteAsync(buffer.Base.Memory.Slice(0, count), Database.DatabaseShutdown);
                         // we know that this can never wait, so no need to do async i/o here
-                        count = stream.Read(buffer.Memory.Span);
+                        count = stream.Read(buffer.Base.Memory.Span);
                     }
                 }
             }

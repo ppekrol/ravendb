@@ -38,6 +38,7 @@ using Raven.Server.ServerWide.Context;
 using Raven.Server.Smuggler.Documents.Data;
 using Raven.Server.Smuggler.Migration;
 using Raven.Server.Utils;
+using Sparrow.Extensions;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Platform;
@@ -99,10 +100,8 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                 DatabaseSmugglerOptionsServerSide options;
                 using (context.GetMemoryBuffer(out var buffer))
                 {
-                    var firstRead = await stream.ReadAsync(buffer.Memory);
-                    buffer.Used = 0;
-                    buffer.Valid = firstRead;
-                    if (firstRead != 0)
+                    var firstRead = await stream.ReadAsync(buffer);
+                    if (firstRead.Memory.IsEmpty == false)
                     {
                         var blittableJson = await context.ParseToMemoryAsync(stream, "DownloadOptions", BlittableJsonDocumentBuilder.UsageMode.None, buffer);
                         options = JsonDeserializationServer.DatabaseSmugglerOptions(blittableJson);

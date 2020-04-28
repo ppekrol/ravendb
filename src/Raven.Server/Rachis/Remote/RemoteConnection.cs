@@ -4,7 +4,6 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Raven.Server.ServerWide;
-using Sparrow;
 using Sparrow.Collections;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
@@ -19,7 +18,7 @@ namespace Raven.Server.Rachis.Remote
         private string _destTag;
         private string _src;
         private readonly Stream _stream;
-        private readonly JsonOperationContext.MemoryBuffer _buffer;
+        private readonly MemoryBuffer _buffer;
         private readonly IDisposable _releaseBuffer;
         private Logger _log;
         private readonly Action _disconnect;
@@ -41,7 +40,7 @@ namespace Raven.Server.Rachis.Remote
             _src = src;
             _stream = stream;
             _disconnect = disconnect;
-            _releaseBuffer = JsonOperationContext.MemoryBuffer.ShortTermSingleUse(out _buffer);
+            _releaseBuffer = MemoryBuffer.ShortTermSingleUse(out _buffer);
             _disposeOnce = new DisposeOnce<SingleAttempt>(DisposeInternal);
             _log = LoggingSource.Instance.GetLogger<RemoteConnection>($"{src} > {dest}");
             RegisterConnection(dest, term, caller);
@@ -59,8 +58,6 @@ namespace Raven.Server.Rachis.Remote
         private RemoteConnectionInfo _info;
         private static int _connectionNumber = 0;
         public static ConcurrentSet<RemoteConnectionInfo> RemoteConnectionsList = new ConcurrentSet<RemoteConnectionInfo>();
-
-
 
         public void Send(JsonOperationContext context, RachisHello helloMsg)
         {
@@ -98,7 +95,6 @@ namespace Raven.Server.Rachis.Remote
                 context.Write(writer, msg);
             }
         }
-
 
         public void Send(JsonOperationContext context, RequestVoteResponse rvr)
         {
@@ -151,7 +147,6 @@ namespace Raven.Server.Rachis.Remote
                 [nameof(LogLengthNegotiationResponse.MidpointIndex)] = lln.MidpointIndex,
                 [nameof(LogLengthNegotiationResponse.MidpointTerm)] = lln.MidpointTerm,
                 [nameof(LogLengthNegotiationResponse.CommandsVersion)] = ClusterCommandsVersionManager.MyCommandsVersion
-
             });
         }
 
@@ -264,21 +259,7 @@ namespace Raven.Server.Rachis.Remote
         {
             using (_disposerLock.EnsureNotDisposed())
             {
-                if (_buffer.Used < _buffer.Valid)
-                    return ReadFromBuffer(buffer, offset, count);
-
                 return _stream.Read(buffer, offset, count);
-            }
-        }
-
-        private unsafe int ReadFromBuffer(byte[] buffer, int offset, int count)
-        {
-            var size = Math.Min(count, _buffer.Valid - _buffer.Used);
-            fixed (byte* pBuffer = buffer)
-            {
-                Memory.Copy(pBuffer + offset, _buffer.Pointer + _buffer.Used, size);
-                _buffer.Used += size;
-                return size;
             }
         }
 
@@ -352,7 +333,6 @@ namespace Raven.Server.Rachis.Remote
             }
         }
 
-
         public void Send(JsonOperationContext context, AppendEntriesResponse aer)
         {
             if (_log.IsInfoEnabled)
@@ -378,7 +358,6 @@ namespace Raven.Server.Rachis.Remote
 
             Send(context, msg);
         }
-
 
         public void Dispose()
         {
@@ -427,8 +406,6 @@ namespace Raven.Server.Rachis.Remote
             return $"Remote connection (cluster) : {_src} > {_destTag}";
         }
 
-
-
         private void RegisterConnection(string dest, long term, string caller)
         {
             var number = Interlocked.Increment(ref _connectionNumber);
@@ -458,7 +435,6 @@ namespace Raven.Server.Rachis.Remote
                     json.TryGet("Message", out string message);
                     throw new TopologyMismatchException(message);
                 }
-
             }
             throw new InvalidDataException(
                 $"Expected to get type of \'{expectedType}\' message, but got \'{type}\' message.", new Exception(json.ToString()));

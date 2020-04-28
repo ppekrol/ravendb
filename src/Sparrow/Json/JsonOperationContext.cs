@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Sparrow.Collections;
+using Sparrow.Extensions;
 using Sparrow.Global;
 using Sparrow.Json.Parsing;
 using Sparrow.Threading;
@@ -199,221 +200,6 @@ namespace Sparrow.Json
             buffer = new MemoryBuffer(rawMemory.MemoryManager.Memory, rawMemory.ContextGeneration, this);
 
             return new MemoryBuffer.ReturnBuffer(rawMemory, buffer, this);
-        }
-
-        public unsafe class MemoryBuffer
-        {
-            public const int Size = 32 * Constants.Size.Kilobyte;
-
-#if DEBUG
-            private Memory<byte> _memory;
-            private byte* _pointer;
-            private int _length;
-
-            private readonly int _generation;
-            private readonly JsonOperationContext _parent;
-
-            public Memory<byte> Memory
-            {
-                get
-                {
-                    AssertState();
-                    return _memory;
-                }
-                private set { _memory = value; }
-            }
-
-            public byte* Pointer
-            {
-                get
-                {
-                    AssertState();
-                    return _pointer;
-                }
-                private set { _pointer = value; }
-            }
-
-            public int Length
-            {
-                get
-                {
-                    AssertState();
-                    return _length;
-                }
-                private set { _length = value; }
-            }
-
-            public bool IsReleased;
-#else
-            public readonly Memory<byte> Memory;
-
-            public readonly byte* Pointer;
-
-            public readonly int Length;
-#endif
-
-            public int Valid;
-
-            public int Used;
-
-            public MemoryBuffer(Memory<byte> buffer, int generation, JsonOperationContext context)
-            {
-                Memory = buffer;
-                Length = buffer.Length;
-
-                fixed (byte* pointer = buffer.Span)
-                    Pointer = pointer;
-
-                Valid = 0;
-                Used = 0;
-#if DEBUG
-                _generation = generation;
-                _parent = context;
-#endif
-            }
-
-            public static ReturnBuffer ShortTermSingleUse(out MemoryBuffer buffer)
-            {
-                var bytes = ArrayPool<byte>.Shared.Rent(Size);
-                var memory = new Memory<byte>(bytes);
-                var memoryHandle = memory.Pin();
-
-                buffer = new MemoryBuffer(memory, 0, null);
-
-                return new ReturnBuffer(bytes, memoryHandle, buffer);
-            }
-
-            internal (IDisposable ReleaseBuffer, MemoryBuffer Buffer) Clone<T>(JsonContextPoolBase<T> pool)
-                where T : JsonOperationContext
-            {
-                if (Length != Size)
-                    throw new InvalidOperationException("Cloned buffer must be of the same size");
-
-                var releaseCtx = pool.AllocateOperationContext(out T ctx);
-                var returnBuffer = ctx.GetMemoryBuffer(out var buffer);
-                var clean = new Disposer(returnBuffer, releaseCtx);
-                try
-                {
-                    buffer.Valid = Valid - Used;
-                    buffer.Used = 0;
-
-                    Memory.Span.Slice(Used, buffer.Valid).CopyTo(buffer.Memory.Span);
-
-                    return (clean, buffer);
-                }
-                catch
-                {
-                    clean.Dispose();
-                    throw;
-                }
-            }
-
-            private class Disposer : IDisposable
-            {
-                private readonly IDisposable[] _toDispose;
-
-                public Disposer(params IDisposable[] toDispose)
-                {
-                    _toDispose = toDispose;
-                }
-
-                public void Dispose()
-                {
-                    foreach (var disposable in _toDispose)
-                    {
-                        disposable.Dispose();
-                    }
-                }
-            }
-
-#if DEBUG
-            private void AssertState()
-            {
-                if (IsReleased)
-                    throw new InvalidOperationException("Memory was released.");
-
-                if (_parent != null && _parent.Generation != _generation)
-                    throw new InvalidOperationException($"Buffer was created during generation '{_generation}', but current generation is '{_parent.Generation}'. Context was probably returned or reset.");
-            }
-#endif
-
-            public struct ReturnBuffer : IDisposable
-            {
-                private AllocatedMemoryData _allocatedMemory;
-                private byte[] _bytes;
-                private MemoryHandle _memoryHandle;
-#if DEBUG
-                private MemoryBuffer _buffer;
-#endif
-                private readonly JsonOperationContext _parent;
-
-                public ReturnBuffer(byte[] bytes, MemoryHandle memoryHandle, MemoryBuffer buffer)
-                {
-                    _bytes = bytes;
-                    _memoryHandle = memoryHandle;
-#if DEBUG
-                    _buffer = buffer;
-#endif
-                    _allocatedMemory = null;
-                    _parent = null;
-                }
-
-                public ReturnBuffer(AllocatedMemoryData allocatedMemory, MemoryBuffer buffer, JsonOperationContext parent)
-                {
-                    _bytes = null;
-                    _memoryHandle = default;
-#if DEBUG
-                    _buffer = buffer;
-#endif
-                    _allocatedMemory = allocatedMemory;
-                    _parent = parent;
-                }
-
-                public void Dispose()
-                {
-                    if (_allocatedMemory == null && _bytes == null)
-                        return;
-
-#if DEBUG
-                    if (_buffer != null)
-                    {
-                        Debug.Assert(_buffer.IsReleased == false, "_buffer.IsReleased == false");
-                        _buffer.IsReleased = true;
-
-                        _buffer = null;
-                    }
-#endif
-
-                    if (_parent != null)
-                    {
-                        //_parent disposal sets _managedBuffers to null,
-                        //throwing ObjectDisposedException() to make it more visible
-                        if (_parent.Disposed)
-                            ThrowParentWasDisposed();
-
-                        if (_allocatedMemory != null)
-                        {
-                            _parent.ReturnMemory(_allocatedMemory);
-                            _allocatedMemory = null;
-                        }
-                    }
-
-                    if (_bytes != null)
-                    {
-                        _memoryHandle.Dispose();
-                        _memoryHandle = default;
-
-                        ArrayPool<byte>.Shared.Return(_bytes);
-                        _bytes = null;
-                    }
-                }
-
-                private static void ThrowParentWasDisposed()
-                {
-                    throw new ObjectDisposedException(
-                        "ReturnBuffer should not be disposed after it's parent operation context was disposed");
-                }
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -675,30 +461,9 @@ namespace Sparrow.Json
                 try
                 {
                     builder.ReadObjectDocument();
-                    var result = await webSocket.ReceiveAsync(bytes.Memory, token).ConfigureAwait(false);
 
-                    token.ThrowIfCancellationRequested();
-                    EnsureNotDisposed();
+                    await parser.ParseAsync(this, webSocket, bytes, token).ConfigureAwait(false);
 
-                    if (result.MessageType == WebSocketMessageType.Close)
-                        return null;
-                    bytes.Valid = result.Count;
-                    bytes.Used = 0;
-
-                    parser.SetBuffer(bytes);
-                    while (true)
-                    {
-                        var read = builder.Read();
-                        bytes.Used += parser.BufferOffset;
-                        if (read)
-                            break;
-                        result = await webSocket.ReceiveAsync(bytes.Memory, token).ConfigureAwait(false);
-                        token.ThrowIfCancellationRequested();
-                        EnsureNotDisposed();
-                        bytes.Valid = result.Count;
-                        bytes.Used = 0;
-                        parser.SetBuffer(bytes);
-                    }
                     builder.FinalizeDocument();
                     return builder.CreateReader();
                 }
@@ -740,27 +505,12 @@ namespace Sparrow.Json
             {
                 CachedProperties.NewDocument();
                 builder.ReadObjectDocument();
-                while (true)
-                {
-                    if (bytes.Valid == bytes.Used)
-                    {
-                        var read = stream.Read(bytes.Memory.Span);
-                        EnsureNotDisposed();
-                        if (read == 0)
-                            throw new EndOfStreamException("Stream ended without reaching end of json content");
-                        bytes.Valid = read;
-                        bytes.Used = 0;
-                    }
-                    parser.SetBuffer(bytes);
-                    var result = builder.Read();
-                    bytes.Used += parser.BufferOffset;
-                    if (result)
-                        break;
-                }
+
+                parser.Parse(this, stream, bytes);
+
                 builder.FinalizeDocument();
 
-                var reader = builder.CreateReader();
-                return reader;
+                return builder.CreateReader();
             }
         }
 
@@ -782,8 +532,7 @@ namespace Sparrow.Json
 
                 builder.FinalizeDocument();
 
-                var reader = builder.CreateReader();
-                return reader;
+                return builder.CreateReader();
             }
         }
 
@@ -800,16 +549,16 @@ namespace Sparrow.Json
                 CachedProperties.NewDocument();
                 builder.ReadArrayDocument();
 
-                var maxChars = buffer.Memory.Length / 8; //utf8 max size is 8 bytes, must consider worst case possible
+                var maxChars = buffer.Base.Memory.Length / 8; //utf8 max size is 8 bytes, must consider worst case possible
 
                 bool lastReadResult = false;
                 var valueAsSpan = value.AsSpan();
                 for (int i = 0; i < value.Length; i += maxChars)
                 {
                     var charsToRead = Math.Min(value.Length - i, maxChars);
-                    var length = Encodings.Utf8.GetBytes(valueAsSpan.Slice(i, charsToRead), buffer.Memory.Span);
+                    var length = Encodings.Utf8.GetBytes(valueAsSpan.Slice(i, charsToRead), buffer.Base.Memory.Span);
 
-                    parser.SetBuffer(buffer, 0, length);
+                    parser.SetBuffer(buffer.Base.Slice(0, length));
                     lastReadResult = builder.Read();
                 }
                 if (lastReadResult == false)
@@ -838,29 +587,12 @@ namespace Sparrow.Json
                 builder = new BlittableJsonDocumentBuilder(this, mode, debugTag, parser, _jsonParserState);
                 CachedProperties.NewDocument();
                 builder.ReadObjectDocument();
-                while (true)
-                {
-                    if (bytes.Valid == bytes.Used)
-                    {
-                        var read = await webSocket.ReceiveAsync(bytes.Memory, token).ConfigureAwait(false);
 
-                        EnsureNotDisposed();
+                await parser.ParseAsync(this, webSocket, bytes, token).ConfigureAwait(false);
 
-                        if (read.Count == 0)
-                            throw new EndOfStreamException("Stream ended without reaching end of json content");
-                        bytes.Valid = read.Count;
-                        bytes.Used = 0;
-                    }
-                    parser.SetBuffer(bytes);
-                    var result = builder.Read();
-                    bytes.Used += parser.BufferOffset;
-                    if (result)
-                        break;
-                }
                 builder.FinalizeDocument();
 
-                var reader = builder.CreateReader();
-                return reader;
+                return builder.CreateReader();
             }
             finally
             {
@@ -868,7 +600,7 @@ namespace Sparrow.Json
             }
         }
 
-        private void EnsureNotDisposed()
+        internal void EnsureNotDisposed()
         {
             if (Disposed)
                 ThrowObjectDisposed();
@@ -877,12 +609,16 @@ namespace Sparrow.Json
         private async ValueTask<BlittableJsonReaderObject> ParseToMemoryAsync(Stream stream, string documentId, BlittableJsonDocumentBuilder.UsageMode mode, CancellationToken? token = null)
         {
             using (GetMemoryBuffer(out MemoryBuffer bytes))
-                return await ParseToMemoryAsync(stream, documentId, mode, bytes, token).ConfigureAwait(false);
+                return await ParseToMemoryAsync(stream, documentId, mode, bytes, token: token).ConfigureAwait(false);
         }
 
-        public async ValueTask<BlittableJsonReaderObject> ParseToMemoryAsync(Stream stream, string documentId, BlittableJsonDocumentBuilder.UsageMode mode, MemoryBuffer bytes,
-            CancellationToken? token = null,
-            int maxSize = int.MaxValue)
+        public async ValueTask<BlittableJsonReaderObject> ParseToMemoryAsync(
+            Stream stream,
+            string documentId,
+            BlittableJsonDocumentBuilder.UsageMode mode,
+            MemoryBuffer bytes,
+            int maxSize = int.MaxValue,
+            CancellationToken? token = null)
         {
             EnsureNotDisposed();
 
@@ -898,36 +634,12 @@ namespace Sparrow.Json
 
                 CachedProperties.NewDocument();
                 builder.ReadObjectDocument();
-                while (true)
-                {
-                    token?.ThrowIfCancellationRequested();
-                    if (bytes.Valid == bytes.Used)
-                    {
-                        var read = token.HasValue
-                            ? await stream.ReadAsync(bytes.Memory, token.Value).ConfigureAwait(false)
-                            : await stream.ReadAsync(bytes.Memory).ConfigureAwait(false);
 
-                        EnsureNotDisposed();
+                await parser.ParseAsync(this, stream, bytes, maxSize, documentId, token).ConfigureAwait(false);
 
-                        if (read == 0)
-                            throw new EndOfStreamException("Stream ended without reaching end of json content");
-                        bytes.Valid = read;
-                        bytes.Used = 0;
-                        maxSize -= read;
-                        if (maxSize < 0)
-                            throw new ArgumentException($"The maximum size allowed for {documentId} ({maxSize}) has been exceeded, aborting");
-                    }
-
-                    parser.SetBuffer(bytes);
-                    var result = builder.Read();
-                    bytes.Used += parser.BufferOffset;
-                    if (result)
-                        break;
-                }
                 builder.FinalizeDocument();
 
-                var reader = builder.CreateReader();
-                return reader;
+                return builder.CreateReader();
             }
             finally
             {
@@ -950,7 +662,7 @@ namespace Sparrow.Json
             }
         }
 
-        private void ThrowObjectDisposed()
+        private static void ThrowObjectDisposed()
         {
             throw new ObjectDisposedException(nameof(JsonOperationContext));
         }

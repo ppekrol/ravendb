@@ -112,8 +112,8 @@ namespace Sparrow.Json
 
         private int _pos;
         private readonly byte* _buffer;
-        private JsonOperationContext.MemoryBuffer.ReturnBuffer _returnBuffer;
-        private readonly JsonOperationContext.MemoryBuffer _pinnedBuffer;
+        private MemoryBuffer.ReturnBuffer _returnBuffer;
+        private readonly MemoryBuffer _pinnedBuffer;
         private readonly AllocatedMemoryData _parserAuxiliarMemory;
 
         static AbstractBlittableJsonTextWriter()
@@ -148,7 +148,7 @@ namespace Sparrow.Json
             _stream = stream;
 
             _returnBuffer = context.GetMemoryBuffer(out _pinnedBuffer);
-            _buffer = _pinnedBuffer.Pointer;
+            _buffer = _pinnedBuffer.Base.Pointer;
 
             _parserAuxiliarMemory = context.GetMemory(32);
         }
@@ -157,7 +157,7 @@ namespace Sparrow.Json
 
         public override string ToString()
         {
-            return Encodings.Utf8.GetString(_pinnedBuffer.Memory.Span.Slice(0, _pos));
+            return Encodings.Utf8.GetString(_pinnedBuffer.Base.Memory.Span.Slice(0, _pos));
         }
 
         public void WriteObject(BlittableJsonReaderObject obj)
@@ -294,7 +294,7 @@ namespace Sparrow.Json
             const int NumberOfQuotesChars = 2; // for " "
 
             int bufferSize = 2 * numberOfEscapeSequences + size + NumberOfQuotesChars;
-            if (bufferSize >= JsonOperationContext.MemoryBuffer.Size)
+            if (bufferSize >= MemoryBuffer.Size)
             {
                 UnlikelyWriteLargeString(strBuffer, size, numberOfEscapeSequences, escapeSequencePos); // OK, do it the slow way. 
                 return;
@@ -424,7 +424,7 @@ namespace Sparrow.Json
 
                 // We ensure our buffer will have enough space to deal with the whole string.
                 int bufferSize = 2 * numberOfEscapeSequences + size + 2;
-                if (bufferSize >= JsonOperationContext.MemoryBuffer.Size)
+                if (bufferSize >= MemoryBuffer.Size)
                     goto WriteLargeCompressedString; // OK, do it the slow way instead.
 
                 EnsureBuffer(bufferSize);
@@ -494,7 +494,7 @@ namespace Sparrow.Json
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteRawString(byte* buffer, int size)
         {
-            if (size < JsonOperationContext.MemoryBuffer.Size)
+            if (size < MemoryBuffer.Size)
             {
                 EnsureBuffer(size);
                 Memory.Copy(_buffer + _pos, buffer, size);
@@ -511,7 +511,7 @@ namespace Sparrow.Json
             var posInStr = 0;
             while (posInStr < size)
             {
-                var amountToCopy = Math.Min(size - posInStr, JsonOperationContext.MemoryBuffer.Size);
+                var amountToCopy = Math.Min(size - posInStr, MemoryBuffer.Size);
                 Flush();
                 Memory.Copy(_buffer, buffer + posInStr, amountToCopy);
                 posInStr += amountToCopy;
@@ -550,9 +550,9 @@ namespace Sparrow.Json
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void EnsureBuffer(int len)
         {
-            if (len >= JsonOperationContext.MemoryBuffer.Size)
+            if (len >= MemoryBuffer.Size)
                 ThrowValueTooBigForBuffer(len);
-            if (_pos + len < JsonOperationContext.MemoryBuffer.Size)
+            if (_pos + len < MemoryBuffer.Size)
                 return;
 
             Flush();
@@ -564,7 +564,7 @@ namespace Sparrow.Json
                 ThrowStreamClosed();
             if (_pos == 0)
                 return;
-            _stream.Write(_pinnedBuffer.Memory.Span.Slice(0, _pos));
+            _stream.Write(_pinnedBuffer.Base.Memory.Span.Slice(0, _pos));
             _pos = 0;
         }
 
@@ -786,7 +786,7 @@ namespace Sparrow.Json
 
             while (true)
             {
-                _pos = stream.Read(_pinnedBuffer.Memory.Span);
+                _pos = stream.Read(_pinnedBuffer.Base.Memory.Span);
                 if (_pos == 0)
                     break;
 
@@ -802,7 +802,7 @@ namespace Sparrow.Json
             var totalWritten = 0;
             while (leftToWrite > 0)
             {
-                var toWrite = Math.Min(JsonOperationContext.MemoryBuffer.Size, leftToWrite);
+                var toWrite = Math.Min(MemoryBuffer.Size, leftToWrite);
                 Memory.Copy(_buffer, p + totalWritten, toWrite);
                 _pos += toWrite;
                 totalWritten += toWrite;

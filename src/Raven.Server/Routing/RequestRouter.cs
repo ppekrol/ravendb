@@ -22,6 +22,7 @@ using Raven.Server.Documents;
 using Raven.Server.ServerWide;
 using Raven.Server.Utils;
 using Raven.Server.Web;
+using Sparrow.Extensions;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Logging;
@@ -459,8 +460,8 @@ namespace Raven.Server.Routing
                 var requestBody = context.Request.Body;
                 while (true)
                 {
-                    var read = requestBody.Read(buffer.Memory.Span);
-                    if (read == 0)
+                    var read = requestBody.Read(buffer);
+                    if (read.Memory.IsEmpty)
                         break;
                 }
             }

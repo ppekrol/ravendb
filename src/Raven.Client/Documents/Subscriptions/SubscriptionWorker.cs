@@ -502,7 +502,7 @@ namespace Raven.Client.Documents.Subscriptions
         }
 
 
-        private async Task<BatchFromServer> ReadSingleSubscriptionBatchFromServer(JsonContextPool contextPool, Stream tcpStream, JsonOperationContext.MemoryBuffer buffer, SubscriptionBatch<T> batch)
+        private async Task<BatchFromServer> ReadSingleSubscriptionBatchFromServer(JsonContextPool contextPool, Stream tcpStream, MemoryBuffer buffer, SubscriptionBatch<T> batch)
         {
             var incomingBatch = new List<SubscriptionConnectionServerMessage>();
             var includes = new List<BlittableJsonReaderObject>();
@@ -565,7 +565,7 @@ namespace Raven.Client.Documents.Subscriptions
                 $"Connection terminated by server. Exception: {receivedMessage.Exception ?? "None"}");
         }
 
-        private async Task<SubscriptionConnectionServerMessage> ReadNextObject(JsonOperationContext context, Stream stream, JsonOperationContext.MemoryBuffer buffer)
+        private async Task<SubscriptionConnectionServerMessage> ReadNextObject(JsonOperationContext context, Stream stream, MemoryBuffer buffer)
         {
             if (_processingCts.IsCancellationRequested || _tcpClient.Connected == false)
                 return null;

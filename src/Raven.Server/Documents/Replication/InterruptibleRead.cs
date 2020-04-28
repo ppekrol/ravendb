@@ -41,7 +41,7 @@ namespace Raven.Server.Documents.Replication
             AsyncManualResetEvent interrupt,
             string debugTag,
             int timeout,
-            JsonOperationContext.MemoryBuffer buffer,
+            MemoryBuffer buffer,
             CancellationToken token)
         {
             if (_prevCall == null)
@@ -95,12 +95,12 @@ namespace Raven.Server.Documents.Replication
             }
         }
 
-        private async Task<Result> ReadNextObject(string debugTag, JsonOperationContext.MemoryBuffer buffer, CancellationToken token)
+        private async Task<Result> ReadNextObject(string debugTag, MemoryBuffer buffer, CancellationToken token)
         {
             var retCtx = _contextPool.AllocateOperationContext(out DocumentsOperationContext context);
             try
             {
-                var jsonReaderObject = await context.ParseToMemoryAsync(_stream, debugTag, BlittableJsonDocumentBuilder.UsageMode.None, buffer, token);
+                var jsonReaderObject = await context.ParseToMemoryAsync(_stream, debugTag, BlittableJsonDocumentBuilder.UsageMode.None, buffer, token: token);
                 return new Result
                 {
                     Document = jsonReaderObject,
