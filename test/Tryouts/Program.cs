@@ -31,9 +31,9 @@ namespace Tryouts
                 try
                 {
                     using (var testOutputHelper = new ConsoleTestOutputHelper())
-                    using (var test = new JavaScriptIndexTests(testOutputHelper))
+                    using (var test = new RavenDB_14932(testOutputHelper))
                     {
-                        test.CanIndexMapWithFanout();
+                        await test.CanIndexRollups();
                     }
                 }
                 catch (Exception e)

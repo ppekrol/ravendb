@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FastTests;
 using Raven.Client.Documents.Indexes.TimeSeries;
@@ -68,7 +69,7 @@ namespace SlowTests.Issues
                 await database.TimeSeriesPolicyRunner.RunRollups();
                 await database.TimeSeriesPolicyRunner.DoRetention();
 
-                WaitForUserToContinueTheTest(store);
+                //WaitForUserToContinueTheTest(store);
 
                 WaitForIndexing(store);
                 RavenTestHelper.AssertNoIndexErrors(store);
@@ -103,6 +104,11 @@ namespace SlowTests.Issues
 
                     var results = session.Query<TimeSeriesIndex.Result, TimeSeriesIndex>()
                         .ToList();
+
+                    if (count != results.Count)
+                    {
+                        WaitForUserToContinueTheTest(store, debug: false);
+                    }
 
                     Assert.Equal(count, results.Count);
                 }
