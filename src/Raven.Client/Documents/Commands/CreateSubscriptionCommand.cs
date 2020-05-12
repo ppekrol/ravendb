@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net.Http;
 using Raven.Client.Documents.Conventions;
-using Raven.Client.Documents.Session;
 using Raven.Client.Documents.Subscriptions;
 using Raven.Client.Http;
 using Raven.Client.Json;
@@ -34,8 +33,7 @@ namespace Raven.Client.Documents.Commands
                 Method = HttpMethod.Put,
                 Content = new BlittableJsonContent(stream =>
                 {
-                    ctx.Write(stream, 
-                        EntityToBlittable.ConvertCommandToBlittable(_options, ctx));
+                    ctx.Write(stream, DocumentConventions.Default.Serialization.DefaultConverter.ToBlittable(_options, ctx));
                 })
             };
             return request;

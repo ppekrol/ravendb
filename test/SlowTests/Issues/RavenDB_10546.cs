@@ -149,7 +149,7 @@ namespace SlowTests.Issues
                     if (context == null)
                         throw new ArgumentNullException(nameof(context));
 
-                    _configuration = EntityToBlittable.ConvertCommandToBlittable(configuration, context);
+                    _configuration = DocumentConventions.Default.Serialization.DefaultConverter.ToBlittable(configuration, context);
                 }
 
 
@@ -198,7 +198,7 @@ namespace SlowTests.Issues
                     if (context == null)
                         throw new ArgumentNullException(nameof(context));
 
-                    _configuration = EntityToBlittable.ConvertCommandToBlittable(configuration, context);
+                    _configuration = DocumentConventions.Default.Serialization.DefaultConverter.ToBlittable(configuration, context);
                 }
 
 

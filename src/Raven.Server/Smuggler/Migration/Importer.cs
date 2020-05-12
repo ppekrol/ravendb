@@ -9,8 +9,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Raven.Client.Documents.Conventions;
 using Raven.Client.Documents.Operations;
-using Raven.Client.Documents.Session;
 using Raven.Client.Documents.Smuggler;
 using Raven.Client.Json.Converters;
 using Raven.Client.ServerWide.Operations;
@@ -95,7 +95,7 @@ namespace Raven.Server.Smuggler.Migration
                         DatabaseName = Options.DatabaseName
                     };
 
-                    var importInfoBlittable = EntityToBlittable.ConvertCommandToBlittable(importInfo, context);
+                    var importInfoBlittable = DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(importInfo, context);
                     await SaveLastOperationState(importInfoBlittable);
                     return;
                 }

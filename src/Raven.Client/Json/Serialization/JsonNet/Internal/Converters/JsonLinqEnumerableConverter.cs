@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace Raven.Client.Json.Converters
+namespace Raven.Client.Json.Serialization.JsonNet.Internal.Converters
 {
     /// <summary>
-    /// This converter is used when a property is a Linq-To-Entities query, enumerating and 
+    /// This converter is used when a property is a Linq-To-Entities query, enumerating and
     /// then serializing it as a json array.
     /// </summary>
-    public sealed class JsonLinqEnumerableConverter : JsonConverter
+    internal sealed class JsonLinqEnumerableConverter : JsonConverter
     {
         public static readonly JsonLinqEnumerableConverter Instance = new JsonLinqEnumerableConverter();
         private static readonly ConcurrentDictionary<Type, bool> _converterCache = new ConcurrentDictionary<Type, bool>();
@@ -43,7 +43,7 @@ namespace Raven.Client.Json.Converters
         /// </summary>
         /// <value><c>true</c> if this <see cref="JsonConverter"/> can read JSON; otherwise, <c>false</c>.</value>
         public override bool CanRead => false;
-        
+
         /// <summary>
         /// Reads the JSON representation of the object.
         /// </summary>

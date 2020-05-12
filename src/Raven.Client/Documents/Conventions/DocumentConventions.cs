@@ -9,16 +9,13 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CSharp.RuntimeBinder;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Linq;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Operations.Configuration;
 using Raven.Client.Documents.Session;
 using Raven.Client.Http;
-using Raven.Client.Json.Converters;
+using Raven.Client.Newtonsoft.Json;
 using Raven.Client.Util;
 using Sparrow;
 using Sparrow.Json;
@@ -64,6 +61,16 @@ namespace Raven.Client.Documents.Conventions
         public readonly BulkInsertConventions BulkInsert;
 
         public readonly AggressiveCacheConventions AggressiveCache;
+
+        public ISerializationConventions Serialization
+        {
+            get { return _serialization; }
+            set
+            {
+                AssertNotFrozen();
+                _serialization = value;
+            }
+        }
 
         public class AggressiveCacheConventions
         {
@@ -146,6 +153,8 @@ namespace Raven.Client.Documents.Conventions
         /// </summary>
         public DocumentConventions()
         {
+            Serialization = new JsonNetSerializationConventions();
+
             _topologyCacheLocation = AppContext.BaseDirectory;
 
             ReadBalanceBehavior = ReadBalanceBehavior.None;
@@ -172,13 +181,7 @@ namespace Raven.Client.Documents.Conventions
 
             MaxNumberOfRequestsPerSession = 30;
 
-            JsonContractResolver = new DefaultRavenContractResolver();
-            CustomizeJsonSerializer = serializer => { };
-            CustomizeJsonDeserializer = serializer => { };
-
             BulkInsert = new BulkInsertConventions(this);
-
-            DeserializeEntityFromBlittable = new JsonNetBlittableEntitySerializer(this).EntityFromJsonStream;
 
             PreserveDocumentPropertiesNotFoundOnModel = true;
 
@@ -218,21 +221,19 @@ namespace Raven.Client.Documents.Conventions
         private Func<dynamic, string> _findCollectionNameForDynamic;
         private Func<dynamic, string> _findClrTypeNameForDynamic;
         private Func<Type, string> _findCollectionName;
-        private IContractResolver _jsonContractResolver;
+
         private Func<Type, string> _findClrTypeName;
         private Func<string, BlittableJsonReaderObject, string> _findClrType;
         private bool _useOptimisticConcurrency;
         private bool _throwIfQueryPageSizeIsNotSet;
         private bool _addIdFieldToDynamicObjects;
         private int _maxNumberOfRequestsPerSession;
-        private Action<JsonSerializer> _customizeJsonSerializer;
-        private Action<JsonSerializer> _customizeJsonDeserializer;
+
         private TimeSpan? _requestTimeout;
         private TimeSpan _secondBroadcastAttemptTimeout;
         private TimeSpan _firstBroadcastAttemptTimeout;
 
         private ReadBalanceBehavior _readBalanceBehavior;
-        private Func<Type, BlittableJsonReaderObject, object> _deserializeEntityFromBlittable;
         private bool _preserveDocumentPropertiesNotFoundOnModel;
         private Size _maxHttpCacheSize;
         private bool? _useCompression;
@@ -243,6 +244,7 @@ namespace Raven.Client.Documents.Conventions
         private Version _httpVersion;
         private bool _sendApplicationIdentifier;
         private Size _maxContextSizeToKeep;
+        private ISerializationConventions _serialization;
 
         public Size MaxContextSizeToKeep
         {
@@ -302,7 +304,7 @@ namespace Raven.Client.Documents.Conventions
         /// Set the timeout for the second broadcast attempt.
         /// Default: 30 Seconds.
         ///
-        /// Upon failure of the first attempt the request executor will resend the command to all nodes simultaneously. 
+        /// Upon failure of the first attempt the request executor will resend the command to all nodes simultaneously.
         /// </summary>
         public TimeSpan SecondBroadcastAttemptTimeout
         {
@@ -355,16 +357,6 @@ namespace Raven.Client.Documents.Conventions
             }
         }
 
-        public Func<Type, BlittableJsonReaderObject, object> DeserializeEntityFromBlittable
-        {
-            get => _deserializeEntityFromBlittable;
-            set
-            {
-                AssertNotFrozen();
-                _deserializeEntityFromBlittable = value;
-            }
-        }
-
         public ReadBalanceBehavior ReadBalanceBehavior
         {
             get => _readBalanceBehavior;
@@ -372,33 +364,6 @@ namespace Raven.Client.Documents.Conventions
             {
                 AssertNotFrozen();
                 _readBalanceBehavior = value;
-            }
-        }
-
-        /// <summary>
-        ///     Register an action to customize the json serializer used by the <see cref="DocumentStore" />
-        /// </summary>
-        public Action<JsonSerializer> CustomizeJsonSerializer
-        {
-            get => _customizeJsonSerializer;
-            set
-            {
-                AssertNotFrozen();
-                _customizeJsonSerializer = value;
-            }
-        }
-
-        /// <summary>
-        ///     Register an action to customize the json serializer used by the <see cref="DocumentStore" /> for deserializations.
-        ///     When creating a JsonSerializer, the CustomizeJsonSerializer is always called before CustomizeJsonDeserializer
-        /// </summary>
-        public Action<JsonSerializer> CustomizeJsonDeserializer
-        {
-            get => _customizeJsonDeserializer;
-            set
-            {
-                AssertNotFrozen();
-                _customizeJsonDeserializer = value;
             }
         }
 
@@ -501,20 +466,6 @@ namespace Raven.Client.Documents.Conventions
         }
 
         /// <summary>
-        ///     Gets or sets the json contract resolver.
-        /// </summary>
-        /// <value>The json contract resolver.</value>
-        public IContractResolver JsonContractResolver
-        {
-            get => _jsonContractResolver;
-            set
-            {
-                AssertNotFrozen();
-                _jsonContractResolver = value;
-            }
-        }
-
-        /// <summary>
         ///     Gets or sets the function to find the collection name for given type.
         /// </summary>
         public Func<Type, string> FindCollectionName
@@ -539,7 +490,7 @@ namespace Raven.Client.Documents.Conventions
                 _findCollectionNameForDynamic = value;
             }
         }
-        
+
         /// <summary>
         ///     Gets or sets the function to find the collection name for dynamic type.
         /// </summary>
@@ -775,7 +726,7 @@ namespace Raven.Client.Documents.Conventions
                 return null;
 
             // we want to reject queries and other operations on abstract types, because you usually
-            // want to use them for polymorphic queries, and that require the conventions to be 
+            // want to use them for polymorphic queries, and that require the conventions to be
             // applied properly, so we reject the behavior and hint to the user explicitly
             if (t.GetTypeInfo().IsInterface)
                 throw new InvalidOperationException("Cannot find collection name for interface " + t.FullName +
@@ -893,60 +844,6 @@ namespace Raven.Client.Documents.Conventions
             return this;
         }
 
-        private JsonSerializer CreateInitialSerializer()
-        {
-            return new JsonSerializer
-            {
-                DateParseHandling = DateParseHandling.None,
-                ObjectCreationHandling = ObjectCreationHandling.Auto,
-                ContractResolver = JsonContractResolver,
-                TypeNameHandling = TypeNameHandling.Auto,
-                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
-                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-                FloatParseHandling = FloatParseHandling.Double
-            };
-        }
-
-        private void PostJsonSerializerInitiation(JsonSerializer jsonSerializer)
-        {
-            if (SaveEnumsAsIntegers == false)
-                jsonSerializer.Converters.Add(new StringEnumConverter());
-
-            jsonSerializer.Converters.Add(JsonDateTimeISO8601Converter.Instance);
-            jsonSerializer.Converters.Add(JsonLuceneDateTimeConverter.Instance);
-            jsonSerializer.Converters.Add(JsonObjectConverter.Instance);
-            jsonSerializer.Converters.Add(JsonDictionaryDateTimeKeysConverter.Instance);
-            jsonSerializer.Converters.Add(ParametersConverter.Instance);
-            jsonSerializer.Converters.Add(JsonLinqEnumerableConverter.Instance);
-            jsonSerializer.Converters.Add(JsonIMetadataDictionaryConverter.Instance);
-            jsonSerializer.Converters.Add(SizeConverter.Instance);
-        }
-
-        /// <summary>
-        ///     Creates the serializer.
-        /// </summary>
-        /// <returns></returns>
-        public JsonSerializer CreateSerializer()
-        {
-            var jsonSerializer = CreateInitialSerializer();
-            CustomizeJsonSerializer(jsonSerializer);
-            PostJsonSerializerInitiation(jsonSerializer);
-            return jsonSerializer;
-        }
-
-        /// <summary>
-        ///     Creates the serializer.
-        /// </summary>
-        /// <returns></returns>
-        public JsonSerializer CreateDeserializer()
-        {
-            var jsonSerializer = CreateInitialSerializer();
-            CustomizeJsonSerializer(jsonSerializer);
-            CustomizeJsonDeserializer(jsonSerializer);
-            PostJsonSerializerInitiation(jsonSerializer);
-            return jsonSerializer;
-        }
-
         /// <summary>
         ///     Get the CLR type (if exists) from the document
         /// </summary>
@@ -972,10 +869,10 @@ namespace Raven.Client.Documents.Conventions
                     // isn't there
                 }
             }
-            
+
             return FindClrTypeName(entity.GetType());
         }
-        
+
         /// <summary>
         ///     Get the CLR type name to be stored in the entity metadata
         /// </summary>
@@ -1213,6 +1110,8 @@ namespace Raven.Client.Documents.Conventions
 
         internal void Freeze()
         {
+            Serialization.Freeze(this);
+
             _frozen = true;
         }
 

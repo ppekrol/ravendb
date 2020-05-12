@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Raven.Client.Documents.Conventions;
-using Raven.Client.Documents.Session;
 using Sparrow.Json;
 
 namespace Raven.Client.Documents.Operations.CompareExchange
@@ -83,7 +82,7 @@ namespace Raven.Client.Documents.Operations.CompareExchange
                 }
                 else
                 {
-                    var converted = (ResultHolder)EntityToBlittable.ConvertToEntity(typeof(ResultHolder), null, raw, conventions);
+                    var converted = conventions.Serialization.DefaultConverter.FromBlittable<ResultHolder>(raw);
                     return new CompareExchangeValue<T>(key, index, converted.Object);
                 }
             }

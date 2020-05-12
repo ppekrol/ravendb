@@ -1,9 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
-using System.Web;
 using Raven.Client.Documents.Conventions;
-using Raven.Client.Documents.Session;
 using Raven.Client.Http;
 using Raven.Client.Json;
 using Raven.Client.Util;
@@ -57,9 +55,10 @@ namespace Raven.Client.Documents.Operations.CompareExchange
                 url = $"{node.Url}/databases/{node.Database}/cmpxchg?key={Uri.EscapeDataString(_key)}&index={_index}";
                 var djv = new DynamicJsonValue
                 {
-                    [Constants.CompareExchange.ObjectFieldName] = EntityToBlittable.ConvertToBlittableForCompareExchangeIfNeeded(_value, _conventions, ctx, _conventions.CreateSerializer(), documentInfo: null, removeIdentityProperty: false)
+                    //[Constants.CompareExchange.ObjectFieldName] = EntityToBlittable.ConvertToBlittableForCompareExchangeIfNeeded(_value, _conventions, ctx, _conventions.Serialization.CreateSerializer(), documentInfo: null, removeIdentityProperty: false) // TODO [ppekrol]
+                    [Constants.CompareExchange.ObjectFieldName] = null
                 };
-               var blittable = ctx.ReadObject(djv,_key);
+                var blittable = ctx.ReadObject(djv, _key);
 
                 var request = new HttpRequestMessage
                 {

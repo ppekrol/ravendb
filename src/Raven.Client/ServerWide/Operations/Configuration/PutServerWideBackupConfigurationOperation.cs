@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net.Http;
 using Raven.Client.Documents.Conventions;
-using Raven.Client.Documents.Session;
 using Raven.Client.Http;
 using Raven.Client.Json;
 using Raven.Client.Json.Converters;
@@ -36,7 +35,7 @@ namespace Raven.Client.ServerWide.Operations.Configuration
                 if (context == null)
                     throw new ArgumentNullException(nameof(context));
 
-                _configuration = EntityToBlittable.ConvertCommandToBlittable(configuration, context);
+                _configuration = DocumentConventions.Default.Serialization.DefaultConverter.ToBlittable(configuration, context);
             }
 
             public override bool IsReadRequest => false;
@@ -63,12 +62,12 @@ namespace Raven.Client.ServerWide.Operations.Configuration
             }
         }
     }
-    
-    public class PutServerWideBackupConfigurationResponse : IDynamicJson 
+
+    public class PutServerWideBackupConfigurationResponse : IDynamicJson
     {
-        public string Name { get; set; } 
+        public string Name { get; set; }
         public long RaftCommandIndex { get; set; }
-        
+
         public DynamicJsonValue ToJson()
         {
             return new DynamicJsonValue
