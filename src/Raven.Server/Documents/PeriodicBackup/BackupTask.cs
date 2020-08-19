@@ -4,12 +4,13 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading;
+using CliWrap;
 using Raven.Client;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Operations.Backups;
 using Raven.Client.Documents.Smuggler;
-using Raven.Client.Exceptions.Security;
 using Raven.Client.ServerWide.Operations.Configuration;
 using Raven.Client.Util;
 using Raven.Server.Config.Settings;
@@ -29,6 +30,7 @@ using Raven.Server.Smuggler.Documents.Data;
 using Raven.Server.Utils;
 using Sparrow.Json;
 using Sparrow.Logging;
+using Sparrow.Server.Platform;
 using DatabaseSmuggler = Raven.Server.Smuggler.Documents.DatabaseSmuggler;
 
 namespace Raven.Server.Documents.PeriodicBackup
@@ -298,71 +300,11 @@ namespace Raven.Server.Documents.PeriodicBackup
             var command = backupSettings.GetBackupConfigurationScript.Exec;
             var arguments = backupSettings.GetBackupConfigurationScript.Arguments;
 
-            var startInfo = new ProcessStartInfo
+            using (var outputStream = RavenProcess.ExecuteWithStream(command, arguments, backupSettings.GetBackupConfigurationScript.TimeoutInMs).StandardOutput)
             {
-                FileName = command,
-                Arguments = arguments,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
-
-            Process process;
-
-            try
-            {
-                process = Process.Start(startInfo);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException($"Unable to get backup configuration by executing {command} {arguments}. Failed to start process.", e);
-            }
-
-            using (var ms = new MemoryStream())
-            {
-                var readErrors = process.StandardError.ReadToEndAsync();
-                var readStdOut = process.StandardOutput.BaseStream.CopyToAsync(ms);
-                var timeoutInMs = backupSettings.GetBackupConfigurationScript.TimeoutInMs;
-
-                string GetStdError()
-                {
-                    try
-                    {
-                        return readErrors.Result;
-                    }
-                    catch
-                    {
-                        return "Unable to get stdout";
-                    }
-                }
-
-                try
-                {
-                    readStdOut.Wait(timeoutInMs);
-                    readErrors.Wait(timeoutInMs);
-                }
-                catch (Exception e)
-                {
-                    throw new InvalidOperationException($"Unable to get backup configuration by executing {command} {arguments}, waited for {timeoutInMs}ms but the process didn't exit. Stderr: {GetStdError()}", e);
-                }
-
-                if (process.WaitForExit(timeoutInMs) == false)
-                {
-                    process.Kill();
-
-                    throw new InvalidOperationException($"Unable to get backup configuration by executing {command} {arguments}, waited for {timeoutInMs}ms but the process didn't exit. Stderr: {GetStdError()}");
-                }
-
-                if (process.ExitCode != 0)
-                {
-                    throw new InvalidOperationException($"Unable to get backup configuration by executing {command} {arguments}, the exit code was {process.ExitCode}. Stderr: {GetStdError()}");
-                }
-
                 using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out JsonOperationContext context))
                 {
-                    ms.Position = 0;
-                    var configuration = context.ReadForMemory(ms, "backup-configuration-from-script");
+                    var configuration = context.ReadForMemory(outputStream, "backup-configuration-from-script");
                     var result = deserializeSettingsFunc(configuration);
                     if (_isServerWide)
                         updateServerWideSettingsFunc?.Invoke(result);
@@ -587,7 +529,7 @@ namespace Raven.Server.Documents.PeriodicBackup
                         }
                         else
                         {
-                            if (_backupResult.GetLastEtag() == _previousBackupStatus.LastEtag && 
+                            if (_backupResult.GetLastEtag() == _previousBackupStatus.LastEtag &&
                                 _backupResult.GetLastRaftIndex() == _previousBackupStatus.LastRaftIndex.LastEtag)
                             {
                                 internalBackupResult.LastDocumentEtag = startDocumentEtag ?? 0;
@@ -852,7 +794,6 @@ namespace Raven.Server.Documents.PeriodicBackup
 
         public static void SaveBackupStatus(PeriodicBackupStatus status, DocumentDatabase documentDatabase, Logger logger)
         {
-
             try
             {
                 var command = new UpdatePeriodicBackupStatusCommand(documentDatabase.Name, RaftIdGenerator.NewId())

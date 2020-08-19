@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Raven.Client.Http;
-using Sparrow;
 using Sparrow.Logging;
+using Sparrow.Server.Platform;
 using Sparrow.Utils;
 
 namespace Raven.Server.Https
@@ -33,7 +29,7 @@ namespace Raven.Server.Https
         {
             if (string.IsNullOrEmpty(_server.Configuration.Security.CertificateValidationExec))
                 return;
-            
+
             _externalCertificateValidationCallbackCache = new ConcurrentDictionary<Key, Task<CachedValue>>();
 
             RequestExecutor.RemoteCertificateValidationCallback += (sender, cert, chain, errors) => ExternalCertificateValidationCallback(sender, cert, chain, errors, _logger);
@@ -43,6 +39,7 @@ namespace Raven.Server.Https
         {
             _externalCertificateValidationCallbackCache?.Clear();
         }
+
         private CachedValue CheckExternalCertificateValidation(string senderHostname, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors, Logger log)
         {
             var base64Cert = Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
@@ -54,90 +51,25 @@ namespace Raven.Server.Https
                        $"{CommandLineArgumentEscaper.EscapeSingleArg(base64Cert)} " +
                        $"{CommandLineArgumentEscaper.EscapeSingleArg(sslPolicyErrors.ToString())}";
 
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = _server.Configuration.Security.CertificateValidationExec,
-                Arguments = args,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
-
-            var sw = Stopwatch.StartNew();
-            Process process;
-            try
-            {
-                process = Process.Start(startInfo);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException($"Unable to execute '{_server.Configuration.Security.CertificateValidationExec} {args}'. Failed to start process.", e);
-            }
-
-            var readStdOut = process.StandardOutput.ReadToEndAsync();
-            var readErrors = process.StandardError.ReadToEndAsync();
-
-            string GetStdError()
-            {
-                try
-                {
-                    return readErrors.Result;
-                }
-                catch (Exception e)
-                {
-                    return $"Unable to get stderr, got exception: {e}";
-                }
-            }
-
-            string GetStdOut()
-            {
-                try
-                {
-                    return readStdOut.Result;
-                }
-                catch (Exception e)
-                {
-                    return $"Unable to get stdout, got exception: {e}";
-                }
-            }
-
-            if (process.WaitForExit((int)timeout.TotalMilliseconds) == false)
-            {
-                process.Kill();
-                throw new InvalidOperationException($"Unable to execute '{_server.Configuration.Security.CertificateValidationExec} {args}', waited for {(int)timeout.TotalMilliseconds} ms but the process didn't exit. Output: {GetStdOut()}{Environment.NewLine}Errors: {GetStdError()}");
-            }
-
-            try
-            {
-                readStdOut.Wait(timeout);
-                readErrors.Wait(timeout);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException($"Unable to read redirected stderr and stdout when executing '{_server.Configuration.Security.CertificateValidationExec} {args}'", e);
-            }
-
-            string output = GetStdOut();
-            string errors = GetStdError();
+            var result = RavenProcess.ExecuteWithString(_server.Configuration.Security.CertificateValidationExec, args, timeout);
 
             // Can have exit code 0 (success) but still get errors. We log the errors anyway.
             if (log.IsOperationsEnabled)
-                log.Operations($"Executing '{_server.Configuration.Security.CertificateValidationExec} {args}' took {sw.ElapsedMilliseconds:#,#;;0} ms. Exit code: {process.ExitCode}{Environment.NewLine}Output: {output}{Environment.NewLine}Errors: {errors}{Environment.NewLine}");
+                log.Operations($"Executing '{_server.Configuration.Security.CertificateValidationExec} {args}' took {result.RunTime.TotalMilliseconds:#,#;;0} ms. Exit code: {result.ExitCode}{Environment.NewLine}Output: {result.StandardOutput}{Environment.NewLine}Errors: {result.ErrorOutput}{Environment.NewLine}");
 
-            if (process.ExitCode != 0)
+            if (result.ExitCode != 0)
             {
                 throw new InvalidOperationException(
-                    $"Command or executable '{_server.Configuration.Security.CertificateValidationExec} {args}' failed. Exit code: {process.ExitCode}{Environment.NewLine}Output: {output}{Environment.NewLine}Errors: {errors}{Environment.NewLine}");
+                    $"Command or executable '{_server.Configuration.Security.CertificateValidationExec} {args}' failed. Exit code: {result.ExitCode}{Environment.NewLine}Output: {result.StandardOutput}{Environment.NewLine}Errors: {result.ErrorOutput}{Environment.NewLine}");
             }
 
-            if (bool.TryParse(output, out bool result) == false)
+            if (bool.TryParse(result.StandardOutput, out bool boolResult) == false)
             {
                 throw new InvalidOperationException(
-                    $"Cannot parse to boolean the result of Command or executable '{_server.Configuration.Security.CertificateValidationExec} {args}'. Exit code: {process.ExitCode}{Environment.NewLine}Output: {output}{Environment.NewLine}Errors: {errors}{Environment.NewLine}");
+                    $"Cannot parse to boolean the result of Command or executable '{_server.Configuration.Security.CertificateValidationExec} {args}'. Exit code: {result.ExitCode}{Environment.NewLine}Output: {result.StandardOutput}{Environment.NewLine}Errors: {result.ErrorOutput}{Environment.NewLine}");
             }
 
-            return new CachedValue { Valid = result, Until = result ? DateTime.UtcNow.AddMinutes(15) : DateTime.UtcNow.AddSeconds(30) };
+            return new CachedValue { Valid = boolResult, Until = boolResult ? DateTime.UtcNow.AddMinutes(15) : DateTime.UtcNow.AddSeconds(30) };
         }
 
         public bool ExternalCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors, Logger log)
@@ -189,7 +121,6 @@ namespace Raven.Server.Https
             var nextTask = Interlocked.CompareExchange(ref cachedValue.Next, task, null);
             if (nextTask != null)
                 return ReturnTaskValue(nextTask);
-
 
             task.ContinueWith(done =>
             {
