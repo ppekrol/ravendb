@@ -18,6 +18,7 @@ function BuildServer ( $srcDir, $outDir, $target, $debug) {
     
     if ($target) {
         $commandArgs += $( "--runtime", "$($target.Runtime)" )
+		$commandArgs += $( "--self-contained", "true" )
     }
 
     $commandArgs += "$srcDir"
@@ -31,6 +32,10 @@ function BuildServer ( $srcDir, $outDir, $target, $debug) {
     }
 
     $commandArgs += '/p:SourceLinkCreate=true'
+	
+	if ($target) {
+		$commandArgs += '/p:PublishSingleFile=true'
+	}
 
     write-host -ForegroundColor Cyan "Publish server: $command $commandArgs"
     Invoke-Expression -Command "$command $commandArgs"
