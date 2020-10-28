@@ -68,19 +68,19 @@ namespace Raven.Client.Documents.Commands.MultiGet
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
-                Content = new BlittableJsonContent(stream =>
+                Content = new BlittableJsonContent(async stream =>
                 {
-                    using (var writer = new BlittableJsonTextWriter(ctx, stream))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(ctx, stream))
                     {
-                        writer.WriteStartObject();
+                        await writer.WriteStartObjectAsync().ConfigureAwait(false);
 
                         var first = true;
-                        writer.WritePropertyName("Requests");
-                        writer.WriteStartArray();
+                        await writer.WritePropertyNameAsync("Requests").ConfigureAwait(false);
+                        await writer.WriteStartArrayAsync().ConfigureAwait(false);
                         foreach (var command in _commands)
                         {
                             if (first == false)
-                                writer.WriteComma();
+                                await writer.WriteCommaAsync().ConfigureAwait(false);
                             first = false;
                             var cacheKey = GetCacheKey(command, out string _);
                             using (_cache.Get(ctx, cacheKey, out string cachedChangeVector, out var _))
@@ -92,48 +92,48 @@ namespace Raven.Client.Documents.Commands.MultiGet
                                 foreach (var header in command.Headers)
                                     headers[header.Key] = header.Value;
 
-                                writer.WriteStartObject();
+                                await writer.WriteStartObjectAsync().ConfigureAwait(false);
 
-                                writer.WritePropertyName(nameof(GetRequest.Url));
-                                writer.WriteString($"/databases/{node.Database}{command.Url}");
-                                writer.WriteComma();
+                                await writer.WritePropertyNameAsync(nameof(GetRequest.Url)).ConfigureAwait(false);
+                                await writer.WriteStringAsync($"/databases/{node.Database}{command.Url}").ConfigureAwait(false);
+                                await writer.WriteCommaAsync().ConfigureAwait(false);
 
-                                writer.WritePropertyName(nameof(GetRequest.Query));
-                                writer.WriteString(command.Query);
-                                writer.WriteComma();
+                                await writer.WritePropertyNameAsync(nameof(GetRequest.Query)).ConfigureAwait(false);
+                                await writer.WriteStringAsync(command.Query).ConfigureAwait(false);
+                                await writer.WriteCommaAsync().ConfigureAwait(false);
 
-                                writer.WritePropertyName(nameof(GetRequest.Method));
-                                writer.WriteString(command.Method?.Method);
-                                writer.WriteComma();
+                                await writer.WritePropertyNameAsync(nameof(GetRequest.Method)).ConfigureAwait(false);
+                                await writer.WriteStringAsync(command.Method?.Method).ConfigureAwait(false);
+                                await writer.WriteCommaAsync().ConfigureAwait(false);
 
-                                writer.WritePropertyName(nameof(GetRequest.Headers));
-                                writer.WriteStartObject();
+                                await writer.WritePropertyNameAsync(nameof(GetRequest.Headers)).ConfigureAwait(false);
+                                await writer.WriteStartObjectAsync().ConfigureAwait(false);
 
                                 var firstInner = true;
                                 foreach (var kvp in headers)
                                 {
                                     if (firstInner == false)
-                                        writer.WriteComma();
+                                        await writer.WriteCommaAsync().ConfigureAwait(false);
 
                                     firstInner = false;
-                                    writer.WritePropertyName(kvp.Key);
-                                    writer.WriteString(kvp.Value);
+                                    await writer.WritePropertyNameAsync(kvp.Key).ConfigureAwait(false);
+                                    await writer.WriteStringAsync(kvp.Value).ConfigureAwait(false);
                                 }
-                                writer.WriteEndObject();
-                                writer.WriteComma();
+                                await writer.WriteEndObjectAsync().ConfigureAwait(false);
+                                await writer.WriteCommaAsync().ConfigureAwait(false);
 
-                                writer.WritePropertyName(nameof(GetRequest.Content));
+                                await writer.WritePropertyNameAsync(nameof(GetRequest.Content)).ConfigureAwait(false);
                                 if (command.Content != null)
                                     command.Content.WriteContent(writer, ctx);
                                 else
-                                    writer.WriteNull();
+                                    await writer.WriteNullAsync().ConfigureAwait(false);
 
-                                writer.WriteEndObject();
+                                await writer.WriteEndObjectAsync().ConfigureAwait(false);
                             }
                         }
-                        writer.WriteEndArray();
+                        await writer.WriteEndArrayAsync().ConfigureAwait(false);
 
-                        writer.WriteEndObject();
+                        await writer.WriteEndObjectAsync().ConfigureAwait(false);
                     }
                 })
             };

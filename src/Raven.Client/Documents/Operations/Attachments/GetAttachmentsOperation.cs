@@ -54,37 +54,37 @@ namespace Raven.Client.Documents.Operations.Attachments
                 var request = new HttpRequestMessage
                 {
                     Method = HttpMethods.Post,
-                    Content = new BlittableJsonContent(stream =>
+                    Content = new BlittableJsonContent(async stream =>
                     {
-                        using (var writer = new BlittableJsonTextWriter(_context, stream))
+                        await using (var writer = new AsyncBlittableJsonTextWriter(_context, stream))
                         {
-                            writer.WriteStartObject();
+                            await writer.WriteStartObjectAsync().ConfigureAwait(false);
 
-                            writer.WritePropertyName(nameof(AttachmentType));
-                            writer.WriteString(_type.ToString());
-                            writer.WriteComma();
+                            await writer.WritePropertyNameAsync(nameof(AttachmentType)).ConfigureAwait(false);
+                            await writer.WriteStringAsync(_type.ToString()).ConfigureAwait(false);
+                            await writer.WriteCommaAsync().ConfigureAwait(false);
 
-                            writer.WritePropertyName(nameof(Attachments));
+                            await writer.WritePropertyNameAsync(nameof(Attachments)).ConfigureAwait(false);
 
-                            writer.WriteStartArray();
+                            await writer.WriteStartArrayAsync().ConfigureAwait(false);
                             var first = true;
                             foreach (var attachment in Attachments)
                             {
                                 if (first == false)
-                                    writer.WriteComma();
+                                    await writer.WriteCommaAsync().ConfigureAwait(false);
                                 first = false;
 
-                                writer.WriteStartObject();
-                                writer.WritePropertyName(nameof(AttachmentRequest.DocumentId));
-                                writer.WriteString(attachment.DocumentId);
-                                writer.WriteComma();
-                                writer.WritePropertyName(nameof(AttachmentRequest.Name));
-                                writer.WriteString(attachment.Name);
-                                writer.WriteEndObject();
+                                await writer.WriteStartObjectAsync().ConfigureAwait(false);
+                                await writer.WritePropertyNameAsync(nameof(AttachmentRequest.DocumentId)).ConfigureAwait(false);
+                                await writer.WriteStringAsync(attachment.DocumentId).ConfigureAwait(false);
+                                await writer.WriteCommaAsync().ConfigureAwait(false);
+                                await writer.WritePropertyNameAsync(nameof(AttachmentRequest.Name)).ConfigureAwait(false);
+                                await writer.WriteStringAsync(attachment.Name).ConfigureAwait(false);
+                                await writer.WriteEndObjectAsync().ConfigureAwait(false);
                             }
-                            writer.WriteEndArray();
+                            await writer.WriteEndArrayAsync().ConfigureAwait(false);
 
-                            writer.WriteEndObject();
+                            await writer.WriteEndObjectAsync().ConfigureAwait(false);
                         }
                     })
                 };
@@ -124,7 +124,7 @@ namespace Raven.Client.Documents.Operations.Attachments
                     var bufferSize = parser.BufferSize - parser.BufferOffset;
                     var copy = ArrayPool<byte>.Shared.Rent(bufferSize);
                     var copyMemory = new Memory<byte>(copy);
-                    buffer.Memory.Slice(parser.BufferOffset, bufferSize).CopyTo(copyMemory);
+                    buffer.Memory.Memory.Slice(parser.BufferOffset, bufferSize).CopyTo(copyMemory);
 
                     Result = Iterate(stream, copy, bufferSize).GetEnumerator();
                 }

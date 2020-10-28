@@ -12,61 +12,47 @@ namespace Sparrow.Json
     public class AsyncBlittableJsonTextWriter : AbstractBlittableJsonTextWriter
     {
         private readonly Stream _outputStream;
-        private readonly CancellationToken _cancellationToken;
+        private readonly CancellationToken _token;
 
-        public AsyncBlittableJsonTextWriter(JsonOperationContext context, Stream stream, CancellationToken cancellationToken) : base(context, context.CheckoutMemoryStream())
+        public AsyncBlittableJsonTextWriter(JsonOperationContext context, Stream stream, CancellationToken token = default)
+            : base(context, context.CheckoutMemoryStream())
         {
             _outputStream = stream;
-            _cancellationToken = cancellationToken;
+            _token = token;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ValueTask<int> MaybeOuterFlushAsync()
+        public async ValueTask<int> MaybeOuterFlushAsync()
         {
             var innerStream = _stream as MemoryStream;
             if (innerStream == null)
                 ThrowInvalidTypeException(_stream?.GetType());
             if (innerStream.Length * 2 <= innerStream.Capacity)
-                return new ValueTask<int>(0);
+                return 0;
 
-            Flush();
-            return new ValueTask<int>(OuterFlushAsync());
+            await FlushAsync().ConfigureAwait(false);
+            return await OuterFlushAsync().ConfigureAwait(false);
         }
 
-        public async Task<int> OuterFlushAsync()
+        public async ValueTask<int> OuterFlushAsync()
         {
             var innerStream = _stream as MemoryStream;
             if (innerStream == null)
                 ThrowInvalidTypeException(_stream?.GetType());
-            Flush();
+            await FlushAsync().ConfigureAwait(false);
             innerStream.TryGetBuffer(out var bytes);
             var bytesCount = bytes.Count;
             if (bytesCount == 0)
                 return 0;
-            await _outputStream.WriteAsync(bytes.Array, bytes.Offset, bytesCount, _cancellationToken).ConfigureAwait(false);
+            await _outputStream.WriteAsync(bytes.Array, bytes.Offset, bytesCount, _token).ConfigureAwait(false);
             innerStream.SetLength(0);
             return bytesCount;
         }
 
-        public int OuterFlush()
+        public override async ValueTask DisposeAsync()
         {
-            var innerStream = _stream as MemoryStream;
-            if (innerStream == null)
-                ThrowInvalidTypeException(_stream?.GetType());
-            Flush();
-            innerStream.TryGetBuffer(out var bytes);
-            var bytesCount = bytes.Count;
-            if (bytesCount == 0)
-                return 0;
-            _outputStream.Write(bytes.Array, bytes.Offset, bytesCount);
-            _stream.SetLength(0);
-            return bytesCount;
-        }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            OuterFlush();
+            await base.DisposeAsync().ConfigureAwait(false);
+            await OuterFlushAsync().ConfigureAwait(false);
             _context.ReturnMemoryStream((MemoryStream)_stream);
         }
 
@@ -76,14 +62,7 @@ namespace Sparrow.Json
         }
     }
 
-    public class BlittableJsonTextWriter : AbstractBlittableJsonTextWriter
-    {
-        public BlittableJsonTextWriter(JsonOperationContext context, Stream stream) : base(context, stream)
-        {
-        }
-    }
-
-    public abstract unsafe class AbstractBlittableJsonTextWriter : IDisposable
+    public abstract class AbstractBlittableJsonTextWriter : IAsyncDisposable
     {
         protected readonly JsonOperationContext _context;
         protected readonly Stream _stream;
@@ -95,14 +74,17 @@ namespace Sparrow.Json
         private const byte Quote = (byte)'"';
         private const byte Colon = (byte)':';
         public static readonly byte[] NaNBuffer = { (byte)'"', (byte)'N', (byte)'a', (byte)'N', (byte)'"' };
+
         public static readonly byte[] PositiveInfinityBuffer =
         {
             (byte)'"', (byte)'I', (byte)'n', (byte)'f', (byte)'i', (byte)'n', (byte)'i', (byte)'t', (byte)'y', (byte)'"'
         };
+
         public static readonly byte[] NegativeInfinityBuffer =
         {
             (byte)'"', (byte)'-', (byte)'I', (byte)'n', (byte)'f', (byte)'i', (byte)'n', (byte)'i', (byte)'t', (byte)'y', (byte)'"'
         };
+
         public static readonly byte[] NullBuffer = { (byte)'n', (byte)'u', (byte)'l', (byte)'l', };
         public static readonly byte[] TrueBuffer = { (byte)'t', (byte)'r', (byte)'u', (byte)'e', };
         public static readonly byte[] FalseBuffer = { (byte)'f', (byte)'a', (byte)'l', (byte)'s', (byte)'e', };
@@ -110,11 +92,13 @@ namespace Sparrow.Json
         private static readonly byte[] EscapeCharacters;
         public static readonly byte[][] ControlCodeEscapes;
 
+        private readonly RavenMemory _buffer;
+        private readonly RavenMemory _auxiliarBuffer;
+
         private int _pos;
-        private readonly byte* _buffer;
         private JsonOperationContext.MemoryBuffer.ReturnBuffer _returnBuffer;
         private readonly JsonOperationContext.MemoryBuffer _pinnedBuffer;
-        private readonly AllocatedMemoryData _parserAuxiliarMemory;
+        private readonly AllocatedMemoryData _returnAuxiliarBuffer;
 
         static AbstractBlittableJsonTextWriter()
         {
@@ -148,28 +132,29 @@ namespace Sparrow.Json
             _stream = stream;
 
             _returnBuffer = context.GetMemoryBuffer(out _pinnedBuffer);
-            _buffer = _pinnedBuffer.Pointer;
+            _buffer = _pinnedBuffer.Memory;
 
-            _parserAuxiliarMemory = context.GetMemory(32);
+            _returnAuxiliarBuffer = context.GetMemory(32);
+            _auxiliarBuffer = _returnAuxiliarBuffer.Memory;
         }
 
         public int Position => _pos;
 
         public override string ToString()
         {
-            return Encodings.Utf8.GetString(_pinnedBuffer.Memory.Span.Slice(0, _pos));
+            return Encodings.Utf8.GetString(_buffer.Memory.Span.Slice(0, _pos));
         }
 
-        public void WriteObject(BlittableJsonReaderObject obj)
+        public async ValueTask WriteObjectAsync(BlittableJsonReaderObject obj)
         {
             if (obj == null)
             {
-                WriteNull();
+                await WriteNullAsync().ConfigureAwait(false);
                 return;
             }
 
-            WriteStartObject();
-            
+            await WriteStartObjectAsync().ConfigureAwait(false);
+
             var prop = new BlittableJsonReaderObject.PropertyDetails();
             using (var buffer = obj.GetPropertiesByInsertionOrder())
             {
@@ -178,23 +163,22 @@ namespace Sparrow.Json
                 {
                     if (i != 0)
                     {
-                        WriteComma();
+                        await WriteCommaAsync().ConfigureAwait(false);
                     }
 
                     obj.GetPropertyByIndex(props.Array[i + props.Offset], ref prop);
-                    WritePropertyName(prop.Name);
+                    await WritePropertyNameAsync(prop.Name).ConfigureAwait(false);
 
-                    WriteValue(prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value);
+                    await WriteValueAsync(prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value).ConfigureAwait(false);
                 }
             }
 
-
-            WriteEndObject();
+            await WriteEndObjectAsync().ConfigureAwait(false);
         }
 
-        private void WriteArrayToStream(BlittableJsonReaderArray blittableArray)
+        private async ValueTask WriteArrayToStreamAsync(BlittableJsonReaderArray blittableArray)
         {
-            WriteStartArray();
+            await WriteStartArrayAsync().ConfigureAwait(false);
             var length = blittableArray.Length;
             for (var i = 0; i < length; i++)
             {
@@ -202,78 +186,84 @@ namespace Sparrow.Json
 
                 if (i != 0)
                 {
-                    WriteComma();
+                    await WriteCommaAsync().ConfigureAwait(false);
                 }
                 // write field value
-                WriteValue(propertyValueAndType.Item2, propertyValueAndType.Item1);
-
+                await WriteValueAsync(propertyValueAndType.Item2, propertyValueAndType.Item1).ConfigureAwait(false);
             }
-            WriteEndArray();
+            await WriteEndArrayAsync().ConfigureAwait(false);
         }
 
-        public void WriteValue(BlittableJsonToken token, object val)
+        public async ValueTask WriteValueAsync(BlittableJsonToken token, object val)
         {
             switch (token)
             {
                 case BlittableJsonToken.String:
-                    WriteString((LazyStringValue)val);
+                    await WriteStringAsync((LazyStringValue)val).ConfigureAwait(false);
                     break;
+
                 case BlittableJsonToken.Integer:
-                    WriteInteger((long)val);
+                    await WriteIntegerAsync((long)val).ConfigureAwait(false);
                     break;
+
                 case BlittableJsonToken.StartArray:
-                    WriteArrayToStream((BlittableJsonReaderArray)val);
+                    await WriteArrayToStreamAsync((BlittableJsonReaderArray)val).ConfigureAwait(false);
                     break;
+
                 case BlittableJsonToken.EmbeddedBlittable:
                 case BlittableJsonToken.StartObject:
                     var blittableJsonReaderObject = (BlittableJsonReaderObject)val;
-                    WriteObject(blittableJsonReaderObject);
+                    await WriteObjectAsync(blittableJsonReaderObject).ConfigureAwait(false);
                     break;
+
                 case BlittableJsonToken.CompressedString:
-                    WriteString((LazyCompressedStringValue)val);
+                    await WriteStringAsync((LazyCompressedStringValue)val).ConfigureAwait(false);
                     break;
+
                 case BlittableJsonToken.LazyNumber:
-                    WriteDouble((LazyNumberValue)val);
+                    await WriteDoubleAsync((LazyNumberValue)val).ConfigureAwait(false);
                     break;
+
                 case BlittableJsonToken.Boolean:
-                    WriteBool((bool)val);
+                    await WriteBoolAsync((bool)val).ConfigureAwait(false);
                     break;
+
                 case BlittableJsonToken.Null:
-                    WriteNull();
+                    await WriteNullAsync().ConfigureAwait(false);
                     break;
+
                 case BlittableJsonToken.RawBlob:
                     var blob = (BlittableJsonReaderObject.RawBlob)val;
-                    WriteRawString(blob.Ptr, blob.Length);
+                    await WriteRawStringAsync(blob.Ptr.Memory, blob.Length).ConfigureAwait(false);
                     break;
+
                 default:
                     throw new DataMisalignedException($"Unidentified Type {token}");
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteDateTime(DateTime value, bool isUtc)
+        public async ValueTask WriteDateTimeAsync(DateTime value, bool isUtc)
         {
-            int size = value.GetDefaultRavenFormat(_parserAuxiliarMemory, isUtc);
+            int size = value.GetDefaultRavenFormat(_auxiliarBuffer.Memory.Span, isUtc);
 
-            var strBuffer = _parserAuxiliarMemory.Address;
-
-            WriteRawStringWhichMustBeWithoutEscapeChars(strBuffer, size);
+            await WriteRawStringWhichMustBeWithoutEscapeCharsAsync(_auxiliarBuffer.Memory, size).ConfigureAwait(false);
         }
 
-        public void WriteString(string str, bool skipEscaping = false)
+        public async ValueTask WriteStringAsync(string str, bool skipEscaping = false)
         {
             using (var lazyStr = _context.GetLazyString(str))
             {
-                WriteString(lazyStr, skipEscaping);
+                await WriteStringAsync(lazyStr, skipEscaping).ConfigureAwait(false);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteString(LazyStringValue str, bool skipEscaping = false)
+        public async ValueTask WriteStringAsync(LazyStringValue str, bool skipEscaping = false)
         {
             if (str == null)
             {
-                WriteNull();
+                await WriteNullAsync().ConfigureAwait(false);
                 return;
             }
 
@@ -281,13 +271,13 @@ namespace Sparrow.Json
 
             if (size == 1 && str.IsControlCodeCharacter(out var b))
             {
-                WriteString($@"\u{b:X4}", skipEscaping: true);
+                await WriteStringAsync($@"\u{b:X4}", skipEscaping: true).ConfigureAwait(false);
                 return;
             }
 
-            var strBuffer = str.Buffer;
+            var strBuffer = str.MemoryBuffer;
             var escapeSequencePos = size;
-            var numberOfEscapeSequences = skipEscaping ? 0 : BlittableJsonReaderBase.ReadVariableSizeInt(str.Buffer, ref escapeSequencePos);
+            var numberOfEscapeSequences = skipEscaping ? 0 : BlittableJsonReaderBase.ReadVariableSizeInt(strBuffer.Memory.Span, ref escapeSequencePos);
 
             // We ensure our buffer will have enough space to deal with the whole string.
 
@@ -296,32 +286,32 @@ namespace Sparrow.Json
             int bufferSize = 2 * numberOfEscapeSequences + size + NumberOfQuotesChars;
             if (bufferSize >= JsonOperationContext.MemoryBuffer.Size)
             {
-                UnlikelyWriteLargeString(strBuffer, size, numberOfEscapeSequences, escapeSequencePos); // OK, do it the slow way. 
+                await UnlikelyWriteLargeStringAsync(strBuffer.Memory, size, numberOfEscapeSequences, escapeSequencePos).ConfigureAwait(false); // OK, do it the slow way.
                 return;
             }
 
-            EnsureBuffer(size + NumberOfQuotesChars);
-            _buffer[_pos++] = Quote;
+            await EnsureBufferAsync(size + NumberOfQuotesChars).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = Quote;
 
             if (numberOfEscapeSequences == 0)
             {
-                // PERF: Fast Path. 
-                WriteRawString(strBuffer, size);
+                // PERF: Fast Path.
+                await WriteRawStringAsync(strBuffer.Memory, size).ConfigureAwait(false);
             }
             else
             {
-                UnlikelyWriteEscapeSequences(strBuffer, size, numberOfEscapeSequences, escapeSequencePos);
+                await UnlikelyWriteEscapeSequencesAsync(strBuffer.Memory, size, numberOfEscapeSequences, escapeSequencePos).ConfigureAwait(false);
             }
 
-            _buffer[_pos++] = Quote;
+            _buffer.Memory.Span[_pos++] = Quote;
         }
 
-        private void UnlikelyWriteEscapeSequences(byte* strBuffer, int size, int numberOfEscapeSequences, int escapeSequencePos)
+        private async ValueTask UnlikelyWriteEscapeSequencesAsync(Memory<byte> strBuffer, int size, int numberOfEscapeSequences, int escapeSequencePos)
         {
             // We ensure our buffer will have enough space to deal with the whole string.
             int bufferSize = 2 * numberOfEscapeSequences + size + 1;
 
-            EnsureBuffer(bufferSize);
+            await EnsureBufferAsync(bufferSize).ConfigureAwait(false);
 
             var ptr = strBuffer;
             var buffer = _buffer;
@@ -329,17 +319,18 @@ namespace Sparrow.Json
             {
                 numberOfEscapeSequences--;
 
-                var bytesToSkip = BlittableJsonReaderBase.ReadVariableSizeInt(ptr, ref escapeSequencePos);
+                var bytesToSkip = BlittableJsonReaderBase.ReadVariableSizeInt(ptr.Span, ref escapeSequencePos);
                 if (bytesToSkip > 0)
                 {
-                    WriteRawString(strBuffer, bytesToSkip);
-                    strBuffer += bytesToSkip;
+                    await WriteRawStringAsync(strBuffer, bytesToSkip).ConfigureAwait(false);
+                    strBuffer = strBuffer.Slice(bytesToSkip);
                     size -= bytesToSkip;
                 }
 
-                var escapeCharacter = *strBuffer++;
+                var escapeCharacter = strBuffer.Span[0];
+                strBuffer = strBuffer.Slice(1);
 
-                WriteEscapeCharacter(buffer, escapeCharacter);
+                await WriteEscapeCharacterAsync(buffer.Memory, escapeCharacter).ConfigureAwait(false);
 
                 size--;
             }
@@ -348,56 +339,58 @@ namespace Sparrow.Json
 
             // write remaining (or full string) to the buffer in one shot
             if (size > 0)
-                WriteRawString(strBuffer, size);
+                await WriteRawStringAsync(strBuffer, size).ConfigureAwait(false);
         }
 
-        private void UnlikelyWriteLargeString(byte* strBuffer, int size, int numberOfEscapeSequences, int escapeSequencePos)
+        private async ValueTask UnlikelyWriteLargeStringAsync(Memory<byte> strBuffer, int size, int numberOfEscapeSequences, int escapeSequencePos)
         {
             var ptr = strBuffer;
 
-            EnsureBuffer(1);
-            _buffer[_pos++] = Quote;
+            await EnsureBufferAsync(1).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = Quote;
 
             while (numberOfEscapeSequences > 0)
             {
                 numberOfEscapeSequences--;
-                var bytesToSkip = BlittableJsonReaderBase.ReadVariableSizeInt(ptr, ref escapeSequencePos);
+                var bytesToSkip = BlittableJsonReaderBase.ReadVariableSizeInt(ptr.Span, ref escapeSequencePos);
 
-                UnlikelyWriteLargeRawString(strBuffer, bytesToSkip);
-                strBuffer += bytesToSkip;
+                await UnlikelyWriteLargeRawStringAsync(strBuffer, bytesToSkip).ConfigureAwait(false);
+                strBuffer = strBuffer.Slice(bytesToSkip);
                 size -= bytesToSkip + 1 /*for the escaped char we skip*/;
-                var b = *(strBuffer++);
+                var b = strBuffer.Span[0];
+                strBuffer = strBuffer.Slice(1);
 
-                WriteEscapeCharacter(_buffer, b);
+                await WriteEscapeCharacterAsync(_buffer.Memory, b).ConfigureAwait(false);
             }
 
             // write remaining (or full string) to the buffer in one shot
-            UnlikelyWriteLargeRawString(strBuffer, size);
+            await UnlikelyWriteLargeRawStringAsync(strBuffer, size).ConfigureAwait(false);
 
-            EnsureBuffer(1);
-            _buffer[_pos++] = Quote;
+            await EnsureBufferAsync(1).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = Quote;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void WriteEscapeCharacter(byte* buffer, byte b)
+        private async ValueTask WriteEscapeCharacterAsync(Memory<byte> buffer, byte b)
         {
             byte r = EscapeCharacters[b];
             if (r == 0)
             {
-                EnsureBuffer(6);
-                buffer[_pos++] = (byte)'\\';
-                buffer[_pos++] = (byte)'u';
-                fixed (byte* esc = ControlCodeEscapes[b])
-                    Memory.Copy(buffer + _pos, esc, 4);
+                await EnsureBufferAsync(6).ConfigureAwait(false);
+                buffer.Span[_pos++] = (byte)'\\';
+                buffer.Span[_pos++] = (byte)'u';
+
+                ControlCodeEscapes[b].AsSpan(0, 4).CopyTo(buffer.Span.Slice(_pos));
+
                 _pos += 4;
                 return;
             }
 
             if (r != 255)
             {
-                EnsureBuffer(2);
-                buffer[_pos++] = (byte)'\\';
-                buffer[_pos++] = r;
+                await EnsureBufferAsync(2).ConfigureAwait(false);
+                buffer.Span[_pos++] = (byte)'\\';
+                buffer.Span[_pos++] = r;
                 return;
             }
 
@@ -410,47 +403,48 @@ namespace Sparrow.Json
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteString(LazyCompressedStringValue str)
+        public async ValueTask WriteStringAsync(LazyCompressedStringValue str)
         {
-            var strBuffer = str.DecompressToTempBuffer(out AllocatedMemoryData allocated, _context);
+            var strBuffer = str.DecompressToTempBuffer(out AllocatedMemoryData allocated, _context).Memory;
 
             try
             {
-                var strSrcBuffer = str.Buffer;
+                var strSrcBuffer = str.MemoryBuffer;
 
                 var size = str.UncompressedSize;
                 var escapeSequencePos = str.CompressedSize;
-                var numberOfEscapeSequences = BlittableJsonReaderBase.ReadVariableSizeInt(strSrcBuffer, ref escapeSequencePos);
+                var numberOfEscapeSequences = BlittableJsonReaderBase.ReadVariableSizeInt(strSrcBuffer.Memory.Span, ref escapeSequencePos);
 
                 // We ensure our buffer will have enough space to deal with the whole string.
                 int bufferSize = 2 * numberOfEscapeSequences + size + 2;
                 if (bufferSize >= JsonOperationContext.MemoryBuffer.Size)
                     goto WriteLargeCompressedString; // OK, do it the slow way instead.
 
-                EnsureBuffer(bufferSize);
+                await EnsureBufferAsync(bufferSize).ConfigureAwait(false);
 
-                _buffer[_pos++] = Quote;
+                _buffer.Memory.Span[_pos++] = Quote;
                 while (numberOfEscapeSequences > 0)
                 {
                     numberOfEscapeSequences--;
-                    var bytesToSkip = BlittableJsonReaderBase.ReadVariableSizeInt(strSrcBuffer, ref escapeSequencePos);
-                    WriteRawString(strBuffer, bytesToSkip);
-                    strBuffer += bytesToSkip;
+                    var bytesToSkip = BlittableJsonReaderBase.ReadVariableSizeInt(strSrcBuffer.Memory.Span, ref escapeSequencePos);
+                    await WriteRawStringAsync(strBuffer, bytesToSkip).ConfigureAwait(false);
+                    strBuffer = strBuffer.Slice(bytesToSkip);
                     size -= bytesToSkip + 1 /*for the escaped char we skip*/;
-                    var b = *(strBuffer++);
+                    var b = strBuffer.Span[0];
+                    strBuffer = strBuffer.Slice(1);
 
-                    WriteEscapeCharacter(_buffer, b);
+                    await WriteEscapeCharacterAsync(_buffer.Memory, b).ConfigureAwait(false);
                 }
 
                 // write remaining (or full string) to the buffer in one shot
-                WriteRawString(strBuffer, size);
+                await WriteRawStringAsync(strBuffer, size).ConfigureAwait(false);
 
-                _buffer[_pos++] = Quote;
+                _buffer.Memory.Span[_pos++] = Quote;
 
                 return;
 
             WriteLargeCompressedString:
-                UnlikelyWriteLargeString(numberOfEscapeSequences, strSrcBuffer, escapeSequencePos, strBuffer, size);
+                await UnlikelyWriteLargeStringAsync(numberOfEscapeSequences, strSrcBuffer.Memory, escapeSequencePos, strBuffer, size).ConfigureAwait(false);
             }
             finally
             {
@@ -459,112 +453,113 @@ namespace Sparrow.Json
             }
         }
 
-        private void UnlikelyWriteLargeString(int numberOfEscapeSequences, byte* strSrcBuffer, int escapeSequencePos, byte* strBuffer, int size)
+        private async ValueTask UnlikelyWriteLargeStringAsync(int numberOfEscapeSequences, Memory<byte> strSrcBuffer, int escapeSequencePos, Memory<byte> strBuffer, int size)
         {
-            EnsureBuffer(1);
-            _buffer[_pos++] = Quote;
+            await EnsureBufferAsync(1).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = Quote;
             while (numberOfEscapeSequences > 0)
             {
                 numberOfEscapeSequences--;
-                var bytesToSkip = BlittableJsonReaderBase.ReadVariableSizeInt(strSrcBuffer, ref escapeSequencePos);
-                WriteRawString(strBuffer, bytesToSkip);
-                strBuffer += bytesToSkip;
+                var bytesToSkip = BlittableJsonReaderBase.ReadVariableSizeInt(strSrcBuffer.Span, ref escapeSequencePos);
+                await WriteRawStringAsync(strBuffer, bytesToSkip).ConfigureAwait(false);
+                strBuffer = strBuffer.Slice(bytesToSkip);
                 size -= bytesToSkip + 1 /*for the escaped char we skip*/;
-                var b = *(strBuffer++);
+                var b = strBuffer.Span[0];
+                strBuffer = strBuffer.Slice(1);
 
-                WriteEscapeCharacter(_buffer, b);
+                await WriteEscapeCharacterAsync(_buffer.Memory, b).ConfigureAwait(false);
             }
 
             // write remaining (or full string) to the buffer in one shot
-            WriteRawString(strBuffer, size);
+            await WriteRawStringAsync(strBuffer, size).ConfigureAwait(false);
 
-            EnsureBuffer(1);
-            _buffer[_pos++] = Quote;
+            await EnsureBufferAsync(1).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = Quote;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteRawStringWhichMustBeWithoutEscapeChars(byte* buffer, int size)
+        public async ValueTask WriteRawStringWhichMustBeWithoutEscapeCharsAsync(Memory<byte> buffer, int size)
         {
-            EnsureBuffer(size + 2);
-            _buffer[_pos++] = Quote;
-            WriteRawString(buffer, size);
-            _buffer[_pos++] = Quote;
+            await EnsureBufferAsync(size + 2).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = Quote;
+            await WriteRawStringAsync(buffer, size).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = Quote;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void WriteRawString(byte* buffer, int size)
+        private async ValueTask WriteRawStringAsync(Memory<byte> buffer, int size)
         {
             if (size < JsonOperationContext.MemoryBuffer.Size)
             {
-                EnsureBuffer(size);
-                Memory.Copy(_buffer + _pos, buffer, size);
+                await EnsureBufferAsync(size).ConfigureAwait(false);
+                _buffer.Memory.Span.Slice(0, size).CopyTo(_buffer.Memory.Span.Slice(_pos));
                 _pos += size;
                 return;
             }
 
-            UnlikelyWriteLargeRawString(buffer, size);
+            await UnlikelyWriteLargeRawStringAsync(buffer, size).ConfigureAwait(false);
         }
 
-        private void UnlikelyWriteLargeRawString(byte* buffer, int size)
+        private async ValueTask UnlikelyWriteLargeRawStringAsync(Memory<byte> buffer, int size)
         {
             // need to do this in pieces
             var posInStr = 0;
             while (posInStr < size)
             {
                 var amountToCopy = Math.Min(size - posInStr, JsonOperationContext.MemoryBuffer.Size);
-                Flush();
-                Memory.Copy(_buffer, buffer + posInStr, amountToCopy);
+                await FlushAsync().ConfigureAwait(false);
+                buffer.Span.Slice(posInStr, amountToCopy).CopyTo(_buffer.Memory.Span);
                 posInStr += amountToCopy;
                 _pos = amountToCopy;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteStartObject()
+        public async ValueTask WriteStartObjectAsync()
         {
-            EnsureBuffer(1);
-            _buffer[_pos++] = StartObject;
+            await EnsureBufferAsync(1).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = StartObject;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteEndArray()
+        public async ValueTask WriteEndArrayAsync()
         {
-            EnsureBuffer(1);
-            _buffer[_pos++] = EndArray;
+            await EnsureBufferAsync(1).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = EndArray;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteStartArray()
+        public async ValueTask WriteStartArrayAsync()
         {
-            EnsureBuffer(1);
-            _buffer[_pos++] = StartArray;
+            await EnsureBufferAsync(1).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = StartArray;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteEndObject()
+        public async ValueTask WriteEndObjectAsync()
         {
-            EnsureBuffer(1);
-            _buffer[_pos++] = EndObject;
+            await EnsureBufferAsync(1).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = EndObject;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void EnsureBuffer(int len)
+        private async ValueTask EnsureBufferAsync(int len)
         {
             if (len >= JsonOperationContext.MemoryBuffer.Size)
                 ThrowValueTooBigForBuffer(len);
             if (_pos + len < JsonOperationContext.MemoryBuffer.Size)
                 return;
 
-            Flush();
+            await FlushAsync().ConfigureAwait(false);
         }
 
-        public void Flush()
+        public async ValueTask FlushAsync()
         {
             if (_stream == null)
                 ThrowStreamClosed();
             if (_pos == 0)
                 return;
-            _stream.Write(_pinnedBuffer.Memory.Span.Slice(0, _pos));
+            await _stream.WriteAsync(_buffer.Memory.Slice(0, _pos)).ConfigureAwait(false);
             _pos = 0;
         }
 
@@ -580,70 +575,69 @@ namespace Sparrow.Json
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNull()
+        public async ValueTask WriteNullAsync()
         {
-            EnsureBuffer(4);
+            await EnsureBufferAsync(4).ConfigureAwait(false);
             for (int i = 0; i < 4; i++)
             {
-                _buffer[_pos++] = NullBuffer[i];
+                _buffer.Memory.Span[_pos++] = NullBuffer[i];
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteBool(bool val)
+        public async ValueTask WriteBoolAsync(bool val)
         {
-            EnsureBuffer(5);
+            await EnsureBufferAsync(5).ConfigureAwait(false);
             var buffer = val ? TrueBuffer : FalseBuffer;
             for (int i = 0; i < buffer.Length; i++)
             {
-                _buffer[_pos++] = buffer[i];
+                _buffer.Memory.Span[_pos++] = buffer[i];
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteComma()
+        public async ValueTask WriteCommaAsync()
         {
-            EnsureBuffer(1);
-            _buffer[_pos++] = Comma;
-
+            await EnsureBufferAsync(1).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = Comma;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WritePropertyName(LazyStringValue prop)
+        public async ValueTask WritePropertyNameAsync(LazyStringValue prop)
         {
-            WriteString(prop);
-            EnsureBuffer(1);
-            _buffer[_pos++] = Colon;
+            await WriteStringAsync(prop).ConfigureAwait(false);
+            await EnsureBufferAsync(1).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = Colon;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WritePropertyName(string prop)
+        public async ValueTask WritePropertyNameAsync(string prop)
         {
             var lazyProp = _context.GetLazyStringForFieldWithCaching(prop);
-            WriteString(lazyProp);
-            EnsureBuffer(1);
-            _buffer[_pos++] = Colon;
+            await WriteStringAsync(lazyProp).ConfigureAwait(false);
+            await EnsureBufferAsync(1).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = Colon;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WritePropertyName(StringSegment prop)
+        public async ValueTask WritePropertyNameAsync(StringSegment prop)
         {
             var lazyProp = _context.GetLazyStringForFieldWithCaching(prop);
-            WriteString(lazyProp);
-            EnsureBuffer(1);
-            _buffer[_pos++] = Colon;
+            await WriteStringAsync(lazyProp).ConfigureAwait(false);
+            await EnsureBufferAsync(1).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = Colon;
         }
 
-        public void WriteInteger(long val)
+        public async ValueTask WriteIntegerAsync(long val)
         {
             if (val == 0)
             {
-                EnsureBuffer(1);
-                _buffer[_pos++] = (byte)'0';
+                await EnsureBufferAsync(1).ConfigureAwait(false);
+                _buffer.Memory.Span[_pos++] = (byte)'0';
                 return;
             }
 
-            var localBuffer = _parserAuxiliarMemory.Address;
+            var localBuffer = _auxiliarBuffer;
 
             int idx = 0;
             var negative = false;
@@ -669,92 +663,92 @@ namespace Sparrow.Json
                     v += 1;
                 }
 
-                localBuffer[idx++] = (byte)('0' + v);
+                localBuffer.Memory.Span[idx++] = (byte)('0' + v);
                 val /= 10;
             }
             while (val != 0);
 
             if (negative)
-                localBuffer[idx++] = (byte)'-';
+                localBuffer.Memory.Span[idx++] = (byte)'-';
 
-            EnsureBuffer(idx);
+            await EnsureBufferAsync(idx).ConfigureAwait(false);
 
             var buffer = _buffer;
             int auxPos = _pos;
 
             do
-                buffer[auxPos++] = localBuffer[--idx];
+                buffer.Memory.Span[auxPos++] = localBuffer.Memory.Span[--idx];
             while (idx > 0);
 
             _pos = auxPos;
         }
 
-        public void WriteDouble(LazyNumberValue val)
+        public async ValueTask WriteDoubleAsync(LazyNumberValue val)
         {
             if (val.IsNaN())
             {
-                WriteBufferFor(NaNBuffer);
+                await WriteBufferForAsync(NaNBuffer).ConfigureAwait(false);
                 return;
             }
 
             if (val.IsPositiveInfinity())
             {
-                WriteBufferFor(PositiveInfinityBuffer);
+                await WriteBufferForAsync(PositiveInfinityBuffer).ConfigureAwait(false);
                 return;
             }
 
             if (val.IsNegativeInfinity())
             {
-                WriteBufferFor(NegativeInfinityBuffer);
+                await WriteBufferForAsync(NegativeInfinityBuffer).ConfigureAwait(false);
                 return;
             }
 
             var lazyStringValue = val.Inner;
-            EnsureBuffer(lazyStringValue.Size);
-            WriteRawString(lazyStringValue.Buffer, lazyStringValue.Size);
+            await EnsureBufferAsync(lazyStringValue.Size).ConfigureAwait(false);
+            await WriteRawStringAsync(lazyStringValue.MemoryBuffer.Memory, lazyStringValue.Size).ConfigureAwait(false);
         }
 
-        public void WriteBufferFor(byte[] buffer)
+        public async ValueTask WriteBufferForAsync(byte[] buffer)
         {
-            EnsureBuffer(buffer.Length);
+            await EnsureBufferAsync(buffer.Length).ConfigureAwait(false);
             for (int i = 0; i < buffer.Length; i++)
             {
-                _buffer[_pos++] = buffer[i];
+                _buffer.Memory.Span[_pos++] = buffer[i];
             }
         }
 
-        public void WriteDouble(double val)
+        public async ValueTask WriteDoubleAsync(double val)
         {
             if (double.IsNaN(val))
             {
-                WriteBufferFor(NaNBuffer);
+                await WriteBufferForAsync(NaNBuffer).ConfigureAwait(false);
                 return;
             }
 
             if (double.IsPositiveInfinity(val))
             {
-                WriteBufferFor(PositiveInfinityBuffer);
+                await WriteBufferForAsync(PositiveInfinityBuffer).ConfigureAwait(false);
                 return;
             }
 
             if (double.IsNegativeInfinity(val))
             {
-                WriteBufferFor(NegativeInfinityBuffer);
+                await WriteBufferForAsync(NegativeInfinityBuffer).ConfigureAwait(false);
                 return;
             }
 
             using (var lazyStr = _context.GetLazyString(val.ToString(CultureInfo.InvariantCulture)))
             {
-                EnsureBuffer(lazyStr.Size);
-                WriteRawString(lazyStr.Buffer, lazyStr.Size);
+                await EnsureBufferAsync(lazyStr.Size).ConfigureAwait(false);
+                await WriteRawStringAsync(lazyStr.MemoryBuffer.Memory, lazyStr.Size).ConfigureAwait(false);
             }
         }
 
-        public virtual void Dispose()
+        public virtual async ValueTask DisposeAsync()
         {
             try
             {
-                Flush();
+                await FlushAsync().ConfigureAwait(false);
             }
             catch (ObjectDisposedException)
             {
@@ -769,49 +763,44 @@ namespace Sparrow.Json
             finally
             {
                 _returnBuffer.Dispose();
-                _context.ReturnMemory(_parserAuxiliarMemory);
+                _context.ReturnMemory(_returnAuxiliarBuffer);
             }
         }
 
-        public void WriteNewLine()
+        public async ValueTask WriteNewLineAsync()
         {
-            EnsureBuffer(2);
-            _buffer[_pos++] = (byte)'\r';
-            _buffer[_pos++] = (byte)'\n';
+            await EnsureBufferAsync(2).ConfigureAwait(false);
+            _buffer.Memory.Span[_pos++] = (byte)'\r';
+            _buffer.Memory.Span[_pos++] = (byte)'\n';
         }
 
-        public void WriteStream(Stream stream)
+        public async ValueTask WriteStreamAsync(Stream stream)
         {
-            Flush();
+            await FlushAsync().ConfigureAwait(false);
 
             while (true)
             {
-                _pos = stream.Read(_pinnedBuffer.Memory.Span);
+                _pos = stream.Read(_pinnedBuffer.Memory.Memory.Span);
                 if (_pos == 0)
                     break;
 
-                Flush();
+                await FlushAsync().ConfigureAwait(false);
             }
         }
 
-        public void WriteMemoryChunk(IntPtr ptr, int size)
+        public async ValueTask WriteMemoryChunkAsync(Memory<byte> ptr, int size)
         {
-            WriteMemoryChunk((byte*)ptr.ToPointer(), size);
-        }
-
-        public void WriteMemoryChunk(byte* ptr, int size)
-        {
-            Flush();
+            await FlushAsync().ConfigureAwait(false);
             var leftToWrite = size;
             var totalWritten = 0;
             while (leftToWrite > 0)
             {
                 var toWrite = Math.Min(JsonOperationContext.MemoryBuffer.Size, leftToWrite);
-                Memory.Copy(_buffer, ptr + totalWritten, toWrite);
+                ptr.Span.Slice(totalWritten, toWrite).CopyTo(_buffer.Memory.Span);
                 _pos += toWrite;
                 totalWritten += toWrite;
                 leftToWrite -= toWrite;
-                Flush();
+                await FlushAsync().ConfigureAwait(false);
             }
         }
     }

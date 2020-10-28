@@ -336,7 +336,7 @@ namespace Raven.Client.Documents.BulkInsert
                     if (_customEntitySerializer == null || _customEntitySerializer(entity, metadata, _currentWriter) == false)
                     {
                         using (var json = _conventions.Serialization.DefaultConverter.ToBlittable(entity, metadata, _context, _defaultSerializer))
-                            json.WriteJsonTo(_currentWriter.BaseStream);
+                            await json.WriteJsonToAsync(_currentWriter.BaseStream, _token).ConfigureAwait(false);
                     }
 
                     _currentWriter.Write('}');

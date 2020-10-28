@@ -423,7 +423,7 @@ namespace Sparrow.Json
         public NativeMemory.ThreadStats AllocatingThread;
 
         private MemoryManager<byte> _memoryManager;
-        public MemoryManager<byte> MemoryManager => _memoryManager ??= new UnmanagedMemoryManager(Address, SizeInBytes);
+        private MemoryManager<byte> MemoryManager => _memoryManager ??= new UnmanagedMemoryManager(Address, SizeInBytes);
 
 #if MEM_GUARD_STACK || TRACK_ALLOCATED_MEMORY_DATA
         public string AllocatedBy = Environment.StackTrace;
@@ -460,6 +460,8 @@ namespace Sparrow.Json
                 _address = value;
             }
         }
+
+        public RavenMemory Memory => new RavenMemory(Address, MemoryManager.Memory);
 
         private void ThrowObjectDisposedException()
         {

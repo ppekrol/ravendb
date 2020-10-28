@@ -173,7 +173,7 @@ namespace Sparrow.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe void ProcessDefaultRavenFormat(long ticks, byte* chars)
+        internal static unsafe void ProcessDefaultRavenFormat(long ticks, Span<byte> chars)
         {
             // n = number of days since 1/1/0001
             int n = (int)(ticks / TicksPerDay);
@@ -301,7 +301,7 @@ namespace Sparrow.Extensions
 
             memory = context.GetMemory(size);
 
-            byte* ptr = memory.Address;
+            var ptr = memory.Memory.Memory.Span;
             ProcessDefaultRavenFormat(ticks, ptr);
 
             if (isUtc)
@@ -318,17 +318,17 @@ namespace Sparrow.Extensions
         /// <param name="dt"></param>
         /// <param name="isUtc"></param>
         /// <returns></returns>
-        public static unsafe int GetDefaultRavenFormat(this DateTime dt, AllocatedMemoryData memory, bool isUtc = false)
+        public static unsafe int GetDefaultRavenFormat(this DateTime dt, Span<byte> memory, bool isUtc = false)
         {
             ValidateDate(dt, isUtc);
 
             int size = 27 + (isUtc ? 1 : 0);
-            if (memory.SizeInBytes < size)
+            if (memory.Length < size)
                 goto Error;
 
             var ticks = dt.Ticks;
 
-            byte* ptr = memory.Address;
+            var ptr = memory;
             ProcessDefaultRavenFormat(ticks, ptr);
 
             if (isUtc)

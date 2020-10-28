@@ -70,6 +70,8 @@ namespace Sparrow.Json
         public byte this[int index] => Buffer[index];
         public byte* Buffer => _buffer;
 
+        public RavenMemory MemoryBuffer => new RavenMemory(_buffer, _size);
+
         private int _size;
         public int Size => _size;
 

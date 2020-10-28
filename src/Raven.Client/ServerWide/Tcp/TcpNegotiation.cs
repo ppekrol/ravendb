@@ -63,7 +63,7 @@ namespace Raven.Client.ServerWide.Tcp
             }
         }
 
-        private static void SendTcpVersionInfo(JsonOperationContext context, BlittableJsonTextWriter writer, TcpNegotiateParameters parameters, int currentVersion)
+        private static void SendTcpVersionInfo(JsonOperationContext context, AsyncBlittableJsonTextWriter writer, TcpNegotiateParameters parameters, int currentVersion)
         {
             if (Log.IsInfoEnabled)
             {
@@ -101,6 +101,6 @@ namespace Raven.Client.ServerWide.Tcp
         /// If the respond is 'None' the function should throw.
         /// If the respond is 'TcpMismatch' the function should return the read version.
         /// </summary>
-        public Func<JsonOperationContext, BlittableJsonTextWriter, Stream, string, int> ReadResponseAndGetVersionCallback { get; set; }
+        public Func<JsonOperationContext, AsyncBlittableJsonTextWriter, Stream, string, int> ReadResponseAndGetVersionCallback { get; set; }
     }
 }

@@ -201,6 +201,13 @@ namespace Sparrow.Json
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ReadVariableSizeInt(Span<byte> buffer, ref int pos)
+        {
+            fixed (byte* bufferPtr = buffer)
+                return ReadVariableSizeInt(bufferPtr, ref pos);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ReadVariableSizeInt(byte* buffer, int pos, out byte offset)
         {
             offset = 0;

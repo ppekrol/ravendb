@@ -8,7 +8,7 @@ namespace Sparrow.Json.Parsing
     {
         public const int EscapePositionItemSize = 5;
         public const int ControlCharacterItemSize = 5;
-        public byte* StringBuffer;
+        public RavenMemory StringBuffer;
         public int StringSize;
         public int? CompressedSize;
         public long Long;
@@ -213,7 +213,7 @@ namespace Sparrow.Json.Parsing
 
         public void Reset()
         {
-            StringBuffer = null;
+            //StringBuffer = null; // TODO [ppekrol]
             StringSize = 0;
             CompressedSize = null;
             Long = 0;

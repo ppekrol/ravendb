@@ -115,7 +115,7 @@ namespace Raven.Client.Http
             }
         }
 
-        private static void WriteNode(BlittableJsonTextWriter writer, ServerNode node, JsonOperationContext context)
+        private static void WriteNode(AsyncBlittableJsonTextWriter writer, ServerNode node, JsonOperationContext context)
         {
             writer.WriteStartObject();
 

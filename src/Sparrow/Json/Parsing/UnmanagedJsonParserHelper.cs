@@ -27,7 +27,7 @@ namespace Sparrow.Json.Parsing
         {
             while (parser.Read() == false)
             {
-                var read = stream.Read(buffer.Memory.Span);
+                var read = stream.Read(buffer.Memory.Memory.Span);
                 if (read == 0)
                 {
                     if (state.CurrentTokenType != JsonParserToken.EndObject)
@@ -46,7 +46,7 @@ namespace Sparrow.Json.Parsing
             if (parser.Read())
                 return true;
 
-            var read = await peepingTomStream.ReadAsync(buffer.Memory).ConfigureAwait(false);
+            var read = await peepingTomStream.ReadAsync(buffer.Memory.Memory).ConfigureAwait(false);
             if (read == 0)
             {
                 if (state.CurrentTokenType != JsonParserToken.EndObject)
@@ -96,7 +96,7 @@ namespace Sparrow.Json.Parsing
             builder.ReadNestedObject();
             while (builder.Read() == false)
             {
-                var read = peepingTomStream.Read(buffer.Memory.Span);
+                var read = peepingTomStream.Read(buffer.Memory.Memory.Span);
                 if (read == 0)
                     throw new EndOfStreamException("Stream ended without reaching end of json content" + GetPeepingTomBufferAsString(peepingTomStream));
 
@@ -121,7 +121,7 @@ namespace Sparrow.Json.Parsing
             builder.ReadNestedObject();
             while (builder.Read() == false)
             {
-                var read = await peepingTomStream.ReadAsync(buffer.Memory).ConfigureAwait(false);
+                var read = await peepingTomStream.ReadAsync(buffer.Memory.Memory).ConfigureAwait(false);
                 if (read == 0)
                     throw new EndOfStreamException("Stream ended without reaching end of json content");
 

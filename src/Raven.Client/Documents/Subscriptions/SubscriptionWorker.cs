@@ -290,7 +290,7 @@ namespace Raven.Client.Documents.Subscriptions
             return tcpCommand.Result;
         }
 
-        private int ReadServerResponseAndGetVersion(JsonOperationContext context, BlittableJsonTextWriter writer, Stream stream, string url)
+        private int ReadServerResponseAndGetVersion(JsonOperationContext context, AsyncBlittableJsonTextWriter writer, Stream stream, string url)
         {
             //Reading reply from server
             using (var response = context.ReadForMemory(_stream, "Subscription/tcp-header-response"))
@@ -315,7 +315,7 @@ namespace Raven.Client.Documents.Subscriptions
             }
         }
 
-        private void SendDropMessage(JsonOperationContext context, BlittableJsonTextWriter writer, TcpConnectionHeaderResponse reply)
+        private void SendDropMessage(JsonOperationContext context, AsyncBlittableJsonTextWriter writer, TcpConnectionHeaderResponse reply)
         {
             context.Write(writer, new DynamicJsonValue
             {

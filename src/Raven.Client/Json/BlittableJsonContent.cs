@@ -9,21 +9,41 @@ namespace Raven.Client.Json
 {
     internal class BlittableJsonContent : HttpContent
     {
+        private readonly Func<Stream, Task> _asyncWriter;
+
         private readonly Action<Stream> _writer;
 
-        public BlittableJsonContent(Action<Stream> writer)
+        public BlittableJsonContent(Func<Stream, Task> writer)
+                        : this()
         {
-            _writer = writer;
+            _asyncWriter = writer ?? throw new ArgumentNullException(nameof(writer));
             Headers.ContentEncoding.Add("gzip");
         }
 
-        protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
+        public BlittableJsonContent(Action<Stream> writer)
+            : this()
+        {
+            _writer = writer ?? throw new ArgumentNullException(nameof(writer));
+            Headers.ContentEncoding.Add("gzip");
+        }
+
+        private BlittableJsonContent()
+        {
+            Headers.ContentEncoding.Add("gzip");
+        }
+
+        protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
         {
             using (var gzipStream = new GZipStream(stream, CompressionMode.Compress, leaveOpen: true))
             {
+                if (_asyncWriter != null)
+                {
+                    await _asyncWriter(gzipStream).ConfigureAwait(false);
+                    return;
+                }
+
                 _writer(gzipStream);
             }
-            return Task.CompletedTask;
         }
 
         protected override bool TryComputeLength(out long length)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Sparrow.Json.Parsing;
 
 namespace Sparrow.Json
@@ -8,118 +9,117 @@ namespace Sparrow.Json
     public static class BlittableJsonTextWriterExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteArray<T>(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, string name, IEnumerable<T> items, 
+        public static async ValueTask WriteArrayAsync<T>(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, string name, IEnumerable<T> items,
             Action<AbstractBlittableJsonTextWriter, JsonOperationContext, T> onWrite)
         {
-            writer.WritePropertyName(name);
+            await writer.WritePropertyNameAsync(name).ConfigureAwait(false);
 
-            writer.WriteStartArray();
+            await writer.WriteStartArrayAsync().ConfigureAwait(false);
             var first = true;
             foreach (var item in items)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    await writer.WriteCommaAsync().ConfigureAwait(false);
 
                 first = false;
 
                 onWrite(writer, context, item);
             }
 
-            writer.WriteEndArray();
+            await writer.WriteEndArrayAsync().ConfigureAwait(false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteArray(this AbstractBlittableJsonTextWriter writer, string name, Memory<double> items)
+        public static async ValueTask WriteArrayAsync(this AbstractBlittableJsonTextWriter writer, string name, Memory<double> items)
         {
-            writer.WritePropertyName(name);
+            await writer.WritePropertyNameAsync(name).ConfigureAwait(false);
 
-            writer.WriteStartArray();
-            var span = items.Span;
-            for (int i = 0; i < span.Length; i++)
+            await writer.WriteStartArrayAsync().ConfigureAwait(false);
+            for (int i = 0; i < items.Length; i++)
             {
                 if (i > 0)
-                    writer.WriteComma();
-                writer.WriteDouble(span[i]);
+                    await writer.WriteCommaAsync().ConfigureAwait(false);
+                await writer.WriteDoubleAsync(items.Span[i]).ConfigureAwait(false);
             }
-            writer.WriteEndArray();
+            await writer.WriteEndArrayAsync().ConfigureAwait(false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteArray(this AbstractBlittableJsonTextWriter writer, string name, IEnumerable<LazyStringValue> items)
+        public static async ValueTask WriteArrayAsync(this AbstractBlittableJsonTextWriter writer, string name, IEnumerable<LazyStringValue> items)
         {
-            writer.WritePropertyName(name);
+            await writer.WritePropertyNameAsync(name).ConfigureAwait(false);
 
-            writer.WriteStartArray();
+            await writer.WriteStartArrayAsync().ConfigureAwait(false);
             var first = true;
             foreach (var item in items)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    await writer.WriteCommaAsync().ConfigureAwait(false);
                 first = false;
 
-                writer.WriteString(item);
+                await writer.WriteStringAsync(item).ConfigureAwait(false);
             }
-            writer.WriteEndArray();
+            await writer.WriteEndArrayAsync().ConfigureAwait(false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteArray(this AbstractBlittableJsonTextWriter writer, string name, IEnumerable<string> items)
+        public static async ValueTask WriteArrayAsync(this AbstractBlittableJsonTextWriter writer, string name, IEnumerable<string> items)
         {
-            writer.WritePropertyName(name);
+            await writer.WritePropertyNameAsync(name).ConfigureAwait(false);
 
             if (items == null)
             {
-                writer.WriteNull();
+                await writer.WriteNullAsync().ConfigureAwait(false);
                 return;
             }
 
-            writer.WriteStartArray();
+            await writer.WriteStartArrayAsync().ConfigureAwait(false);
             var first = true;
             foreach (var item in items)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    await writer.WriteCommaAsync().ConfigureAwait(false);
                 first = false;
 
-                writer.WriteString(item);
+                await writer.WriteStringAsync(item).ConfigureAwait(false);
             }
-            writer.WriteEndArray();
+            await writer.WriteEndArrayAsync().ConfigureAwait(false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteArray(this AbstractBlittableJsonTextWriter writer, string name, IEnumerable<DynamicJsonValue> items, JsonOperationContext context)
+        public static async ValueTask WriteArrayAsync(this AbstractBlittableJsonTextWriter writer, string name, IEnumerable<DynamicJsonValue> items, JsonOperationContext context)
         {
-            writer.WritePropertyName(name);
+            await writer.WritePropertyNameAsync(name).ConfigureAwait(false);
 
-            writer.WriteStartArray();
+            await writer.WriteStartArrayAsync().ConfigureAwait(false);
             var first = true;
             foreach (var item in items)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    await writer.WriteCommaAsync().ConfigureAwait(false);
                 first = false;
 
-                context.Write(writer, item);
+                await context.WriteAsync(writer, item).ConfigureAwait(false);
             }
-            writer.WriteEndArray();
+            await writer.WriteEndArrayAsync().ConfigureAwait(false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteArray(this AbstractBlittableJsonTextWriter writer, string name, IEnumerable<BlittableJsonReaderObject> items)
+        public static async ValueTask WriteArrayAsync(this AbstractBlittableJsonTextWriter writer, string name, IEnumerable<BlittableJsonReaderObject> items)
         {
-            writer.WritePropertyName(name);
+            await writer.WritePropertyNameAsync(name).ConfigureAwait(false);
 
-            writer.WriteStartArray();
+            await writer.WriteStartArrayAsync().ConfigureAwait(false);
             var first = true;
             foreach (var item in items)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    await writer.WriteCommaAsync().ConfigureAwait(false);
                 first = false;
 
-                writer.WriteObject(item);
+                await writer.WriteObjectAsync(item).ConfigureAwait(false);
             }
-            writer.WriteEndArray();
+            await writer.WriteEndArrayAsync().ConfigureAwait(false);
         }
     }
 }

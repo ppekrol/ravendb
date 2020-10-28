@@ -72,20 +72,20 @@ namespace Raven.Client.Documents.Operations.Attachments
                 {
                     request.Method = HttpMethod.Post;
 
-                    request.Content = new BlittableJsonContent(stream =>
+                    request.Content = new BlittableJsonContent(async stream =>
                     {
-                        using (var writer = new BlittableJsonTextWriter(_context, stream))
+                        await using (var writer = new AsyncBlittableJsonTextWriter(_context, stream))
                         {
-                            writer.WriteStartObject();
+                            await writer.WriteStartObjectAsync().ConfigureAwait(false);
 
-                            writer.WritePropertyName("Type");
-                            writer.WriteString(_type.ToString());
-                            writer.WriteComma();
+                            await writer.WritePropertyNameAsync("Type").ConfigureAwait(false);
+                            await writer.WriteStringAsync(_type.ToString()).ConfigureAwait(false);
+                            await writer.WriteCommaAsync().ConfigureAwait(false);
 
-                            writer.WritePropertyName("ChangeVector");
-                            writer.WriteString(_changeVector);
+                            await writer.WritePropertyNameAsync("ChangeVector").ConfigureAwait(false);
+                            await writer.WriteStringAsync(_changeVector).ConfigureAwait(false);
 
-                            writer.WriteEndObject();
+                            await writer.WriteEndObjectAsync().ConfigureAwait(false);
                         }
                     });
                 }

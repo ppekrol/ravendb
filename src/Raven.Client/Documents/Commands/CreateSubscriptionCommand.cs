@@ -29,10 +29,7 @@ namespace Raven.Client.Documents.Commands
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Put,
-                Content = new BlittableJsonContent(stream =>
-                {
-                    ctx.Write(stream, DocumentConventions.Default.Serialization.DefaultConverter.ToBlittable(_options, ctx));
-                })
+                Content = new BlittableJsonContent(stream => ctx.WriteAsync(stream, DocumentConventions.Default.Serialization.DefaultConverter.ToBlittable(_options, ctx)))
             };
             return request;
         }

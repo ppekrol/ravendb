@@ -352,7 +352,7 @@ namespace Sparrow.Json.Parsing
                 case (byte)'n':
                     {
                         _state.CurrentTokenType = JsonParserToken.Null;
-                        _expectedTokenBuffer = BlittableJsonTextWriter.NullBuffer;
+                        _expectedTokenBuffer = AsyncBlittableJsonTextWriter.NullBuffer;
                         _expectedTokenBufferPosition = 1;
                         _expectedTokenString = "null";
                         if (EnsureRestOfToken(ref pos) == false)
@@ -368,7 +368,7 @@ namespace Sparrow.Json.Parsing
                 case (byte)'t':
                     {
                         _state.CurrentTokenType = JsonParserToken.True;
-                        _expectedTokenBuffer = BlittableJsonTextWriter.TrueBuffer;
+                        _expectedTokenBuffer = AsyncBlittableJsonTextWriter.TrueBuffer;
                         _expectedTokenBufferPosition = 1;
                         _expectedTokenString = "true";
                         if (EnsureRestOfToken(ref pos) == false)
@@ -384,7 +384,7 @@ namespace Sparrow.Json.Parsing
                 case (byte)'f':
                     {
                         _state.CurrentTokenType = JsonParserToken.False;
-                        _expectedTokenBuffer = BlittableJsonTextWriter.FalseBuffer;
+                        _expectedTokenBuffer = AsyncBlittableJsonTextWriter.FalseBuffer;
                         _expectedTokenBufferPosition = 1;
                         _expectedTokenString = "false";
                         if (EnsureRestOfToken(ref pos) == false)

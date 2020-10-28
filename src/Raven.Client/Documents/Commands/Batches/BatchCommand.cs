@@ -73,19 +73,19 @@ namespace Raven.Client.Documents.Commands.Batches
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
-                Content = new BlittableJsonContent(stream =>
+                Content = new BlittableJsonContent(async stream =>
                 {
-                    using (var writer = new BlittableJsonTextWriter(ctx, stream))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(ctx, stream))
                     {
-                        writer.WriteStartObject();
-                        writer.WriteArray("Commands", _commands);
+                        await writer.WriteStartObjectAsync().ConfigureAwait(false);
+                        await writer.WriteArrayAsync("Commands", _commands).ConfigureAwait(false);
                         if (_mode == TransactionMode.ClusterWide)
                         {
-                            writer.WriteComma();
-                            writer.WritePropertyName(nameof(TransactionMode));
-                            writer.WriteString(nameof(TransactionMode.ClusterWide));
+                            await writer.WriteCommaAsync().ConfigureAwait(false);
+                            await writer.WritePropertyNameAsync(nameof(TransactionMode)).ConfigureAwait(false);
+                            await writer.WriteStringAsync(nameof(TransactionMode.ClusterWide)).ConfigureAwait(false);
                         }
-                        writer.WriteEndObject();
+                        await writer.WriteEndObjectAsync().ConfigureAwait(false);
                     }
                 })
             };

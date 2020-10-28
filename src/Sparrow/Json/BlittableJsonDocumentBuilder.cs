@@ -326,18 +326,18 @@ namespace Sparrow.Json
                 BlittableJsonToken stringToken;
                 if (typeof(TWriteStrategy) == typeof(WriteNone))
                 {
-                    start = _writer.WriteValue(_state.StringBuffer, _state.StringSize, _state.EscapePositions, out stringToken, _mode, _state.CompressedSize);
+                    start = _writer.WriteValue(_state.StringBuffer.Address, _state.StringSize, _state.EscapePositions, out stringToken, _mode, _state.CompressedSize);
                 }
                 else // WriteFull
                 {
                     if (_state.EscapePositions.Count == 0 && _state.CompressedSize == null && (_mode & UsageMode.CompressSmallStrings) == 0 && _state.StringSize < 128)
                     {
-                        start = _writer.WriteValue(_state.StringBuffer, _state.StringSize);
+                        start = _writer.WriteValue(_state.StringBuffer.Address, _state.StringSize);
                         stringToken = BlittableJsonToken.String;
                     }
                     else
                     {
-                        start = _writer.WriteValue(_state.StringBuffer, _state.StringSize, _state.EscapePositions, out stringToken, _mode, _state.CompressedSize);
+                        start = _writer.WriteValue(_state.StringBuffer.Address, _state.StringSize, _state.EscapePositions, out stringToken, _mode, _state.CompressedSize);
                     }
                 }
                 _state.CompressedSize = null;
@@ -355,7 +355,7 @@ namespace Sparrow.Json
             }
             else if (current == JsonParserToken.Blob)
             {
-                start = _writer.WriteValue(_state.StringBuffer, _state.StringSize);
+                start = _writer.WriteValue(_state.StringBuffer.Address, _state.StringSize);
                 _writeToken = new WriteToken(start, BlittableJsonToken.RawBlob);
             }
             else if (current != JsonParserToken.EndObject)
@@ -377,7 +377,7 @@ namespace Sparrow.Json
                     if ((_mode & UsageMode.ValidateDouble) == UsageMode.ValidateDouble)
                         _reader.ValidateFloat();
 
-                    start = _writer.WriteValue(_state.StringBuffer, _state.StringSize);
+                    start = _writer.WriteValue(_state.StringBuffer.Address, _state.StringSize);
 
                     _state.CompressedSize = null;
                     _writeToken = new WriteToken(start, BlittableJsonToken.LazyNumber);
