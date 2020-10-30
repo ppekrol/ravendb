@@ -73,7 +73,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
         public Task QueriesCacheList()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var queryCache = Database.QueryMetadataCache.GetQueryCache();
 

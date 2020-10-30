@@ -70,7 +70,7 @@ namespace Raven.Server.Utils.IoMetrics
             ms.SetLength(0);
 
             using (_contextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ms))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
             {
                 context.Write(writer, tuple.Item2.ToJson());
             }

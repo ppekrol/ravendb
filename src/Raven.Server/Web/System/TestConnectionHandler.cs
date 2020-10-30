@@ -31,7 +31,7 @@ namespace Raven.Server.Web.System
             var result = await ServerStore.TestConnectionToRemote(url, database);
 
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 // test the connection from the remote node to this one
                 if (bidirectional == true && result.Success)
@@ -54,7 +54,7 @@ namespace Raven.Server.Web.System
             using (tcpClient)
             {
                 using (server.ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext ctx))
-                using (var writer = new BlittableJsonTextWriter(ctx, connection))
+                using (var writer = new AsyncBlittableJsonTextWriter(ctx, connection))
                 {
                     WriteOperationHeaderToRemote(writer, TcpConnectionHeaderMessage.OperationTypes.TestConnection, database);
                     using (var responseJson = await ctx.ReadForMemoryAsync(connection, $"TestConnectionHandler/{url}/Read-Handshake-Response"))
@@ -80,7 +80,7 @@ namespace Raven.Server.Web.System
             }
         }
 
-        private static void WriteOperationHeaderToRemote(BlittableJsonTextWriter writer, TcpConnectionHeaderMessage.OperationTypes operation, string databaseName)
+        private static void WriteOperationHeaderToRemote(AsyncBlittableJsonTextWriter writer, TcpConnectionHeaderMessage.OperationTypes operation, string databaseName)
         {
             writer.WriteStartObject();
             {

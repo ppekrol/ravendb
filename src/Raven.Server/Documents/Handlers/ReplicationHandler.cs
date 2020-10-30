@@ -26,7 +26,7 @@ namespace Raven.Server.Documents.Handlers
             var pageSize = GetPageSize();
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 var array = new DynamicJsonArray();
@@ -58,7 +58,7 @@ namespace Raven.Server.Documents.Handlers
         private Task GetConflictsByEtag(long etag)
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 var skip = GetStart();
@@ -99,7 +99,7 @@ namespace Raven.Server.Documents.Handlers
         {
             long maxEtag = 0;
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 var array = new DynamicJsonArray();
@@ -132,7 +132,7 @@ namespace Raven.Server.Documents.Handlers
         public Task Performance()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
 
@@ -248,7 +248,7 @@ namespace Raven.Server.Documents.Handlers
             ms.SetLength(0);
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ms))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
             {
                 var pulse = tuple.Item2;
                 context.Write(writer, pulse.ToJson());
@@ -264,7 +264,7 @@ namespace Raven.Server.Documents.Handlers
         public Task GetReplicationActiveConnections()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var incoming = new DynamicJsonArray();
                 foreach (var item in Database.ReplicationLoader.IncomingConnections)
@@ -302,7 +302,7 @@ namespace Raven.Server.Documents.Handlers
         public Task GetReplicationOutgoingFailureStats()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var data = new DynamicJsonArray();
                 foreach (var item in Database.ReplicationLoader.OutgoingFailureInfo)
@@ -341,7 +341,7 @@ namespace Raven.Server.Documents.Handlers
         public Task GetReplicationIncomingActivityTimes()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var data = new DynamicJsonArray();
                 foreach (var item in Database.ReplicationLoader.IncomingLastActivityTime)
@@ -371,7 +371,7 @@ namespace Raven.Server.Documents.Handlers
         public Task GetReplicationIncomingRejectionInfo()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var stats = new DynamicJsonArray();
                 foreach (var statItem in Database.ReplicationLoader.IncomingRejectionStats)
@@ -406,7 +406,7 @@ namespace Raven.Server.Documents.Handlers
         public Task GetReplicationReconnectionQueue()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var data = new DynamicJsonArray();
                 foreach (var queueItem in Database.ReplicationLoader.ReconnectQueue)
@@ -432,7 +432,7 @@ namespace Raven.Server.Documents.Handlers
         {
             var docId = GetQueryStringValueAndAssertIfSingleAndNotEmpty("docId");
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 var conflicts = context.DocumentDatabase.DocumentsStorage.ConflictsStorage.GetConflictsFor(context, docId);
@@ -469,7 +469,7 @@ namespace Raven.Server.Documents.Handlers
                         resolveByCollection[collection.Key] = collection.Value.ToJson();
                     }
 
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         context.Write(writer, new DynamicJsonValue
                         {

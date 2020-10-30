@@ -28,7 +28,7 @@ namespace Raven.Server.Monitoring.Snmp
             }
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
 
@@ -82,7 +82,7 @@ namespace Raven.Server.Monitoring.Snmp
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var djv = new DynamicJsonValue
                     {
@@ -119,7 +119,7 @@ namespace Raven.Server.Monitoring.Snmp
                 }
             }
 
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName("Results");

@@ -399,7 +399,7 @@ namespace Raven.Server.ServerWide.Maintenance
 
                 var connection = await TcpUtils.WrapStreamWithSslAsync(tcpClient, tcpConnectionInfo, _parent._server.Server.Certificate.Certificate, _parent._server.Server.CipherSuitesPolicy, timeout);
                 using (_contextPool.AllocateOperationContext(out JsonOperationContext ctx))
-                using (var writer = new BlittableJsonTextWriter(ctx, connection))
+                using (var writer = new AsyncBlittableJsonTextWriter(ctx, connection))
                 {
                     var parameters = new TcpNegotiateParameters
                     {
@@ -424,7 +424,7 @@ namespace Raven.Server.ServerWide.Maintenance
                 };
             }
 
-            private int SupervisorReadResponseAndGetVersion(JsonOperationContext ctx, BlittableJsonTextWriter writer, Stream stream, string url)
+            private int SupervisorReadResponseAndGetVersion(JsonOperationContext ctx, AsyncBlittableJsonTextWriter writer, Stream stream, string url)
             {
                 using (var responseJson = ctx.ReadForMemory(stream, _readStatusUpdateDebugString + "/Read-Handshake-Response"))
                 {
@@ -450,7 +450,7 @@ namespace Raven.Server.ServerWide.Maintenance
                 }
             }
 
-            private void WriteOperationHeaderToRemote(BlittableJsonTextWriter writer, int remoteVersion = -1, bool drop = false)
+            private void WriteOperationHeaderToRemote(AsyncBlittableJsonTextWriter writer, int remoteVersion = -1, bool drop = false)
             {
                 var operation = drop ? TcpConnectionHeaderMessage.OperationTypes.Drop : TcpConnectionHeaderMessage.OperationTypes.Heartbeats;
                 writer.WriteStartObject();
@@ -474,7 +474,7 @@ namespace Raven.Server.ServerWide.Maintenance
                 writer.Flush();
             }
 
-            private void WriteClusterMaintenanceConnectionHeader(BlittableJsonTextWriter writer)
+            private void WriteClusterMaintenanceConnectionHeader(AsyncBlittableJsonTextWriter writer)
             {
                 writer.WriteStartObject();
                 {

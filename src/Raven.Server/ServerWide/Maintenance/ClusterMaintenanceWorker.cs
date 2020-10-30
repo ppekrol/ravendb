@@ -132,7 +132,7 @@ namespace Raven.Server.ServerWide.Maintenance
 
         private void HeartbeatVersion41200(TransactionOperationContext ctx, Dictionary<string, DatabaseStatusReport> nodeReport)
         {
-            using (var writer = new BlittableJsonTextWriter(ctx, _tcp.Stream))
+            using (var writer = new AsyncBlittableJsonTextWriter(ctx, _tcp.Stream))
             {
                 ctx.Write(writer, DynamicJsonValue.Convert(nodeReport));
             }
@@ -147,7 +147,7 @@ namespace Raven.Server.ServerWide.Maintenance
                 HighDirtyMemory = LowMemoryNotification.Instance.DirtyMemoryState.IsHighDirty
             };
 
-            using (var writer = new BlittableJsonTextWriter(ctx, _tcp.Stream))
+            using (var writer = new AsyncBlittableJsonTextWriter(ctx, _tcp.Stream))
             {
                 ctx.Write(writer, report.ToJson());
             }

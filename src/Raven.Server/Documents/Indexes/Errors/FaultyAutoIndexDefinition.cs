@@ -16,12 +16,12 @@ namespace Raven.Server.Documents.Indexes.Errors
             Definition = definition;
         }
 
-        protected override void PersistMapFields(JsonOperationContext context, BlittableJsonTextWriter writer)
+        protected override void PersistMapFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
             throw new NotSupportedException($"Definition of a faulty '{Name}' auto index does not support that");
         }
 
-        protected override void PersistFields(JsonOperationContext context, BlittableJsonTextWriter writer)
+        protected override void PersistFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
             throw new NotSupportedException($"Definition of a faulty '{Name}' auto index does not support that");
         }

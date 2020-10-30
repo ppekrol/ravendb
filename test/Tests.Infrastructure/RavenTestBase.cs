@@ -579,7 +579,7 @@ namespace FastTests
             var file = Path.GetTempFileName() + ".json";
             using (var stream = File.Open(file, FileMode.OpenOrCreate))
             using (var context = JsonOperationContext.ShortTermSingleUse())
-            using (var writer = new BlittableJsonTextWriter(context, stream))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
             {
                 var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(total);
                 var json = context.ReadObject(djv, "errors");

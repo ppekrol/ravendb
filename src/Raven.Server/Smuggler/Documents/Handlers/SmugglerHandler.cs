@@ -407,7 +407,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                 await migrator.UpdateBuildInfoIfNeeded();
                 var operationId = migrator.StartMigratingSingleDatabase(migrationConfigurationJson.MigrationSettings, Database);
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                 }
@@ -423,7 +423,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                 var documents = Database.DocumentsStorage.GetDocumentsStartingWith(
                     context, Migrator.MigrationStateKeyBase, null, null, null, 0, 64);
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName(nameof(MigratedServerUrls.List));
@@ -604,7 +604,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                         });
                     }, operationId, token: token).ConfigureAwait(false);
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                 }
@@ -648,7 +648,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                 if (HttpContext.Request.HasFormContentType == false)
                 {
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest; // Bad request
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         context.Write(writer, new DynamicJsonValue
                         {
@@ -742,7 +742,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                 if (HttpContext.Request.HasFormContentType == false)
                 {
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         context.Write(writer, new DynamicJsonValue
                         {
@@ -923,7 +923,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
 
         private static void WriteImportResult(JsonOperationContext context, SmugglerResult result, Stream stream)
         {
-            using (var writer = new BlittableJsonTextWriter(context, stream))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
             {
                 var json = result.ToJson();
                 context.Write(writer, json);

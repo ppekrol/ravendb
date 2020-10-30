@@ -13,7 +13,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
 
             using (Database.ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName("ScriptRunners");

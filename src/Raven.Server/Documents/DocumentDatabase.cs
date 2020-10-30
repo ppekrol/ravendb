@@ -1049,7 +1049,7 @@ namespace Raven.Server.Documents
                     zipArchiveEntry = package.CreateEntry(RestoreSettings.SettingsFileName, compressionLevel);
                     using (var zipStream = zipArchiveEntry.Open())
                     using (var outputStream = GetOutputStream(zipStream))
-                    using (var writer = new BlittableJsonTextWriter(serverContext, outputStream))
+                    using (var writer = new AsyncBlittableJsonTextWriter(serverContext, outputStream))
                     {
                         writer.WriteStartObject();
 

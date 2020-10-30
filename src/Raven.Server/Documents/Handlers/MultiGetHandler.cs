@@ -35,7 +35,7 @@ namespace Raven.Server.Documents.Handlers
                 if (input.TryGet("Requests", out BlittableJsonReaderArray requests) == false)
                     ThrowRequiredPropertyNameInRequest("Requests");
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName("Results");
@@ -123,7 +123,7 @@ namespace Raven.Server.Documents.Handlers
                             else
                             {
                                 var requestBody = new MemoryStream();
-                                var contentWriter = new BlittableJsonTextWriter(context, requestBody);
+                                var contentWriter = new AsyncBlittableJsonTextWriter(context, requestBody);
                                 context.Write(contentWriter, (BlittableJsonReaderObject)content);
                                 contentWriter.Flush();
                                 HttpContext.Response.RegisterForDispose(requestBody);

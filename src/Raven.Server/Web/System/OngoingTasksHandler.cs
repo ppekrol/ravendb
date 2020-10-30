@@ -45,7 +45,7 @@ namespace Raven.Server.Web.System
             var result = GetOngoingTasksInternal();
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, result.ToJson());
             }
@@ -360,7 +360,7 @@ namespace Raven.Server.Web.System
                     };
                 }
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, result);
                 }
@@ -381,7 +381,7 @@ namespace Raven.Server.Web.System
             };
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, result);
             }
@@ -447,7 +447,7 @@ namespace Raven.Server.Web.System
             {
                 var operationId = Database.PeriodicBackupRunner.StartBackupTask(taskId, isFullBackup ?? true);
                 using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName(nameof(StartBackupOperationResult.ResponsibleNode));
@@ -563,7 +563,7 @@ namespace Raven.Server.Web.System
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, new DynamicJsonValue
                     {
@@ -615,7 +615,7 @@ namespace Raven.Server.Web.System
                     }
                 }
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var result = new GetConnectionStringsResult
                     {
@@ -1089,7 +1089,7 @@ namespace Raven.Server.Web.System
         {
             HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, taskInfo.ToJson());
                 writer.Flush();
@@ -1100,7 +1100,7 @@ namespace Raven.Server.Web.System
         {
             HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, dynamicJsonValue);
                 writer.Flush();
@@ -1142,7 +1142,7 @@ namespace Raven.Server.Web.System
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, new DynamicJsonValue
                     {
@@ -1227,7 +1227,7 @@ namespace Raven.Server.Web.System
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, new DynamicJsonValue
                     {

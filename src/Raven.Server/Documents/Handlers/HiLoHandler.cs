@@ -71,7 +71,7 @@ namespace Raven.Server.Documents.Handlers
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, new DynamicJsonValue
                     {

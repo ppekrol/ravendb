@@ -67,7 +67,7 @@ namespace Raven.Server.Documents
                 await WaitForIndexToBeApplied(context, index);
                 HttpContext.Response.StatusCode = (int)statusCode;
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var json = new DynamicJsonValue
                     {

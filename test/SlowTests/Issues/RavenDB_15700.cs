@@ -38,7 +38,7 @@ namespace SlowTests.Issues
                 WaitForUserToContinueTheTest(store);
 
                 using (var context = JsonOperationContext.ShortTermSingleUse())
-                using (var writer = new BlittableJsonTextWriter(context, new MemoryStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, new MemoryStream()))
                 using (index.GetReduceTree(new[] { searchedVakanzId, "bewerbung/000d7605-a581-4f3e-8c73-dc2eb4e3f95c" }, out var trees))
                 {
                     // must not throw

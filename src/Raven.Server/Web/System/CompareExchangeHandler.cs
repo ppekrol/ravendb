@@ -44,7 +44,7 @@ namespace Raven.Server.Web.System
             var items = ServerStore.Cluster.GetCompareExchangeValuesStartsWith(context, Database.Name, CompareExchangeKey.GetStorageKey(Database.Name, startsWithKey), start, pageSize);
 
             var numberOfResults = 0;
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 
@@ -92,7 +92,7 @@ namespace Raven.Server.Web.System
             }
 
             var numberOfResults = 0;
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 
@@ -131,7 +131,7 @@ namespace Raven.Server.Web.System
             {
                 var updateJson = await context.ReadForMemoryAsync(RequestBodyStream(), "read-unique-value");
                 var command = new AddOrUpdateCompareExchangeCommand(Database.Name, key, updateJson, index, context, raftRequestId);
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     (var raftIndex, var response) = await ServerStore.SendToLeaderAsync(context, command);
                     await ServerStore.Cluster.WaitForIndexNotification(raftIndex);
@@ -161,7 +161,7 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
                 var command = new RemoveCompareExchangeCommand(Database.Name, key, index, context, raftRequestId);
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     (var raftIndex, var response) = await ServerStore.SendToLeaderAsync(context, command);
                     await ServerStore.Cluster.WaitForIndexNotification(raftIndex);

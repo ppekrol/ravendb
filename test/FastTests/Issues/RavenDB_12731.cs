@@ -16,7 +16,7 @@ namespace FastTests.Issues
         {
             using (var context = JsonOperationContext.ShortTermSingleUse())
             using (var ms = new MemoryStream())
-            using (var writer = new BlittableJsonTextWriter(context, ms))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName("Test");

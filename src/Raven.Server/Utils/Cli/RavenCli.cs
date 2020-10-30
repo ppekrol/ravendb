@@ -1018,7 +1018,7 @@ namespace Raven.Server.Utils.Cli
         {
             var ms = new MemoryStream();
             using (var ctx = JsonOperationContext.ShortTermSingleUse())
-            using (var writer = new BlittableJsonTextWriter(ctx, ms))
+            using (var writer = new AsyncBlittableJsonTextWriter(ctx, ms))
             {
                 writer.WriteStartObject();
 

@@ -19,7 +19,7 @@ namespace Raven.Server.Documents.Handlers.Admin
             var configDuration = Database.Configuration.Storage.TransactionsModeDuration.AsTimeSpan;
             var duration = GetTimeSpanQueryString("duration", required: false) ?? configDuration;
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName(("Environments"));

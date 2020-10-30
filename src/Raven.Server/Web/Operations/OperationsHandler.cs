@@ -21,7 +21,7 @@ namespace Raven.Server.Web.Operations
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName("Id");
@@ -68,7 +68,7 @@ namespace Raven.Server.Web.Operations
                     operations = new List<Documents.Operations.Operations.Operation> { operation };
                 }
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WriteArray(context, "Results", operations, (w, c, operation) =>
@@ -97,7 +97,7 @@ namespace Raven.Server.Web.Operations
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, state.ToJson());
                     // writes Patch response

@@ -63,7 +63,7 @@ namespace Raven.Server.Documents.Handlers
                     }
                 }
                 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     
@@ -527,7 +527,7 @@ namespace Raven.Server.Documents.Handlers
 
                 if (timeSeriesConfig != null)
                 {
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         context.Write(writer, timeSeriesConfig.ToJson());
                     }
@@ -709,7 +709,7 @@ namespace Raven.Server.Documents.Handlers
 
         private void SendConfigurationResponse(TransactionOperationContext context, long index)
         {
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var response = new DynamicJsonValue {["RaftCommandIndex"] = index,};
                 context.Write(writer, response);
@@ -905,7 +905,7 @@ namespace Raven.Server.Documents.Handlers
             {
                 var segmantsSummary = Database.DocumentsStorage.TimeSeriesStorage.GetSegmentsSummary(context, documentId, name, from, to);
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName("Results");

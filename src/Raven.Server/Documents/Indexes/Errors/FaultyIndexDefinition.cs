@@ -15,12 +15,12 @@ namespace Raven.Server.Documents.Indexes.Errors
             _definition = definition;
         }
 
-        protected override void PersistMapFields(JsonOperationContext context, BlittableJsonTextWriter writer)
+        protected override void PersistMapFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
             throw new NotSupportedException($"Definition of a faulty '{Name}' index does not support that");
         }
 
-        protected override void PersistFields(JsonOperationContext context, BlittableJsonTextWriter writer)
+        protected override void PersistFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
             throw new NotSupportedException($"Definition of a faulty '{Name}' index does not support that");
         }

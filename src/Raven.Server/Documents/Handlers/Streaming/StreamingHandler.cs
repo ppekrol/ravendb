@@ -64,7 +64,7 @@ namespace Raven.Server.Documents.Handlers.Streaming
                     },
                     initialState);
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName("Results");

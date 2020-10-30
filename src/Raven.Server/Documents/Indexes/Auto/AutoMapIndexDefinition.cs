@@ -16,7 +16,7 @@ namespace Raven.Server.Documents.Indexes.Auto
         {
         }
 
-        protected override void PersistFields(JsonOperationContext context, BlittableJsonTextWriter writer)
+        protected override void PersistFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
             PersistMapFields(context, writer);
         }

@@ -15,7 +15,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (context.OpenReadTransaction())
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName("Revisions");

@@ -30,7 +30,7 @@ namespace Raven.Server.Web.System
             using (var context = JsonOperationContext.ShortTermSingleUse())
             {
                 var stream = new MemoryStream();
-                using (var writer = new BlittableJsonTextWriter(context, stream))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
                 {
                     context.Write(writer, new DynamicJsonValue
                     {
@@ -83,7 +83,7 @@ namespace Raven.Server.Web.System
             var versionUpdatesInfo = LatestVersionCheck.Instance.GetLastRetrievedVersionUpdatesInfo();
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, new DynamicJsonValue
                     {

@@ -81,7 +81,7 @@ namespace SlowTests.Issues
                         Method = HttpMethod.Post,
                         Content = new BlittableJsonContent(stream =>
                         {
-                            using (var writer = new BlittableJsonTextWriter(_context, stream))
+                            using (var writer = new AsyncBlittableJsonTextWriter(_context, stream))
                             {
                                 writer.WriteStartObject();
                                 writer.WritePropertyName(nameof(FormatOperation.Result.Expression));

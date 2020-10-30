@@ -102,7 +102,7 @@ namespace Raven.Server.Documents.Handlers
             HttpContext.Response.Headers[Constants.Headers.Etag] = CharExtensions.ToInvariantString(result.ResultEtag);
 
             long numberOfResults;
-            using (var writer = new BlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
             {
                 writer.WriteFacetedQueryResult(queryContext.Documents, result, numberOfResults: out numberOfResults);
             }
@@ -215,7 +215,7 @@ namespace Raven.Server.Documents.Handlers
             HttpContext.Response.Headers[Constants.Headers.Etag] = CharExtensions.ToInvariantString(result.ResultEtag);
 
             long numberOfResults;
-            using (var writer = new BlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
             {
                 writer.WriteSuggestionQueryResult(queryContext.Documents, result, numberOfResults: out numberOfResults);
             }
@@ -230,7 +230,7 @@ namespace Raven.Server.Documents.Handlers
             if (!(queryRunner is GraphQueryRunner gqr))
                 throw new InvalidOperationException("The specified query is not a graph query.");
             using (var token = CreateTimeLimitedQueryToken())
-            using (var writer = new BlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
             {
                 await gqr.WriteDetailedQueryResult(indexQuery, queryContext, writer, token);
             }
@@ -295,7 +295,7 @@ namespace Raven.Server.Documents.Handlers
                     edges.Add(djv);
                 }
 
-                using (var writer = new BlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
                 {
                     queryContext.Documents.Write(writer, output);
                 }
@@ -430,7 +430,7 @@ namespace Raven.Server.Documents.Handlers
 
         private void WritePatchResultToResponse(DocumentsOperationContext context, PatchDocumentCommand command)
         {
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
 
@@ -537,7 +537,7 @@ namespace Raven.Server.Documents.Handlers
                 operationType,
                 onProgress => operation(Database.QueryRunner, options, onProgress, token), operationId, details, token);
 
-            using (var writer = new BlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
             {
                 writer.WriteOperationIdAndNodeTag(queryContext.Documents, operationId, ServerStore.NodeTag);
             }
@@ -598,7 +598,7 @@ namespace Raven.Server.Documents.Handlers
 
             HttpContext.Response.Headers[Constants.Headers.Etag] = CharExtensions.ToInvariantString(result.ResultEtag);
 
-            using (var writer = new BlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
             {
                 writer.WriteIndexEntriesQueryResult(queryContext.Documents, result);
             }

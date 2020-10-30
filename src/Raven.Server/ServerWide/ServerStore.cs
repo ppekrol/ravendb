@@ -2737,7 +2737,7 @@ namespace Raven.Server.ServerWide
                     Method = HttpMethod.Post,
                     Content = new BlittableJsonContent(stream =>
                     {
-                        using (var writer = new BlittableJsonTextWriter(ctx, stream))
+                        using (var writer = new AsyncBlittableJsonTextWriter(ctx, stream))
                         {
                             writer.WriteObject(_command);
                         }

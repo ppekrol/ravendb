@@ -2976,7 +2976,7 @@ namespace Raven.Server.ServerWide
             return size;
         }
 
-        private int ClusterReadResponseAndGetVersion(JsonOperationContext ctx, BlittableJsonTextWriter writer, Stream stream, string url)
+        private int ClusterReadResponseAndGetVersion(JsonOperationContext ctx, AsyncBlittableJsonTextWriter writer, Stream stream, string url)
         {
             using (var response = ctx.ReadForMemory(stream, "cluster-ConnectToPeer-header-response"))
             {

@@ -142,7 +142,7 @@ namespace SlowTests.Blittable
                 using (Stream stream = new MemoryStream())
                 {
                     //Pass to stream
-                    using (var textWriter = new BlittableJsonTextWriter(context, stream))
+                    using (var textWriter = new AsyncBlittableJsonTextWriter(context, stream))
                     {
                         context.Write(textWriter, toStream);
                     }

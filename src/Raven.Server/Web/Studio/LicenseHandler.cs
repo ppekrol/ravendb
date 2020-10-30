@@ -44,7 +44,7 @@ namespace Raven.Server.Web.Studio
         public Task Status()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, ServerStore.LicenseManager.LicenseStatus.ToJson());
             }
@@ -56,7 +56,7 @@ namespace Raven.Server.Web.Studio
         public Task GetLicenseConfigurationSettings()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var djv = new DynamicJsonValue
                 {
@@ -111,7 +111,7 @@ namespace Raven.Server.Web.Studio
         public async Task LicenseSupport()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var licenseSupport = await ServerStore.LicenseManager.GetLicenseSupportInfo();
                 context.Write(writer, licenseSupport.ToJson());
@@ -128,7 +128,7 @@ namespace Raven.Server.Web.Studio
             }
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var renewLicense = await ServerStore.LicenseManager.RenewLicense();
                 context.Write(writer, renewLicense.ToJson());

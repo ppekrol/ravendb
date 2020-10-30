@@ -92,7 +92,7 @@ namespace Raven.Server.Documents.Handlers
                     HumaneAllocatedSize = Sizes.Humane(document.Value.AllocatedSize)
                 };
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, documentSizeDetails.ToJson());
                     writer.Flush();
@@ -421,7 +421,7 @@ namespace Raven.Server.Documents.Handlers
 
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
 
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteStartObject();
 
@@ -508,7 +508,7 @@ namespace Raven.Server.Documents.Handlers
                         throw new ArgumentOutOfRangeException();
                 }
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
 

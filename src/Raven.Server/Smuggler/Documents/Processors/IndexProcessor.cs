@@ -86,7 +86,7 @@ namespace Raven.Server.Smuggler.Documents.Processors
             }
         }
 
-        public static void Export(BlittableJsonTextWriter writer, Index index, JsonOperationContext context, bool removeAnalyzers)
+        public static void Export(AsyncBlittableJsonTextWriter writer, Index index, JsonOperationContext context, bool removeAnalyzers)
         {
             if (index.Type == IndexType.Faulty)
                 return;

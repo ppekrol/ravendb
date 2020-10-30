@@ -87,7 +87,7 @@ namespace Raven.Server.Documents.Handlers
                 var timeLimit = TimeSpan.FromSeconds(GetIntValueQueryString("timeLimit", false) ?? 15);
                 var startEtag = cv.Etag;
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 using (context.OpenReadTransaction())
                 {
                     writer.WriteStartObject();
@@ -187,7 +187,7 @@ namespace Raven.Server.Documents.Handlers
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 if (string.IsNullOrEmpty(subscriptionName))
                 {
@@ -218,7 +218,7 @@ namespace Raven.Server.Documents.Handlers
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 if (string.IsNullOrEmpty(subscriptionName))
                 {
@@ -278,7 +278,7 @@ namespace Raven.Server.Documents.Handlers
                     subscriptions = new[] { subscription };
                 }
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
 
@@ -514,7 +514,7 @@ namespace Raven.Server.Documents.Handlers
 
             HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
 
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, new DynamicJsonValue
                 {

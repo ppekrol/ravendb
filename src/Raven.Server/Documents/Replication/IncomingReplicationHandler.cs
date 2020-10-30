@@ -189,7 +189,7 @@ namespace Raven.Server.Documents.Replication
                                 {
                                     _parent.EnsureNotDeleted(_parent._server.NodeTag);
 
-                                    using (var writer = new BlittableJsonTextWriter(msg.Context, _stream))
+                                    using (var writer = new AsyncBlittableJsonTextWriter(msg.Context, _stream))
                                     {
                                         HandleSingleReplicationBatch(msg.Context,
                                             msg.Document,
@@ -200,7 +200,7 @@ namespace Raven.Server.Documents.Replication
                                 {
                                     using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(
                                             out DocumentsOperationContext documentsContext))
-                                    using (var writer = new BlittableJsonTextWriter(documentsContext, _stream))
+                                    using (var writer = new AsyncBlittableJsonTextWriter(documentsContext, _stream))
                                     {
                                         SendHeartbeatStatusToSource(
                                             documentsContext,
@@ -269,7 +269,7 @@ namespace Raven.Server.Documents.Replication
         private void HandleSingleReplicationBatch(
             DocumentsOperationContext documentsContext,
             BlittableJsonReaderObject message,
-            BlittableJsonTextWriter writer)
+            AsyncBlittableJsonTextWriter writer)
         {
             message.BlittableValidation();
             //note: at this point, the valid messages are heartbeat and replication batch.
@@ -524,7 +524,7 @@ namespace Raven.Server.Documents.Replication
                         task = _database.TxMerger.Enqueue(replicationCommand);
                         //We need a new context here
                         using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext msgContext))
-                        using (var writer = new BlittableJsonTextWriter(msgContext, _connectionOptions.Stream))
+                        using (var writer = new AsyncBlittableJsonTextWriter(msgContext, _connectionOptions.Stream))
                         using (var msg = msgContext.ReadObject(new DynamicJsonValue
                         {
                             [nameof(ReplicationMessageReply.MessageType)] = "Processing"
@@ -584,7 +584,7 @@ namespace Raven.Server.Documents.Replication
             }
         }
 
-        private void SendHeartbeatStatusToSource(DocumentsOperationContext documentsContext, BlittableJsonTextWriter writer, long lastDocumentEtag, string handledMessageType)
+        private void SendHeartbeatStatusToSource(DocumentsOperationContext documentsContext, AsyncBlittableJsonTextWriter writer, long lastDocumentEtag, string handledMessageType)
         {
             AddReplicationPulse(ReplicationPulseDirection.IncomingHeartbeatAcknowledge);
 

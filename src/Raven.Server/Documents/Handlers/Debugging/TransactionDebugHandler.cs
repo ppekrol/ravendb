@@ -37,7 +37,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             }
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, new DynamicJsonValue
                 {
@@ -55,7 +55,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, new DynamicJsonValue
                 {

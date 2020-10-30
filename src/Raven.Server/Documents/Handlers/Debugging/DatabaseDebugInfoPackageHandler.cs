@@ -46,7 +46,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                                 entry.ExternalAttributes = ((int)(FilePermissions.S_IRUSR | FilePermissions.S_IWUSR)) << 16;
 
                                 using (var entryStream = entry.Open())
-                                using (var writer = new BlittableJsonTextWriter(context, entryStream))
+                                using (var writer = new AsyncBlittableJsonTextWriter(context, entryStream))
                                 {
                                     using (var endpointOutput = await localEndpointClient.InvokeAndReadObjectAsync(route, context, endpointParameters))
                                     {

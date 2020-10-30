@@ -10,7 +10,7 @@ namespace Raven.Server.Documents.Queries
 {
     public class StreamJsonDocumentQueryResultWriter : IStreamQueryResultWriter<Document>
     {
-        private BlittableJsonTextWriter _writer;
+        private AsyncBlittableJsonTextWriter _writer;
         private HttpResponse _response;
         private JsonOperationContext _context;
         private bool _first = true;
@@ -18,7 +18,7 @@ namespace Raven.Server.Documents.Queries
         public StreamJsonDocumentQueryResultWriter(HttpResponse response, Stream stream, JsonOperationContext context)
         {
             _context = context;
-            _writer = new BlittableJsonTextWriter(context, stream);
+            _writer = new AsyncBlittableJsonTextWriter(context, stream);
             _response = response;
         }
 

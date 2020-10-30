@@ -28,7 +28,7 @@ namespace Raven.Server.Documents.Handlers
                 if (HttpContext.Request.HasFormContentType == false)
                 {
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         context.Write(writer, new DynamicJsonValue
                         {
@@ -79,7 +79,7 @@ namespace Raven.Server.Documents.Handlers
                         token: operationCancelToken
                     );
 
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         context.Write(writer, result.ToJson());
                     }
@@ -179,7 +179,7 @@ namespace Raven.Server.Documents.Handlers
                         FilePath = parameters.File
                     });
                 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                 }

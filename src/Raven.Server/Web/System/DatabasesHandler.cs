@@ -45,7 +45,7 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
                 context.OpenReadTransaction();
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
 
@@ -103,7 +103,7 @@ namespace Raven.Server.Web.System
                         // if this is a newly created db that we haven't been notified about it yet
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
                         HttpContext.Response.Headers["Database-Missing"] = name;
-                        using (var writer = new BlittableJsonTextWriter(context, HttpContext.Response.Body))
+                        using (var writer = new AsyncBlittableJsonTextWriter(context, HttpContext.Response.Body))
                         {
                             context.Write(writer,
                                 new DynamicJsonValue
@@ -126,7 +126,7 @@ namespace Raven.Server.Web.System
                     clusterTopology.ReplaceCurrentNodeUrlWithClientRequestedNodeUrlIfNecessary(ServerStore, HttpContext);
 
                     var dbRecord = JsonDeserializationCluster.DatabaseRecord(dbBlit);
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         context.Write(writer, new DynamicJsonValue
                         {
@@ -197,7 +197,7 @@ namespace Raven.Server.Web.System
             var isLoaded = ServerStore.DatabasesLandlord.IsDatabaseLoaded(name);
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, new DynamicJsonValue
                     {
@@ -238,7 +238,7 @@ namespace Raven.Server.Web.System
             var fileSystemNames = await migrator.GetFileSystemNames(buildInfo.MajorVersion);
         
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var json = new DynamicJsonValue
                 {
@@ -275,7 +275,7 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
                 context.OpenReadTransaction();
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var dbId = Constants.Documents.Prefix + dbName;
                     using (var dbRecord = ServerStore.Cluster.Read(context, dbId, out long _))

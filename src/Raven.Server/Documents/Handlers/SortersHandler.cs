@@ -26,7 +26,7 @@ namespace Raven.Server.Documents.Handlers
                     sorters = new Dictionary<string, SorterDefinition>();
                 }
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
 
                     writer.WriteStartObject();

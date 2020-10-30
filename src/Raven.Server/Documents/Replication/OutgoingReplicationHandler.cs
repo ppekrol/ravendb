@@ -251,7 +251,7 @@ namespace Raven.Server.Documents.Replication
             }
 
             using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext documentsContext))
-            using (var writer = new BlittableJsonTextWriter(documentsContext, _stream))
+            using (var writer = new AsyncBlittableJsonTextWriter(documentsContext, _stream))
             {
                 documentsContext.Write(writer, request);
                 writer.Flush();
@@ -509,7 +509,7 @@ namespace Raven.Server.Documents.Replication
                 [nameof(ReplicationLatestEtagRequest.SourceMachineName)] = Environment.MachineName
             };
             using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext documentsContext))
-            using (var writer = new BlittableJsonTextWriter(documentsContext, _stream))
+            using (var writer = new AsyncBlittableJsonTextWriter(documentsContext, _stream))
             {
                 documentsContext.Write(writer, request);
                 writer.Flush();
@@ -659,7 +659,7 @@ namespace Raven.Server.Documents.Replication
             }
         }
 
-        private int ReadHeaderResponseAndThrowIfUnAuthorized(JsonOperationContext context, BlittableJsonTextWriter writer, Stream stream, string url)
+        private int ReadHeaderResponseAndThrowIfUnAuthorized(JsonOperationContext context, AsyncBlittableJsonTextWriter writer, Stream stream, string url)
         {
             const int timeout = 2 * 60 * 1000;
 
@@ -699,7 +699,7 @@ namespace Raven.Server.Documents.Replication
             }
         }
 
-        private void SendDropMessage(JsonOperationContext context, BlittableJsonTextWriter writer, TcpConnectionHeaderResponse headerResponse)
+        private void SendDropMessage(JsonOperationContext context, AsyncBlittableJsonTextWriter writer, TcpConnectionHeaderResponse headerResponse)
         {
             context.Write(writer, new DynamicJsonValue
             {
@@ -739,7 +739,7 @@ namespace Raven.Server.Documents.Replication
         internal void WriteToServer(DynamicJsonValue val)
         {
             using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext documentsContext))
-            using (var writer = new BlittableJsonTextWriter(documentsContext, _stream))
+            using (var writer = new AsyncBlittableJsonTextWriter(documentsContext, _stream))
             {
                 documentsContext.Write(writer, val);
             }
@@ -883,7 +883,7 @@ namespace Raven.Server.Documents.Replication
             AddReplicationPulse(ReplicationPulseDirection.OutgoingHeartbeat);
 
             using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext documentsContext))
-            using (var writer = new BlittableJsonTextWriter(documentsContext, _stream))
+            using (var writer = new AsyncBlittableJsonTextWriter(documentsContext, _stream))
             {
                 try
                 {

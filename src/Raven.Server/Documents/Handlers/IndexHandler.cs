@@ -92,7 +92,7 @@ namespace Raven.Server.Documents.Handlers
                 throw new InvalidOperationException("Could not retrieve source for given index.");
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, new DynamicJsonValue
                 {
@@ -123,7 +123,7 @@ namespace Raven.Server.Documents.Handlers
             }
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName("Index");
@@ -173,7 +173,7 @@ namespace Raven.Server.Documents.Handlers
 
                 var changed = Database.IndexStore.HasChanged(indexDefinition);
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName("Changed");
@@ -200,7 +200,7 @@ namespace Raven.Server.Documents.Handlers
             var operation = GetStringQueryString("op");
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 if (string.Equals(operation, "map-reduce-tree", StringComparison.OrdinalIgnoreCase))
                 {
@@ -266,7 +266,7 @@ namespace Raven.Server.Documents.Handlers
             var namesOnly = GetBoolValueQueryString("namesOnly", required: false) ?? false;
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 IndexDefinition[] indexDefinitions;
                 if (string.IsNullOrEmpty(name))
@@ -314,7 +314,7 @@ namespace Raven.Server.Documents.Handlers
             var name = GetStringQueryString("name", required: false);
 
             using (var context = QueryOperationContext.Allocate(Database, needsServerContext: true))
-            using (var writer = new BlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
             {
                 IndexStats[] indexStats;
                 using (context.OpenReadTransaction())
@@ -413,7 +413,7 @@ namespace Raven.Server.Documents.Handlers
                 IndexDoesNotExistException.ThrowFor(name);
 
             using (var context = QueryOperationContext.Allocate(Database, index))
-            using (var writer = new BlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 var stalenessReasons = new List<string>();
@@ -437,7 +437,7 @@ namespace Raven.Server.Documents.Handlers
         public Task Progress()
         {
             using (var context = QueryOperationContext.Allocate(Database, needsServerContext: true))
-            using (var writer = new BlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 writer.WriteStartObject();
@@ -496,7 +496,7 @@ namespace Raven.Server.Documents.Handlers
             }
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName("Index");
@@ -580,7 +580,7 @@ namespace Raven.Server.Documents.Handlers
         public Task Status()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
 
@@ -715,7 +715,7 @@ namespace Raven.Server.Documents.Handlers
             }
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 writer.WriteArray(context, "Results", indexes, (w, c, index) =>
@@ -773,7 +773,7 @@ namespace Raven.Server.Documents.Handlers
 
                 HttpContext.Response.Headers[Constants.Headers.Etag] = CharExtensions.ToInvariantString(result.ResultEtag);
 
-                using (var writer = new BlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
                 {
                     if (field.EndsWith("__minX") ||
                         field.EndsWith("__minY") ||
@@ -825,7 +825,7 @@ namespace Raven.Server.Documents.Handlers
         {
             var indexes = GetIndexesToReportOn();
             using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var dja = new DynamicJsonArray();
 
@@ -884,7 +884,7 @@ namespace Raven.Server.Documents.Handlers
                 .ToArray();
 
             using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WritePerformanceStats(context, stats);
             }
@@ -942,7 +942,7 @@ namespace Raven.Server.Documents.Handlers
 
             HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
             using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, mergeIndexSuggestions.ToJson());
                 writer.Flush();
@@ -1028,7 +1028,7 @@ namespace Raven.Server.Documents.Handlers
                         }
                     }
                     var first = true;
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteStartObject();
                         writer.WritePropertyName("MapResults");

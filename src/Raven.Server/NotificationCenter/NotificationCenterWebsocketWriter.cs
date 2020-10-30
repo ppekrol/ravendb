@@ -75,7 +75,7 @@ namespace Raven.Server.NotificationCenter
 
             _ms.SetLength(0);
 
-            using (var writer = new BlittableJsonTextWriter(_context, _ms))
+            using (var writer = new AsyncBlittableJsonTextWriter(_context, _ms))
             {
                 var notificationType = notification.GetType();
 

@@ -43,7 +43,7 @@ namespace Raven.Server.Documents.Handlers
                         {
                             using (var ms = new MemoryStream())
                             {
-                                using (var writer = new BlittableJsonTextWriter(context, ms))
+                                using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
                                 {
                                     context.Write(writer, new DynamicJsonValue
                                     {
@@ -70,7 +70,7 @@ namespace Raven.Server.Documents.Handlers
         public Task GetConnectionsDebugInfo()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName("Connections");

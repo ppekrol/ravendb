@@ -45,7 +45,7 @@ namespace Raven.Server.Smuggler.Documents
         private GZipStream _gzipStream;
         private readonly DocumentsOperationContext _context;
         private readonly DatabaseSource _source;
-        private BlittableJsonTextWriter _writer;
+        private AsyncBlittableJsonTextWriter _writer;
         private DatabaseSmugglerOptionsServerSide _options;
         private Func<LazyStringValue, bool> _filterMetadataProperty;
 
@@ -59,7 +59,7 @@ namespace Raven.Server.Smuggler.Documents
         public IDisposable Initialize(DatabaseSmugglerOptionsServerSide options, SmugglerResult result, long buildVersion)
         {
             _gzipStream = new GZipStream(_stream, CompressionMode.Compress, leaveOpen: true);
-            _writer = new BlittableJsonTextWriter(_context, _gzipStream);
+            _writer = new AsyncBlittableJsonTextWriter(_context, _gzipStream);
             _options = options;
 
             SetupMetadataFilterMethod(_context);
@@ -188,10 +188,10 @@ namespace Raven.Server.Smuggler.Documents
 
         private class DatabaseRecordActions : IDatabaseRecordActions
         {
-            private readonly BlittableJsonTextWriter _writer;
+            private readonly AsyncBlittableJsonTextWriter _writer;
             private readonly JsonOperationContext _context;
 
-            public DatabaseRecordActions(BlittableJsonTextWriter writer, JsonOperationContext context)
+            public DatabaseRecordActions(AsyncBlittableJsonTextWriter writer, JsonOperationContext context)
             {
                 _writer = writer;
                 _context = context;
@@ -627,7 +627,7 @@ namespace Raven.Server.Smuggler.Documents
         {
             private readonly JsonOperationContext _context;
 
-            public StreamIndexActions(BlittableJsonTextWriter writer, JsonOperationContext context)
+            public StreamIndexActions(AsyncBlittableJsonTextWriter writer, JsonOperationContext context)
                 : base(writer, "Indexes")
             {
                 _context = context;
@@ -713,7 +713,7 @@ namespace Raven.Server.Smuggler.Documents
                 throw new NotSupportedException("RegisterForDisposal is never used in StreamCounterActions. Shouldn't happen.");
             }
 
-            public StreamCounterActions(BlittableJsonTextWriter writer, DocumentsOperationContext context, string propertyName) : base(writer, propertyName)
+            public StreamCounterActions(AsyncBlittableJsonTextWriter writer, DocumentsOperationContext context, string propertyName) : base(writer, propertyName)
             {
                 _context = context;
             }
@@ -732,7 +732,7 @@ namespace Raven.Server.Smuggler.Documents
 
         private class StreamTimeSeriesActions : StreamActionsBase, ITimeSeriesActions
         {
-            public StreamTimeSeriesActions(BlittableJsonTextWriter writer, DocumentsOperationContext context, string propertyName) : base(writer, propertyName)
+            public StreamTimeSeriesActions(AsyncBlittableJsonTextWriter writer, DocumentsOperationContext context, string propertyName) : base(writer, propertyName)
             {
             }
 
@@ -782,9 +782,9 @@ namespace Raven.Server.Smuggler.Documents
         private class StreamSubscriptionActions : StreamActionsBase, ISubscriptionActions
         {
             private readonly DocumentsOperationContext _context;
-            private readonly BlittableJsonTextWriter _writer;
+            private readonly AsyncBlittableJsonTextWriter _writer;
 
-            public StreamSubscriptionActions(BlittableJsonTextWriter writer, DocumentsOperationContext context, string propertyName) : base(writer, propertyName)
+            public StreamSubscriptionActions(AsyncBlittableJsonTextWriter writer, DocumentsOperationContext context, string propertyName) : base(writer, propertyName)
             {
                 _context = context;
                 _writer = writer;
@@ -808,7 +808,7 @@ namespace Raven.Server.Smuggler.Documents
             private readonly Func<LazyStringValue, bool> _filterMetadataProperty;
             private HashSet<string> _attachmentStreamsAlreadyExported;
 
-            public StreamDocumentActions(BlittableJsonTextWriter writer, DocumentsOperationContext context, DatabaseSource source, DatabaseSmugglerOptionsServerSide options, Func<LazyStringValue, bool> filterMetadataProperty, string propertyName)
+            public StreamDocumentActions(AsyncBlittableJsonTextWriter writer, DocumentsOperationContext context, DatabaseSource source, DatabaseSmugglerOptionsServerSide options, Func<LazyStringValue, bool> filterMetadataProperty, string propertyName)
                 : base(writer, propertyName)
             {
                 _context = context;
@@ -968,7 +968,7 @@ namespace Raven.Server.Smuggler.Documents
 
         private class StreamKeyValueActions<T> : StreamActionsBase, IKeyValueActions<T>
         {
-            public StreamKeyValueActions(BlittableJsonTextWriter writer, string name)
+            public StreamKeyValueActions(AsyncBlittableJsonTextWriter writer, string name)
                 : base(writer, name)
             {
             }
@@ -991,7 +991,7 @@ namespace Raven.Server.Smuggler.Documents
 
         private class StreamCompareExchangeActions : StreamActionsBase, ICompareExchangeActions
         {
-            public StreamCompareExchangeActions(BlittableJsonTextWriter writer, string name)
+            public StreamCompareExchangeActions(AsyncBlittableJsonTextWriter writer, string name)
                 : base(writer, name)
             {
             }
@@ -1029,11 +1029,11 @@ namespace Raven.Server.Smuggler.Documents
 
         private abstract class StreamActionsBase : IDisposable
         {
-            protected readonly BlittableJsonTextWriter Writer;
+            protected readonly AsyncBlittableJsonTextWriter Writer;
 
             protected bool First { get; set; }
 
-            protected StreamActionsBase(BlittableJsonTextWriter writer, string propertyName)
+            protected StreamActionsBase(AsyncBlittableJsonTextWriter writer, string propertyName)
             {
                 Writer = writer;
                 First = true;

@@ -256,7 +256,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             };
 
             using (var ms = new MemoryStream())
-            using (var writer = new BlittableJsonTextWriter(context, ms))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
             {
                 context.Write(writer, bodyJson);
                 writer.Flush();
@@ -283,7 +283,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                     entry.ExternalAttributes = ((int)(FilePermissions.S_IRUSR | FilePermissions.S_IWUSR)) << 16;
 
                     using (var entryStream = entry.Open())
-                    using (var writer = new BlittableJsonTextWriter(context, entryStream))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, entryStream))
                     using (var endpointOutput = await localEndpointClient.InvokeAndReadObjectAsync(route, context))
                     {
                         context.Write(writer, endpointOutput);
@@ -346,7 +346,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                     entry.ExternalAttributes = ((int)(FilePermissions.S_IRUSR | FilePermissions.S_IWUSR)) << 16;
 
                     using (var entryStream = entry.Open())
-                    using (var writer = new BlittableJsonTextWriter(jsonOperationContext, entryStream))
+                    using (var writer = new AsyncBlittableJsonTextWriter(jsonOperationContext, entryStream))
                     {
                         using (var endpointOutput = await localEndpointClient.InvokeAndReadObjectAsync(route, jsonOperationContext, endpointParameters))
                         {

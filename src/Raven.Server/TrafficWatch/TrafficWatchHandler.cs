@@ -48,7 +48,7 @@ namespace Raven.Server.TrafficWatch
                         {
                             using (var ms = new MemoryStream())
                             {
-                                using (var writer = new BlittableJsonTextWriter(context, ms))
+                                using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
                                 {
                                     context.Write(writer, new DynamicJsonValue
                                     {

@@ -33,7 +33,7 @@ namespace Raven.Server.Documents.Handlers
                     .Skip(start)
                     .Take(pageSize);
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
 

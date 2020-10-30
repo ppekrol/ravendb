@@ -206,11 +206,11 @@ namespace Voron.Recovery
                 using (var gZipStreamCounters = new GZipStream(destinationStreamCounters, CompressionMode.Compress, true))
                 using (var gZipStreamTimeSeries = new GZipStream(destinationStreamTimeSeries, CompressionMode.Compress, true))
                 using (var context = new JsonOperationContext(_initialContextSize, _initialContextLongLivedSize, 8 * 1024, SharedMultipleUseFlag.None))
-                using (var documentsWriter = new BlittableJsonTextWriter(context, gZipStreamDocuments))
-                using (var revisionsWriter = new BlittableJsonTextWriter(context, gZipStreamRevisions))
-                using (var conflictsWriter = new BlittableJsonTextWriter(context, gZipStreamConflicts))
-                using (var countersWriter = new BlittableJsonTextWriter(context, gZipStreamCounters))
-                using (var timeSeriesWriter = new BlittableJsonTextWriter(context, gZipStreamTimeSeries))
+                using (var documentsWriter = new AsyncBlittableJsonTextWriter(context, gZipStreamDocuments))
+                using (var revisionsWriter = new AsyncBlittableJsonTextWriter(context, gZipStreamRevisions))
+                using (var conflictsWriter = new AsyncBlittableJsonTextWriter(context, gZipStreamConflicts))
+                using (var countersWriter = new AsyncBlittableJsonTextWriter(context, gZipStreamCounters))
+                using (var timeSeriesWriter = new AsyncBlittableJsonTextWriter(context, gZipStreamTimeSeries))
                 {
                     WriteSmugglerHeader(documentsWriter, ServerVersion.Build, "Docs");
                     WriteSmugglerHeader(revisionsWriter, ServerVersion.Build, nameof(DatabaseItemType.RevisionDocuments));
@@ -779,7 +779,7 @@ namespace Voron.Recovery
         private const string EmptyCollection = "@empty";
         private static readonly char[] TagSeparator = { (char)SpecialChars.RecordSeparator };
 
-        private void WriteDummyDocumentForAttachment(BlittableJsonTextWriter writer, string hash, long size, string tag)
+        private void WriteDummyDocumentForAttachment(AsyncBlittableJsonTextWriter writer, string hash, long size, string tag)
         {
             if (_documentWritten)
                 writer.WriteComma();
@@ -837,7 +837,7 @@ namespace Voron.Recovery
             _lastWriteIsDocument = true;
         }
 
-        private static void WriteAttachmentMetadata(BlittableJsonTextWriter writer, string hash, long size, string name, string contentType)
+        private static void WriteAttachmentMetadata(AsyncBlittableJsonTextWriter writer, string hash, long size, string name, string contentType)
         {
             //name
             writer.WritePropertyName("Name");
@@ -856,7 +856,7 @@ namespace Voron.Recovery
             writer.WriteInteger(size);
         }
 
-        private void ReportOrphanAttachmentsAndMissingAttachments(TextWriter writer, BlittableJsonTextWriter documentsWriter, CancellationToken ct)
+        private void ReportOrphanAttachmentsAndMissingAttachments(TextWriter writer, AsyncBlittableJsonTextWriter documentsWriter, CancellationToken ct)
         {
             //No need to scare the user if there are no attachments in the dump
             if (_attachmentsHashs.Count == 0 && _documentsAttachments.Count == 0)
@@ -922,7 +922,7 @@ namespace Voron.Recovery
             }
         }
 
-        private void ReportOrphanAttachmentDocumentId(string hash, long size, string tag, BlittableJsonTextWriter writer)
+        private void ReportOrphanAttachmentDocumentId(string hash, long size, string tag, AsyncBlittableJsonTextWriter writer)
         {
             var msg = new StringBuilder($"Found orphan attachment with hash {hash}");
             if (tag != null)
@@ -934,7 +934,7 @@ namespace Voron.Recovery
             WriteDummyDocumentForAttachment(writer, hash, size, tag);
         }
 
-        private void ReportOrphanTimeSeriesAndMissingTimeSeries(TextWriter writer, BlittableJsonTextWriter documentWriter, in CancellationToken ct)
+        private void ReportOrphanTimeSeriesAndMissingTimeSeries(TextWriter writer, AsyncBlittableJsonTextWriter documentWriter, in CancellationToken ct)
         {
             //No need to scare the user if there are no time-series in the dump
             if (_uniqueTimeSeriesDiscovered.Count == 0 && _documentsTimeSeries.Count == 0)
@@ -1002,7 +1002,7 @@ namespace Voron.Recovery
             }
         }
 
-        private void ReportOrphanCountersAndMissingCounters(TextWriter writer, BlittableJsonTextWriter documentWriter, CancellationToken ct)
+        private void ReportOrphanCountersAndMissingCounters(TextWriter writer, AsyncBlittableJsonTextWriter documentWriter, CancellationToken ct)
         {
             //No need to scare the user if there are no counters in the dump
             if (_uniqueCountersDiscovered.Count == 0 && _documentsCounters.Count == 0)
@@ -1070,7 +1070,7 @@ namespace Voron.Recovery
             }
         }
 
-        private void WriteDummyDocumentForTimeSeries(BlittableJsonTextWriter writer, string docId, IEnumerable<string> timeSeries)
+        private void WriteDummyDocumentForTimeSeries(AsyncBlittableJsonTextWriter writer, string docId, IEnumerable<string> timeSeries)
         {
             if (_logger.IsOperationsEnabled)
                 _logger.Operations($"Found orphan time series with document-Id '{docId}'");
@@ -1124,7 +1124,7 @@ namespace Voron.Recovery
             _documentWritten = true;
         }
 
-        private void WriteDummyDocumentForCounters(BlittableJsonTextWriter writer, string docId, List<string> counters)
+        private void WriteDummyDocumentForCounters(AsyncBlittableJsonTextWriter writer, string docId, List<string> counters)
         {
             if (_logger.IsOperationsEnabled)
                 _logger.Operations($"Found orphan counter with document-Id '{docId}'");
@@ -1182,7 +1182,7 @@ namespace Voron.Recovery
         private readonly List<(string hash, string tag, long size)> _attachmentsHashs = new List<(string, string, long)>();
         private const string TagPrefix = "Recovered attachment #";
 
-        private void WriteAttachment(BlittableJsonTextWriter writer, long totalSize, string hash, string tag = null)
+        private void WriteAttachment(AsyncBlittableJsonTextWriter writer, long totalSize, string hash, string tag = null)
         {
             if (_documentWritten)
             {
@@ -1268,7 +1268,7 @@ namespace Voron.Recovery
             return true;
         }
 
-        private static void WriteSmugglerHeader(BlittableJsonTextWriter writer, int version, string docType)
+        private static void WriteSmugglerHeader(AsyncBlittableJsonTextWriter writer, int version, string docType)
         {
             writer.WriteStartObject();
             writer.WritePropertyName("BuildVersion");
@@ -1278,8 +1278,8 @@ namespace Voron.Recovery
             writer.WriteStartArray();
         }
 
-        private bool Write(byte* mem, int sizeInBytes, BlittableJsonTextWriter documentsWriter, BlittableJsonTextWriter revisionsWriter,
-            BlittableJsonTextWriter conflictsWriter, BlittableJsonTextWriter countersWriter, BlittableJsonTextWriter timeSeries, JsonOperationContext context, long startOffset, byte tableType)
+        private bool Write(byte* mem, int sizeInBytes, AsyncBlittableJsonTextWriter documentsWriter, AsyncBlittableJsonTextWriter revisionsWriter,
+            AsyncBlittableJsonTextWriter conflictsWriter, AsyncBlittableJsonTextWriter countersWriter, AsyncBlittableJsonTextWriter timeSeries, JsonOperationContext context, long startOffset, byte tableType)
         {
             switch ((TableType)tableType)
             {
@@ -1300,7 +1300,7 @@ namespace Voron.Recovery
             }
         }
 
-        private bool WriteTimeSeries(byte* mem, in int sizeInBytes, BlittableJsonTextWriter timeSeriesWriter, JsonOperationContext context, in long startOffset)
+        private bool WriteTimeSeries(byte* mem, in int sizeInBytes, AsyncBlittableJsonTextWriter timeSeriesWriter, JsonOperationContext context, in long startOffset)
         {
             try
             {
@@ -1390,7 +1390,7 @@ namespace Voron.Recovery
             }
         }
 
-        private bool WriteCounter(byte* mem, int sizeInBytes, BlittableJsonTextWriter countersWriter, JsonOperationContext context, long startOffset)
+        private bool WriteCounter(byte* mem, int sizeInBytes, AsyncBlittableJsonTextWriter countersWriter, JsonOperationContext context, long startOffset)
         {
             try
             {
@@ -1468,7 +1468,7 @@ namespace Voron.Recovery
             }
         }
 
-        private bool WriteDocument(byte* mem, int sizeInBytes, BlittableJsonTextWriter writer, JsonOperationContext context, long startOffset)
+        private bool WriteDocument(byte* mem, int sizeInBytes, AsyncBlittableJsonTextWriter writer, JsonOperationContext context, long startOffset)
         {
             try
             {
@@ -1594,7 +1594,7 @@ namespace Voron.Recovery
             }
         }
 
-        private bool WriteRevision(byte* mem, int sizeInBytes, BlittableJsonTextWriter writer, JsonOperationContext context, long startOffset)
+        private bool WriteRevision(byte* mem, int sizeInBytes, AsyncBlittableJsonTextWriter writer, JsonOperationContext context, long startOffset)
         {
             try
             {
@@ -1642,7 +1642,7 @@ namespace Voron.Recovery
             }
         }
 
-        private bool WriteConflict(byte* mem, int sizeInBytes, BlittableJsonTextWriter writer, JsonOperationContext context, long startOffset)
+        private bool WriteConflict(byte* mem, int sizeInBytes, AsyncBlittableJsonTextWriter writer, JsonOperationContext context, long startOffset)
         {
             try
             {

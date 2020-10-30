@@ -14,7 +14,7 @@ namespace Raven.Server.Web.Studio
         public Task FooterStats()
         {
             using (var context = QueryOperationContext.Allocate(Database, needsServerContext: true))
-            using (var writer = new BlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 var indexes = Database.IndexStore.GetIndexes().ToList();

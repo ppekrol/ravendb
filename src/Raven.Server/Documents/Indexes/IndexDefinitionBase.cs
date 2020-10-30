@@ -39,7 +39,7 @@ namespace Raven.Server.Documents.Indexes
 
         public abstract void Persist(TransactionOperationContext context, StorageEnvironmentOptions options);
 
-        protected abstract void PersistMapFields(JsonOperationContext context, BlittableJsonTextWriter writer);
+        protected abstract void PersistMapFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer);
 
         public static readonly byte[] EncryptionContext = Encoding.UTF8.GetBytes("Indexes!");
 
@@ -58,7 +58,7 @@ namespace Raven.Server.Documents.Indexes
             return name.Substring(0, 64) + "." + Hashing.XXHash32.Calculate(name);
         }
 
-        public void Persist(JsonOperationContext context, BlittableJsonTextWriter writer)
+        public void Persist(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
             writer.WriteStartObject();
 
@@ -105,7 +105,7 @@ namespace Raven.Server.Documents.Indexes
 
         internal abstract void Reset();
 
-        protected abstract void PersistFields(JsonOperationContext context, BlittableJsonTextWriter writer);
+        protected abstract void PersistFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer);
 
         protected internal abstract IndexDefinition GetOrCreateIndexDefinitionInternal();
 
@@ -185,7 +185,7 @@ namespace Raven.Server.Documents.Indexes
         {
             var tree = context.Transaction.InnerTransaction.CreateTree("Definition");
             using (var stream = new MemoryStream())
-            using (var writer = new BlittableJsonTextWriter(context, stream))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
             {
                 Persist(context, writer);
 

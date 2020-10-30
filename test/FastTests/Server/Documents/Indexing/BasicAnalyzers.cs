@@ -175,12 +175,12 @@ namespace FastTests.Server.Documents.Indexing
             throw new NotImplementedException();
         }
 
-        protected override void PersistMapFields(JsonOperationContext context, BlittableJsonTextWriter writer)
+        protected override void PersistMapFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
             throw new NotImplementedException();
         }
 
-        protected override void PersistFields(JsonOperationContext context, BlittableJsonTextWriter writer)
+        protected override void PersistFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
             throw new NotImplementedException();
         }

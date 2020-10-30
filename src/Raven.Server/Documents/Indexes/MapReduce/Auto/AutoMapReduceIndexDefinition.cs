@@ -50,7 +50,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce.Auto
             return GroupByFields.TryGetValue(field, out value);
         }
 
-        protected override void PersistFields(JsonOperationContext context, BlittableJsonTextWriter writer)
+        protected override void PersistFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
             PersistMapFields(context, writer);
 
@@ -80,7 +80,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce.Auto
             return indexDefinition;
         }
 
-        protected void PersistGroupByFields(JsonOperationContext context, BlittableJsonTextWriter writer)
+        protected void PersistGroupByFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
             writer.WritePropertyName((nameof(GroupByFields)));
             writer.WriteStartArray();

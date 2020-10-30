@@ -216,7 +216,7 @@ namespace Raven.Server.Documents.TcpHandlers
         {
             int writtenBytes;
             using (TcpConnection.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, TcpConnection.Stream))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, TcpConnection.Stream))
             {
                 context.Write(writer, value);
                 writtenBytes = writer.Position;
@@ -694,7 +694,7 @@ namespace Raven.Server.Documents.TcpHandlers
 
             bool anyDocumentsSentInCurrentIteration = false;
             int docsToFlush = 0;
-            using (var writer = new BlittableJsonTextWriter(docsContext, _buffer))
+            using (var writer = new AsyncBlittableJsonTextWriter(docsContext, _buffer))
             {
                 using (docsContext.OpenReadTransaction())
                 {
@@ -865,7 +865,7 @@ namespace Raven.Server.Documents.TcpHandlers
             TcpConnection.RegisterBytesSent(Heartbeat.Length);
         }
 
-        private async Task FlushDocsToClient(BlittableJsonTextWriter writer, int flushedDocs, bool endOfBatch = false)
+        private async Task FlushDocsToClient(AsyncBlittableJsonTextWriter writer, int flushedDocs, bool endOfBatch = false)
         {
             CancellationTokenSource.Token.ThrowIfCancellationRequested();
 

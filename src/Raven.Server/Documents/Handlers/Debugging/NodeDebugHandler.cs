@@ -22,7 +22,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
         public Task ListRemoteConnections()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var write = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var write = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(write,
                     new DynamicJsonValue
@@ -47,7 +47,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
         public Task ListRecentEngineLogs()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var write = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var write = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(write, ServerStore.Engine.InMemoryDebug.ToJson());
                 write.Flush();
@@ -59,7 +59,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
         public Task GetStateChangeHistory()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 writer.WriteArray("States", ServerStore.Engine.PrevStates.Select(s => s.ToString()));
@@ -89,7 +89,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             }
 
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var write = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var write = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 write.WriteStartObject();
                 write.WritePropertyName("Result");
@@ -157,7 +157,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                             [nameof(TcpConnectionHeaderMessage.OperationVersion)] = -1
                         };
 
-                        using (var writer = new BlittableJsonTextWriter(context, stream))
+                        using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
                         using (var msgJson = context.ReadObject(msg, "message"))
                         {
                             result.SendTime = sp.ElapsedMilliseconds;

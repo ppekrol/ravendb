@@ -29,7 +29,7 @@ namespace Raven.Server.ServerWide
 
         public DateTime? LastAuthorizedNonClusterAdminRequestTime;
 
-        public void WriteTo(BlittableJsonTextWriter writer)
+        public void WriteTo(AsyncBlittableJsonTextWriter writer)
         {
             writer.WriteStartObject();
 
@@ -101,7 +101,7 @@ namespace Raven.Server.ServerWide
                     using (var tx = context.OpenWriteTransaction())
                     {
                         using (var ms = new MemoryStream())
-                        using (var writer = new BlittableJsonTextWriter(context, ms))
+                        using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
                         {
                             WriteTo(writer);
 

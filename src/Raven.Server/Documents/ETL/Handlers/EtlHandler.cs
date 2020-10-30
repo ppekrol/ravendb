@@ -29,7 +29,7 @@ namespace Raven.Server.Documents.ETL.Handlers
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WriteArray(context, "Results", etlStats, (w, c, stats) =>
@@ -65,7 +65,7 @@ namespace Raven.Server.Documents.ETL.Handlers
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WriteArray(context, "Results", debugStats, (w, c, stats) =>
@@ -94,7 +94,7 @@ namespace Raven.Server.Documents.ETL.Handlers
             }).ToArray();
 
             using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteEtlTaskPerformanceStats(context, stats);
             }
@@ -134,7 +134,7 @@ namespace Raven.Server.Documents.ETL.Handlers
         public Task Progress()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 var performance = GetProcessesToReportOn().Select(x => new EtlTaskProgress

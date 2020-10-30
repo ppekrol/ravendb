@@ -19,7 +19,7 @@ namespace Raven.Server.Documents.Handlers
             var (_, _, newIdentityValue) = await Database.ServerStore.GenerateClusterIdentityAsync(name, Database.IdentityPartsSeparator, Database.Name, GetRaftRequestIdFromQuery());
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
 
@@ -44,7 +44,7 @@ namespace Raven.Server.Documents.Handlers
 
             var newIdentityValue = await Database.ServerStore.UpdateClusterIdentityAsync(name, Database.Name, value.Value, forced, GetRaftRequestIdFromQuery());
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
 

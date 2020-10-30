@@ -225,7 +225,7 @@ namespace Raven.Server.Web.System
                     fullResult.MaxClusterSize = licenseStatus.MaxClusterSize;
                     fullResult.LicenseType = licenseStatus.Type;
 
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         var blittable = DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(fullResult, context);
                         context.Write(writer, blittable);
@@ -268,7 +268,7 @@ namespace Raven.Server.Web.System
                     }
                 }
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var blittable = DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(userDomainsWithIps, context);
                     context.Write(writer, blittable);
@@ -284,7 +284,7 @@ namespace Raven.Server.Web.System
             AssertOnlyInSetupMode();
             var setupParameters = await SetupParameters.Get(ServerStore);
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName(nameof(SetupParameters.FixedServerPortNumber));
@@ -340,7 +340,7 @@ namespace Raven.Server.Web.System
             }
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var setupParameters = await SetupParameters.Get(ServerStore);
 
@@ -462,7 +462,7 @@ namespace Raven.Server.Web.System
                     throw new InvalidOperationException($"Failed to load the uploaded certificate. Did you accidentally upload a client certificate?", e);
                 }
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName("CN");
@@ -616,7 +616,7 @@ namespace Raven.Server.Web.System
                 var baseUri = new Uri("https://letsencrypt.org/");
                 var uri = new Uri(baseUri, await SetupManager.LetsEncryptAgreement(email, ServerStore));
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName("Uri");
@@ -699,7 +699,7 @@ namespace Raven.Server.Web.System
                         }
                     }
 
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteStartArray();
                         var first = true;

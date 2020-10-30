@@ -14,7 +14,7 @@ namespace Raven.Server.Web.Operations
 
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName("Id");
@@ -64,7 +64,7 @@ namespace Raven.Server.Web.Operations
 
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, state.ToJson());
                 }

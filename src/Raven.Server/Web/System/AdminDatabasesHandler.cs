@@ -79,7 +79,7 @@ namespace Raven.Server.Web.System
                     {
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                         HttpContext.Response.Headers["Database-Missing"] = name;
-                        using (var writer = new BlittableJsonTextWriter(context, HttpContext.Response.Body))
+                        using (var writer = new AsyncBlittableJsonTextWriter(context, HttpContext.Response.Body))
                         {
                             context.Write(writer,
                                 new DynamicJsonValue
@@ -91,7 +91,7 @@ namespace Raven.Server.Web.System
                         return Task.CompletedTask;
                     }
 
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteStartObject();
                         writer.WriteDocumentPropertiesWithoutMetadata(context, new Document
@@ -224,7 +224,7 @@ namespace Raven.Server.Web.System
 
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
 
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         context.Write(writer, new DynamicJsonValue
                         {
@@ -341,7 +341,7 @@ namespace Raven.Server.Web.System
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, new DynamicJsonValue
                     {
@@ -623,7 +623,7 @@ namespace Raven.Server.Web.System
                 if (restorePoints.List.Count == 0)
                     throw new InvalidOperationException("Couldn't locate any backup files.");
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var blittable = DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(restorePoints, context);
                     context.Write(writer, blittable);
@@ -702,7 +702,7 @@ namespace Raven.Server.Web.System
                     taskFactory: onProgress => Task.Run(async () => await restoreBackupTask.Execute(onProgress), cancelToken.Token),
                     id: operationId, token: cancelToken);
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                 }
@@ -815,7 +815,7 @@ namespace Raven.Server.Web.System
                     }
                 }
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, new DynamicJsonValue
                     {
@@ -920,7 +920,7 @@ namespace Raven.Server.Web.System
                 var (index, _) = await ServerStore.ToggleDatabasesStateAsync(ToggleDatabasesStateCommand.Parameters.ToggleType.Databases, parameters.DatabaseNames, disable, $"{raftRequestId}");
                 await ServerStore.Cluster.WaitForIndexNotification(index);
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName("Status");
@@ -956,7 +956,7 @@ namespace Raven.Server.Web.System
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, new DynamicJsonValue
                     {
@@ -1052,7 +1052,7 @@ namespace Raven.Server.Web.System
                     if (conflictSolverConfig == null)
                         throw new InvalidOperationException($"Database record doesn't have {nameof(DatabaseRecord.ConflictSolverConfig)} property.");
 
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         context.Write(writer, new DynamicJsonValue
                         {
@@ -1159,7 +1159,7 @@ namespace Raven.Server.Web.System
                     }, token.Token),
                     id: operationId, token: token);
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                 }
@@ -1401,7 +1401,7 @@ namespace Raven.Server.Web.System
                 }, operationId, token: token);
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
             }

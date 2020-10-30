@@ -25,7 +25,7 @@ namespace Raven.Server.Web.System
         public Task Get()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var output = Server.ServerStore.GetTcpInfoAndCertificates(HttpContext.Request.GetClientRequestedNodeUrl());
                 context.Write(writer, output);
@@ -57,7 +57,7 @@ namespace Raven.Server.Web.System
             }
 
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var output = new DynamicJsonArray();
                 var clusterTopology = ServerStore.GetClusterTopology();
@@ -94,7 +94,7 @@ namespace Raven.Server.Web.System
                 return;
 
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var output = Server.ServerStore.GetTcpInfoAndCertificates(HttpContext.Request.GetClientRequestedNodeUrl(), forExternalUse:true);
                 context.Write(writer, output);

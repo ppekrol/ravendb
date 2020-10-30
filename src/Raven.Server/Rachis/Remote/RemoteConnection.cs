@@ -93,7 +93,7 @@ namespace Raven.Server.Rachis.Remote
         private void Send(JsonOperationContext context, BlittableJsonReaderObject msg)
         {
             using (_disposerLock.EnsureNotDisposed())
-            using (var writer = new BlittableJsonTextWriter(context, _stream))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, _stream))
             {
                 context.Write(writer, msg);
             }

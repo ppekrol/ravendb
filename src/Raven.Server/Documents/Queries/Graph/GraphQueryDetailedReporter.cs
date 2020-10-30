@@ -7,10 +7,10 @@ namespace Raven.Server.Documents.Queries.Graph
 {
     public class GraphQueryDetailedReporter : QueryPlanVisitor
     {
-        private BlittableJsonTextWriter _writer;
+        private AsyncBlittableJsonTextWriter _writer;
         private DocumentsOperationContext _ctx;
 
-        public GraphQueryDetailedReporter(BlittableJsonTextWriter writer, DocumentsOperationContext ctx)
+        public GraphQueryDetailedReporter(AsyncBlittableJsonTextWriter writer, DocumentsOperationContext ctx)
         {
             _writer = writer;
             _ctx = ctx;

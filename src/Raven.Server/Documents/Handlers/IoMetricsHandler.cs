@@ -15,7 +15,7 @@ namespace Raven.Server.Documents.Handlers
         public Task IoMetrics()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var result = IoMetricsUtil.GetIoMetricsResponse(Database.GetAllStoragesEnvironment(), Database.GetAllPerformanceMetrics());
                 context.Write(writer, result.ToJson());

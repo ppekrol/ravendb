@@ -542,7 +542,7 @@ namespace Raven.Server.Documents
                         context.Reset();
                         context.Renew();
 
-                        using (var writer = new BlittableJsonTextWriter(context, ms))
+                        using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
                         {
                             sp.Restart();
 

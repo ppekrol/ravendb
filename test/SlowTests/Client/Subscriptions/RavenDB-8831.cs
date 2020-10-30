@@ -47,7 +47,7 @@ namespace SlowTests.Client.Subscriptions
                     var doc = database.DocumentsStorage.Get(context, "doc/1");
                     MemoryStream ms = new MemoryStream();
                     using (var newContext = JsonOperationContext.ShortTermSingleUse())
-                    using (var writer = new BlittableJsonTextWriter(newContext, ms))
+                    using (var writer = new AsyncBlittableJsonTextWriter(newContext, ms))
                     {
                         writer.WriteDocument(newContext, doc, metadataOnly: false);
                         writer.Flush();
@@ -98,7 +98,7 @@ namespace SlowTests.Client.Subscriptions
                     var doc = database.DocumentsStorage.Get(context, "doc/1");
                     MemoryStream ms = new MemoryStream();
                     using (var newContext = JsonOperationContext.ShortTermSingleUse())
-                    using (var writer = new BlittableJsonTextWriter(newContext, ms))
+                    using (var writer = new AsyncBlittableJsonTextWriter(newContext, ms))
                     {
                         writer.WriteDocument(newContext, doc, metadataOnly: false);
                         writer.Flush();

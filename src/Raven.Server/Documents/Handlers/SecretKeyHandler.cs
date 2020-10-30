@@ -28,7 +28,7 @@ namespace Raven.Server.Documents.Handlers
                     ["Keys"] = new DynamicJsonArray(Server.ServerStore.GetSecretKeysNames(ctx))
                 };
 
-                using (var writer = new BlittableJsonTextWriter(ctx, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(ctx, ResponseBodyStream()))
                 {
                     ctx.Write(writer, djv);
                 }

@@ -30,7 +30,7 @@ namespace Raven.Server.Documents.Handlers
                     stats.CountOfCompareExchangeTombstones = ServerStore.Cluster.GetNumberOfCompareExchangeTombstones(serverContext, Database.Name);
                 }
 
-                using (var writer = new BlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
                     writer.WriteDetailedDatabaseStatistics(context.Documents, stats);
             }
 
@@ -46,7 +46,7 @@ namespace Raven.Server.Documents.Handlers
 
                 FillDatabaseStatistics(stats, context);
 
-                using (var writer = new BlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
                     writer.WriteDatabaseStatistics(context.Documents, stats);
             }
 
@@ -132,7 +132,7 @@ namespace Raven.Server.Documents.Handlers
         public Task Metrics()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, Database.Metrics.ToJson());
             }
@@ -144,7 +144,7 @@ namespace Raven.Server.Documents.Handlers
         public Task PutsMetrics()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var empty = GetBoolValueQueryString("empty", required: false) ?? true;
 
@@ -176,7 +176,7 @@ namespace Raven.Server.Documents.Handlers
         public Task BytesMetrics()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var empty = GetBoolValueQueryString("empty", required: false) ?? true;
 

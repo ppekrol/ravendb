@@ -362,7 +362,7 @@ namespace Raven.Server.Documents.Replication
             {
                 using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext documentsOperationContext))
                 using (Database.ConfigurationStorage.ContextPool.AllocateOperationContext(out TransactionOperationContext configurationContext))
-                using (var writer = new BlittableJsonTextWriter(documentsOperationContext, tcpConnectionOptions.Stream))
+                using (var writer = new AsyncBlittableJsonTextWriter(documentsOperationContext, tcpConnectionOptions.Stream))
                 using (documentsOperationContext.OpenReadTransaction())
                 using (configurationContext.OpenReadTransaction())
                 {

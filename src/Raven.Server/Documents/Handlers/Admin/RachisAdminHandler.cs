@@ -68,7 +68,7 @@ namespace Raven.Server.Documents.Handlers.Admin
                     var ms = context.CheckoutMemoryStream();
                     try
                     {
-                        using (var writer = new BlittableJsonTextWriter(context, ms))
+                        using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
                         {
                             context.Write(writer, new DynamicJsonValue
                             {
@@ -133,7 +133,7 @@ namespace Raven.Server.Documents.Handlers.Admin
             if (ServerStore.IsLeader())
             {
                 using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var res = ServerStore.Observer.ReadDecisionsForDatabase();
                     var json = new DynamicJsonValue
@@ -158,7 +158,7 @@ namespace Raven.Server.Documents.Handlers.Admin
         public Task GetLogs()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.OpenReadTransaction();
                 context.Write(writer, ServerStore.GetLogDetails(context));
@@ -171,7 +171,7 @@ namespace Raven.Server.Documents.Handlers.Admin
         public Task GetHistoryLogs()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.OpenReadTransaction();
                 writer.WriteArray("RachisLogHistory", ServerStore.Engine.LogHistory.GetHistoryLogs(context), context);
@@ -185,7 +185,7 @@ namespace Raven.Server.Documents.Handlers.Admin
         public Task GetNodeInfo()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var nodeInfo = ServerStore.GetNodeInfo();
                 var json = nodeInfo.ToJson();
@@ -234,7 +234,7 @@ namespace Raven.Server.Documents.Handlers.Admin
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var loadLicenseLimits = ServerStore.LoadLicenseLimits();
                     var nodeLicenseDetails = loadLicenseLimits == null ?
@@ -274,7 +274,7 @@ namespace Raven.Server.Documents.Handlers.Admin
                 return Task.CompletedTask;
             }
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 if (ServerStore.IsLeader())
                 {

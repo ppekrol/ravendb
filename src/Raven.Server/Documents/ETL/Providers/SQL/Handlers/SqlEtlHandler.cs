@@ -36,7 +36,7 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.Handlers
                     };
                 
                 using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, result);
                 }
@@ -49,7 +49,7 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.Handlers
 
                 using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
                 {
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         context.Write(writer, new DynamicJsonValue
                         {
@@ -73,7 +73,7 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.Handlers
 
                 var result = (SqlEtlTestScriptResult)SqlEtl.TestScript(testScript, Database, ServerStore, context);
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(result);
                     writer.WriteObject(context.ReadObject(djv, "et/sql/test"));

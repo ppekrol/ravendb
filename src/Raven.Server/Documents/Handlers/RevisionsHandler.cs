@@ -45,7 +45,7 @@ namespace Raven.Server.Documents.Handlers
                         revisionsCollection[collection.Key] = collection.Value.ToJson();
                     }
 
-                    using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         context.Write(writer, new DynamicJsonValue
                         {
@@ -116,7 +116,7 @@ namespace Raven.Server.Documents.Handlers
                 token: token);
 
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
             }
@@ -178,7 +178,7 @@ namespace Raven.Server.Documents.Handlers
                 token: token);
 
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
             }
@@ -229,7 +229,7 @@ namespace Raven.Server.Documents.Handlers
 
         private void WriteRevisionsJson(JsonOperationContext context, bool metadataOnly, IEnumerable<Document> documentsToWrite, out long numberOfResults)
         {
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName(nameof(GetDocumentsResult.Results));
@@ -277,7 +277,7 @@ namespace Raven.Server.Documents.Handlers
 
             documentRevisionsDetails.RevisionsCount = Database.DocumentsStorage.RevisionsStorage.GetRevisionsCount(documentContext, docId);
 
-            using (var writer = new BlittableJsonTextWriter(documentContext, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(documentContext, ResponseBodyStream()))
             {
                 documentContext.Write(writer, documentRevisionsDetails.ToJson());
             }
@@ -319,7 +319,7 @@ namespace Raven.Server.Documents.Handlers
             HttpContext.Response.Headers["ETag"] = "\"" + actualChangeVector + "\"";
 
             long loadedRevisionsCount;
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName("Results");
@@ -343,7 +343,7 @@ namespace Raven.Server.Documents.Handlers
             var date = Convert.ToDateTime(since).ToUniversalTime();
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (context.OpenReadTransaction())
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName("Results");
@@ -381,7 +381,7 @@ namespace Raven.Server.Documents.Handlers
                 }
 
                 long count;
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
 

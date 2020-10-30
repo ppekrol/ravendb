@@ -91,7 +91,7 @@ namespace SlowTests.Issues
 
                         var expectedString = new string((char)i, j);
 
-                        using (var writer = new BlittableJsonTextWriter(context, stream))
+                        using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
                         {
                             writer.WriteStartObject();
 
@@ -124,7 +124,7 @@ namespace SlowTests.Issues
                 var expectedString3 = "zzzz" + new string((char)7, 3) + "bbbb" + new string((char)7, 2) + "cccc" + new string((char)7, 5) + "xxxx";
                 string expectedJson;
 
-                using (var writer = new BlittableJsonTextWriter(context, stream))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
                 {
                     writer.WriteStartObject();
 

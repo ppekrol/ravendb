@@ -18,7 +18,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             {
                 var djv = CpuStatsInternal();
 
-                using (var write = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var write = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(write, djv);
                 }
@@ -33,7 +33,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             {
                 var djv = ProcStatsInternal();
 
-                using (var write = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var write = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(write, djv);
                 }

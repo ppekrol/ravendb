@@ -98,7 +98,7 @@ namespace Raven.Server.Documents.Handlers.Admin
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
 
@@ -298,7 +298,7 @@ namespace Raven.Server.Documents.Handlers.Admin
                 }, operationId, token: token);
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
             }

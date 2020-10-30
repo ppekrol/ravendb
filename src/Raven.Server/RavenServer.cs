@@ -2179,7 +2179,7 @@ namespace Raven.Server
                 message[nameof(TcpConnectionHeaderResponse.Message)] = error;
             }
 
-            using (var writer = new BlittableJsonTextWriter(context, stream))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
             {
                 context.Write(writer, message);
                 writer.Flush();
@@ -2195,7 +2195,7 @@ namespace Raven.Server
             try
             {
                 using (var context = JsonOperationContext.ShortTermSingleUse())
-                using (var errorWriter = new BlittableJsonTextWriter(context, tcpStream))
+                using (var errorWriter = new AsyncBlittableJsonTextWriter(context, tcpStream))
                 {
                     context.Write(errorWriter, new DynamicJsonValue
                     {

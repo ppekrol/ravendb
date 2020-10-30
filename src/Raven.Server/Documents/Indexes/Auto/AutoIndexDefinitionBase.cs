@@ -19,9 +19,9 @@ namespace Raven.Server.Documents.Indexes.Auto
                 throw new ArgumentNullException(nameof(collection));
         }
 
-        protected abstract override void PersistFields(JsonOperationContext context, BlittableJsonTextWriter writer);
+        protected abstract override void PersistFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer);
 
-        protected override void PersistMapFields(JsonOperationContext context, BlittableJsonTextWriter writer)
+        protected override void PersistMapFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
             writer.WritePropertyName(nameof(MapFields));
             writer.WriteStartArray();

@@ -82,7 +82,7 @@ namespace Raven.Server.Web.Studio
                     propertiesPreviewToSend = bindings.Count > 0 ? new HashSet<string>(bindings) : availableColumns.Take(ColumnsSamplingLimit).Select(x => x.ToString()).ToHashSet();
                 }
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName("Results");
@@ -120,7 +120,7 @@ namespace Raven.Server.Web.Studio
             }
         }
 
-        private void WriteDocument(BlittableJsonTextWriter writer, JsonOperationContext context, Document document, HashSet<string> propertiesPreviewToSend, HashSet<string> fullPropertiesToSend)
+        private void WriteDocument(AsyncBlittableJsonTextWriter writer, JsonOperationContext context, Document document, HashSet<string> propertiesPreviewToSend, HashSet<string> fullPropertiesToSend)
         {
             writer.WriteStartObject();
 
@@ -210,7 +210,7 @@ namespace Raven.Server.Web.Studio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void WriteTrimmedValue(BlittableJsonTextWriter writer, BlittableJsonToken token, object val)
+        private void WriteTrimmedValue(AsyncBlittableJsonTextWriter writer, BlittableJsonToken token, object val)
         {
             switch (token)
             {
@@ -334,7 +334,7 @@ namespace Raven.Server.Web.Studio
 
             task.ContinueWith(_ => returnContextToPool.Dispose());
 
-            using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
             }
