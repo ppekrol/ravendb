@@ -11,11 +11,11 @@ namespace Raven.Server.Web.System
     public sealed class BackupDatabaseHandler : RequestHandler
     {
         [RavenAction("/periodic-backup", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetPeriodicBackup()
+        public async Task GetPeriodicBackup()
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
             if (TryGetAllowedDbs(name, out var _, requireAdmin: false) == false)
-                return Task.CompletedTask;
+                return;
 
             var taskId = GetLongQueryString("taskId", required: true).Value;
             if (taskId == 0)
@@ -30,20 +30,18 @@ namespace Raven.Server.Web.System
                 if (periodicBackup == null)
                     throw new InvalidOperationException($"Periodic backup task ID: {taskId} doesn't exist");
 
-                context.WriteAsync(writer, periodicBackup.ToJson());
-                writer.FlushAsync();
+                await context.WriteAsync(writer, periodicBackup.ToJson());
+                await writer.FlushAsync();
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/periodic-backup/status", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetPeriodicBackupStatus()
+        public async Task GetPeriodicBackupStatus()
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
 
             if (TryGetAllowedDbs(name, out var _, requireAdmin: false) == false)
-                return Task.CompletedTask;
+                return;
 
             var taskId = GetLongQueryString("taskId", required: true);
             if (taskId == 0)
@@ -54,14 +52,12 @@ namespace Raven.Server.Web.System
             using (var statusBlittable = ServerStore.Cluster.Read(context, PeriodicBackupStatus.GenerateItemName(name, taskId.Value)))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync(nameof(GetPeriodicBackupStatusOperationResult.Status));
-                writer.WriteObjectAsync(statusBlittable);
-                writer.WriteEndObjectAsync();
-                writer.FlushAsync();
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync(nameof(GetPeriodicBackupStatusOperationResult.Status));
+                await writer.WriteObjectAsync(statusBlittable);
+                await writer.WriteEndObjectAsync();
+                await writer.FlushAsync();
             }
-
-            return Task.CompletedTask;
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Raven.Server.Web.System
     class CompareExchangeHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/cmpxchg", "GET", AuthorizationStatus.ValidUser, DisableOnCpuCreditsExhaustion = true)]
-        public Task GetCompareExchangeValues()
+        public async Task GetCompareExchangeValues()
         {
             var keys = GetStringValuesQueryString("key", required: false);
             
@@ -27,13 +27,11 @@ namespace Raven.Server.Web.System
                 if (keys.Count > 0)
                     GetCompareExchangeValuesByKey(context, keys);
                 else
-                    GetCompareExchangeValues(context);
+                    await GetCompareExchangeValues(context);
             }
-            
-            return Task.CompletedTask;
         }
 
-        private void GetCompareExchangeValues(TransactionOperationContext context)
+        private async Task GetCompareExchangeValues(TransactionOperationContext context)
         {
             var sw = Stopwatch.StartNew();
 
@@ -46,9 +44,9 @@ namespace Raven.Server.Web.System
             var numberOfResults = 0;
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
                 
-                writer.WriteArrayAsync(context, "Results", items,
+                await writer.WriteArrayAsync(context, "Results", items,
                     (textWriter, operationContext, item) =>
                     {
                         numberOfResults++;
@@ -60,7 +58,7 @@ namespace Raven.Server.Web.System
                         });
                     });
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
 
             AddPagingPerformanceHint(PagingOperationType.CompareExchange, nameof(ClusterStateMachine.GetCompareExchangeValuesStartsWith), 
@@ -74,7 +72,7 @@ namespace Raven.Server.Web.System
             public long Index { get; set; }
         }
         
-        private void GetCompareExchangeValuesByKey(TransactionOperationContext context, Microsoft.Extensions.Primitives.StringValues keys)
+        private async Task GetCompareExchangeValuesByKey(TransactionOperationContext context, Microsoft.Extensions.Primitives.StringValues keys)
         {
             var sw = Stopwatch.StartNew();
 
@@ -94,9 +92,9 @@ namespace Raven.Server.Web.System
             var numberOfResults = 0;
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
                 
-                writer.WriteArrayAsync(context, "Results", items,
+                await writer.WriteArrayAsync(context, "Results", items,
                     (textWriter, operationContext, item) =>
                     {
                         numberOfResults++;
@@ -108,7 +106,7 @@ namespace Raven.Server.Web.System
                         });
                     });
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
 
             AddPagingPerformanceHint(PagingOperationType.CompareExchange, nameof(GetCompareExchangeValuesByKey), HttpContext.Request.QueryString.Value, 
@@ -137,7 +135,7 @@ namespace Raven.Server.Web.System
                     await ServerStore.Cluster.WaitForIndexNotification(raftIndex);
 
                     var result = (CompareExchangeCommandBase.CompareExchangeResult)response;
-                    context.WriteAsync(writer, new DynamicJsonValue
+                    await context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(CompareExchangeResult<object>.Index)] = result.Index,
                         [nameof(CompareExchangeResult<object>.Value)] = result.Value,
@@ -167,7 +165,7 @@ namespace Raven.Server.Web.System
                     await ServerStore.Cluster.WaitForIndexNotification(raftIndex);
 
                     var result = (CompareExchangeCommandBase.CompareExchangeResult)response;
-                    context.WriteAsync(writer, new DynamicJsonValue
+                    await context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(CompareExchangeResult<object>.Index)] = result.Index,
                         [nameof(CompareExchangeResult<object>.Value)] = result.Value,

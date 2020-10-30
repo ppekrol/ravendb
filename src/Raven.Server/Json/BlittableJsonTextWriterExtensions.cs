@@ -110,11 +110,11 @@ namespace Raven.Server.Json
                     wp.WriteComma();
 
                     wp.WritePropertyName(nameof(processProgress.Completed));
-                    wp.WriteBool(processProgress.Completed);
+                    wp.WriteBoolAsync(processProgress.Completed);
                     wp.WriteComma();
 
                     wp.WritePropertyName(nameof(processProgress.Disabled));
-                    wp.WriteBool(processProgress.Disabled);
+                    wp.WriteBoolAsync(processProgress.Disabled);
                     wp.WriteComma();
 
                     wp.WritePropertyName(nameof(processProgress.AverageProcessedPerSecond));
@@ -554,7 +554,7 @@ namespace Raven.Server.Json
             writer.WriteCommaAsync();
 
             writer.WritePropertyNameAsync(nameof(result.IsStale));
-            writer.WriteBool(result.IsStale);
+            writer.WriteBoolAsync(result.IsStale);
             writer.WriteCommaAsync();
 
             writer.WritePropertyNameAsync(nameof(result.ResultEtag));
@@ -640,7 +640,7 @@ namespace Raven.Server.Json
             writer.WriteCommaAsync();
 
             writer.WritePropertyNameAsync(nameof(result.IsStale));
-            writer.WriteBool(result.IsStale);
+            writer.WriteBoolAsync(result.IsStale);
             writer.WriteCommaAsync();
 
             writer.WritePropertyNameAsync(nameof(result.ResultEtag));
@@ -759,7 +759,7 @@ namespace Raven.Server.Json
             writer.WriteCommaAsync();
 
             writer.WritePropertyNameAsync(nameof(query.SkipDuplicateChecking));
-            writer.WriteBool(query.SkipDuplicateChecking);
+            writer.WriteBoolAsync(query.SkipDuplicateChecking);
             writer.WriteCommaAsync();
 
             writer.WritePropertyNameAsync(nameof(query.Start));
@@ -767,7 +767,7 @@ namespace Raven.Server.Json
             writer.WriteCommaAsync();
 
             writer.WritePropertyNameAsync(nameof(query.WaitForNonStaleResults));
-            writer.WriteBool(query.WaitForNonStaleResults);
+            writer.WriteBoolAsync(query.WaitForNonStaleResults);
             writer.WriteCommaAsync();
 
             writer.WritePropertyNameAsync(nameof(query.WaitForNonStaleResultsTimeout));
@@ -863,7 +863,7 @@ namespace Raven.Server.Json
             writer.WriteCommaAsync();
 
             writer.WritePropertyNameAsync(nameof(statistics.Is64Bit));
-            writer.WriteBool(statistics.Is64Bit);
+            writer.WriteBoolAsync(statistics.Is64Bit);
             writer.WriteCommaAsync();
 
             writer.WritePropertyNameAsync(nameof(statistics.Pager));
@@ -934,7 +934,7 @@ namespace Raven.Server.Json
                 writer.WriteStartObjectAsync();
 
                 writer.WritePropertyNameAsync(nameof(index.IsStale));
-                writer.WriteBool(index.IsStale);
+                writer.WriteBoolAsync(index.IsStale);
                 writer.WriteCommaAsync();
 
                 writer.WritePropertyNameAsync(nameof(index.Name));
@@ -1107,7 +1107,7 @@ namespace Raven.Server.Json
             writer.WriteStartObjectAsync();
 
             writer.WritePropertyNameAsync(nameof(progress.IsStale));
-            writer.WriteBool(progress.IsStale);
+            writer.WriteBoolAsync(progress.IsStale);
             writer.WriteCommaAsync();
 
             writer.WritePropertyNameAsync(nameof(progress.IndexRunningStatus));
@@ -1215,7 +1215,7 @@ namespace Raven.Server.Json
 
             writer.WritePropertyNameAsync(nameof(options.Suggestions));
             if (options.Suggestions.HasValue)
-                writer.WriteBool(options.Suggestions.Value);
+                writer.WriteBoolAsync(options.Suggestions.Value);
             else
                 writer.WriteNullAsync();
             writer.WriteCommaAsync();
@@ -1421,7 +1421,7 @@ namespace Raven.Server.Json
             writer.WriteCommaAsync();
 
             writer.WritePropertyNameAsync(Constants.Documents.Metadata.Conflict);
-            writer.WriteBool(true);
+            writer.WriteBoolAsync(true);
 
             writer.WriteEndObjectAsync();
 

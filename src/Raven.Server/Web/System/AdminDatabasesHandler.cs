@@ -65,7 +65,7 @@ namespace Raven.Server.Web.System
         private static readonly Logger Logger = LoggingSource.Instance.GetLogger<AdminDatabasesHandler>("Server");
 
         [RavenAction("/admin/databases", "GET", AuthorizationStatus.Operator)]
-        public Task Get()
+        public async Task Get()
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
 
@@ -79,34 +79,31 @@ namespace Raven.Server.Web.System
                     {
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                         HttpContext.Response.Headers["Database-Missing"] = name;
-                        using (var writer = new AsyncBlittableJsonTextWriter(context, HttpContext.Response.Body))
+                        await using (var writer = new AsyncBlittableJsonTextWriter(context, HttpContext.Response.Body))
                         {
-                            context.WriteAsync(writer,
+                            await context.WriteAsync(writer,
                                 new DynamicJsonValue
                                 {
                                     ["Type"] = "Error",
                                     ["Message"] = "Database " + name + " wasn't found"
                                 });
                         }
-                        return Task.CompletedTask;
                     }
 
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartObjectAsync();
-                        writer.WriteDocumentPropertiesWithoutMetadata(context, new Document
+                        await writer.WriteStartObjectAsync();
+                        await writer.WriteDocumentPropertiesWithoutMetadataAsync(context, new Document
                         {
-                            Data = dbDoc
+                                 Data = dbDoc
                         });
-                        writer.WriteCommaAsync();
-                        writer.WritePropertyNameAsync("Etag");
-                        writer.WriteIntegerAsync(etag);
-                        writer.WriteEndObjectAsync();
+                        await writer.WriteCommaAsync();
+                        await writer.WritePropertyNameAsync("Etag");
+                        await writer.WriteIntegerAsync(etag);
+                        await writer.WriteEndObjectAsync();
                     }
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         // add database to already existing database group
@@ -226,13 +223,13 @@ namespace Raven.Server.Web.System
 
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.WriteAsync(writer, new DynamicJsonValue
+                        await context.WriteAsync(writer, new DynamicJsonValue
                         {
                             [nameof(DatabasePutResult.RaftCommandIndex)] = newIndex,
                             [nameof(DatabasePutResult.Name)] = name,
                             [nameof(DatabasePutResult.Topology)] = databaseRecord.Topology.ToJson()
                         });
-                        writer.FlushAsync();
+                        await writer.FlushAsync();
                     }
 
                     return;
@@ -343,14 +340,14 @@ namespace Raven.Server.Web.System
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.WriteAsync(writer, new DynamicJsonValue
+                    await context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(DatabasePutResult.RaftCommandIndex)] = newIndex,
                         [nameof(DatabasePutResult.Name)] = databaseRecord.DatabaseName,
                         [nameof(DatabasePutResult.Topology)] = topology.ToJson(),
                         [nameof(DatabasePutResult.NodesAddedTo)] = nodeUrlsAddedTo
                     });
-                    writer.FlushAsync();
+                    await writer.FlushAsync();
                 }
             }
         }
@@ -626,8 +623,8 @@ namespace Raven.Server.Web.System
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var blittable = DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(restorePoints, context);
-                    context.WriteAsync(writer, blittable);
-                    writer.FlushAsync();
+                    await context.WriteAsync(writer, blittable);
+                    await writer.FlushAsync();
                 }
             }
         }
@@ -817,7 +814,7 @@ namespace Raven.Server.Web.System
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.WriteAsync(writer, new DynamicJsonValue
+                    await context.WriteAsync(writer, new DynamicJsonValue
                     {
                         // we only send the successful index here, we might fail to delete the index
                         // because a node is down, and we don't want to cause the client to wait on an
@@ -922,23 +919,23 @@ namespace Raven.Server.Web.System
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
-                    writer.WritePropertyNameAsync("Status");
+                    await writer.WriteStartObjectAsync();
+                    await writer.WritePropertyNameAsync("Status");
 
-                    writer.WriteStartArrayAsync();
+                    await writer.WriteStartArrayAsync();
                     var first = true;
                     foreach (var result in resultList)
                     {
                         if (first == false)
-                            writer.WriteCommaAsync();
+                            await writer.WriteCommaAsync();
                         first = false;
 
-                        context.WriteAsync(writer, result);
+                        await context.WriteAsync(writer, result);
                     }
 
-                    writer.WriteEndArrayAsync();
+                    await writer.WriteEndArrayAsync();
 
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteEndObjectAsync();
                 }
             }
         }
@@ -958,12 +955,12 @@ namespace Raven.Server.Web.System
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.WriteAsync(writer, new DynamicJsonValue
+                    await context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(DatabasePutResult.Name)] = name,
                         [nameof(DatabasePutResult.RaftCommandIndex)] = index
                     });
-                    writer.FlushAsync();
+                    await writer.FlushAsync();
                 }
             }
         }
@@ -1054,13 +1051,13 @@ namespace Raven.Server.Web.System
 
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.WriteAsync(writer, new DynamicJsonValue
+                        await context.WriteAsync(writer, new DynamicJsonValue
                         {
                             ["RaftCommandIndex"] = index,
                             ["Key"] = name,
                             [nameof(DatabaseRecord.ConflictSolverConfig)] = conflictSolverConfig.ToJson()
                         });
-                        writer.FlushAsync();
+                        await writer.FlushAsync();
                     }
                 }
             }
@@ -1161,7 +1158,7 @@ namespace Raven.Server.Web.System
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
+                    await writer.WriteOperationIdAndNodeTagAsync(context, operationId, ServerStore.NodeTag);
                 }
             }
         }

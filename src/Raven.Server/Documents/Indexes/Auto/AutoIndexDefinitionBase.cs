@@ -53,7 +53,7 @@ namespace Raven.Server.Documents.Indexes.Auto
                 writer.WriteCommaAsync();
 
                 writer.WritePropertyNameAsync(nameof(field.HasSuggestions));
-                writer.WriteBool(field.HasSuggestions);
+                writer.WriteBoolAsync(field.HasSuggestions);
 
                 writer.WriteEndObjectAsync();
 

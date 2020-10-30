@@ -860,7 +860,7 @@ namespace Raven.Server.Web.Authentication
                         writer.WriteStringAsync(oldThumbprint);
                         writer.WriteCommaAsync();
                         writer.WritePropertyNameAsync(nameof(CertificateReplacement.ReplaceImmediately));
-                        writer.WriteBool(replaceImmediately);
+                        writer.WriteBoolAsync(replaceImmediately);
                         writer.WriteCommaAsync();
                         writer.WritePropertyNameAsync(nameof(CertificateReplacement.Replaced));
                         writer.WriteIntegerAsync(replaced);
@@ -918,7 +918,7 @@ namespace Raven.Server.Web.Authentication
                     {
                         writer.WriteStartObjectAsync();
                         writer.WritePropertyNameAsync(nameof(ForceRenewResult.Success));
-                        writer.WriteBool(success);
+                        writer.WriteBoolAsync(success);
                         writer.WriteEndObjectAsync();
                     }
 

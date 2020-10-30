@@ -82,7 +82,7 @@ namespace Raven.Server.Documents.Queries
             _writer.WriteCommaAsync();
 
             _writer.WritePropertyNameAsync(nameof(StreamQueryStatistics.IsStale));
-            _writer.WriteBool(isStale);
+            _writer.WriteBoolAsync(isStale);
             _writer.WriteCommaAsync();
 
             _writer.WritePropertyNameAsync(nameof(StreamQueryStatistics.IndexName));

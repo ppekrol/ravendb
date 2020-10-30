@@ -22,27 +22,25 @@ namespace Raven.Server.Web.System
     public class TcpConnectionInfoHandler : RequestHandler
     {
         [RavenAction("/info/tcp", "GET", AuthorizationStatus.ValidUser)]
-        public Task Get()
+        public async Task Get()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var output = Server.ServerStore.GetTcpInfoAndCertificates(HttpContext.Request.GetClientRequestedNodeUrl());
-                context.WriteAsync(writer, output);
+                await context.WriteAsync(writer, output);
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/info/remote-task/topology", "GET", AuthorizationStatus.RestrictedAccess)]
-        public Task GetRemoteTaskTopology()
+        public async Task GetRemoteTaskTopology()
         {
             var database = GetStringQueryString("database");
             var databaseGroupId = GetStringQueryString("groupId");
             var remoteTask = GetStringQueryString("remote-task");
 
             if (Authenticate(HttpContext, ServerStore, database, remoteTask) == false)
-                return Task.CompletedTask;
+                return;
 
             List<string> nodes;
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
@@ -65,12 +63,11 @@ namespace Raven.Server.Web.System
                 {
                     output.Add(clusterTopology.GetUrlFromTag(node));
                 }
-                context.WriteAsync(writer, new DynamicJsonValue
+                await context.WriteAsync(writer, new DynamicJsonValue
                 {
                     ["Results"] = output
                 });
             }
-            return Task.CompletedTask;
         }
 
         [RavenAction("/info/remote-task/tcp", "GET", AuthorizationStatus.RestrictedAccess)]
@@ -97,7 +94,7 @@ namespace Raven.Server.Web.System
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var output = Server.ServerStore.GetTcpInfoAndCertificates(HttpContext.Request.GetClientRequestedNodeUrl(), forExternalUse:true);
-                context.WriteAsync(writer, output);
+                await context.WriteAsync(writer, output);
             }
         }
 

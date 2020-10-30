@@ -20,7 +20,6 @@ namespace Raven.Server.Web.System
         [RavenAction("/admin/test-connection", "POST", AuthorizationStatus.Operator)]
         public async Task TestConnection()
         {
-            
             var url = GetQueryStringValueAndAssertIfSingleAndNotEmpty("url");
             var database = GetStringQueryString("database", required:false); // can be null
             var bidirectional = GetBoolValueQueryString("bidirectional", required: false);
@@ -41,7 +40,7 @@ namespace Raven.Server.Web.System
                         result = await ServerStore.TestConnectionFromRemote(requestExecutor, context, url);
                     }
                 }
-                context.WriteAsync(writer, result.ToJson());
+                await context.WriteAsync(writer, result.ToJson());
             }
         }
 
@@ -54,9 +53,9 @@ namespace Raven.Server.Web.System
             using (tcpClient)
             {
                 using (server.ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext ctx))
-                using (var writer = new AsyncBlittableJsonTextWriter(ctx, connection))
+                await using (var writer = new AsyncBlittableJsonTextWriter(ctx, connection))
                 {
-                    WriteOperationHeaderToRemote(writer, TcpConnectionHeaderMessage.OperationTypes.TestConnection, database);
+                    await WriteOperationHeaderToRemote(writer, TcpConnectionHeaderMessage.OperationTypes.TestConnection, database);
                     using (var responseJson = await ctx.ReadForMemoryAsync(connection, $"TestConnectionHandler/{url}/Read-Handshake-Response"))
                     {
                         var headerResponse = JsonDeserializationServer.TcpConnectionHeaderResponse(responseJson);
@@ -72,7 +71,7 @@ namespace Raven.Server.Web.System
                             case TcpConnectionStatus.TcpVersionMismatch:
                                 result.Success = false;
                                 result.Error = $"Connection to {url} failed because of mismatching tcp version: {headerResponse.Message}";
-                                WriteOperationHeaderToRemote(writer, TcpConnectionHeaderMessage.OperationTypes.Drop, database);
+                                await WriteOperationHeaderToRemote(writer, TcpConnectionHeaderMessage.OperationTypes.Drop, database);
                                 break;
                         }
                     }
@@ -80,21 +79,21 @@ namespace Raven.Server.Web.System
             }
         }
 
-        private static void WriteOperationHeaderToRemote(AsyncBlittableJsonTextWriter writer, TcpConnectionHeaderMessage.OperationTypes operation, string databaseName)
+        private static async ValueTask WriteOperationHeaderToRemote(AsyncBlittableJsonTextWriter writer, TcpConnectionHeaderMessage.OperationTypes operation, string databaseName)
         {
-            writer.WriteStartObjectAsync();
-            {
-                writer.WritePropertyNameAsync(nameof(TcpConnectionHeaderMessage.Operation));
-                writer.WriteStringAsync(operation.ToString());
-                writer.WriteCommaAsync();
-                writer.WritePropertyNameAsync(nameof(TcpConnectionHeaderMessage.OperationVersion));
-                writer.WriteIntegerAsync(TcpConnectionHeaderMessage.GetOperationTcpVersion(operation));
-                writer.WriteCommaAsync();
-                writer.WritePropertyNameAsync(nameof(TcpConnectionHeaderMessage.DatabaseName));
-                writer.WriteStringAsync(databaseName);
-            }
-            writer.WriteEndObjectAsync();
-            writer.FlushAsync();
+           await writer.WriteStartObjectAsync();
+           {
+                await writer.WritePropertyNameAsync(nameof(TcpConnectionHeaderMessage.Operation));
+                await writer.WriteStringAsync(operation.ToString());
+                await writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(TcpConnectionHeaderMessage.OperationVersion));
+                await writer.WriteIntegerAsync(TcpConnectionHeaderMessage.GetOperationTcpVersion(operation));
+                await writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(TcpConnectionHeaderMessage.DatabaseName));
+                await writer.WriteStringAsync(databaseName);
+           }
+           await writer.WriteEndObjectAsync();
+           await writer.FlushAsync();
         }
     }
 

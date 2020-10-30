@@ -67,7 +67,7 @@ namespace Raven.Server.Documents.Queries
             writer.WriteCommaAsync();
             
             writer.WritePropertyNameAsync(nameof(IsStreaming));
-            writer.WriteBool(IsStreaming);
+            writer.WriteBoolAsync(IsStreaming);
 
             writer.WriteEndObjectAsync();
         }

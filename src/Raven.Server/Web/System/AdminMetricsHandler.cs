@@ -12,14 +12,13 @@ namespace Raven.Server.Web.System
     public class AdminMetricsHandler : RequestHandler
     {
         [RavenAction("/admin/metrics", "GET", AuthorizationStatus.Operator)]
-        public Task GetRootStats()
+        public async Task GetRootStats()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.WriteAsync(writer, Server.Metrics.ToJson());
+                await context.WriteAsync(writer, Server.Metrics.ToJson());
             }
-            return Task.CompletedTask;
         }
     }
 }

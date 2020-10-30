@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Raven.Client.Util;
 using Raven.Server.Json;
 using Raven.Server.ServerWide.Context;
@@ -29,32 +30,32 @@ namespace Raven.Server.ServerWide
 
         public DateTime? LastAuthorizedNonClusterAdminRequestTime;
 
-        public void WriteTo(AsyncBlittableJsonTextWriter writer)
+        public async Task WriteTo(AsyncBlittableJsonTextWriter writer)
         {
-            writer.WriteStartObjectAsync();
+            await  writer.WriteStartObjectAsync();
 
-            writer.WritePropertyNameAsync(nameof(UpTime));
-            writer.WriteStringAsync(UpTime.ToString("c"));
-            writer.WriteCommaAsync();
+            await  writer.WritePropertyNameAsync(nameof(UpTime));
+            await  writer.WriteStringAsync(UpTime.ToString("c"));
+            await  writer.WriteCommaAsync();
 
-            writer.WritePropertyNameAsync(nameof(StartUpTime));
-            writer.WriteDateTimeAsync(StartUpTime, isUtc: true);
-            writer.WriteCommaAsync();
+            await  writer.WritePropertyNameAsync(nameof(StartUpTime));
+            await  writer.WriteDateTimeAsync(StartUpTime, isUtc: true);
+            await  writer.WriteCommaAsync();
 
-            writer.WritePropertyNameAsync(nameof(LastRequestTime));
+            await  writer.WritePropertyNameAsync(nameof(LastRequestTime));
             if (LastRequestTime.HasValue)
-                writer.WriteDateTimeAsync(LastRequestTime.Value, isUtc: true);
+                await  writer.WriteDateTimeAsync(LastRequestTime.Value, isUtc: true);
             else
-                writer.WriteNullAsync();
-            writer.WriteCommaAsync();
+                await  writer.WriteNullAsync();
+            await  writer.WriteCommaAsync();
 
-            writer.WritePropertyNameAsync(nameof(LastAuthorizedNonClusterAdminRequestTime));
+            await  writer.WritePropertyNameAsync(nameof(LastAuthorizedNonClusterAdminRequestTime));
             if (LastAuthorizedNonClusterAdminRequestTime.HasValue)
-                writer.WriteDateTimeAsync(LastAuthorizedNonClusterAdminRequestTime.Value, isUtc: true);
+                await  writer.WriteDateTimeAsync(LastAuthorizedNonClusterAdminRequestTime.Value, isUtc: true);
             else
-                writer.WriteNullAsync();
+                await  writer.WriteNullAsync();
 
-            writer.WriteEndObjectAsync();
+            await  writer.WriteEndObjectAsync();
         }
 
         internal unsafe void Load(TransactionContextPool contextPool, Logger logger)
@@ -103,7 +104,7 @@ namespace Raven.Server.ServerWide
                         using (var ms = new MemoryStream())
                         using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
                         {
-                            WriteTo(writer);
+                            await WriteTo(writer); TODO arek
 
                             writer.FlushAsync();
                             ms.Position = 0;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
@@ -65,7 +66,7 @@ namespace Raven.Server.Documents
             }
         }
 
-        public unsafe bool TryGet(string databaseName, Action<BlittableJsonReaderObject> action)
+        public unsafe bool TryGet(string databaseName, Func<BlittableJsonReaderObject, Task> action)
         {
             using (_contextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (var tx = context.OpenReadTransaction())
@@ -85,7 +86,7 @@ namespace Raven.Server.Documents
 
                 using (var databaseInfoJson = Read(context, ref infoTvr))
                 {
-                    action(databaseInfoJson);
+                    action(databaseInfoJson).ConfigureAwait(false).GetAwaiter().GetResult(); // TODO arek - change bool TryGet to Task<bool> TryGet
                     return true;
                 }
             }

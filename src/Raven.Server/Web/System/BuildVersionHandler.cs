@@ -30,7 +30,9 @@ namespace Raven.Server.Web.System
             using (var context = JsonOperationContext.ShortTermSingleUse())
             {
                 var stream = new MemoryStream();
-                using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
+                var writer = new AsyncBlittableJsonTextWriter(context, stream);
+
+                try
                 {
                     context.WriteAsync(writer, new DynamicJsonValue
                     {
@@ -38,8 +40,13 @@ namespace Raven.Server.Web.System
                         [nameof(BuildNumber.ProductVersion)] = ServerVersion.Version,
                         [nameof(BuildNumber.CommitHash)] = ServerVersion.CommitHash,
                         [nameof(BuildNumber.FullVersion)] = ServerVersion.FullVersion
-                    });
+                    }).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
                 }
+                finally
+                {
+                    writer.DisposeAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+                }
+
                 var versionBuffer = stream.ToArray();
                 return versionBuffer;
             }
@@ -64,7 +71,7 @@ namespace Raven.Server.Web.System
                 _lastRunAt = SystemTime.UtcNow;
             }
 
-            WriteVersionUpdatesInfo();
+            await WriteVersionUpdatesInfo();
         }
 
         private static readonly TimeSpan LatestVersionCheckThrottlePeriod = TimeSpan.FromMinutes(3);
@@ -78,14 +85,14 @@ namespace Raven.Server.Web.System
             return SystemTime.UtcNow - lastRunAt.Value <= LatestVersionCheckThrottlePeriod;
         }
 
-        private void WriteVersionUpdatesInfo()
+        private async Task WriteVersionUpdatesInfo()
         {
             var versionUpdatesInfo = LatestVersionCheck.Instance.GetLastRetrievedVersionUpdatesInfo();
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.WriteAsync(writer, new DynamicJsonValue
+                    await context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(LatestVersionCheck.VersionInfo.Version)] = versionUpdatesInfo?.Version,
                         [nameof(LatestVersionCheck.VersionInfo.PublishedAt)] = versionUpdatesInfo?.PublishedAt,

@@ -178,7 +178,7 @@ namespace Raven.Server.Documents.Handlers
                 {
                     writer.WriteStartObjectAsync();
                     writer.WritePropertyNameAsync("Changed");
-                    writer.WriteBool(changed);
+                    writer.WriteBoolAsync(changed);
                     writer.WriteEndObjectAsync();
                 }
             }
@@ -423,7 +423,7 @@ namespace Raven.Server.Documents.Handlers
                 writer.WriteStartObjectAsync();
 
                 writer.WritePropertyNameAsync("IsStale");
-                writer.WriteBool(isStale);
+                writer.WriteBoolAsync(isStale);
                 writer.WriteCommaAsync();
 
                 writer.WriteArrayAsync("StalenessReasons", stalenessReasons);

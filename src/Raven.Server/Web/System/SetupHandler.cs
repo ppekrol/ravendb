@@ -90,7 +90,7 @@ namespace Raven.Server.Web.System
                         errorMessage = DomainRegistrationServiceUnreachableError;
                     }
 
-                    using (var streamWriter = new StreamWriter(ResponseBodyStream()))
+                    await using (var streamWriter = new StreamWriter(ResponseBodyStream()))
                     {
                         if (error != null)
                         {
@@ -102,14 +102,14 @@ namespace Raven.Server.Web.System
                                 Type = typeof(RavenException).FullName
                             });
 
-                            streamWriter.Flush();
+                            await streamWriter.FlushAsync();
                         }
                         else
                         {
-                            streamWriter.Write(responseString);
+                            await streamWriter.WriteAsync(responseString);
                         }
 
-                        streamWriter.Flush();
+                        await streamWriter.FlushAsync();
                     }
                 }
                 catch (Exception e)
@@ -170,7 +170,7 @@ namespace Raven.Server.Web.System
                             JsonConvert.DeserializeObject<JObject>(responseString).TryGetValue("Error", out errorJToken);
                         }
 
-                        using (var streamWriter = new StreamWriter(ResponseBodyStream()))
+                        await using (var streamWriter = new StreamWriter(ResponseBodyStream()))
                         {
                             new JsonSerializer().Serialize(streamWriter, new
                             {
@@ -179,7 +179,7 @@ namespace Raven.Server.Web.System
                                 Error = errorJToken ?? error
                             });
 
-                            streamWriter.Flush();
+                            await streamWriter.FlushAsync();
                         }
 
                         return;
@@ -228,7 +228,7 @@ namespace Raven.Server.Web.System
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         var blittable = DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(fullResult, context);
-                        context.WriteAsync(writer, blittable);
+                        await context.WriteAsync(writer, blittable);
                     }
                 }
                 catch (LicenseExpiredException)
@@ -243,7 +243,7 @@ namespace Raven.Server.Web.System
         }
 
         [RavenAction("/setup/populate-ips", "POST", AuthorizationStatus.UnauthenticatedClients)]
-        public Task PopulateIps()
+        public async Task PopulateIps()
         {
             AssertOnlyInSetupMode();
             var rootDomain = GetQueryStringValueAndAssertIfSingleAndNotEmpty("rootDomain");
@@ -271,11 +271,9 @@ namespace Raven.Server.Web.System
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var blittable = DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(userDomainsWithIps, context);
-                    context.WriteAsync(writer, blittable);
+                    await context.WriteAsync(writer, blittable);
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/setup/parameters", "GET", AuthorizationStatus.UnauthenticatedClients)]
@@ -286,40 +284,40 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync(nameof(SetupParameters.FixedServerPortNumber));
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync(nameof(SetupParameters.FixedServerPortNumber));
 
                 if (setupParameters.FixedServerPortNumber.HasValue)
                 {
-                    writer.WriteIntegerAsync(setupParameters.FixedServerPortNumber.Value);
+                    await writer.WriteIntegerAsync(setupParameters.FixedServerPortNumber.Value);
                 }
                 else
                 {
-                    writer.WriteNullAsync();
+                    await writer.WriteNullAsync();
                 }
 
-                writer.WriteCommaAsync();
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(SetupParameters.IsDocker));
-                writer.WriteBool(setupParameters.IsDocker);
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(SetupParameters.IsDocker));
+                await writer.WriteBoolAsync(setupParameters.IsDocker);
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(SetupParameters.IsAzure));
-                writer.WriteBool(setupParameters.IsAzure);
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(SetupParameters.IsAzure));
+                await writer.WriteBoolAsync(setupParameters.IsAzure);
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(SetupParameters.IsAws));
-                writer.WriteBool(setupParameters.IsAws);
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(SetupParameters.IsAws));
+                await writer.WriteBoolAsync(setupParameters.IsAws);
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(SetupParameters.RunningOnPosix));
-                writer.WriteBool(setupParameters.RunningOnPosix);
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(SetupParameters.RunningOnPosix));
+                await writer.WriteBoolAsync(setupParameters.RunningOnPosix);
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(SetupParameters.RunningOnMacOsx));
-                writer.WriteBool(setupParameters.RunningOnMacOsx);
+                await writer.WritePropertyNameAsync(nameof(SetupParameters.RunningOnMacOsx));
+                await writer.WriteBoolAsync(setupParameters.RunningOnMacOsx);
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
         }
 
@@ -344,12 +342,12 @@ namespace Raven.Server.Web.System
             {
                 var setupParameters = await SetupParameters.Get(ServerStore);
 
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync("MachineName");
-                writer.WriteStringAsync(Environment.MachineName);
-                writer.WriteCommaAsync();
-                writer.WritePropertyNameAsync("NetworkInterfaces");
-                writer.WriteStartArrayAsync();
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync("MachineName");
+                await writer.WriteStringAsync(Environment.MachineName);
+                await writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync("NetworkInterfaces");
+                await writer.WriteStartArrayAsync();
                 var first = true;
 
                 List<string> ips;
@@ -379,18 +377,18 @@ namespace Raven.Server.Web.System
                             ips.Add(setupParameters.DockerHostname);
 
                         if (first == false)
-                            writer.WriteCommaAsync();
+                            await writer.WriteCommaAsync();
                         first = false;
 
-                        writer.WriteStartObjectAsync();
-                        writer.WritePropertyNameAsync("Name");
-                        writer.WriteStringAsync(netInterface.Name);
-                        writer.WriteCommaAsync();
-                        writer.WritePropertyNameAsync("Description");
-                        writer.WriteStringAsync(netInterface.Description);
-                        writer.WriteCommaAsync();
-                        writer.WriteArrayAsync("Addresses", ips);
-                        writer.WriteEndObjectAsync();
+                        await writer.WriteStartObjectAsync();
+                        await writer.WritePropertyNameAsync("Name");
+                        await writer.WriteStringAsync(netInterface.Name);
+                        await writer.WriteCommaAsync();
+                        await writer.WritePropertyNameAsync("Description");
+                        await writer.WriteStringAsync(netInterface.Description);
+                        await writer.WriteCommaAsync();
+                        await writer.WriteArrayAsync("Addresses", ips);
+                        await writer.WriteEndObjectAsync();
                     }
                 }
                 else
@@ -401,24 +399,24 @@ namespace Raven.Server.Web.System
                     {
                         "127.0.0.1"
                     };
-                    writer.WriteStartObjectAsync();
-                    writer.WritePropertyNameAsync("Name");
-                    writer.WriteStringAsync("Loopback Interface");
-                    writer.WriteCommaAsync();
-                    writer.WritePropertyNameAsync("Description");
-                    writer.WriteStringAsync("Loopback Interface");
-                    writer.WriteCommaAsync();
-                    writer.WriteArrayAsync("Addresses", ips);
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteStartObjectAsync();
+                    await writer.WritePropertyNameAsync("Name");
+                    await writer.WriteStringAsync("Loopback Interface");
+                    await writer.WriteCommaAsync();
+                    await writer.WritePropertyNameAsync("Description");
+                    await writer.WriteStringAsync("Loopback Interface");
+                    await writer.WriteCommaAsync();
+                    await writer.WriteArrayAsync("Addresses", ips);
+                    await writer.WriteEndObjectAsync();
                 }
 
-                writer.WriteEndArrayAsync();
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndArrayAsync();
+                await writer.WriteEndObjectAsync();
             }
         }
 
         [RavenAction("/setup/hosts", "POST", AuthorizationStatus.UnauthenticatedClients)]
-        public Task GetHosts()
+        public async Task GetHosts()
         {
             AssertOnlyInSetupMode();
 
@@ -464,30 +462,28 @@ namespace Raven.Server.Web.System
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
-                    writer.WritePropertyNameAsync("CN");
-                    writer.WriteStringAsync(cn);
-                    writer.WriteCommaAsync();
-                    writer.WritePropertyNameAsync("AlternativeNames");
-                    writer.WriteStartArrayAsync();
+                    await writer.WriteStartObjectAsync();
+                    await writer.WritePropertyNameAsync("CN");
+                    await writer.WriteStringAsync(cn);
+                    await writer.WriteCommaAsync();
+                    await writer.WritePropertyNameAsync("AlternativeNames");
+                    await writer.WriteStartArrayAsync();
 
                     var first = true;
                     foreach (var value in SetupManager.GetCertificateAlternativeNames(certificate))
                     {
                         if (first == false)
-                            writer.WriteCommaAsync();
+                            await writer.WriteCommaAsync();
                         first = false;
 
-                        writer.WriteStringAsync(value);
+                        await writer.WriteStringAsync(value);
                     }
 
-                    writer.WriteEndArrayAsync();
+                    await writer.WriteEndArrayAsync();
 
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteEndObjectAsync();
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/setup/unsecured", "POST", AuthorizationStatus.UnauthenticatedClients)]
@@ -618,10 +614,10 @@ namespace Raven.Server.Web.System
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
-                    writer.WritePropertyNameAsync("Uri");
-                    writer.WriteStringAsync(uri.AbsoluteUri);
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteStartObjectAsync();
+                    await writer.WritePropertyNameAsync("Uri");
+                    await writer.WriteStringAsync(uri.AbsoluteUri);
+                    await writer.WriteEndObjectAsync();
                 }
             }
         }
@@ -661,7 +657,7 @@ namespace Raven.Server.Web.System
         }
 
         [RavenAction("/setup/continue/extract", "POST", AuthorizationStatus.UnauthenticatedClients)]
-        public Task ExtractInfoFromZip()
+        public async Task ExtractInfoFromZip()
         {
             AssertOnlyInSetupMode();
 
@@ -701,26 +697,26 @@ namespace Raven.Server.Web.System
 
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartArrayAsync();
+                        await writer.WriteStartArrayAsync();
                         var first = true;
 
                         foreach (var node in urlByTag)
                         {
                             if (first == false)
-                                writer.WriteCommaAsync();
+                                await writer.WriteCommaAsync();
 
-                            writer.WriteStartObjectAsync();
-                            writer.WritePropertyNameAsync(nameof(ConfigurationNodeInfo.Tag));
-                            writer.WriteStringAsync(node.Key);
-                            writer.WriteCommaAsync();
-                            writer.WritePropertyNameAsync(nameof(ConfigurationNodeInfo.PublicServerUrl));
-                            writer.WriteStringAsync(node.Value);
-                            writer.WriteEndObjectAsync();
+                            await writer.WriteStartObjectAsync();
+                            await writer.WritePropertyNameAsync(nameof(ConfigurationNodeInfo.Tag));
+                            await writer.WriteStringAsync(node.Key);
+                            await writer.WriteCommaAsync();
+                            await writer.WritePropertyNameAsync(nameof(ConfigurationNodeInfo.PublicServerUrl));
+                            await writer.WriteStringAsync(node.Value);
+                            await writer.WriteEndObjectAsync();
 
                             first = false;
                         }
 
-                        writer.WriteEndArrayAsync();
+                        await writer.WriteEndArrayAsync();
                     }
                 }
                 catch (Exception e)
@@ -728,8 +724,6 @@ namespace Raven.Server.Web.System
                     throw new InvalidOperationException("Unable to extract setup information from the zip file.", e);
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/setup/continue", "POST", AuthorizationStatus.UnauthenticatedClients)]

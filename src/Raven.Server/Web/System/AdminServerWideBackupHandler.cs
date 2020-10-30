@@ -28,7 +28,7 @@ namespace Raven.Server.Web.System
     public class AdminServerWideBackupHandler : ServerRequestHandler
     {
         [RavenAction("/admin/configuration/server-wide", "GET", AuthorizationStatus.ClusterAdmin)]
-        public Task GetConfigurationServerWide()
+        public async Task GetConfigurationServerWide()
         {
             // FullPath removes the trailing '/' so adding it back for the studio
             var localRootPath = ServerStore.Configuration.Backup.LocalRootPath;
@@ -44,10 +44,8 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.WriteAsync(writer, result);
+                await context.WriteAsync(writer, result);
             }
-
-            return Task.CompletedTask;
         }
 
         // Used for Create, Edit
@@ -116,7 +114,7 @@ namespace Raven.Server.Web.System
         // Get all server-wide backups -OR- specific task by the task name... 
         // todo : consider also returning each db specific details for the studio list view here
         [RavenAction("/admin/configuration/server-wide/backup", "GET", AuthorizationStatus.ClusterAdmin)]
-        public Task GetServerWideBackupConfigurationCommand()
+        public async Task GetServerWideBackupConfigurationCommand()
         {
             var taskName = GetStringQueryString("name", required: false);
 
@@ -137,10 +135,8 @@ namespace Raven.Server.Web.System
                     backupsResult.Results.Add(backup);
                 }
                 
-                context.WriteAsync(writer, backupsResult.ToJson());
-                writer.FlushAsync();
-
-                return Task.CompletedTask;
+                await context.WriteAsync(writer, backupsResult.ToJson());
+                await writer.FlushAsync();
             }
         }
         

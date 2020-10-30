@@ -20,7 +20,6 @@ using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Smuggler.Migration;
 using Raven.Server.Utils;
-using Raven.Server.Utils.Metrics;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Logging;
@@ -33,7 +32,7 @@ namespace Raven.Server.Web.System
         private static readonly Logger Logger = LoggingSource.Instance.GetLogger<DatabasesHandler>("Server");
 
         [RavenAction("/databases", "GET", AuthorizationStatus.ValidUser)]
-        public Task Databases()
+        public async Task Databases()
         {
             // if Studio requested information about single resource - handle it
             var dbName = GetStringQueryString("name", false);
@@ -270,7 +269,7 @@ namespace Raven.Server.Web.System
             return url;
         }
 
-        private Task DbInfo(string dbName)
+        private async Task DbInfo(string dbName)
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
@@ -285,16 +284,15 @@ namespace Raven.Server.Web.System
                             HttpContext.Response.Headers.Remove("Content-Type");
                             HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                             HttpContext.Response.Headers["Database-Missing"] = dbName;
-                            return Task.CompletedTask;
+                            return;
                         }
-                        WriteDatabaseInfo(dbName, dbRecord, context, writer);
+                        await WriteDatabaseInfo(dbName, dbRecord, context, writer);
                     }
-                    return Task.CompletedTask;
                 }
             }
         }
 
-        private void WriteDatabaseInfo(string databaseName, BlittableJsonReaderObject dbRecordBlittable,
+        private async Task WriteDatabaseInfo(string databaseName, BlittableJsonReaderObject dbRecordBlittable,
             TransactionOperationContext context, AbstractBlittableJsonTextWriter writer)
         {
             try
@@ -307,7 +305,7 @@ namespace Raven.Server.Web.System
                 if (dbTask != null && dbTask.IsFaulted)
                 {
                     var exception = dbTask.Exception.ExtractSingleInnerException();
-                    WriteFaultedDatabaseInfo(databaseName, exception, context, writer);
+                    await WriteFaultedDatabaseInfo(databaseName, exception, context, writer);
                     return;
                 }
 
@@ -384,7 +382,7 @@ namespace Raven.Server.Web.System
                 if (online == false)
                 {
                     // if state of database is found in the cache we can continue
-                    if (ServerStore.DatabaseInfoCache.TryGet(databaseName, databaseInfoJson =>
+                    if (ServerStore.DatabaseInfoCache.TryGet(databaseName, async databaseInfoJson =>
                     {
                         databaseInfoJson.Modifications = new DynamicJsonValue(databaseInfoJson)
                         {
@@ -395,7 +393,7 @@ namespace Raven.Server.Web.System
                             [nameof(DatabaseInfo.Environment)] = studioEnvironment
                         };
 
-                        context.WriteAsync(writer, databaseInfoJson);
+                        await context.WriteAsync(writer, databaseInfoJson);
                     }))
                     {
                         return;
@@ -440,14 +438,14 @@ namespace Raven.Server.Web.System
                 };
 
                 var doc = databaseInfo.ToJson();
-                context.WriteAsync(writer, doc);
+                await context.WriteAsync(writer, doc);
             }
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
                     Logger.Info($"Failed to get database info for: {databaseName}", e);
 
-                WriteFaultedDatabaseInfo(databaseName, e, context, writer);
+                await WriteFaultedDatabaseInfo(databaseName, e, context, writer);
             }
         }
 
@@ -494,7 +492,7 @@ namespace Raven.Server.Web.System
             return node;
         }
 
-        private void WriteFaultedDatabaseInfo(
+        private async Task WriteFaultedDatabaseInfo(
             string databaseName,
             Exception exception,
             JsonOperationContext context, 
@@ -506,7 +504,7 @@ namespace Raven.Server.Web.System
                 [nameof(DatabaseInfo.LoadError)] = exception.Message
             };
 
-            context.WriteAsync(writer, doc);
+            await context.WriteAsync(writer, doc);
         }
 
         private static BackupInfo GetBackupInfo(DocumentDatabase db)

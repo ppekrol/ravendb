@@ -1030,7 +1030,7 @@ namespace Raven.Server.Utils.Cli
                 }
                 else if (result.RawJsValue.IsBoolean())
                 {
-                    writer.WriteBool(result.RawJsValue.AsBoolean());
+                    writer.WriteBoolAsync(result.RawJsValue.AsBoolean());
                 }
                 else if (result.RawJsValue.IsString())
                 {

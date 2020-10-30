@@ -400,7 +400,7 @@ namespace Raven.Server.Web.Studio
                 {
                     writer.WriteStartObjectAsync();
                     writer.WritePropertyNameAsync(nameof(NextCronExpressionOccurrence.IsValid));
-                    writer.WriteBool(false);
+                    writer.WriteBoolAsync(false);
                     writer.WriteCommaAsync();
                     writer.WritePropertyNameAsync(nameof(NextCronExpressionOccurrence.ErrorMessage));
                     writer.WriteStringAsync(e.Message);
@@ -418,7 +418,7 @@ namespace Raven.Server.Web.Studio
             {
                 writer.WriteStartObjectAsync();
                 writer.WritePropertyNameAsync(nameof(NextCronExpressionOccurrence.IsValid));
-                writer.WriteBool(true);
+                writer.WriteBoolAsync(true);
                 writer.WriteCommaAsync();
                 writer.WritePropertyNameAsync(nameof(NextCronExpressionOccurrence.Utc));
                 writer.WriteDateTimeAsync(nextOccurrence.ToUniversalTime(), true);

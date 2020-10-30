@@ -10,7 +10,7 @@ namespace Raven.Server.Web.System
     public class AdminStorageHandler : RequestHandler
     {
         [RavenAction("/admin/debug/storage/environment/report", "GET", AuthorizationStatus.Operator, IsDebugInformationEndpoint = false)]
-        public Task SystemEnvironmentReport()
+        public async Task SystemEnvironmentReport()
         {
             var details = GetBoolValueQueryString("details", required: false) ?? false;
             var env = ServerStore._env;
@@ -18,26 +18,24 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync("Environment");
-                writer.WriteStringAsync("Server");
-                writer.WriteCommaAsync();
+                await  writer.WriteStartObjectAsync();
+                await  writer.WritePropertyNameAsync("Environment");
+                await  writer.WriteStringAsync("Server");
+                await  writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync("Type");
-                writer.WriteStringAsync(nameof(StorageEnvironmentWithType.StorageEnvironmentType.System));
-                writer.WriteCommaAsync();
+                await  writer.WritePropertyNameAsync("Type");
+                await  writer.WriteStringAsync(nameof(StorageEnvironmentWithType.StorageEnvironmentType.System));
+                await  writer.WriteCommaAsync();
 
                 using (var tx = env.ReadTransaction())
                 {
                     var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(env.GenerateDetailedReport(tx, details));
-                    writer.WritePropertyNameAsync("Report");
-                    writer.WriteObjectAsync(context.ReadObject(djv, "System"));
+                    await  writer.WritePropertyNameAsync("Report");
+                    await  writer.WriteObjectAsync(context.ReadObject(djv, "System"));
                 }
 
-                writer.WriteEndObjectAsync();
+                await  writer.WriteEndObjectAsync();
             }
-
-            return Task.CompletedTask;
         }
     }
 }

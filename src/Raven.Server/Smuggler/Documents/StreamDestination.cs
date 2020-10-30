@@ -208,7 +208,7 @@ namespace Raven.Server.Smuggler.Documents
                 _writer.WriteCommaAsync();
 
                 _writer.WritePropertyNameAsync(nameof(databaseRecord.Encrypted));
-                _writer.WriteBool(databaseRecord.Encrypted);
+                _writer.WriteBoolAsync(databaseRecord.Encrypted);
 
                 if (databaseRecordItemType.Contain(DatabaseRecordItemType.ConflictSolverConfig))
                 {

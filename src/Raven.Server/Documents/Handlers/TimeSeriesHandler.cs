@@ -477,7 +477,7 @@ namespace Raven.Server.Documents.Handlers
                     writer.WriteArrayAsync(nameof(TimeSeriesEntry.Values), entries[i].Values);
                     writer.WriteCommaAsync();
                     writer.WritePropertyNameAsync(nameof(TimeSeriesEntry.IsRollup));
-                    writer.WriteBool(entries[i].IsRollup);
+                    writer.WriteBoolAsync(entries[i].IsRollup);
                 }
                 writer.WriteEndObjectAsync();
             }

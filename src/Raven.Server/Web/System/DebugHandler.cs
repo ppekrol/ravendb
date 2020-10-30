@@ -9,7 +9,7 @@ namespace Raven.Server.Web.System
     public sealed class DebugHandler : RequestHandler
     {
         [RavenAction("/debug/routes", "GET", AuthorizationStatus.ValidUser)]
-        public Task Routes()
+        public async Task Routes()
         {
             var debugRoutes = Server.Router.AllRoutes
                 .Where(x => x.IsDebugInformationEndpoint)
@@ -24,54 +24,52 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync("Debug");
-                writer.WriteStartArrayAsync();
+               await  writer.WriteStartObjectAsync();
+               await  writer.WritePropertyNameAsync("Debug");
+               await  writer.WriteStartArrayAsync();
                 var first = true;
                 foreach (var route in debugRoutes)
                 {
                     if (first == false)
                     {
-                        writer.WriteCommaAsync();
+                       await  writer.WriteCommaAsync();
                     }
                     first = false;
 
-                    writer.WriteStartObjectAsync();
-                    writer.WritePropertyNameAsync("Path");
-                    writer.WriteStringAsync(route.Key);
-                    writer.WriteCommaAsync();
-                    writer.WritePropertyNameAsync("Methods");
-                    writer.WriteStringAsync(string.Join(", ", route.Select(x => x.Method)));
-                    writer.WriteEndObjectAsync();
+                   await  writer.WriteStartObjectAsync();
+                   await  writer.WritePropertyNameAsync("Path");
+                   await  writer.WriteStringAsync(route.Key);
+                   await  writer.WriteCommaAsync();
+                   await  writer.WritePropertyNameAsync("Methods");
+                   await  writer.WriteStringAsync(string.Join(", ", route.Select(x => x.Method)));
+                   await  writer.WriteEndObjectAsync();
                 }
-                writer.WriteEndArrayAsync();
+               await  writer.WriteEndArrayAsync();
 
-                writer.WriteCommaAsync();
-                writer.WritePropertyNameAsync("Production");
-                writer.WriteStartArrayAsync();
+               await  writer.WriteCommaAsync();
+               await  writer.WritePropertyNameAsync("Production");
+               await  writer.WriteStartArrayAsync();
                 first = true;
                 foreach (var route in productionRoutes)
                 {
                     if (first == false)
                     {
-                        writer.WriteCommaAsync();
+                       await  writer.WriteCommaAsync();
                     }
                     first = false;
 
-                    writer.WriteStartObjectAsync();
-                    writer.WritePropertyNameAsync("Path");
-                    writer.WriteStringAsync(route.Key);
-                    writer.WriteCommaAsync();
-                    writer.WritePropertyNameAsync("Methods");
-                    writer.WriteStringAsync(string.Join(", ", route.Select(x => x.Method)));
-                    writer.WriteEndObjectAsync();
+                   await  writer.WriteStartObjectAsync();
+                   await  writer.WritePropertyNameAsync("Path");
+                   await  writer.WriteStringAsync(route.Key);
+                   await  writer.WriteCommaAsync();
+                   await  writer.WritePropertyNameAsync("Methods");
+                   await  writer.WriteStringAsync(string.Join(", ", route.Select(x => x.Method)));
+                   await  writer.WriteEndObjectAsync();
                 }
-                writer.WriteEndArrayAsync();
+               await  writer.WriteEndArrayAsync();
 
-                writer.WriteEndObjectAsync();
+               await  writer.WriteEndObjectAsync();
             }
-
-            return Task.CompletedTask;
         }
     }
 }
