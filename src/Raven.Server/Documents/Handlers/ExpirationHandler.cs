@@ -7,7 +7,6 @@
 using System.Net;
 using System.Threading.Tasks;
 using Raven.Client.Documents.Operations.Expiration;
-using Raven.Client.Documents.Operations.Refresh;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Json;
@@ -17,7 +16,7 @@ namespace Raven.Server.Documents.Handlers
     public class ExpirationHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/expiration/config", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetExpirationConfig()
+        public async Task GetExpirationConfig()
         {
             using (Server.ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
@@ -32,7 +31,7 @@ namespace Raven.Server.Documents.Handlers
                 {
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.WriteAsync(writer, expirationConfig.ToJson());
+                        await context.WriteAsync(writer, expirationConfig.ToJson());
                     }
                 }
                 else
@@ -40,7 +39,6 @@ namespace Raven.Server.Documents.Handlers
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 }
             }
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/admin/expiration/config", "POST", AuthorizationStatus.DatabaseAdmin)]

@@ -13,7 +13,7 @@ namespace Raven.Server.Documents.Handlers
     public class CollectionsHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/collections/stats", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetCollectionStats()
+        public async Task GetCollectionStats()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (context.OpenReadTransaction())
@@ -21,14 +21,12 @@ namespace Raven.Server.Documents.Handlers
                 DynamicJsonValue result = GetCollectionStats(context, false);
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
-                    context.WriteAsync(writer, result);
+                    await context.WriteAsync(writer, result);
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/collections/stats/detailed", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetDetailedCollectionStats()
+        public async Task GetDetailedCollectionStats()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (context.OpenReadTransaction())
@@ -36,10 +34,8 @@ namespace Raven.Server.Documents.Handlers
                 DynamicJsonValue result = GetCollectionStats(context, true);
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
-                    context.WriteAsync(writer, result);
+                    await context.WriteAsync(writer, result);
             }
-
-            return Task.CompletedTask;
         }
 
         private DynamicJsonValue GetCollectionStats(DocumentsOperationContext context, bool detailed = false)
@@ -69,7 +65,7 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/collections/docs", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetCollectionDocuments()
+        public async Task GetCollectionDocuments()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (context.OpenReadTransaction())
@@ -81,17 +77,14 @@ namespace Raven.Server.Documents.Handlers
                 long numberOfResults;
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-
-                    writer.WriteStartObjectAsync();
-                    writer.WritePropertyNameAsync("Results");
-                    writer.WriteDocuments(context, documents, metadataOnly: false, numberOfResults: out numberOfResults);
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteStartObjectAsync();
+                    await writer.WritePropertyNameAsync("Results");
+                    numberOfResults = await writer.WriteDocuments(context, documents, metadataOnly: false);
+                    await writer.WriteEndObjectAsync();
                 }
 
                 AddPagingPerformanceHint(PagingOperationType.Documents, "Collection", HttpContext.Request.QueryString.Value, numberOfResults, pageSize, sw.ElapsedMilliseconds);
             }
-
-            return Task.CompletedTask;
         }
     }
 }

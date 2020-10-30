@@ -2166,7 +2166,7 @@ namespace Raven.Server
             }
         }
 
-        private static void RespondToTcpConnection(Stream stream, JsonOperationContext context, string error, TcpConnectionStatus status, int version)
+        private static async ValueTask RespondToTcpConnection(Stream stream, JsonOperationContext context, string error, TcpConnectionStatus status, int version)
         {
             var message = new DynamicJsonValue
             {
@@ -2179,14 +2179,14 @@ namespace Raven.Server
                 message[nameof(TcpConnectionHeaderResponse.Message)] = error;
             }
 
-            using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
             {
-                context.WriteAsync(writer, message);
-                writer.FlushAsync();
+                await context.WriteAsync(writer, message);
+                await writer.FlushAsync();
             }
         }
 
-        private void SendErrorIfPossible(TcpConnectionOptions tcp, Exception e)
+        private async ValueTask SendErrorIfPossible(TcpConnectionOptions tcp, Exception e)
         {
             var tcpStream = tcp?.Stream;
             if (tcpStream == null)
@@ -2195,9 +2195,9 @@ namespace Raven.Server
             try
             {
                 using (var context = JsonOperationContext.ShortTermSingleUse())
-                using (var errorWriter = new AsyncBlittableJsonTextWriter(context, tcpStream))
+                await using (var errorWriter = new AsyncBlittableJsonTextWriter(context, tcpStream))
                 {
-                    context.WriteAsync(errorWriter, new DynamicJsonValue
+                    await context.WriteAsync(errorWriter, new DynamicJsonValue
                     {
                         ["Type"] = "Error",
                         ["Exception"] = e.ToString(),

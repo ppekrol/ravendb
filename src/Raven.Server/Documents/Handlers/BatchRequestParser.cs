@@ -251,9 +251,9 @@ namespace Raven.Server.Documents.Handlers
             return state.CurrentTokenType == JsonParserToken.String &&
                    state.StringSize == nameof(TransactionMode).Length &&
                    GetLongFromStringBuffer(state) == 8386654079495008852 && // Transact
-                   *(int*)(state.StringBuffer + sizeof(long)) == 1299083113 && // ionM
-                   *(short*)(state.StringBuffer + sizeof(long) + sizeof(int)) == 25711 && // od
-                   *(state.StringBuffer + sizeof(long) + sizeof(int) + sizeof(short)) == (byte)'e';
+                   *(int*)(state.StringBuffer.Address + sizeof(long)) == 1299083113 && // ionM
+                   *(short*)(state.StringBuffer.Address + sizeof(long) + sizeof(int)) == 25711 && // od
+                   *(state.StringBuffer.Address + sizeof(long) + sizeof(int) + sizeof(short)) == (byte)'e';
         }
 
         private static async Task GetIdentitiesValues(JsonOperationContext ctx, DocumentDatabase database, ServerStore serverStore,
@@ -278,7 +278,7 @@ namespace Raven.Server.Documents.Handlers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static unsafe long GetLongFromStringBuffer(JsonParserState state)
         {
-            return *(long*)state.StringBuffer;
+            return *(long*)state.StringBuffer.Address;
         }
 
         public class ReadMany : IDisposable
@@ -344,7 +344,7 @@ namespace Raven.Server.Documents.Handlers
                 var copy = ArrayPool<byte>.Shared.Rent(bufferSize);
                 var copySpan = new Span<byte>(copy);
 
-                _buffer.Memory.Span.Slice(_parser.BufferOffset, bufferSize).CopyTo(copySpan);
+                _buffer.Memory.Memory.Span.Slice(_parser.BufferOffset, bufferSize).CopyTo(copySpan);
 
                 _parser.Skip(blobSize < bufferSize ? (int)blobSize : bufferSize);
 
@@ -395,6 +395,7 @@ namespace Raven.Server.Documents.Handlers
                         }
                         commandData.Type = GetCommandType(state, ctx);
                         break;
+
                     case CommandPropertyName.Id:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -403,17 +404,21 @@ namespace Raven.Server.Documents.Handlers
                             case JsonParserToken.Null:
                                 commandData.Id = null;
                                 break;
+
                             case JsonParserToken.String:
                                 commandData.Id = GetStringPropertyValue(state);
                                 break;
+
                             default:
                                 ThrowUnexpectedToken(JsonParserToken.String, state);
                                 break;
                         }
                         break;
+
                     case CommandPropertyName.Ids:
                         commandData.Ids = await ReadJsonArray(ctx, stream, parser, state, buffer, token);
                         break;
+
                     case CommandPropertyName.Name:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -422,14 +427,17 @@ namespace Raven.Server.Documents.Handlers
                             case JsonParserToken.Null:
                                 commandData.Name = null;
                                 break;
+
                             case JsonParserToken.String:
                                 commandData.Name = GetStringPropertyValue(state);
                                 break;
+
                             default:
                                 ThrowUnexpectedToken(JsonParserToken.String, state);
                                 break;
                         }
                         break;
+
                     case CommandPropertyName.DestinationId:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -438,14 +446,17 @@ namespace Raven.Server.Documents.Handlers
                             case JsonParserToken.Null:
                                 commandData.DestinationId = null;
                                 break;
+
                             case JsonParserToken.String:
                                 commandData.DestinationId = GetStringPropertyValue(state);
                                 break;
+
                             default:
                                 ThrowUnexpectedToken(JsonParserToken.String, state);
                                 break;
                         }
                         break;
+
                     case CommandPropertyName.DestinationName:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -454,14 +465,17 @@ namespace Raven.Server.Documents.Handlers
                             case JsonParserToken.Null:
                                 commandData.DestinationName = null;
                                 break;
+
                             case JsonParserToken.String:
                                 commandData.DestinationName = GetStringPropertyValue(state);
                                 break;
+
                             default:
                                 ThrowUnexpectedToken(JsonParserToken.String, state);
                                 break;
                         }
                         break;
+
                     case CommandPropertyName.ContentType:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -470,14 +484,17 @@ namespace Raven.Server.Documents.Handlers
                             case JsonParserToken.Null:
                                 commandData.ContentType = string.Empty;
                                 break;
+
                             case JsonParserToken.String:
                                 commandData.ContentType = GetStringPropertyValue(state);
                                 break;
+
                             default:
                                 ThrowUnexpectedToken(JsonParserToken.String, state);
                                 break;
                         }
                         break;
+
                     case CommandPropertyName.Document:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -487,30 +504,34 @@ namespace Raven.Server.Documents.Handlers
                         commandData.SeenTimeSeries = modifier.SeenTimeSeries;
 
                         break;
+
                     case CommandPropertyName.Patch:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
                         var patch = await ReadJsonObject(ctx, stream, commandData.Id, parser, state, buffer, modifier, token);
                         commandData.Patch = PatchRequest.Parse(patch, out commandData.PatchArgs);
                         break;
+
                     case CommandPropertyName.TimeSeries:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
 
                         using (var timeSeriesOperations = await ReadJsonObject(ctx, stream, commandData.Id, parser, state, buffer, modifier, token))
                         {
-                            commandData.TimeSeries = commandData.Type == CommandType.TimeSeriesBulkInsert ? 
-                                TimeSeriesOperation.ParseForBulkInsert(timeSeriesOperations) : 
+                            commandData.TimeSeries = commandData.Type == CommandType.TimeSeriesBulkInsert ?
+                                TimeSeriesOperation.ParseForBulkInsert(timeSeriesOperations) :
                                 TimeSeriesOperation.Parse(timeSeriesOperations);
                         }
 
                         break;
+
                     case CommandPropertyName.PatchIfMissing:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
                         var patchIfMissing = await ReadJsonObject(ctx, stream, commandData.Id, parser, state, buffer, modifier, token);
                         commandData.PatchIfMissing = PatchRequest.Parse(patchIfMissing, out commandData.PatchIfMissingArgs);
                         break;
+
                     case CommandPropertyName.ChangeVector:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -528,6 +549,7 @@ namespace Raven.Server.Documents.Handlers
                             commandData.ChangeVector = GetLazyStringValue(ctx, state);
                         }
                         break;
+
                     case CommandPropertyName.Index:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -538,6 +560,7 @@ namespace Raven.Server.Documents.Handlers
                         commandData.Index = state.Long;
 
                         break;
+
                     case CommandPropertyName.IdPrefixed:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -549,6 +572,7 @@ namespace Raven.Server.Documents.Handlers
 
                         commandData.IdPrefixed = state.CurrentTokenType == JsonParserToken.True;
                         break;
+
                     case CommandPropertyName.ReturnDocument:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -560,6 +584,7 @@ namespace Raven.Server.Documents.Handlers
 
                         commandData.ReturnDocument = state.CurrentTokenType == JsonParserToken.True;
                         break;
+
                     case CommandPropertyName.Counters:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -567,6 +592,7 @@ namespace Raven.Server.Documents.Handlers
                         var counterOps = await ReadJsonObject(ctx, stream, commandData.Id, parser, state, buffer, modifier, token);
                         commandData.Counters = DocumentCountersOperation.Parse(counterOps);
                         break;
+
                     case CommandPropertyName.FromEtl:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -578,6 +604,7 @@ namespace Raven.Server.Documents.Handlers
 
                         commandData.FromEtl = state.CurrentTokenType == JsonParserToken.True;
                         break;
+
                     case CommandPropertyName.AttachmentType:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -595,6 +622,7 @@ namespace Raven.Server.Documents.Handlers
                             commandData.AttachmentType = GetAttachmentType(state, ctx);
                         }
                         break;
+
                     case CommandPropertyName.ContentLength:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -604,6 +632,7 @@ namespace Raven.Server.Documents.Handlers
                         }
                         commandData.ContentLength = state.Long;
                         break;
+
                     case CommandPropertyName.NoSuchProperty:
                         // unknown command - ignore it
                         while (parser.Read() == false)
@@ -614,6 +643,7 @@ namespace Raven.Server.Documents.Handlers
                             await ReadJsonObject(ctx, stream, commandData.Id, parser, state, buffer, modifier, token);
                         }
                         break;
+
                     case CommandPropertyName.ForceRevisionCreationStrategy:
                         while (parser.Read() == false)
                             await RefillParserBuffer(stream, buffer, parser, token);
@@ -632,18 +662,22 @@ namespace Raven.Server.Documents.Handlers
                 case CommandType.None:
                     ThrowInvalidType();
                     break;
+
                 case CommandType.PUT:
                     if (commandData.Document == null)
                         ThrowMissingDocumentProperty();
                     break;
+
                 case CommandType.PATCH:
                     if (commandData.Patch == null)
                         ThrowMissingPatchProperty();
                     break;
+
                 case CommandType.AttachmentPUT:
                     if (commandData.Name == null)
                         ThrowMissingNameProperty();
                     break;
+
                 case CommandType.Counters:
                     if (commandData.Counters == null)
                         ThrowMissingNameProperty();
@@ -758,12 +792,12 @@ namespace Raven.Server.Documents.Handlers
 
         private static unsafe string GetStringPropertyValue(JsonParserState state)
         {
-            return Encoding.UTF8.GetString(state.StringBuffer, state.StringSize);
+            return Encoding.UTF8.GetString(state.StringBuffer.Address, state.StringSize);
         }
 
         private static unsafe LazyStringValue GetLazyStringValue(JsonOperationContext ctx, JsonParserState state)
         {
-            return ctx.GetLazyString(Encodings.Utf8.GetString(state.StringBuffer, state.StringSize));
+            return ctx.GetLazyString(Encodings.Utf8.GetString(state.StringBuffer.Address, state.StringSize));
         }
 
         private enum CommandPropertyName
@@ -821,106 +855,108 @@ namespace Raven.Server.Documents.Handlers
             switch (state.StringSize)
             {
                 case 2:
-                    if (*(short*)state.StringBuffer != 25673)
+                    if (*(short*)state.StringBuffer.Address != 25673)
                         return CommandPropertyName.NoSuchProperty;
                     return CommandPropertyName.Id;
 
                 case 3:
-                    if (*(short*)state.StringBuffer != 25673 || state.StringBuffer[2] != (byte)'s')
+                    if (*(short*)state.StringBuffer.Address != 25673 || state.StringBuffer.Address[2] != (byte)'s')
                         return CommandPropertyName.NoSuchProperty;
                     return CommandPropertyName.Ids;
 
                 case 8:
-                    if (*(long*)state.StringBuffer == 8318823012450529091)
+                    if (*(long*)state.StringBuffer.Address == 8318823012450529091)
                         return CommandPropertyName.Counters;
-                    if (*(long*)state.StringBuffer != 8389754676633104196)
+                    if (*(long*)state.StringBuffer.Address != 8389754676633104196)
                         return CommandPropertyName.NoSuchProperty;
                     return CommandPropertyName.Document;
 
                 case 4:
-                    if (*(int*)state.StringBuffer == 1701869908)
+                    if (*(int*)state.StringBuffer.Address == 1701869908)
                         return CommandPropertyName.Type;
-                    if (*(int*)state.StringBuffer == 1701667150)
+                    if (*(int*)state.StringBuffer.Address == 1701667150)
                         return CommandPropertyName.Name;
                     return CommandPropertyName.NoSuchProperty;
 
                 case 5:
-                    if (*(int*)state.StringBuffer == 1668571472 &&
-                        state.StringBuffer[4] == (byte)'h')
+                    if (*(int*)state.StringBuffer.Address == 1668571472 &&
+                        state.StringBuffer.Address[4] == (byte)'h')
                         return CommandPropertyName.Patch;
-                    if (*(int*)state.StringBuffer == 1701080649 &&
-                        state.StringBuffer[4] == (byte)'x')
+                    if (*(int*)state.StringBuffer.Address == 1701080649 &&
+                        state.StringBuffer.Address[4] == (byte)'x')
                         return CommandPropertyName.Index;
                     return CommandPropertyName.NoSuchProperty;
 
                 case 10:
-                    if (*(long*)state.StringBuffer == 8676578743001572425 &&
-                        *(short*)(state.StringBuffer + sizeof(long)) == 25701)
+                    if (*(long*)state.StringBuffer.Address == 8676578743001572425 &&
+                        *(short*)(state.StringBuffer.Address + sizeof(long)) == 25701)
                         return CommandPropertyName.IdPrefixed;
 
-                    if (*(long*)state.StringBuffer == 7598246930185808212 &&
-                        *(short*)(state.StringBuffer + sizeof(long)) == 29541)
+                    if (*(long*)state.StringBuffer.Address == 7598246930185808212 &&
+                        *(short*)(state.StringBuffer.Address + sizeof(long)) == 29541)
                         return CommandPropertyName.TimeSeries;
 
                     return CommandPropertyName.NoSuchProperty;
 
                 case 11:
-                    if (*(long*)state.StringBuffer == 6085610378508529475 &&
-                        *(short*)(state.StringBuffer + sizeof(long)) == 28793 &&
-                        state.StringBuffer[sizeof(long) + sizeof(short)] == (byte)'e')
+                    if (*(long*)state.StringBuffer.Address == 6085610378508529475 &&
+                        *(short*)(state.StringBuffer.Address + sizeof(long)) == 28793 &&
+                        state.StringBuffer.Address[sizeof(long) + sizeof(short)] == (byte)'e')
                         return CommandPropertyName.ContentType;
                     return CommandPropertyName.NoSuchProperty;
 
                 case 12:
-                    if (*(long*)state.StringBuffer == 7302135340735752259 &&
-                        *(int*)(state.StringBuffer + sizeof(long)) == 1919906915)
+                    if (*(long*)state.StringBuffer.Address == 7302135340735752259 &&
+                        *(int*)(state.StringBuffer.Address + sizeof(long)) == 1919906915)
                         return CommandPropertyName.ChangeVector;
                     return CommandPropertyName.NoSuchProperty;
+
                 case 7:
-                    if (*(int*)state.StringBuffer == 1836020294 &&
-                        *(short*)(state.StringBuffer + sizeof(int)) == 29765 &&
-                        state.StringBuffer[6] == (byte)'l')
+                    if (*(int*)state.StringBuffer.Address == 1836020294 &&
+                        *(short*)(state.StringBuffer.Address + sizeof(int)) == 29765 &&
+                        state.StringBuffer.Address[6] == (byte)'l')
                         return CommandPropertyName.FromEtl;
 
                     return CommandPropertyName.NoSuchProperty;
+
                 case 13:
-                    if (*(long*)state.StringBuffer == 8386105380344915268 &&
-                        *(int*)(state.StringBuffer + sizeof(long)) == 1231974249 &&
-                        state.StringBuffer[12] == (byte)'d')
+                    if (*(long*)state.StringBuffer.Address == 8386105380344915268 &&
+                        *(int*)(state.StringBuffer.Address + sizeof(long)) == 1231974249 &&
+                        state.StringBuffer.Address[12] == (byte)'d')
                         return CommandPropertyName.DestinationId;
-                    if (*(long*)state.StringBuffer == 5509149626205105987 && *(int*)(state.StringBuffer + sizeof(long)) == 1952935525 && state.StringBuffer[12] == (byte)'h')
+                    if (*(long*)state.StringBuffer.Address == 5509149626205105987 && *(int*)(state.StringBuffer.Address + sizeof(long)) == 1952935525 && state.StringBuffer.Address[12] == (byte)'h')
                         return CommandPropertyName.ContentLength;
                     return CommandPropertyName.NoSuchProperty;
 
                 case 14:
-                    if (*(int*)state.StringBuffer == 1668571472 &&
-                        *(long*)(state.StringBuffer + sizeof(int)) == 7598543892411468136 &&
-                        *(short*)(state.StringBuffer + sizeof(int) + sizeof(long)) == 26478)
+                    if (*(int*)state.StringBuffer.Address == 1668571472 &&
+                        *(long*)(state.StringBuffer.Address + sizeof(int)) == 7598543892411468136 &&
+                        *(short*)(state.StringBuffer.Address + sizeof(int) + sizeof(long)) == 26478)
                         return CommandPropertyName.PatchIfMissing;
-                    if (*(int*)state.StringBuffer == 1970562386 &&
-                        *(long*)(state.StringBuffer + sizeof(int)) == 7308626840221150834 &&
-                        *(short*)(state.StringBuffer + sizeof(int) + sizeof(long)) == 29806)
+                    if (*(int*)state.StringBuffer.Address == 1970562386 &&
+                        *(long*)(state.StringBuffer.Address + sizeof(int)) == 7308626840221150834 &&
+                        *(short*)(state.StringBuffer.Address + sizeof(int) + sizeof(long)) == 29806)
                         return CommandPropertyName.ReturnDocument;
-                    if (*(int*)state.StringBuffer == 1635021889 &&
-                        *(long*)(state.StringBuffer + sizeof(int)) == 8742740794129868899 &&
-                        *(short*)(state.StringBuffer + sizeof(int) + sizeof(long)) == 25968)
+                    if (*(int*)state.StringBuffer.Address == 1635021889 &&
+                        *(long*)(state.StringBuffer.Address + sizeof(int)) == 8742740794129868899 &&
+                        *(short*)(state.StringBuffer.Address + sizeof(int) + sizeof(long)) == 25968)
                         return CommandPropertyName.AttachmentType;
                     return CommandPropertyName.NoSuchProperty;
 
                 case 15:
-                    if (*(long*)state.StringBuffer == 8386105380344915268 &&
-                        *(int*)(state.StringBuffer + sizeof(long)) == 1315860329 &&
-                        *(short*)(state.StringBuffer + sizeof(long) + sizeof(int)) == 28001 &&
-                        state.StringBuffer[14] == (byte)'e')
+                    if (*(long*)state.StringBuffer.Address == 8386105380344915268 &&
+                        *(int*)(state.StringBuffer.Address + sizeof(long)) == 1315860329 &&
+                        *(short*)(state.StringBuffer.Address + sizeof(long) + sizeof(int)) == 28001 &&
+                        state.StringBuffer.Address[14] == (byte)'e')
                         return CommandPropertyName.DestinationName;
                     return CommandPropertyName.NoSuchProperty;
 
                 case 29:
-                    if (*(long*)state.StringBuffer == 8531315664536891206 &&
-                        *(long*)(state.StringBuffer + sizeof(long)) == 7309979286770381673 &&
-                        *(long*)(state.StringBuffer + sizeof(long) + sizeof(long)) == 8247308551402910817 &&
-                        *(int*)(state.StringBuffer + sizeof(long) + sizeof(long) + sizeof(long)) == 1734702177 &&
-                        state.StringBuffer[28] == (byte)'y')
+                    if (*(long*)state.StringBuffer.Address == 8531315664536891206 &&
+                        *(long*)(state.StringBuffer.Address + sizeof(long)) == 7309979286770381673 &&
+                        *(long*)(state.StringBuffer.Address + sizeof(long) + sizeof(long)) == 8247308551402910817 &&
+                        *(int*)(state.StringBuffer.Address + sizeof(long) + sizeof(long) + sizeof(long)) == 1734702177 &&
+                        state.StringBuffer.Address[28] == (byte)'y')
                         return CommandPropertyName.ForceRevisionCreationStrategy;
                     return CommandPropertyName.NoSuchProperty;
 
@@ -934,8 +970,8 @@ namespace Raven.Server.Documents.Handlers
             switch (state.StringSize)
             {
                 case 6:
-                    if (*(int*)state.StringBuffer == 1868981570 &&
-                        *(short*)(state.StringBuffer + sizeof(int)) == 25970)
+                    if (*(int*)state.StringBuffer.Address == 1868981570 &&
+                        *(short*)(state.StringBuffer.Address + sizeof(int)) == 25970)
                         return ForceRevisionStrategy.Before;
 
                     ThrowInvalidProperty(state, ctx);
@@ -956,9 +992,9 @@ namespace Raven.Server.Documents.Handlers
             switch (state.StringSize)
             {
                 case 8:
-                    if (*(long*)state.StringBuffer == 8389754676633104196)
+                    if (*(long*)state.StringBuffer.Address == 8389754676633104196)
                         return AttachmentType.Document;
-                    if (*(long*)state.StringBuffer == 7957695010998478162)
+                    if (*(long*)state.StringBuffer.Address == 7957695010998478162)
                         return AttachmentType.Revision;
 
                     ThrowInvalidProperty(state, ctx);
@@ -979,101 +1015,101 @@ namespace Raven.Server.Documents.Handlers
             switch (state.StringSize)
             {
                 case 3:
-                    if (*(short*)state.StringBuffer == 21840 && 
-                        state.StringBuffer[2] == (byte)'T') 
-                    return CommandType.PUT;
+                    if (*(short*)state.StringBuffer.Address == 21840 &&
+                        state.StringBuffer.Address[2] == (byte)'T')
+                        return CommandType.PUT;
                     break;
 
                 case 5:
-                    if (*(int*)state.StringBuffer == 1129595216 &&
-                        state.StringBuffer[4] == (byte)'H') 
-                    return CommandType.PATCH;
+                    if (*(int*)state.StringBuffer.Address == 1129595216 &&
+                        state.StringBuffer.Address[4] == (byte)'H')
+                        return CommandType.PATCH;
                     break;
 
                 case 6:
-                    if (*(int*)state.StringBuffer == 1162626372 &&
-                        *(short*)(state.StringBuffer + 4) == 17748) 
-                    return CommandType.DELETE;
+                    if (*(int*)state.StringBuffer.Address == 1162626372 &&
+                        *(short*)(state.StringBuffer.Address + 4) == 17748)
+                        return CommandType.DELETE;
                     break;
 
                 case 8:
-                    if (*(long*)state.StringBuffer == 8318823012450529091) 
-                    return CommandType.Counters;
+                    if (*(long*)state.StringBuffer.Address == 8318823012450529091)
+                        return CommandType.Counters;
                     break;
 
                 case 10:
-                    if (*(long*)state.StringBuffer == 7598246930185808212 &&
-                    *(short*)(state.StringBuffer + sizeof(long)) == 29541)
+                    if (*(long*)state.StringBuffer.Address == 7598246930185808212 &&
+                    *(short*)(state.StringBuffer.Address + sizeof(long)) == 29541)
                         return CommandType.TimeSeries;
 
-                    if (*(long*)state.StringBuffer == 6071222181947531586 &&
-                        *(short*)(state.StringBuffer + sizeof(long)) == 18499) 
-                    return CommandType.BatchPATCH;
+                    if (*(long*)state.StringBuffer.Address == 6071222181947531586 &&
+                        *(short*)(state.StringBuffer.Address + sizeof(long)) == 18499)
+                        return CommandType.BatchPATCH;
                     break;
 
                 case 13:
-                    if (*(long*)state.StringBuffer == 7308612546338255937 &&
-                        *(int*)(state.StringBuffer + sizeof(long)) == 1431336046 &&
-                        state.StringBuffer[sizeof(long) + sizeof(int)] == (byte)'T') 
-                    return CommandType.AttachmentPUT;
+                    if (*(long*)state.StringBuffer.Address == 7308612546338255937 &&
+                        *(int*)(state.StringBuffer.Address + sizeof(long)) == 1431336046 &&
+                        state.StringBuffer.Address[sizeof(long) + sizeof(int)] == (byte)'T')
+                        return CommandType.AttachmentPUT;
                     break;
 
                 case 14:
-                    if (*(long*)state.StringBuffer == 7598246930185808212 &&
-                        *(int*)(state.StringBuffer + sizeof(long)) == 1866691429)
+                    if (*(long*)state.StringBuffer.Address == 7598246930185808212 &&
+                        *(int*)(state.StringBuffer.Address + sizeof(long)) == 1866691429)
                         return CommandType.TimeSeriesCopy;
 
-                    if (*(long*)state.StringBuffer == 7308612546338255937 &&
-                        *(int*)(state.StringBuffer + sizeof(long)) == 1329820782 &&
-                        *(short*)(state.StringBuffer + sizeof(long) + sizeof(int)) == 22864)
+                    if (*(long*)state.StringBuffer.Address == 7308612546338255937 &&
+                        *(int*)(state.StringBuffer.Address + sizeof(long)) == 1329820782 &&
+                        *(short*)(state.StringBuffer.Address + sizeof(long) + sizeof(int)) == 22864)
                         return CommandType.AttachmentCOPY;
 
-                    if (*(long*)state.StringBuffer == 7308612546338255937 &&
-                        *(int*)(state.StringBuffer + sizeof(long)) == 1330476142 &&
-                        *(short*)(state.StringBuffer + sizeof(long) + sizeof(int)) == 17750)
+                    if (*(long*)state.StringBuffer.Address == 7308612546338255937 &&
+                        *(int*)(state.StringBuffer.Address + sizeof(long)) == 1330476142 &&
+                        *(short*)(state.StringBuffer.Address + sizeof(long) + sizeof(int)) == 17750)
                         return CommandType.AttachmentMOVE;
                     break;
 
                 case 16:
-                    if (*(long*)state.StringBuffer == 7308612546338255937 &&
-                        *(long*)(state.StringBuffer + sizeof(long)) == 4995694080542667886)
+                    if (*(long*)state.StringBuffer.Address == 7308612546338255937 &&
+                        *(long*)(state.StringBuffer.Address + sizeof(long)) == 4995694080542667886)
                         return CommandType.AttachmentDELETE;
                     break;
 
                 case 18:
-                    if (*(long*)state.StringBuffer == 5000528724088418115 &&
-                        *(long*)(state.StringBuffer + sizeof(long)) == 5793150219460305784 &&
-                        *(short*)(state.StringBuffer + sizeof(long) + sizeof(long)) == 21589) 
-                    return CommandType.CompareExchangePUT;
+                    if (*(long*)state.StringBuffer.Address == 5000528724088418115 &&
+                        *(long*)(state.StringBuffer.Address + sizeof(long)) == 5793150219460305784 &&
+                        *(short*)(state.StringBuffer.Address + sizeof(long) + sizeof(long)) == 21589)
+                        return CommandType.CompareExchangePUT;
                     break;
-                
+
                 case 20:
-                    if (*(long*)state.StringBuffer == 7598246930185808212 &&
-                        *(long*)(state.StringBuffer + sizeof(long)) == 7947001131039880037 &&
-                        *(int*)(state.StringBuffer + sizeof(long) + sizeof(long)) == 1953654131)
+                    if (*(long*)state.StringBuffer.Address == 7598246930185808212 &&
+                        *(long*)(state.StringBuffer.Address + sizeof(long)) == 7947001131039880037 &&
+                        *(int*)(state.StringBuffer.Address + sizeof(long) + sizeof(long)) == 1953654131)
                         return CommandType.TimeSeriesBulkInsert;
 
                     ThrowInvalidProperty(state, ctx);
                     return CommandType.None;
 
                 case 21:
-                    if (*(long*)state.StringBuffer == 5000528724088418115 &&
-                        *(long*)(state.StringBuffer + sizeof(long)) == 4928459091005170552 &&
-                        *(int*)(state.StringBuffer + sizeof(long) + sizeof(long)) == 1413827653 &&
-                        state.StringBuffer[sizeof(long) + sizeof(long) + sizeof(int)] == (byte)'E')
+                    if (*(long*)state.StringBuffer.Address == 5000528724088418115 &&
+                        *(long*)(state.StringBuffer.Address + sizeof(long)) == 4928459091005170552 &&
+                        *(int*)(state.StringBuffer.Address + sizeof(long) + sizeof(long)) == 1413827653 &&
+                        state.StringBuffer.Address[sizeof(long) + sizeof(long) + sizeof(int)] == (byte)'E')
                         return CommandType.CompareExchangeDELETE;
 
-                    if (*(long*)state.StringBuffer == 8531315664536891206 &&
-                        *(long*)(state.StringBuffer + sizeof(long)) == 7309979286770381673 &&
-                        *(int*)(state.StringBuffer + sizeof(long) + sizeof(long)) == 1869182049 &&
-                        state.StringBuffer[sizeof(long) + sizeof(long) + sizeof(int)] == (byte)'n')
+                    if (*(long*)state.StringBuffer.Address == 8531315664536891206 &&
+                        *(long*)(state.StringBuffer.Address + sizeof(long)) == 7309979286770381673 &&
+                        *(int*)(state.StringBuffer.Address + sizeof(long) + sizeof(long)) == 1869182049 &&
+                        state.StringBuffer.Address[sizeof(long) + sizeof(long) + sizeof(int)] == (byte)'n')
                         return CommandType.ForceRevisionCreation;
                     break;
             }
 
             ThrowInvalidCommandType(state, ctx);
-                    return CommandType.None;
-            }
+            return CommandType.None;
+        }
 
         private static void ThrowInvalidUsageOfChangeVectorWithIdentities(CommandData commandData)
         {
@@ -1086,9 +1122,10 @@ namespace Raven.Server.Documents.Handlers
             throw new InvalidOperationException("Invalid property name: " +
                                                 ctx.AllocateStringValue(null, state.StringBuffer, state.StringSize));
         }
+
         private static unsafe void ThrowInvalidCommandType(JsonParserState state, JsonOperationContext ctx)
         {
-            throw new InvalidCommandTypeException("Invalid command type: " 
+            throw new InvalidCommandTypeException("Invalid command type: "
                                                   + ctx.AllocateStringValue(null, state.StringBuffer, state.StringSize));
         }
 
@@ -1101,7 +1138,7 @@ namespace Raven.Server.Documents.Handlers
         {
             // Although we using here WithCancellation and passing the token,
             // the stream will stay open even after the cancellation until the entire server will be disposed.
-            var read = await stream.ReadAsync(buffer.Memory, token);
+            var read = await stream.ReadAsync(buffer.Memory.Memory, token);
             if (read == 0)
                 ThrowUnexpectedEndOfStream();
             parser.SetBuffer(buffer, 0, read);

@@ -62,7 +62,7 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/indexes/source", "GET", AuthorizationStatus.ValidUser)]
-        public Task Source()
+        public async Task Source()
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
 
@@ -70,7 +70,7 @@ namespace Raven.Server.Documents.Handlers
             if (index == null)
             {
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return Task.CompletedTask;
+                return;
             }
 
             if (index.Type.IsStatic() == false)
@@ -83,6 +83,7 @@ namespace Raven.Server.Documents.Handlers
                     var staticMapIndex = (MapIndex)index;
                     source = staticMapIndex._compiled.Source;
                     break;
+
                 case IndexType.MapReduce:
                     var staticMapReduceIndex = (MapReduceIndex)index;
                     source = staticMapReduceIndex._compiled.Source;
@@ -95,18 +96,16 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.WriteAsync(writer, new DynamicJsonValue
+                await context.WriteAsync(writer, new DynamicJsonValue
                 {
                     ["Index"] = index.Name,
                     ["Source"] = source
                 });
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/indexes/history", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetIndexHistory()
+        public async Task GetIndexHistory()
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
 
@@ -119,50 +118,49 @@ namespace Raven.Server.Documents.Handlers
                 if (indexesHistory.TryGetValue(name, out history) == false)
                 {
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    return Task.CompletedTask;
+                    return;
                 }
             }
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync("Index");
-                writer.WriteStringAsync(name);
-                writer.WriteCommaAsync();
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync("Index");
+                await writer.WriteStringAsync(name);
+                await writer.WriteCommaAsync();
 
                 if (history == null || history.Count == 0)
                 {
-                    writer.WriteStartArrayAsync();
-                    writer.WriteEndArrayAsync();
-                    writer.WriteEndObjectAsync();
-                    return Task.CompletedTask;
+                    await writer.WriteStartArrayAsync();
+                    await writer.WriteEndArrayAsync();
+                    await writer.WriteEndObjectAsync();
+                    return;
                 }
 
-                writer.WriteArrayAsync(context, "History", history, (w, c, entry) =>
+                await writer.WriteArrayAsync(context, "History", history, async (w, c, entry) =>
                 {
-                    w.WriteStartObject();
+                    await w.WriteStartObjectAsync();
 
-                    w.WritePropertyName(nameof(IndexHistoryEntry.Definition));
-                    w.WriteIndexDefinition(c, entry.Definition);
-                    w.WriteComma();
+                    await w.WritePropertyNameAsync(nameof(IndexHistoryEntry.Definition));
+                    await w.WriteIndexDefinition(c, entry.Definition);
+                    await w.WriteCommaAsync();
 
-                    w.WritePropertyName(nameof(IndexHistoryEntry.CreatedAt));
-                    w.WriteDateTime(entry.CreatedAt, isUtc: true);
-                    w.WriteComma();
+                    await w.WritePropertyNameAsync(nameof(IndexHistoryEntry.CreatedAt));
+                    await w.WriteDateTimeAsync(entry.CreatedAt, isUtc: true);
+                    await w.WriteCommaAsync();
 
-                    w.WritePropertyName(nameof(IndexHistoryEntry.Source));
-                    w.WriteString(entry.Source);
-                    w.WriteEndObject();
+                    await w.WritePropertyNameAsync(nameof(IndexHistoryEntry.Source));
+                    await w.WriteStringAsync(entry.Source);
+                    await w.WriteEndObjectAsync();
                 });
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/indexes/has-changed", "POST", AuthorizationStatus.ValidUser)]
-        public Task HasChanged()
+        public async Task HasChanged()
         {
             using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             using (var json = context.ReadForMemory(RequestBodyStream(), "index/definition"))
@@ -176,18 +174,16 @@ namespace Raven.Server.Documents.Handlers
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
-                    writer.WritePropertyNameAsync("Changed");
-                    writer.WriteBoolAsync(changed);
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteStartObjectAsync();
+                    await writer.WritePropertyNameAsync("Changed");
+                    await writer.WriteBoolAsync(changed);
+                    await writer.WriteEndObjectAsync();
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/indexes/debug", "GET", AuthorizationStatus.ValidUser)]
-        public Task Debug()
+        public async Task Debug()
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
 
@@ -195,7 +191,7 @@ namespace Raven.Server.Documents.Handlers
             if (index == null)
             {
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return Task.CompletedTask;
+                return;
             }
 
             var operation = GetStringQueryString("op");
@@ -209,48 +205,48 @@ namespace Raven.Server.Documents.Handlers
                     {
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 
-                        context.WriteAsync(writer, new DynamicJsonValue
+                        await context.WriteAsync(writer, new DynamicJsonValue
                         {
                             ["Error"] = $"{index.Name} is not map-reduce index"
                         });
 
-                        return Task.CompletedTask;
+                        return;
                     }
 
                     var docIds = GetStringValuesQueryString("docId", required: false);
 
                     using (index.GetReduceTree(docIds.ToArray(), out IEnumerable<ReduceTree> trees))
                     {
-                        writer.WriteReduceTrees(trees);
+                        await writer.WriteReduceTrees(trees);
                     }
 
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 if (string.Equals(operation, "source-doc-ids", StringComparison.OrdinalIgnoreCase))
                 {
                     using (index.GetIdentifiersOfMappedDocuments(GetStringQueryString("startsWith", required: false), GetStart(), GetPageSize(), out IEnumerable<string> ids))
                     {
-                        writer.WriteArrayOfResultsAndCount(ids);
+                        await writer.WriteArrayOfResultsAndCount(ids);
                     }
 
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 if (string.Equals(operation, "entries-fields", StringComparison.OrdinalIgnoreCase))
                 {
                     var fields = index.GetEntriesFields();
 
-                    writer.WriteStartObjectAsync();
+                    await writer.WriteStartObjectAsync();
 
-                    writer.WriteArrayAsync(nameof(fields.Static), fields.Static);
-                    writer.WriteCommaAsync();
+                    await writer.WriteArrayAsync(nameof(fields.Static), fields.Static);
+                    await writer.WriteCommaAsync();
 
-                    writer.WriteArrayAsync(nameof(fields.Dynamic), fields.Dynamic);
+                    await writer.WriteArrayAsync(nameof(fields.Dynamic), fields.Dynamic);
 
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteEndObjectAsync();
 
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 throw new NotSupportedException($"{operation} is not supported");
@@ -258,7 +254,7 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/indexes", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = true)]
-        public Task GetAll()
+        public async Task GetAll()
         {
             var name = GetStringQueryString("name", required: false);
 
@@ -284,38 +280,36 @@ namespace Raven.Server.Documents.Handlers
                     if (index == null)
                     {
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                        return Task.CompletedTask;
+                        return;
                     }
 
                     indexDefinitions = new[] { index.GetIndexDefinition() };
                 }
 
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
 
-                writer.WriteArrayAsync(context, "Results", indexDefinitions, (w, c, indexDefinition) =>
+                await writer.WriteArrayAsync(context, "Results", indexDefinitions, async (w, c, indexDefinition) =>
                 {
                     if (namesOnly)
                     {
-                        w.WriteString(indexDefinition.Name);
+                        await w.WriteStringAsync(indexDefinition.Name);
                         return;
                     }
 
-                    w.WriteIndexDefinition(c, indexDefinition);
+                    await w.WriteIndexDefinition(c, indexDefinition);
                 });
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/indexes/stats", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = true)]
-        public Task Stats()
+        public async Task Stats()
         {
             var name = GetStringQueryString("name", required: false);
 
             using (var context = QueryOperationContext.Allocate(Database, needsServerContext: true))
-            using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
             {
                 IndexStats[] indexStats;
                 using (context.OpenReadTransaction())
@@ -384,28 +378,23 @@ namespace Raven.Server.Documents.Handlers
                         if (index == null)
                         {
                             HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                            return Task.CompletedTask;
+                            return;
                         }
 
                         indexStats = new[] { index.GetStats(calculateLag: true, calculateStaleness: true, calculateMemoryStats: true, queryContext: context) };
                     }
                 }
 
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
 
-                writer.WriteArrayAsync(context.Documents, "Results", indexStats, (w, c, stats) =>
-                {
-                    w.WriteIndexStats(context.Documents, stats);
-                });
+                await writer.WriteArrayAsync(context.Documents, "Results", indexStats, (w, c, stats) => w.WriteIndexStats(context.Documents, stats));
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/indexes/staleness", "GET", AuthorizationStatus.ValidUser)]
-        public Task Stale()
+        public async Task Stale()
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
 
@@ -414,36 +403,34 @@ namespace Raven.Server.Documents.Handlers
                 IndexDoesNotExistException.ThrowFor(name);
 
             using (var context = QueryOperationContext.Allocate(Database, index))
-            using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 var stalenessReasons = new List<string>();
                 var isStale = index.IsStale(context, stalenessReasons: stalenessReasons);
 
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
 
-                writer.WritePropertyNameAsync("IsStale");
-                writer.WriteBoolAsync(isStale);
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync("IsStale");
+                await writer.WriteBoolAsync(isStale);
+                await writer.WriteCommaAsync();
 
-                writer.WriteArrayAsync("StalenessReasons", stalenessReasons);
+                await writer.WriteArrayAsync("StalenessReasons", stalenessReasons);
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/indexes/progress", "GET", AuthorizationStatus.ValidUser)]
-        public Task Progress()
+        public async Task Progress()
         {
             using (var context = QueryOperationContext.Allocate(Database, needsServerContext: true))
-            using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync("Results");
-                writer.WriteStartArrayAsync();
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync("Results");
+                await writer.WriteStartArrayAsync();
 
                 var first = true;
                 foreach (var index in Database.IndexStore.GetIndexes())
@@ -456,11 +443,11 @@ namespace Raven.Server.Documents.Handlers
                         var progress = index.GetProgress(context, isStale: true);
 
                         if (first == false)
-                            writer.WriteCommaAsync();
+                            await writer.WriteCommaAsync();
 
                         first = false;
 
-                        writer.WriteIndexProgress(context.Documents, progress);
+                        await writer.WriteIndexProgress(context.Documents, progress);
                     }
                     catch (ObjectDisposedException)
                     {
@@ -477,15 +464,13 @@ namespace Raven.Server.Documents.Handlers
                     }
                 }
 
-                writer.WriteEndArrayAsync();
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndArrayAsync();
+                await writer.WriteEndObjectAsync();
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/indexes", "RESET", AuthorizationStatus.ValidUser, DisableOnCpuCreditsExhaustion = true)]
-        public Task Reset()
+        public async Task Reset()
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
 
@@ -499,13 +484,11 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync("Index");
-                writer.WriteIndexDefinition(context, indexDefinition);
-                writer.WriteEndObjectAsync();
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync("Index");
+                await writer.WriteIndexDefinition(context, indexDefinition);
+                await writer.WriteEndObjectAsync();
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/index/open-faulty-index", "POST", AuthorizationStatus.ValidUser)]
@@ -578,46 +561,44 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/indexes/status", "GET", AuthorizationStatus.ValidUser)]
-        public Task Status()
+        public async Task Status()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
 
-                writer.WritePropertyNameAsync(nameof(IndexingStatus.Status));
-                writer.WriteStringAsync(Database.IndexStore.Status.ToString());
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(IndexingStatus.Status));
+                await writer.WriteStringAsync(Database.IndexStore.Status.ToString());
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(IndexingStatus.Indexes));
-                writer.WriteStartArrayAsync();
+                await writer.WritePropertyNameAsync(nameof(IndexingStatus.Indexes));
+                await writer.WriteStartArrayAsync();
                 var isFirst = true;
                 foreach (var index in Database.IndexStore.GetIndexes())
                 {
                     if (isFirst == false)
-                        writer.WriteCommaAsync();
+                        await writer.WriteCommaAsync();
 
                     isFirst = false;
 
-                    writer.WriteStartObjectAsync();
+                    await writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyNameAsync(nameof(IndexingStatus.IndexStatus.Name));
-                    writer.WriteStringAsync(index.Name);
+                    await writer.WritePropertyNameAsync(nameof(IndexingStatus.IndexStatus.Name));
+                    await writer.WriteStringAsync(index.Name);
 
-                    writer.WriteCommaAsync();
+                    await writer.WriteCommaAsync();
 
-                    writer.WritePropertyNameAsync(nameof(IndexingStatus.IndexStatus.Status));
-                    writer.WriteStringAsync(index.Status.ToString());
+                    await writer.WritePropertyNameAsync(nameof(IndexingStatus.IndexStatus.Status));
+                    await writer.WriteStringAsync(index.Status.ToString());
 
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteEndObjectAsync();
                 }
 
-                writer.WriteEndArrayAsync();
+                await writer.WriteEndArrayAsync();
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/indexes/set-lock", "POST", AuthorizationStatus.ValidUser)]
@@ -695,7 +676,7 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/indexes/errors", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = true)]
-        public Task GetErrors()
+        public async Task GetErrors()
         {
             var names = GetStringValuesQueryString("name", required: false);
 
@@ -718,41 +699,40 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WriteArrayAsync(context, "Results", indexes, (w, c, index) =>
+                await writer.WriteStartObjectAsync();
+                await writer.WriteArrayAsync(context, "Results", indexes, async (w, c, index) =>
                 {
-                    w.WriteStartObject();
-                    w.WritePropertyName("Name");
-                    w.WriteString(index.Name);
-                    w.WriteComma();
-                    BlittableJsonTextWriterExtensions.WriteArrayAsync(w, c, "Errors", index.GetErrors(), (ew, ec, error) =>
+                    await w.WriteStartObjectAsync();
+                    await w.WritePropertyNameAsync("Name");
+                    await w.WriteStringAsync(index.Name);
+                    await w.WriteCommaAsync();
+                    await BlittableJsonTextWriterExtensions.WriteArrayAsync(w, c, "Errors", index.GetErrors(), async (ew, ec, error) =>
                     {
-                        ew.WriteStartObject();
-                        ew.WritePropertyName(nameof(error.Timestamp));
-                        ew.WriteDateTime(error.Timestamp, isUtc: true);
-                        ew.WriteComma();
+                        await ew.WriteStartObjectAsync();
+                        await ew.WritePropertyNameAsync(nameof(error.Timestamp));
+                        await ew.WriteDateTimeAsync(error.Timestamp, isUtc: true);
+                        await ew.WriteCommaAsync();
 
-                        ew.WritePropertyName(nameof(error.Document));
-                        ew.WriteString(error.Document);
-                        ew.WriteComma();
+                        await ew.WritePropertyNameAsync(nameof(error.Document));
+                        await ew.WriteStringAsync(error.Document);
+                        await ew.WriteCommaAsync();
 
-                        ew.WritePropertyName(nameof(error.Action));
-                        ew.WriteString(error.Action);
-                        ew.WriteComma();
+                        await ew.WritePropertyNameAsync(nameof(error.Action));
+                        await ew.WriteStringAsync(error.Action);
+                        await ew.WriteCommaAsync();
 
-                        ew.WritePropertyName(nameof(error.Error));
-                        ew.WriteString(error.Error);
-                        ew.WriteEndObject();
+                        await ew.WritePropertyNameAsync(nameof(error.Error));
+                        await ew.WriteStringAsync(error.Error);
+                        await ew.WriteEndObjectAsync();
                     });
-                    w.WriteEndObject();
+                    await w.WriteEndObjectAsync();
                 });
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/indexes/terms", "GET", AuthorizationStatus.ValidUser, DisableOnCpuCreditsExhaustion = true)]
-        public Task Terms()
+        public async Task Terms()
         {
             var field = GetQueryStringValueAndAssertIfSingleAndNotEmpty("field");
 
@@ -769,12 +749,12 @@ namespace Raven.Server.Documents.Handlers
                 if (result.NotModified)
                 {
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.NotModified;
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 HttpContext.Response.Headers[Constants.Headers.Etag] = CharExtensions.ToInvariantString(result.ResultEtag);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
                 {
                     if (field.EndsWith("__minX") ||
                         field.EndsWith("__minY") ||
@@ -800,10 +780,8 @@ namespace Raven.Server.Documents.Handlers
                         }
                     }
 
-                    writer.WriteTermsQueryResult(context.Documents, result);
+                    await writer.WriteTermsQueryResult(context.Documents, result);
                 }
-
-                return Task.CompletedTask;
             }
         }
 
@@ -822,7 +800,7 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/indexes/total-time", "GET", AuthorizationStatus.ValidUser)]
-        public Task TotalTime()
+        public async Task TotalTime()
         {
             var indexes = GetIndexesToReportOn();
             using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
@@ -845,8 +823,10 @@ namespace Raven.Server.Documents.Handlers
                                     if (document != null && document.LastModified > baseLine)
                                         baseLine = document.LastModified;
                                     break;
+
                                 case IndexSourceType.TimeSeries:
                                     break;
+
                                 default:
                                     throw new NotSupportedException($"Index with source type '{index.SourceType}' is not supported.");
                             }
@@ -868,13 +848,12 @@ namespace Raven.Server.Documents.Handlers
                     });
                 }
 
-                context.WriteAsync(writer, dja);
+                await context.WriteAsync(writer, dja);
             }
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/indexes/performance", "GET", AuthorizationStatus.ValidUser)]
-        public Task Performance()
+        public async Task Performance()
         {
             var stats = GetIndexesToReportOn()
                 .Select(x => new IndexPerformanceStats
@@ -887,10 +866,8 @@ namespace Raven.Server.Documents.Handlers
             using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WritePerformanceStats(context, stats);
+                await writer.WritePerformanceStatsAsync(context, stats);
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/indexes/performance/live", "GET", AuthorizationStatus.ValidUser, SkipUsagesCount = true)]
@@ -937,7 +914,7 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/indexes/suggest-index-merge", "GET", AuthorizationStatus.ValidUser)]
-        public Task SuggestIndexMerge()
+        public async Task SuggestIndexMerge()
         {
             var mergeIndexSuggestions = Database.IndexStore.ProposeIndexMergeSuggestions();
 
@@ -945,10 +922,9 @@ namespace Raven.Server.Documents.Handlers
             using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.WriteAsync(writer, mergeIndexSuggestions.ToJson());
-                writer.FlushAsync();
+                await context.WriteAsync(writer, mergeIndexSuggestions.ToJson());
+                await writer.FlushAsync();
             }
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/indexes/try", "POST", AuthorizationStatus.ValidUser, DisableOnCpuCreditsExhaustion = true)]

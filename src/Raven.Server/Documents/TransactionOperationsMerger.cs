@@ -24,7 +24,6 @@ using Voron;
 using Voron.Debugging;
 using Voron.Global;
 using Voron.Impl;
-using Voron.Impl.Journal;
 
 namespace Raven.Server.Documents
 {

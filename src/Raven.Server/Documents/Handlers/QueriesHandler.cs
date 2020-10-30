@@ -102,9 +102,9 @@ namespace Raven.Server.Documents.Handlers
             HttpContext.Response.Headers[Constants.Headers.Etag] = CharExtensions.ToInvariantString(result.ResultEtag);
 
             long numberOfResults;
-            using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
             {
-                writer.WriteFacetedQueryResult(queryContext.Documents, result, numberOfResults: out numberOfResults);
+                numberOfResults = await writer.WriteFacetedQueryResult(queryContext.Documents, result);
             }
 
             Database.QueryMetadataCache.MaybeAddToCache(indexQuery.Metadata, result.IndexName);
@@ -157,8 +157,8 @@ namespace Raven.Server.Documents.Handlers
 
             HttpContext.Response.Headers[Constants.Headers.Etag] = CharExtensions.ToInvariantString(result.ResultEtag);
 
-            int numberOfResults;
-            using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream(), Database.DatabaseShutdown))
+            long numberOfResults;
+            await using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
             {
                 result.Timings = indexQuery.Timings?.ToTimings();
                 numberOfResults = await writer.WriteDocumentQueryResultAsync(queryContext.Documents, result, metadataOnly, WriteAdditionalData(indexQuery, shouldReturnServerSideQuery));
@@ -169,24 +169,24 @@ namespace Raven.Server.Documents.Handlers
             AddPagingPerformanceHint(PagingOperationType.Queries, $"{nameof(Query)} ({result.IndexName})", indexQuery.Query, numberOfResults, indexQuery.PageSize, result.DurationInMs);
         }
 
-        private Action<AsyncBlittableJsonTextWriter> WriteAdditionalData(IndexQueryServerSide indexQuery, bool shouldReturnServerSideQuery)
+        private Func<AsyncBlittableJsonTextWriter, ValueTask> WriteAdditionalData(IndexQueryServerSide indexQuery, bool shouldReturnServerSideQuery)
         {
             if (indexQuery.Diagnostics == null && shouldReturnServerSideQuery == false)
                 return null;
 
-            return w =>
+            return async w =>
             {
                 if (shouldReturnServerSideQuery)
                 {
-                    w.WriteCommaAsync();
-                    w.WritePropertyNameAsync(nameof(indexQuery.ServerSideQuery));
-                    w.WriteStringAsync(indexQuery.ServerSideQuery);
+                    await w.WriteCommaAsync();
+                    await w.WritePropertyNameAsync(nameof(indexQuery.ServerSideQuery));
+                    await w.WriteStringAsync(indexQuery.ServerSideQuery);
                 }
 
                 if (indexQuery.Diagnostics != null)
                 {
-                    w.WriteCommaAsync();
-                    w.WriteArrayAsync(nameof(indexQuery.Diagnostics), indexQuery.Diagnostics);
+                    await w.WriteCommaAsync();
+                    await w.WriteArrayAsync(nameof(indexQuery.Diagnostics), indexQuery.Diagnostics);
                 }
             };
         }
@@ -215,9 +215,9 @@ namespace Raven.Server.Documents.Handlers
             HttpContext.Response.Headers[Constants.Headers.Etag] = CharExtensions.ToInvariantString(result.ResultEtag);
 
             long numberOfResults;
-            using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
             {
-                writer.WriteSuggestionQueryResult(queryContext.Documents, result, numberOfResults: out numberOfResults);
+                numberOfResults = await writer.WriteSuggestionQueryResult(queryContext.Documents, result);
             }
 
             AddPagingPerformanceHint(PagingOperationType.Queries, $"{nameof(SuggestQuery)} ({result.IndexName})", indexQuery.Query, numberOfResults, indexQuery.PageSize, result.DurationInMs);
@@ -230,7 +230,7 @@ namespace Raven.Server.Documents.Handlers
             if (!(queryRunner is GraphQueryRunner gqr))
                 throw new InvalidOperationException("The specified query is not a graph query.");
             using (var token = CreateTimeLimitedQueryToken())
-            using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
             {
                 await gqr.WriteDetailedQueryResult(indexQuery, queryContext, writer, token);
             }
@@ -295,9 +295,9 @@ namespace Raven.Server.Documents.Handlers
                     edges.Add(djv);
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
                 {
-                    queryContext.Documents.WriteAsync(writer, output);
+                    await queryContext.Documents.WriteAsync(writer, output);
                 }
             }
         }
@@ -308,18 +308,15 @@ namespace Raven.Server.Documents.Handlers
 
             var explanations = Database.QueryRunner.ExplainDynamicIndexSelection(indexQuery, out string indexName);
 
-            using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream(), Database.DatabaseShutdown))
+            await using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync("IndexName");
-                writer.WriteStringAsync(indexName);
-                writer.WriteCommaAsync();
-                writer.WriteArrayAsync(queryContext.Documents, "Results", explanations, (w, c, explanation) =>
-                {
-                    w.WriteExplanation(queryContext.Documents, explanation);
-                });
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync("IndexName");
+                await writer.WriteStringAsync(indexName);
+                await writer.WriteCommaAsync();
+                await writer.WriteArrayAsync(queryContext.Documents, "Results", explanations, (w, c, explanation) => w.WriteExplanation(queryContext.Documents, explanation));
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
                 await writer.OuterFlushAsync();
             }
         }
@@ -327,13 +324,13 @@ namespace Raven.Server.Documents.Handlers
         private async Task ServerSideQuery(QueryOperationContext queryContext, RequestTimeTracker tracker, HttpMethod method)
         {
             var indexQuery = await GetIndexQuery(queryContext.Documents, method, tracker);
-            using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream(), Database.DatabaseShutdown))
+            await using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync(nameof(indexQuery.ServerSideQuery));
-                writer.WriteStringAsync(indexQuery.ServerSideQuery);
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync(nameof(indexQuery.ServerSideQuery));
+                await writer.WriteStringAsync(indexQuery.ServerSideQuery);
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
                 await writer.OuterFlushAsync();
             }
         }
@@ -368,7 +365,7 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/queries/test", "PATCH", AuthorizationStatus.ValidUser, DisableOnCpuCreditsExhaustion = true)]
-        public Task PatchTest()
+        public async Task PatchTest()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             {
@@ -407,55 +404,57 @@ namespace Raven.Server.Documents.Handlers
                 {
                     case PatchStatus.DocumentDoesNotExist:
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                        return Task.CompletedTask;
+                        return;
+
                     case PatchStatus.Created:
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
                         break;
+
                     case PatchStatus.Skipped:
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotModified;
-                        return Task.CompletedTask;
+                        return;
+
                     case PatchStatus.Patched:
                     case PatchStatus.NotModified:
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
                         break;
+
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
 
-                WritePatchResultToResponse(context, command);
-
-                return Task.CompletedTask;
+                await WritePatchResultToResponseAsync(context, command);
             }
         }
 
-        private void WritePatchResultToResponse(DocumentsOperationContext context, PatchDocumentCommand command)
+        private async ValueTask WritePatchResultToResponseAsync(DocumentsOperationContext context, PatchDocumentCommand command)
         {
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
 
-                writer.WritePropertyNameAsync(nameof(command.PatchResult.Status));
-                writer.WriteStringAsync(command.PatchResult.Status.ToString());
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(command.PatchResult.Status));
+                await writer.WriteStringAsync(command.PatchResult.Status.ToString());
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(command.PatchResult.ModifiedDocument));
-                writer.WriteObjectAsync(command.PatchResult.ModifiedDocument);
+                await writer.WritePropertyNameAsync(nameof(command.PatchResult.ModifiedDocument));
+                await writer.WriteObjectAsync(command.PatchResult.ModifiedDocument);
 
-                writer.WriteCommaAsync();
-                writer.WritePropertyNameAsync(nameof(command.PatchResult.OriginalDocument));
-                writer.WriteObjectAsync(command.PatchResult.OriginalDocument);
+                await writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(command.PatchResult.OriginalDocument));
+                await writer.WriteObjectAsync(command.PatchResult.OriginalDocument);
 
-                writer.WriteCommaAsync();
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(command.PatchResult.Debug));
+                await writer.WritePropertyNameAsync(nameof(command.PatchResult.Debug));
 
-                context.WriteAsync(writer, new DynamicJsonValue
+                await context.WriteAsync(writer, new DynamicJsonValue
                 {
                     ["Output"] = new DynamicJsonArray(command.DebugOutput),
                     ["Actions"] = command.DebugActions
                 });
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
         }
 
@@ -508,7 +507,7 @@ namespace Raven.Server.Documents.Handlers
             AddStringToHttpContext(sb.ToString(), TrafficWatchChangeType.Queries);
         }
 
-        private void ExecuteQueryOperation(IndexQueryServerSide query,
+        private async Task ExecuteQueryOperation(IndexQueryServerSide query,
                 Func<QueryRunner,
                 QueryOperationOptions,
                 Action<IOperationProgress>, OperationCancelToken,
@@ -537,16 +536,16 @@ namespace Raven.Server.Documents.Handlers
                 operationType,
                 onProgress => operation(Database.QueryRunner, options, onProgress, token), operationId, details, token);
 
-            using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
             {
-                writer.WriteOperationIdAndNodeTag(queryContext.Documents, operationId, ServerStore.NodeTag);
+                await writer.WriteOperationIdAndNodeTag(queryContext.Documents, operationId, ServerStore.NodeTag);
             }
 
-            task.ContinueWith(_ =>
-            {
-                using (returnContextToPool)
-                    token.Dispose();
-            });
+            _ = task.ContinueWith(_ =>
+              {
+                  using (returnContextToPool)
+                      token.Dispose();
+              });
         }
 
         private async Task Debug(QueryOperationContext queryContext, string debug, OperationCancelToken token, RequestTimeTracker tracker, HttpMethod method)
@@ -598,9 +597,9 @@ namespace Raven.Server.Documents.Handlers
 
             HttpContext.Response.Headers[Constants.Headers.Etag] = CharExtensions.ToInvariantString(result.ResultEtag);
 
-            using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
             {
-                writer.WriteIndexEntriesQueryResult(queryContext.Documents, result);
+                await writer.WriteIndexEntriesQueryResult(queryContext.Documents, result);
             }
         }
 

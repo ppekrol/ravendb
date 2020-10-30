@@ -1,18 +1,18 @@
-﻿using System.Net;
-using System;
+﻿using System;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Raven.Client.Documents.Operations.OngoingTasks;
 using Raven.Client.Documents.Operations.Replication;
 using Raven.Client.Exceptions;
+using Raven.Client.Json.Serialization;
 using Raven.Client.Util;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide.Commands;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
 using Sparrow.Json;
-using Raven.Client.Json.Serialization;
 
 namespace Raven.Server.Documents.Handlers
 {
@@ -30,14 +30,14 @@ namespace Raven.Server.Documents.Handlers
             await DatabaseConfigurations((_, databaseName, blittableJson, guid) =>
                 {
                     pullReplication = JsonDeserializationClient.PullReplicationDefinition(blittableJson);
-                    
+
                     pullReplication.Validate(ServerStore.Server.Certificate?.Certificate != null);
                     var updatePullReplication = new UpdatePullReplicationAsHubCommand(databaseName, guid)
                     {
                         Definition = pullReplication
                     };
                     return ServerStore.SendToLeaderAsync(updatePullReplication);
-                }, "update-hub-pull-replication", 
+                }, "update-hub-pull-replication",
                 GetRaftRequestIdFromQuery(),
                 fillJson: (json, _, index) =>
                 {
@@ -72,8 +72,8 @@ namespace Raven.Server.Documents.Handlers
             }
         }
 
-        [RavenAction("/databases/*/admin/pull-replication/generate-certificate", "POST", AuthorizationStatus.Operator, DisableOnCpuCreditsExhaustion =true)]
-        public Task GeneratePullReplicationCertificate()
+        [RavenAction("/databases/*/admin/pull-replication/generate-certificate", "POST", AuthorizationStatus.Operator, DisableOnCpuCreditsExhaustion = true)]
+        public async Task GeneratePullReplicationCertificate()
         {
             if (ServerStore.Server.Certificate?.Certificate == null)
                 throw new BadRequestException("This endpoint requires secured server.");
@@ -100,23 +100,21 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
 
-                writer.WritePropertyNameAsync(nameof(keyPairInfo.PublicKey));
-                writer.WriteStringAsync(keyPairInfo.PublicKey);
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(keyPairInfo.PublicKey));
+                await writer.WriteStringAsync(keyPairInfo.PublicKey);
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(keyPairInfo.Certificate));
-                writer.WriteStringAsync(keyPairInfo.Certificate);
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(keyPairInfo.Certificate));
+                await writer.WriteStringAsync(keyPairInfo.Certificate);
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(keyPairInfo.Thumbprint));
-                writer.WriteStringAsync(keyPairInfo.Thumbprint);
+                await writer.WritePropertyNameAsync(nameof(keyPairInfo.Thumbprint));
+                await writer.WriteStringAsync(keyPairInfo.Thumbprint);
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
-            
-            return Task.CompletedTask;
         }
 
         public class PullReplicationCertificate

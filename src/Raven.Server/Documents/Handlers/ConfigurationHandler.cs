@@ -5,7 +5,6 @@ using Raven.Client.Documents.Operations.Configuration;
 using Raven.Server.Json;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide.Context;
-using Sparrow;
 using Sparrow.Json;
 
 namespace Raven.Server.Documents.Handlers
@@ -13,14 +12,14 @@ namespace Raven.Server.Documents.Handlers
     public class ConfigurationHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/configuration/studio", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetStudioConfiguration()
+        public async Task GetStudioConfiguration()
         {
             var configuration = Database.StudioConfiguration;
 
             if (configuration == null)
             {
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return Task.CompletedTask;
+                return;
             }
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
@@ -30,21 +29,19 @@ namespace Raven.Server.Documents.Handlers
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteObjectAsync(clientConfigurationJson);
+                    await writer.WriteObjectAsync(clientConfigurationJson);
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/configuration/client", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetClientConfiguration()
+        public async Task GetClientConfiguration()
         {
             var inherit = GetBoolValueQueryString("inherit", required: false) ?? true;
 
             var configuration = Database.ClientConfiguration;
             var serverConfiguration = GetServerClientConfiguration();
-            
+
             if (inherit && (configuration == null || configuration.Disabled) && serverConfiguration != null)
             {
                 configuration = serverConfiguration;
@@ -61,27 +58,25 @@ namespace Raven.Server.Documents.Handlers
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
+                    await writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyNameAsync(nameof(GetClientConfigurationOperation.Result.Etag));
-                    writer.WriteIntegerAsync(Database.GetClientConfigurationEtag());
-                    writer.WriteCommaAsync();
+                    await writer.WritePropertyNameAsync(nameof(GetClientConfigurationOperation.Result.Etag));
+                    await writer.WriteIntegerAsync(Database.GetClientConfigurationEtag());
+                    await writer.WriteCommaAsync();
 
-                    writer.WritePropertyNameAsync(nameof(GetClientConfigurationOperation.Result.Configuration));
+                    await writer.WritePropertyNameAsync(nameof(GetClientConfigurationOperation.Result.Configuration));
                     if (clientConfigurationJson != null)
                     {
-                        writer.WriteObjectAsync(clientConfigurationJson);
+                        await writer.WriteObjectAsync(clientConfigurationJson);
                     }
                     else
                     {
-                        writer.WriteNullAsync();
+                        await writer.WriteNullAsync();
                     }
 
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteEndObjectAsync();
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         private ClientConfiguration GetServerClientConfiguration()
@@ -91,7 +86,7 @@ namespace Raven.Server.Documents.Handlers
                 using (context.OpenReadTransaction())
                 {
                     var clientConfigurationJson = ServerStore.Cluster.Read(context, Constants.Configuration.ClientId, out _);
-                    var config =  clientConfigurationJson != null
+                    var config = clientConfigurationJson != null
                         ? JsonDeserializationServer.ClientConfiguration(clientConfigurationJson)
                         : null;
 

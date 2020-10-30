@@ -67,7 +67,7 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/docs/size", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetDocSize()
+        public async Task GetDocSize()
         {
             var id = GetQueryStringValueAndAssertIfSingleAndNotEmpty("id");
 
@@ -78,7 +78,7 @@ namespace Raven.Server.Documents.Handlers
                 if (document == null)
                 {
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
@@ -94,11 +94,9 @@ namespace Raven.Server.Documents.Handlers
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.WriteAsync(writer, documentSizeDetails.ToJson());
-                    writer.FlushAsync();
+                    await context.WriteAsync(writer, documentSizeDetails.ToJson());
+                    await writer.FlushAsync();
                 }
-
-                return Task.CompletedTask;
             }
         }
 
@@ -189,16 +187,16 @@ namespace Raven.Server.Documents.Handlers
                 documents = Database.DocumentsStorage.GetDocumentsInReverseEtagOrder(context, start, pageSize);
             }
 
-            int numberOfResults;
+            long numberOfResults;
 
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream(), Database.DatabaseShutdown))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync("Results");
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync("Results");
 
                 numberOfResults = await writer.WriteDocumentsAsync(context, documents, metadataOnly);
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
                 await writer.OuterFlushAsync();
             }
 
@@ -224,11 +222,11 @@ namespace Raven.Server.Documents.Handlers
             {
                 foreach (var id in ids)
                 {
-                Document document = null;
-                if (string.IsNullOrEmpty(id) == false)
-                {
-                    document = Database.DocumentsStorage.Get(context, id);
-                }
+                    Document document = null;
+                    if (string.IsNullOrEmpty(id) == false)
+                    {
+                        document = Database.DocumentsStorage.Get(context, id);
+                    }
                     if (document == null && ids.Count == 1)
                     {
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -256,10 +254,8 @@ namespace Raven.Server.Documents.Handlers
 
                 HttpContext.Response.Headers[Constants.Headers.Etag] = "\"" + actualEtag + "\"";
 
-                int numberOfResults = 0;
-
-                numberOfResults = await WriteDocumentsJsonAsync(context, metadataOnly, documents, includes, includeCounters?.Results, includeTimeSeries?.Results,
-                    includeCompareExchangeValues?.Results, numberOfResults);
+                var numberOfResults = await WriteDocumentsJsonAsync(context, metadataOnly, documents, includes, includeCounters?.Results, includeTimeSeries?.Results,
+                    includeCompareExchangeValues?.Results);
 
                 AddPagingPerformanceHint(PagingOperationType.Documents, nameof(GetDocumentsByIdAsync), HttpContext.Request.QueryString.Value, numberOfResults,
                     documents.Count, sw.ElapsedMilliseconds);
@@ -329,49 +325,50 @@ namespace Raven.Server.Documents.Handlers
                 new Dictionary<string, HashSet<TimeSeriesRange>> { { string.Empty, hs } });
         }
 
-        private async Task<int> WriteDocumentsJsonAsync(JsonOperationContext context, bool metadataOnly, IEnumerable<Document> documentsToWrite, List<Document> includes,
-            Dictionary<string, List<CounterDetail>> counters, Dictionary<string, Dictionary<string, List<TimeSeriesRangeResult>>> timeseries, Dictionary<string, CompareExchangeValue<BlittableJsonReaderObject>> compareExchangeValues, int numberOfResults)
+        private async Task<long> WriteDocumentsJsonAsync(JsonOperationContext context, bool metadataOnly, IEnumerable<Document> documentsToWrite, List<Document> includes,
+            Dictionary<string, List<CounterDetail>> counters, Dictionary<string, Dictionary<string, List<TimeSeriesRangeResult>>> timeseries, Dictionary<string, CompareExchangeValue<BlittableJsonReaderObject>> compareExchangeValues)
         {
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream(), Database.DatabaseShutdown))
+            long numberOfResults;
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync(nameof(GetDocumentsResult.Results));
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync(nameof(GetDocumentsResult.Results));
                 numberOfResults = await writer.WriteDocumentsAsync(context, documentsToWrite, metadataOnly);
 
-                writer.WriteCommaAsync();
-                writer.WritePropertyNameAsync(nameof(GetDocumentsResult.Includes));
+                await writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(GetDocumentsResult.Includes));
                 if (includes.Count > 0)
                 {
                     await writer.WriteIncludesAsync(context, includes);
                 }
                 else
                 {
-                    writer.WriteStartObjectAsync();
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteStartObjectAsync();
+                    await writer.WriteEndObjectAsync();
                 }
 
                 if (counters?.Count > 0)
                 {
-                    writer.WriteCommaAsync();
-                    writer.WritePropertyNameAsync(nameof(GetDocumentsResult.CounterIncludes));
+                    await writer.WriteCommaAsync();
+                    await writer.WritePropertyNameAsync(nameof(GetDocumentsResult.CounterIncludes));
                     await writer.WriteCountersAsync(counters);
                 }
 
                 if (timeseries?.Count > 0)
                 {
-                    writer.WriteCommaAsync();
-                    writer.WritePropertyNameAsync(nameof(GetDocumentsResult.TimeSeriesIncludes));
+                    await writer.WriteCommaAsync();
+                    await writer.WritePropertyNameAsync(nameof(GetDocumentsResult.TimeSeriesIncludes));
                     await writer.WriteTimeSeriesAsync(timeseries);
                 }
 
                 if (compareExchangeValues?.Count > 0)
                 {
-                    writer.WriteCommaAsync();
-                    writer.WritePropertyNameAsync(nameof(GetDocumentsResult.CompareExchangeValueIncludes));
+                    await writer.WriteCommaAsync();
+                    await writer.WritePropertyNameAsync(nameof(GetDocumentsResult.CompareExchangeValueIncludes));
                     await writer.WriteCompareExchangeValues(compareExchangeValues);
                 }
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
                 await writer.OuterFlushAsync();
             }
             return numberOfResults;
@@ -400,7 +397,7 @@ namespace Raven.Server.Documents.Handlers
             {
                 var id = GetQueryStringValueAndAssertIfSingleAndNotEmpty("id");
                 // We HAVE to read the document in full, trying to parallelize the doc read
-                // and the identity generation needs to take into account that the identity 
+                // and the identity generation needs to take into account that the identity
                 // generation can fail and will leave the reading task hanging if we abort
                 // easier to just do in synchronously
                 var doc = await context.ReadForDiskAsync(RequestBodyStream(), id).ConfigureAwait(false);
@@ -494,16 +491,20 @@ namespace Raven.Server.Documents.Handlers
                     case PatchStatus.DocumentDoesNotExist:
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                         return;
+
                     case PatchStatus.Created:
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
                         break;
+
                     case PatchStatus.Skipped:
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotModified;
                         return;
+
                     case PatchStatus.Patched:
                     case PatchStatus.NotModified:
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
                         break;
+
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -585,6 +586,7 @@ namespace Raven.Server.Documents.Handlers
                 {
                     case "csharp":
                         break;
+
                     default:
                         throw new NotImplementedException($"Document code generator isn't implemented for {lang}");
                 }
@@ -662,11 +664,11 @@ namespace Raven.Server.Documents.Handlers
             }
             catch (Voron.Exceptions.VoronConcurrencyErrorException)
             {
-                // RavenDB-10581 - If we have a concurrency error on "doc-id/" 
+                // RavenDB-10581 - If we have a concurrency error on "doc-id/"
                 // this means that we have existing values under the current etag
-                // we'll generate a new (random) id for them. 
+                // we'll generate a new (random) id for them.
 
-                // The TransactionMerger will re-run us when we ask it to as a 
+                // The TransactionMerger will re-run us when we ask it to as a
                 // separate transaction
                 if (_id?.EndsWith(_database.IdentityPartsSeparator) == true)
                 {

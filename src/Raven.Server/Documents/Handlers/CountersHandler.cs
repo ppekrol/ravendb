@@ -19,6 +19,7 @@ using Raven.Server.Routing;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.TrafficWatch;
 using Raven.Server.Utils;
+using Sparrow;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Server;
@@ -117,6 +118,7 @@ namespace Raven.Server.Documents.Handlers
                                 countersToRemove.Remove(operation.CounterName);
                             }
                             break;
+
                         case CounterOperationType.Delete:
                             if (_fromEtl && doc == null)
                                 break;
@@ -126,6 +128,7 @@ namespace Raven.Server.Documents.Handlers
                             countersToAdd.Remove(operation.CounterName);
                             countersToRemove.Add(operation.CounterName);
                             break;
+
                         case CounterOperationType.Put:
                             if (_fromEtl == false || doc == null)
                                 break;
@@ -135,11 +138,14 @@ namespace Raven.Server.Documents.Handlers
                             countersToAdd.Add(operation.CounterName);
                             countersToRemove.Remove(operation.CounterName);
                             break;
+
                         case CounterOperationType.None:
                             break;
+
                         case CounterOperationType.Get:
                             GetCounterValue(context, _database, docId, operation.CounterName, _replyWithAllNodesValues, CountersDetail);
                             break;
+
                         default:
                             ThrowInvalidBatchOperationType(operation);
                             break;
@@ -529,7 +535,7 @@ namespace Raven.Server.Documents.Handlers
 
                         counters[name] = new BlittableJsonReaderObject.RawBlob
                         {
-                            Ptr = newVal.Ptr,
+                            Ptr = new RavenMemory(newVal.Ptr, CountersStorage.SizeOfCounterValues * kvp.Value.Count),
                             Length = CountersStorage.SizeOfCounterValues * kvp.Value.Count
                         };
                     }
@@ -587,7 +593,7 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/counters", "GET", AuthorizationStatus.ValidUser)]
-        public Task Get()
+        public async Task Get()
         {
             var docId = GetStringValuesQueryString("docId");
             var full = GetBoolValueQueryString("full", required: false) ?? false;
@@ -603,12 +609,10 @@ namespace Raven.Server.Documents.Handlers
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.WriteAsync(writer, countersDetail.ToJson());
-                    writer.FlushAsync();
+                    await context.WriteAsync(writer, countersDetail.ToJson());
+                    await writer.FlushAsync();
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         public static CountersDetail GetInternal(DocumentDatabase database, DocumentsOperationContext context, Microsoft.Extensions.Primitives.StringValues counters, string docId, bool full)
@@ -660,8 +664,8 @@ namespace Raven.Server.Documents.Handlers
                 }
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.WriteAsync(writer, cmd.CountersDetail.ToJson());
-                    writer.FlushAsync();
+                    await context.WriteAsync(writer, cmd.CountersDetail.ToJson());
+                    await writer.FlushAsync();
                 }
             }
         }

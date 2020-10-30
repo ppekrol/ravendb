@@ -12,15 +12,14 @@ namespace Raven.Server.Documents.Handlers
     public class IoMetricsHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/debug/io-metrics", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = true)]
-        public Task IoMetrics()
+        public async Task IoMetrics()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var result = IoMetricsUtil.GetIoMetricsResponse(Database.GetAllStoragesEnvironment(), Database.GetAllPerformanceMetrics());
-                context.WriteAsync(writer, result.ToJson());
+                await context.WriteAsync(writer, result.ToJson());
             }
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/debug/io-metrics/live", "GET", AuthorizationStatus.ValidUser, SkipUsagesCount = true)]
