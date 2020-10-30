@@ -5,7 +5,7 @@ namespace Sparrow.Server.Extensions
     public static class RavenDateTimeExtensions
     {
         /// <summary>
-        /// This function Processes the to string format of the form "yyyy'-'MM'-'dd'T'HH':'mm':'ss.fffffff" for date times in 
+        /// This function Processes the to string format of the form "yyyy'-'MM'-'dd'T'HH':'mm':'ss.fffffff" for date times in
         /// invariant culture scenarios. This implementation takes 20% of the time of a regular .ToString(format) call
         /// </summary>
         /// <param name="dt"></param>
@@ -21,7 +21,7 @@ namespace Sparrow.Server.Extensions
             var scope = context.Allocate(size, out value);
 
             byte* ptr = value.Ptr;
-            Sparrow.Extensions.RavenDateTimeExtensions.ProcessDefaultRavenFormat(ticks, ptr);
+            Sparrow.Extensions.RavenDateTimeExtensions.ProcessDefaultRavenFormat(ticks, new Span<byte>(ptr, value.Length));
             ptr[size - 1] = (byte)'Z';
 
             return scope;
