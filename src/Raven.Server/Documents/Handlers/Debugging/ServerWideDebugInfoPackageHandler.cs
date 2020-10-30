@@ -259,7 +259,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
             {
                 context.Write(writer, bodyJson);
-                writer.Flush();
+                writer.FlushAsync();
                 ms.Flush();
 
                 var rawStreamCommand = new GetRawStreamResultCommand($"admin/debug/remote-cluster-info-package", ms);
@@ -287,7 +287,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                     using (var endpointOutput = await localEndpointClient.InvokeAndReadObjectAsync(route, context))
                     {
                         context.Write(writer, endpointOutput);
-                        writer.Flush();
+                        writer.FlushAsync();
                         await entryStream.FlushAsync();
                     }
                 }
@@ -351,7 +351,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                         using (var endpointOutput = await localEndpointClient.InvokeAndReadObjectAsync(route, jsonOperationContext, endpointParameters))
                         {
                             jsonOperationContext.Write(writer, endpointOutput);
-                            writer.Flush();
+                            writer.FlushAsync();
                             await entryStream.FlushAsync();
                         }
                     }

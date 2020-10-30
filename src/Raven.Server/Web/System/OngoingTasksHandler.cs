@@ -449,13 +449,13 @@ namespace Raven.Server.Web.System
                 using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName(nameof(StartBackupOperationResult.ResponsibleNode));
-                    writer.WriteString(ServerStore.NodeTag);
-                    writer.WriteComma();
-                    writer.WritePropertyName(nameof(StartBackupOperationResult.OperationId));
-                    writer.WriteInteger(operationId);
-                    writer.WriteEndObject();
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync(nameof(StartBackupOperationResult.ResponsibleNode));
+                    writer.WriteStringAsync(ServerStore.NodeTag);
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync(nameof(StartBackupOperationResult.OperationId));
+                    writer.WriteIntegerAsync(operationId);
+                    writer.WriteEndObjectAsync();
                 }
 
                 return;
@@ -569,7 +569,7 @@ namespace Raven.Server.Web.System
                     {
                         ["RaftCommandIndex"] = index
                     });
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
         }
@@ -623,7 +623,7 @@ namespace Raven.Server.Web.System
                         SqlConnectionStrings = sqlConnectionStrings
                     };
                     context.Write(writer, result.ToJson());
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
         }
@@ -1092,7 +1092,7 @@ namespace Raven.Server.Web.System
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, taskInfo.ToJson());
-                writer.Flush();
+                writer.FlushAsync();
             }
         }
 
@@ -1103,7 +1103,7 @@ namespace Raven.Server.Web.System
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, dynamicJsonValue);
-                writer.Flush();
+                writer.FlushAsync();
             }
         }
         
@@ -1149,7 +1149,7 @@ namespace Raven.Server.Web.System
                         [nameof(ModifyOngoingTaskResult.TaskId)] = key,
                         [nameof(ModifyOngoingTaskResult.RaftCommandIndex)] = index
                     });
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
         }
@@ -1234,7 +1234,7 @@ namespace Raven.Server.Web.System
                         [nameof(ModifyOngoingTaskResult.TaskId)] = id,
                         [nameof(ModifyOngoingTaskResult.RaftCommandIndex)] = index
                     });
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
         }

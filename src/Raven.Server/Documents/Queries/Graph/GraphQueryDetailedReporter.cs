@@ -18,147 +18,147 @@ namespace Raven.Server.Documents.Queries.Graph
 
         public override void VisitQueryQueryStep(QueryQueryStep qqs)
         {
-            _writer.WriteStartObject();
-            _writer.WritePropertyName("Type");
-            _writer.WriteString("QueryQueryStep");
-            _writer.WriteComma();
-            _writer.WritePropertyName("Query");
-            _writer.WriteString(qqs.Query.ToString());
-            _writer.WriteComma();            
+            _writer.WriteStartObjectAsync();
+            _writer.WritePropertyNameAsync("Type");
+            _writer.WriteStringAsync("QueryQueryStep");
+            _writer.WriteCommaAsync();
+            _writer.WritePropertyNameAsync("Query");
+            _writer.WriteStringAsync(qqs.Query.ToString());
+            _writer.WriteCommaAsync();            
             WriteIntermidiateResults(qqs.IntermediateResults);
-            _writer.WriteEndObject();
+            _writer.WriteEndObjectAsync();
         }
 
         private void WriteIntermidiateResults(List<GraphQueryRunner.Match> matches)
         {
-            _writer.WritePropertyName("Results");
-            _writer.WriteStartArray();
+            _writer.WritePropertyNameAsync("Results");
+            _writer.WriteStartArrayAsync();
             var first = true;
             foreach (var match in matches)
             {
                 if (first == false)
                 {
-                    _writer.WriteComma();
+                    _writer.WriteCommaAsync();
                 }
 
                 first = false;
                 var djv = new DynamicJsonValue();
                 match.PopulateVertices(djv);
-                _writer.WriteObject(_ctx.ReadObject(djv, null));
+                _writer.WriteObjectAsync(_ctx.ReadObject(djv, null));
             }
 
-            _writer.WriteEndArray();
+            _writer.WriteEndArrayAsync();
         }
 
         public override void VisitEdgeQueryStep(EdgeQueryStep eqs)
         {
-            _writer.WriteStartObject();
-            _writer.WritePropertyName("Type");
-            _writer.WriteString("EdgeQueryStep");
-            _writer.WriteComma();
-            _writer.WritePropertyName("Left");
+            _writer.WriteStartObjectAsync();
+            _writer.WritePropertyNameAsync("Type");
+            _writer.WriteStringAsync("EdgeQueryStep");
+            _writer.WriteCommaAsync();
+            _writer.WritePropertyNameAsync("Left");
             Visit(eqs.Left);
-            _writer.WriteComma();
-            _writer.WritePropertyName("Right");
+            _writer.WriteCommaAsync();
+            _writer.WritePropertyNameAsync("Right");
             Visit(eqs.Right);
-            _writer.WriteEndObject();
+            _writer.WriteEndObjectAsync();
         }
 
         public override void VisitCollectionDestinationQueryStep(CollectionDestinationQueryStep cdqs)
         {
-            _writer.WriteStartObject();
-            _writer.WritePropertyName("Type");
-            _writer.WriteString("CollectionDestinationQueryStep");
-            _writer.WriteComma();
-            _writer.WritePropertyName("Collection");
-            _writer.WriteString(cdqs.CollectionName);
-            _writer.WriteComma();
+            _writer.WriteStartObjectAsync();
+            _writer.WritePropertyNameAsync("Type");
+            _writer.WriteStringAsync("CollectionDestinationQueryStep");
+            _writer.WriteCommaAsync();
+            _writer.WritePropertyNameAsync("Collection");
+            _writer.WriteStringAsync(cdqs.CollectionName);
+            _writer.WriteCommaAsync();
             WriteIntermidiateResults(cdqs.IntermediateResults);
-            _writer.WriteEndObject();
+            _writer.WriteEndObjectAsync();
         }
 
         public override void VisitIntersectionQueryStepExcept(IntersectionQueryStep<Except> iqse)
         {
-            _writer.WriteStartObject();
-            _writer.WritePropertyName("Type");
-            _writer.WriteString("IntersectionQueryStep<Except>");
-            _writer.WriteComma();
-            _writer.WritePropertyName("Left");
+            _writer.WriteStartObjectAsync();
+            _writer.WritePropertyNameAsync("Type");
+            _writer.WriteStringAsync("IntersectionQueryStep<Except>");
+            _writer.WriteCommaAsync();
+            _writer.WritePropertyNameAsync("Left");
             Visit(iqse.Left);
-            _writer.WriteComma();
-            _writer.WritePropertyName("Right");
+            _writer.WriteCommaAsync();
+            _writer.WritePropertyNameAsync("Right");
             Visit(iqse.Right);
-            _writer.WriteComma();
+            _writer.WriteCommaAsync();
             WriteIntermidiateResults(iqse.IntermediateResults);
-            _writer.WriteEndObject();
+            _writer.WriteEndObjectAsync();
         }
 
         public override void VisitIntersectionQueryStepUnion(IntersectionQueryStep<Union> iqsu)
         {
-            _writer.WriteStartObject();
-            _writer.WritePropertyName("Type");
-            _writer.WriteString("IntersectionQueryStep<Except>");
-            _writer.WriteComma();
-            _writer.WritePropertyName("Left");
+            _writer.WriteStartObjectAsync();
+            _writer.WritePropertyNameAsync("Type");
+            _writer.WriteStringAsync("IntersectionQueryStep<Except>");
+            _writer.WriteCommaAsync();
+            _writer.WritePropertyNameAsync("Left");
             Visit(iqsu.Left);
-            _writer.WriteComma();
-            _writer.WritePropertyName("Right");
+            _writer.WriteCommaAsync();
+            _writer.WritePropertyNameAsync("Right");
             Visit(iqsu.Right);
-            _writer.WriteComma();
+            _writer.WriteCommaAsync();
             WriteIntermidiateResults(iqsu.IntermediateResults);
-            _writer.WriteEndObject();
+            _writer.WriteEndObjectAsync();
         }
 
         public override void VisitIntersectionQueryStepIntersection(IntersectionQueryStep<Intersection> iqsi)
         {
-            _writer.WriteStartObject();
-            _writer.WritePropertyName("Type");
-            _writer.WriteString("IntersectionQueryStep<Except>");
-            _writer.WriteComma();
-            _writer.WritePropertyName("Left");
+            _writer.WriteStartObjectAsync();
+            _writer.WritePropertyNameAsync("Type");
+            _writer.WriteStringAsync("IntersectionQueryStep<Except>");
+            _writer.WriteCommaAsync();
+            _writer.WritePropertyNameAsync("Left");
             Visit(iqsi.Left);
-            _writer.WriteComma();
-            _writer.WritePropertyName("Right");
+            _writer.WriteCommaAsync();
+            _writer.WritePropertyNameAsync("Right");
             Visit(iqsi.Right);
-            _writer.WriteComma();
+            _writer.WriteCommaAsync();
             WriteIntermidiateResults(iqsi.IntermediateResults);
-            _writer.WriteEndObject();
+            _writer.WriteEndObjectAsync();
         }
 
         public override void VisitRecursionQueryStep(RecursionQueryStep rqs)
         {
-            _writer.WriteStartObject();
-            _writer.WritePropertyName("Type");
-            _writer.WriteString("RecursionQueryStep");
-            _writer.WriteComma();
-            _writer.WritePropertyName("Left");
+            _writer.WriteStartObjectAsync();
+            _writer.WritePropertyNameAsync("Type");
+            _writer.WriteStringAsync("RecursionQueryStep");
+            _writer.WriteCommaAsync();
+            _writer.WritePropertyNameAsync("Left");
             Visit(rqs.Left);
-            _writer.WriteComma();
-            _writer.WritePropertyName("Steps");
-            _writer.WriteStartArray();
+            _writer.WriteCommaAsync();
+            _writer.WritePropertyNameAsync("Steps");
+            _writer.WriteStartArrayAsync();
             var first = true;
             foreach (var step in rqs.Steps)
             {
                 if (first == false)
                 {
-                    _writer.WriteComma();
+                    _writer.WriteCommaAsync();
                 }
 
                 first = false;
                 Visit(step.Right);
             }
-            _writer.WriteEndArray();
-            _writer.WriteComma();
+            _writer.WriteEndArrayAsync();
+            _writer.WriteCommaAsync();
             Visit(rqs.GetNextStep());
             WriteIntermidiateResults(rqs.IntermediateResults);
-            _writer.WriteEndObject();
+            _writer.WriteEndObjectAsync();
         }
 
         public override void VisitEdgeMatcher(EdgeQueryStep.EdgeMatcher em)
         {
-            _writer.WritePropertyName("Next");
+            _writer.WritePropertyNameAsync("Next");
             Visit(em._parent.Right);
-            _writer.WriteComma();
+            _writer.WriteCommaAsync();
         }
     }
 }

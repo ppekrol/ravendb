@@ -125,17 +125,17 @@ namespace Raven.Server.Web.Studio
                     
                     using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartObject();
+                        writer.WriteStartObjectAsync();
                         
-                        writer.WritePropertyName("DocumentId");
-                        writer.WriteString(documentId);
+                        writer.WritePropertyNameAsync("DocumentId");
+                        writer.WriteStringAsync(documentId);
                         
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                         
-                        writer.WritePropertyName("Document");
-                        writer.WriteObject(testResultDocument);
+                        writer.WritePropertyNameAsync("Document");
+                        writer.WriteObjectAsync(testResultDocument);
                         
-                        writer.WriteEndObject();
+                        writer.WriteEndObjectAsync();
                     }
                     
                     return Task.CompletedTask;

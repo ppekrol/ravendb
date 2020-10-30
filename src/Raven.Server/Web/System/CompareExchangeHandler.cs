@@ -46,7 +46,7 @@ namespace Raven.Server.Web.System
             var numberOfResults = 0;
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
                 
                 writer.WriteArray(context, "Results", items,
                     (textWriter, operationContext, item) =>
@@ -60,7 +60,7 @@ namespace Raven.Server.Web.System
                         });
                     });
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             AddPagingPerformanceHint(PagingOperationType.CompareExchange, nameof(ClusterStateMachine.GetCompareExchangeValuesStartsWith), 
@@ -94,7 +94,7 @@ namespace Raven.Server.Web.System
             var numberOfResults = 0;
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
                 
                 writer.WriteArray(context, "Results", items,
                     (textWriter, operationContext, item) =>
@@ -108,7 +108,7 @@ namespace Raven.Server.Web.System
                         });
                     });
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             AddPagingPerformanceHint(PagingOperationType.CompareExchange, nameof(GetCompareExchangeValuesByKey), HttpContext.Request.QueryString.Value, 

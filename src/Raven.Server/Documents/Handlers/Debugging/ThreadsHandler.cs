@@ -89,7 +89,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                             });
                     }
 
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
         }

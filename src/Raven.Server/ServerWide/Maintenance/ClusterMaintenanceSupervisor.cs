@@ -453,38 +453,38 @@ namespace Raven.Server.ServerWide.Maintenance
             private void WriteOperationHeaderToRemote(AsyncBlittableJsonTextWriter writer, int remoteVersion = -1, bool drop = false)
             {
                 var operation = drop ? TcpConnectionHeaderMessage.OperationTypes.Drop : TcpConnectionHeaderMessage.OperationTypes.Heartbeats;
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
                 {
-                    writer.WritePropertyName(nameof(TcpConnectionHeaderMessage.Operation));
-                    writer.WriteString(operation.ToString());
-                    writer.WriteComma();
-                    writer.WritePropertyName(nameof(TcpConnectionHeaderMessage.OperationVersion));
-                    writer.WriteInteger(TcpConnectionHeaderMessage.HeartbeatsTcpVersion);
-                    writer.WriteComma();
-                    writer.WritePropertyName(nameof(TcpConnectionHeaderMessage.DatabaseName));
-                    writer.WriteString((string)null);
+                    writer.WritePropertyNameAsync(nameof(TcpConnectionHeaderMessage.Operation));
+                    writer.WriteStringAsync(operation.ToString());
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync(nameof(TcpConnectionHeaderMessage.OperationVersion));
+                    writer.WriteIntegerAsync(TcpConnectionHeaderMessage.HeartbeatsTcpVersion);
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync(nameof(TcpConnectionHeaderMessage.DatabaseName));
+                    writer.WriteStringAsync((string)null);
                     if (drop)
                     {
-                        writer.WriteComma();
-                        writer.WritePropertyName(nameof(TcpConnectionHeaderMessage.Info));
-                        writer.WriteString($"Couldn't agree on heartbeats tcp version ours:{TcpConnectionHeaderMessage.HeartbeatsTcpVersion} theirs:{remoteVersion}");
+                        writer.WriteCommaAsync();
+                        writer.WritePropertyNameAsync(nameof(TcpConnectionHeaderMessage.Info));
+                        writer.WriteStringAsync($"Couldn't agree on heartbeats tcp version ours:{TcpConnectionHeaderMessage.HeartbeatsTcpVersion} theirs:{remoteVersion}");
                     }
                 }
-                writer.WriteEndObject();
-                writer.Flush();
+                writer.WriteEndObjectAsync();
+                writer.FlushAsync();
             }
 
             private void WriteClusterMaintenanceConnectionHeader(AsyncBlittableJsonTextWriter writer)
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
                 {
-                    writer.WritePropertyName(nameof(ClusterMaintenanceConnectionHeader.LeaderClusterTag));
-                    writer.WriteString(_parent._leaderClusterTag);
-                    writer.WritePropertyName(nameof(ClusterMaintenanceConnectionHeader.Term));
-                    writer.WriteInteger(_parent._term);
+                    writer.WritePropertyNameAsync(nameof(ClusterMaintenanceConnectionHeader.LeaderClusterTag));
+                    writer.WriteStringAsync(_parent._leaderClusterTag);
+                    writer.WritePropertyNameAsync(nameof(ClusterMaintenanceConnectionHeader.Term));
+                    writer.WriteIntegerAsync(_parent._term);
                 }
-                writer.WriteEndObject();
-                writer.Flush();
+                writer.WriteEndObjectAsync();
+                writer.FlushAsync();
             }
 
             protected bool Equals(ClusterNode other)

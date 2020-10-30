@@ -17,39 +17,39 @@ namespace Raven.Server.Documents.Handlers.Debugging
             using (context.OpenReadTransaction())
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Revisions");
-                writer.WriteStartArray();
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Revisions");
+                writer.WriteStartArrayAsync();
                 
                 var first = true;
                 foreach (var revision in Database.DocumentsStorage.RevisionsStorage.GetRevisionsFrom(context, etag, pageSize))
                 {
                     if (first == false)
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                     first = false;
 
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
                     
-                    writer.WritePropertyName(nameof(Document.Id));
-                    writer.WriteString(revision.Id);
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync(nameof(Document.Id));
+                    writer.WriteStringAsync(revision.Id);
+                    writer.WriteCommaAsync();
                     
-                    writer.WritePropertyName(nameof(Document.Etag));
-                    writer.WriteInteger(revision.Etag);
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync(nameof(Document.Etag));
+                    writer.WriteIntegerAsync(revision.Etag);
+                    writer.WriteCommaAsync();
                     
-                    writer.WritePropertyName(nameof(Document.LastModified));
-                    writer.WriteDateTime(revision.LastModified, true);
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync(nameof(Document.LastModified));
+                    writer.WriteDateTimeAsync(revision.LastModified, true);
+                    writer.WriteCommaAsync();
                                         
-                    writer.WritePropertyName(nameof(Document.ChangeVector));
-                    writer.WriteString(revision.ChangeVector);
+                    writer.WritePropertyNameAsync(nameof(Document.ChangeVector));
+                    writer.WriteStringAsync(revision.ChangeVector);
                     
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
                 
-                writer.WriteEndArray();
-                writer.WriteEndObject();
+                writer.WriteEndArrayAsync();
+                writer.WriteEndObjectAsync();
             }
             return Task.CompletedTask;
         }

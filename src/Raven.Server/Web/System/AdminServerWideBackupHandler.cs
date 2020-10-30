@@ -82,7 +82,7 @@ namespace Raven.Server.Web.System
 
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
                     context.Write(writer, putResponse.ToJson());
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
         }
@@ -108,7 +108,7 @@ namespace Raven.Server.Web.System
 
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
                     context.Write(writer, deleteResponse.ToJson());
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
         }
@@ -138,7 +138,7 @@ namespace Raven.Server.Web.System
                 }
                 
                 context.Write(writer, backupsResult.ToJson());
-                writer.Flush();
+                writer.FlushAsync();
 
                 return Task.CompletedTask;
             }
@@ -176,7 +176,7 @@ namespace Raven.Server.Web.System
                     };
 
                     context.Write(writer, toggleResponse.ToJson());
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
         }

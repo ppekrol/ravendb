@@ -32,7 +32,7 @@ namespace Raven.Server.Documents.Handlers
                 var sourceReplicationDocument = GetSourceReplicationInformation(context, GetRemoteServerInstanceId(), out _);
                 var blittable = DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(sourceReplicationDocument, context);
                 context.Write(writer, blittable);
-                writer.Flush();
+                writer.FlushAsync();
             }
 
             return Task.CompletedTask;

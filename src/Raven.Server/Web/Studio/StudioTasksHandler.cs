@@ -297,7 +297,7 @@ namespace Raven.Server.Web.Studio
                         [nameof(NameValidation.ErrorMessage)] = errorMessage
                     });
 
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
 
@@ -317,7 +317,7 @@ namespace Raven.Server.Web.Studio
                         [$"Has{nameof(MigrationConfiguration.MigratorPath)}"] = Server.Configuration.Migration.MigratorPath != null
                     });
 
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
 
@@ -398,14 +398,14 @@ namespace Raven.Server.Web.Studio
                 using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName(nameof(NextCronExpressionOccurrence.IsValid));
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync(nameof(NextCronExpressionOccurrence.IsValid));
                     writer.WriteBool(false);
-                    writer.WriteComma();
-                    writer.WritePropertyName(nameof(NextCronExpressionOccurrence.ErrorMessage));
-                    writer.WriteString(e.Message);
-                    writer.WriteEndObject();
-                    writer.Flush();
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync(nameof(NextCronExpressionOccurrence.ErrorMessage));
+                    writer.WriteStringAsync(e.Message);
+                    writer.WriteEndObjectAsync();
+                    writer.FlushAsync();
                 }
 
                 return Task.CompletedTask;
@@ -416,17 +416,17 @@ namespace Raven.Server.Web.Studio
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName(nameof(NextCronExpressionOccurrence.IsValid));
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync(nameof(NextCronExpressionOccurrence.IsValid));
                 writer.WriteBool(true);
-                writer.WriteComma();
-                writer.WritePropertyName(nameof(NextCronExpressionOccurrence.Utc));
-                writer.WriteDateTime(nextOccurrence.ToUniversalTime(), true);
-                writer.WriteComma();
-                writer.WritePropertyName(nameof(NextCronExpressionOccurrence.ServerTime));
-                writer.WriteDateTime(nextOccurrence, false);
-                writer.WriteEndObject();
-                writer.Flush();
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(nameof(NextCronExpressionOccurrence.Utc));
+                writer.WriteDateTimeAsync(nextOccurrence.ToUniversalTime(), true);
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(nameof(NextCronExpressionOccurrence.ServerTime));
+                writer.WriteDateTimeAsync(nextOccurrence, false);
+                writer.WriteEndObjectAsync();
+                writer.FlushAsync();
             }
 
             return Task.CompletedTask;

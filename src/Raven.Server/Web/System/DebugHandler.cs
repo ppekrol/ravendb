@@ -24,51 +24,51 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Debug");
-                writer.WriteStartArray();
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Debug");
+                writer.WriteStartArrayAsync();
                 var first = true;
                 foreach (var route in debugRoutes)
                 {
                     if (first == false)
                     {
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                     }
                     first = false;
 
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Path");
-                    writer.WriteString(route.Key);
-                    writer.WriteComma();
-                    writer.WritePropertyName("Methods");
-                    writer.WriteString(string.Join(", ", route.Select(x => x.Method)));
-                    writer.WriteEndObject();
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("Path");
+                    writer.WriteStringAsync(route.Key);
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync("Methods");
+                    writer.WriteStringAsync(string.Join(", ", route.Select(x => x.Method)));
+                    writer.WriteEndObjectAsync();
                 }
-                writer.WriteEndArray();
+                writer.WriteEndArrayAsync();
 
-                writer.WriteComma();
-                writer.WritePropertyName("Production");
-                writer.WriteStartArray();
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync("Production");
+                writer.WriteStartArrayAsync();
                 first = true;
                 foreach (var route in productionRoutes)
                 {
                     if (first == false)
                     {
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                     }
                     first = false;
 
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Path");
-                    writer.WriteString(route.Key);
-                    writer.WriteComma();
-                    writer.WritePropertyName("Methods");
-                    writer.WriteString(string.Join(", ", route.Select(x => x.Method)));
-                    writer.WriteEndObject();
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("Path");
+                    writer.WriteStringAsync(route.Key);
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync("Methods");
+                    writer.WriteStringAsync(string.Join(", ", route.Select(x => x.Method)));
+                    writer.WriteEndObjectAsync();
                 }
-                writer.WriteEndArray();
+                writer.WriteEndArrayAsync();
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;

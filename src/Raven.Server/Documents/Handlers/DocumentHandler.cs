@@ -95,7 +95,7 @@ namespace Raven.Server.Documents.Handlers
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, documentSizeDetails.ToJson());
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
 
                 return Task.CompletedTask;
@@ -193,12 +193,12 @@ namespace Raven.Server.Documents.Handlers
 
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream(), Database.DatabaseShutdown))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Results");
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Results");
 
                 numberOfResults = await writer.WriteDocumentsAsync(context, documents, metadataOnly);
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
                 await writer.OuterFlushAsync();
             }
 
@@ -334,44 +334,44 @@ namespace Raven.Server.Documents.Handlers
         {
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream(), Database.DatabaseShutdown))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName(nameof(GetDocumentsResult.Results));
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync(nameof(GetDocumentsResult.Results));
                 numberOfResults = await writer.WriteDocumentsAsync(context, documentsToWrite, metadataOnly);
 
-                writer.WriteComma();
-                writer.WritePropertyName(nameof(GetDocumentsResult.Includes));
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(nameof(GetDocumentsResult.Includes));
                 if (includes.Count > 0)
                 {
                     await writer.WriteIncludesAsync(context, includes);
                 }
                 else
                 {
-                    writer.WriteStartObject();
-                    writer.WriteEndObject();
+                    writer.WriteStartObjectAsync();
+                    writer.WriteEndObjectAsync();
                 }
 
                 if (counters?.Count > 0)
                 {
-                    writer.WriteComma();
-                    writer.WritePropertyName(nameof(GetDocumentsResult.CounterIncludes));
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync(nameof(GetDocumentsResult.CounterIncludes));
                     await writer.WriteCountersAsync(counters);
                 }
 
                 if (timeseries?.Count > 0)
                 {
-                    writer.WriteComma();
-                    writer.WritePropertyName(nameof(GetDocumentsResult.TimeSeriesIncludes));
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync(nameof(GetDocumentsResult.TimeSeriesIncludes));
                     await writer.WriteTimeSeriesAsync(timeseries);
                 }
 
                 if (compareExchangeValues?.Count > 0)
                 {
-                    writer.WriteComma();
-                    writer.WritePropertyName(nameof(GetDocumentsResult.CompareExchangeValueIncludes));
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync(nameof(GetDocumentsResult.CompareExchangeValueIncludes));
                     await writer.WriteCompareExchangeValues(compareExchangeValues);
                 }
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
                 await writer.OuterFlushAsync();
             }
             return numberOfResults;
@@ -423,16 +423,16 @@ namespace Raven.Server.Documents.Handlers
 
                     using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartObject();
+                        writer.WriteStartObjectAsync();
 
-                        writer.WritePropertyName(nameof(PutResult.Id));
-                        writer.WriteString(cmd.PutResult.Id);
-                        writer.WriteComma();
+                        writer.WritePropertyNameAsync(nameof(PutResult.Id));
+                        writer.WriteStringAsync(cmd.PutResult.Id);
+                        writer.WriteCommaAsync();
 
-                        writer.WritePropertyName(nameof(PutResult.ChangeVector));
-                        writer.WriteString(cmd.PutResult.ChangeVector);
+                        writer.WritePropertyNameAsync(nameof(PutResult.ChangeVector));
+                        writer.WriteStringAsync(cmd.PutResult.ChangeVector);
 
-                        writer.WriteEndObject();
+                        writer.WriteEndObjectAsync();
                     }
                 }
             }
@@ -510,27 +510,27 @@ namespace Raven.Server.Documents.Handlers
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyName(nameof(command.PatchResult.Status));
-                    writer.WriteString(command.PatchResult.Status.ToString());
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync(nameof(command.PatchResult.Status));
+                    writer.WriteStringAsync(command.PatchResult.Status.ToString());
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName(nameof(command.PatchResult.ModifiedDocument));
-                    writer.WriteObject(command.PatchResult.ModifiedDocument);
+                    writer.WritePropertyNameAsync(nameof(command.PatchResult.ModifiedDocument));
+                    writer.WriteObjectAsync(command.PatchResult.ModifiedDocument);
 
                     if (debugMode)
                     {
-                        writer.WriteComma();
-                        writer.WritePropertyName(nameof(command.PatchResult.OriginalDocument));
+                        writer.WriteCommaAsync();
+                        writer.WritePropertyNameAsync(nameof(command.PatchResult.OriginalDocument));
                         if (isTest)
-                            writer.WriteObject(command.PatchResult.OriginalDocument);
+                            writer.WriteObjectAsync(command.PatchResult.OriginalDocument);
                         else
-                            writer.WriteNull();
+                            writer.WriteNullAsync();
 
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
 
-                        writer.WritePropertyName(nameof(command.PatchResult.Debug));
+                        writer.WritePropertyNameAsync(nameof(command.PatchResult.Debug));
 
                         context.Write(writer, new DynamicJsonValue
                         {
@@ -544,22 +544,22 @@ namespace Raven.Server.Documents.Handlers
                         case PatchStatus.Created:
                         case PatchStatus.Patched:
 
-                            writer.WriteComma();
+                            writer.WriteCommaAsync();
 
-                            writer.WritePropertyName(nameof(command.PatchResult.LastModified));
-                            writer.WriteString(command.PatchResult.LastModified.GetDefaultRavenFormat());
-                            writer.WriteComma();
+                            writer.WritePropertyNameAsync(nameof(command.PatchResult.LastModified));
+                            writer.WriteStringAsync(command.PatchResult.LastModified.GetDefaultRavenFormat());
+                            writer.WriteCommaAsync();
 
-                            writer.WritePropertyName(nameof(command.PatchResult.ChangeVector));
-                            writer.WriteString(command.PatchResult.ChangeVector);
-                            writer.WriteComma();
+                            writer.WritePropertyNameAsync(nameof(command.PatchResult.ChangeVector));
+                            writer.WriteStringAsync(command.PatchResult.ChangeVector);
+                            writer.WriteCommaAsync();
 
-                            writer.WritePropertyName(nameof(command.PatchResult.Collection));
-                            writer.WriteString(command.PatchResult.Collection);
+                            writer.WritePropertyNameAsync(nameof(command.PatchResult.Collection));
+                            writer.WriteStringAsync(command.PatchResult.Collection);
                             break;
                     }
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
         }

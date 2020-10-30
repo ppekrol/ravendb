@@ -15,21 +15,21 @@ namespace Raven.Server.Documents.Handlers.Debugging
             {
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("ScriptRunners");
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("ScriptRunners");
 
-                    writer.WriteStartArray();
+                    writer.WriteStartArrayAsync();
                     var first = true;
                     foreach (var runnerInfo in Database.Scripts.GetDebugInfo(detailed))
                     {
                         if (first == false)
-                            writer.WriteComma();
+                            writer.WriteCommaAsync();
                         first = false;
                         using (var runnerInfoReader = context.ReadObject(runnerInfo, "runnerInfo"))
-                            writer.WriteObject(runnerInfoReader);
+                            writer.WriteObjectAsync(runnerInfoReader);
                     }
-                    writer.WriteEndArray();
-                    writer.WriteEndObject();
+                    writer.WriteEndArrayAsync();
+                    writer.WriteEndObjectAsync();
                 }
             }
             return Task.CompletedTask;

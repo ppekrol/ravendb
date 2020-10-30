@@ -16,10 +16,10 @@ namespace Raven.Server.Web.Operations
             {
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Id");
-                    writer.WriteInteger(nextId);
-                    writer.WriteEndObject();
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("Id");
+                    writer.WriteIntegerAsync(nextId);
+                    writer.WriteEndObjectAsync();
                 }
             }
 

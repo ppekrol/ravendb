@@ -82,10 +82,10 @@ namespace Raven.Server.Documents.Handlers
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
 
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Results");
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("Results");
                     writer.WriteDocuments(context, documents, metadataOnly: false, numberOfResults: out numberOfResults);
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
 
                 AddPagingPerformanceHint(PagingOperationType.Documents, "Collection", HttpContext.Request.QueryString.Value, numberOfResults, pageSize, sw.ElapsedMilliseconds);

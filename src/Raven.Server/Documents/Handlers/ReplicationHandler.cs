@@ -134,7 +134,7 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
                 writer.WriteArray(context, nameof(ReplicationPerformance.Incoming), Database.ReplicationLoader.IncomingHandlers, (w, c, handler) =>
                 {
@@ -152,7 +152,7 @@ namespace Raven.Server.Documents.Handlers
 
                     w.WriteEndObject();
                 });
-                writer.WriteComma();
+                writer.WriteCommaAsync();
 
                 var reporters = Database.ReplicationLoader.OutgoingHandlers.Concat<IReportOutgoingReplicationPerformance>(Database.ReplicationLoader
                         .OutgoingConnectionsLastFailureToConnect.Values);
@@ -174,7 +174,7 @@ namespace Raven.Server.Documents.Handlers
                     w.WriteEndObject();
                 });
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;

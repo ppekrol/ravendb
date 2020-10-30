@@ -67,20 +67,20 @@ namespace Raven.Server.Web.Studio
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
                     var first = true;
                     foreach (var field in fields)
                     {
                         if (first == false)
-                            writer.WriteComma();
+                            writer.WriteCommaAsync();
                         first = false;
 
-                        writer.WritePropertyName(field.Key);
-                        writer.WriteString(field.Value.ToString());
+                        writer.WritePropertyNameAsync(field.Key);
+                        writer.WriteStringAsync(field.Value.ToString());
                     }
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
 
                 return Task.CompletedTask;

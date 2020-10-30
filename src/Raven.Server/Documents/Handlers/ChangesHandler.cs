@@ -72,21 +72,21 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Connections");
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Connections");
 
-                writer.WriteStartArray();
+                writer.WriteStartArrayAsync();
                 var first = true;
                 foreach (var connection in Database.Changes.Connections)
                 {
                     if (first == false)
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                     first = false;
                     context.Write(writer, connection.Value.GetDebugInfo());
                 }
-                writer.WriteEndArray();
+                writer.WriteEndArrayAsync();
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
             return Task.CompletedTask;
         }

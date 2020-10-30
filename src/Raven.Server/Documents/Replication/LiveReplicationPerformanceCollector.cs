@@ -176,11 +176,11 @@ namespace Raven.Server.Documents.Replication
 
         protected override void WriteStats(List<IReplicationPerformanceStats> stats, AsyncBlittableJsonTextWriter writer, JsonOperationContext context)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
             writer.WriteArray(context, "Results", stats, (w, c, p) => { p.Write(c, w); });
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         private void OutgoingHandlerRemoved(OutgoingReplicationHandler handler)
@@ -305,19 +305,19 @@ namespace Raven.Server.Documents.Replication
 
             public void Write(JsonOperationContext context, AbstractBlittableJsonTextWriter writer)
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(Id));
-                writer.WriteString(Id);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(Id));
+                writer.WriteStringAsync(Id);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(Description));
-                writer.WriteString(Description);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(Description));
+                writer.WriteStringAsync(Description);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(Type));
-                writer.WriteString(Type.ToString());
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(Type));
+                writer.WriteStringAsync(Type.ToString());
+                writer.WriteCommaAsync();
 
                 writer.WriteArray(context, nameof(Performance), Performance, (w, c, p) =>
                 {
@@ -325,7 +325,7 @@ namespace Raven.Server.Documents.Replication
                     w.WriteObject(c.ReadObject(djv, "incoming/replication/performance"));
                 });
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
         }
 

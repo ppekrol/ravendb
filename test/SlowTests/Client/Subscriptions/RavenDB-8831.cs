@@ -50,7 +50,7 @@ namespace SlowTests.Client.Subscriptions
                     using (var writer = new AsyncBlittableJsonTextWriter(newContext, ms))
                     {
                         writer.WriteDocument(newContext, doc, metadataOnly: false);
-                        writer.Flush();
+                        writer.FlushAsync();
                         var bjro = GetReaderFromMemoryStream(ms, context);
                         var desereializedDoc = (Doc)DocumentConventions.Default.Serialization.DefaultConverter.FromBlittable(typeof(Doc), bjro);
 
@@ -101,7 +101,7 @@ namespace SlowTests.Client.Subscriptions
                     using (var writer = new AsyncBlittableJsonTextWriter(newContext, ms))
                     {
                         writer.WriteDocument(newContext, doc, metadataOnly: false);
-                        writer.Flush();
+                        writer.FlushAsync();
                         var bjro = GetReaderFromMemoryStream(ms, context);
                         var desereializedDoc = (Doc)DocumentConventions.Default.Serialization.DefaultConverter.FromBlittable(typeof(Doc), bjro);
 

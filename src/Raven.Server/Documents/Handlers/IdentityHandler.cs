@@ -21,12 +21,12 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName("NewIdentityValue");
-                writer.WriteInteger(newIdentityValue);
+                writer.WritePropertyNameAsync("NewIdentityValue");
+                writer.WriteIntegerAsync(newIdentityValue);
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
         }
 
@@ -46,12 +46,12 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName("NewSeedValue");
-                writer.WriteInteger(newIdentityValue);
+                writer.WritePropertyNameAsync("NewSeedValue");
+                writer.WriteIntegerAsync(newIdentityValue);
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
         }
     }

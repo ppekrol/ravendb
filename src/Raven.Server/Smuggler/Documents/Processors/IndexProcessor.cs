@@ -91,13 +91,13 @@ namespace Raven.Server.Smuggler.Documents.Processors
             if (index.Type == IndexType.Faulty)
                 return;
 
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(IndexDefinition.Type));
-            writer.WriteString(index.Type.ToString());
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(IndexDefinition.Type));
+            writer.WriteStringAsync(index.Type.ToString());
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(IndexDefinition));
+            writer.WritePropertyNameAsync(nameof(IndexDefinition));
 
             if (index.Type == IndexType.Map || index.Type == IndexType.MapReduce || index.Type == IndexType.JavaScriptMap || index.Type == IndexType.JavaScriptMapReduce)
             {
@@ -113,7 +113,7 @@ namespace Raven.Server.Smuggler.Documents.Processors
                 throw new NotSupportedException(index.Type.ToString());
             }
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         private static IndexType ReadIndexType(BlittableJsonReaderObject reader, out BlittableJsonReaderObject indexDef)

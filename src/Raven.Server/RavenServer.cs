@@ -2182,7 +2182,7 @@ namespace Raven.Server
             using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
             {
                 context.Write(writer, message);
-                writer.Flush();
+                writer.FlushAsync();
             }
         }
 

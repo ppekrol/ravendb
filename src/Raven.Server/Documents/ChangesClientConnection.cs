@@ -547,7 +547,7 @@ namespace Raven.Server.Documents
                             sp.Restart();
 
                             var first = true;
-                            writer.WriteStartArray();
+                            writer.WriteStartArrayAsync();
 
                             do
                             {
@@ -556,18 +556,18 @@ namespace Raven.Server.Documents
                                     break;
 
                                 if (first == false)
-                                    writer.WriteComma();
+                                    writer.WriteCommaAsync();
 
                                 first = false;
                                 context.Write(writer, value);
 
-                                writer.Flush();
+                                writer.FlushAsync();
 
                                 if (ms.Length > 16 * 1024)
                                     break;
                             } while (_sendQueue.Count > 0 && sp.Elapsed < TimeSpan.FromSeconds(5));
 
-                            writer.WriteEndArray();
+                            writer.WriteEndArrayAsync();
                         }
 
                         if (_disposeToken.IsCancellationRequested)

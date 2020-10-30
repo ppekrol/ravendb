@@ -47,7 +47,7 @@ namespace Raven.Server.Web.System
                 context.OpenReadTransaction();
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
                     var items = ServerStore.Cluster.ItemsStartingWith(context, Constants.Documents.Prefix, GetStart(), GetPageSize());
 
@@ -70,7 +70,7 @@ namespace Raven.Server.Web.System
 
                         WriteDatabaseInfo(databaseName, dbDoc.Item2, context, w);
                     });
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
 
@@ -204,7 +204,7 @@ namespace Raven.Server.Web.System
                         [nameof(IsDatabaseLoadedCommand.CommandResult.DatabaseName)] = name,
                         [nameof(IsDatabaseLoadedCommand.CommandResult.IsLoaded)] = isLoaded
                     });
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
             return Task.CompletedTask;
@@ -253,7 +253,7 @@ namespace Raven.Server.Web.System
                 };
 
                 context.Write(writer, json);
-                writer.Flush();
+                writer.FlushAsync();
             }
         }
 

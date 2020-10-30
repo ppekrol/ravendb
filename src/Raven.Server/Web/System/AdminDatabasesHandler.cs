@@ -93,15 +93,15 @@ namespace Raven.Server.Web.System
 
                     using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartObject();
+                        writer.WriteStartObjectAsync();
                         writer.WriteDocumentPropertiesWithoutMetadata(context, new Document
                         {
                             Data = dbDoc
                         });
-                        writer.WriteComma();
-                        writer.WritePropertyName("Etag");
-                        writer.WriteInteger(etag);
-                        writer.WriteEndObject();
+                        writer.WriteCommaAsync();
+                        writer.WritePropertyNameAsync("Etag");
+                        writer.WriteIntegerAsync(etag);
+                        writer.WriteEndObjectAsync();
                     }
                 }
             }
@@ -232,7 +232,7 @@ namespace Raven.Server.Web.System
                             [nameof(DatabasePutResult.Name)] = name,
                             [nameof(DatabasePutResult.Topology)] = databaseRecord.Topology.ToJson()
                         });
-                        writer.Flush();
+                        writer.FlushAsync();
                     }
 
                     return;
@@ -350,7 +350,7 @@ namespace Raven.Server.Web.System
                         [nameof(DatabasePutResult.Topology)] = topology.ToJson(),
                         [nameof(DatabasePutResult.NodesAddedTo)] = nodeUrlsAddedTo
                     });
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
         }
@@ -627,7 +627,7 @@ namespace Raven.Server.Web.System
                 {
                     var blittable = DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(restorePoints, context);
                     context.Write(writer, blittable);
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
         }
@@ -922,23 +922,23 @@ namespace Raven.Server.Web.System
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Status");
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("Status");
 
-                    writer.WriteStartArray();
+                    writer.WriteStartArrayAsync();
                     var first = true;
                     foreach (var result in resultList)
                     {
                         if (first == false)
-                            writer.WriteComma();
+                            writer.WriteCommaAsync();
                         first = false;
 
                         context.Write(writer, result);
                     }
 
-                    writer.WriteEndArray();
+                    writer.WriteEndArrayAsync();
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
         }
@@ -963,7 +963,7 @@ namespace Raven.Server.Web.System
                         [nameof(DatabasePutResult.Name)] = name,
                         [nameof(DatabasePutResult.RaftCommandIndex)] = index
                     });
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
         }
@@ -1060,7 +1060,7 @@ namespace Raven.Server.Web.System
                             ["Key"] = name,
                             [nameof(DatabaseRecord.ConflictSolverConfig)] = conflictSolverConfig.ToJson()
                         });
-                        writer.Flush();
+                        writer.FlushAsync();
                     }
                 }
             }

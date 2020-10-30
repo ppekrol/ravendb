@@ -23,43 +23,43 @@ namespace Raven.Server.Documents.Indexes.Auto
 
         protected override void PersistMapFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
-            writer.WritePropertyName(nameof(MapFields));
-            writer.WriteStartArray();
+            writer.WritePropertyNameAsync(nameof(MapFields));
+            writer.WriteStartArrayAsync();
             var first = true;
             foreach (var field in MapFields.Values.Select(x => x.As<AutoIndexField>()))
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(field.Name));
-                writer.WriteString(field.Name);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(field.Name));
+                writer.WriteStringAsync(field.Name);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(field.Indexing));
-                writer.WriteString(field.Indexing.ToString());
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(field.Indexing));
+                writer.WriteStringAsync(field.Indexing.ToString());
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(field.Aggregation));
-                writer.WriteInteger((int)field.Aggregation);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(field.Aggregation));
+                writer.WriteIntegerAsync((int)field.Aggregation);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(field.Spatial));
+                writer.WritePropertyNameAsync(nameof(field.Spatial));
                 if (field.Spatial == null)
-                    writer.WriteNull();
+                    writer.WriteNullAsync();
                 else
-                    writer.WriteObject(DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(field.Spatial, context));
-                writer.WriteComma();
+                    writer.WriteObjectAsync(DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(field.Spatial, context));
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(field.HasSuggestions));
+                writer.WritePropertyNameAsync(nameof(field.HasSuggestions));
                 writer.WriteBool(field.HasSuggestions);
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
 
                 first = false;
             }
-            writer.WriteEndArray();
+            writer.WriteEndArrayAsync();
         }
 
         protected internal abstract override IndexDefinition GetOrCreateIndexDefinitionInternal();

@@ -23,13 +23,13 @@ namespace Raven.Server.Web.Operations
             {
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Id");
-                    writer.WriteInteger(nextId);
-                    writer.WriteComma();
-                    writer.WritePropertyName(nameof(GetNextOperationIdCommand.NodeTag));
-                    writer.WriteString(Server.ServerStore.NodeTag);
-                    writer.WriteEndObject();
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("Id");
+                    writer.WriteIntegerAsync(nextId);
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync(nameof(GetNextOperationIdCommand.NodeTag));
+                    writer.WriteStringAsync(Server.ServerStore.NodeTag);
+                    writer.WriteEndObjectAsync();
                 }
             }
 
@@ -70,12 +70,12 @@ namespace Raven.Server.Web.Operations
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
                     writer.WriteArray(context, "Results", operations, (w, c, operation) =>
                     {
                         c.Write(w, operation.ToJson());
                     });
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
 

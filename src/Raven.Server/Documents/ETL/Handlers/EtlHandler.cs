@@ -31,12 +31,12 @@ namespace Raven.Server.Documents.ETL.Handlers
             {
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
                     writer.WriteArray(context, "Results", etlStats, (w, c, stats) =>
                     {
                         w.WriteObject(context.ReadObject(stats.ToJson(), "etl/stats"));
                     });
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
 
@@ -67,12 +67,12 @@ namespace Raven.Server.Documents.ETL.Handlers
             {
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
                     writer.WriteArray(context, "Results", debugStats, (w, c, stats) =>
                     {
                         w.WriteObject(context.ReadObject(stats, "etl/debug/stats"));
                     });
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
             return Task.CompletedTask;

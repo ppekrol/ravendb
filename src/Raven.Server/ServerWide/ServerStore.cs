@@ -2739,7 +2739,7 @@ namespace Raven.Server.ServerWide
                     {
                         using (var writer = new AsyncBlittableJsonTextWriter(ctx, stream))
                         {
-                            writer.WriteObject(_command);
+                            writer.WriteObjectAsync(_command);
                         }
                     })
                 };

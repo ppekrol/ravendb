@@ -425,9 +425,9 @@ namespace Raven.Server.Smuggler.Documents.Handlers
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName(nameof(MigratedServerUrls.List));
-                    writer.WriteStartArray();
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync(nameof(MigratedServerUrls.List));
+                    writer.WriteStartArrayAsync();
 
                     var urls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     foreach (var document in documents)
@@ -455,14 +455,14 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                     foreach (var url in urls)
                     {
                         if (first == false)
-                            writer.WriteComma();
+                            writer.WriteCommaAsync();
                         first = false;
 
-                        writer.WriteString(url);
+                        writer.WriteStringAsync(url);
                     }
 
-                    writer.WriteEndArray();
-                    writer.WriteEndObject();
+                    writer.WriteEndArrayAsync();
+                    writer.WriteEndObjectAsync();
                 }
             }
 

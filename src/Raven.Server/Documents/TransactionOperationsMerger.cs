@@ -208,7 +208,7 @@ namespace Raven.Server.Documents
                     using (var commandDetailsReader = SerializeRecordingCommandDetails(context, commandDetails))
                     using (var writer = new AsyncBlittableJsonTextWriter(context, _txOpMerger._recording.Stream))
                     {
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                         context.Write(writer, commandDetailsReader);
                     }
                 }
@@ -236,7 +236,7 @@ namespace Raven.Server.Documents
                     {
                         using (var writer = new AsyncBlittableJsonTextWriter(ctx, _txOpMerger._recording.Stream))
                         {
-                            writer.WriteEndArray();
+                            writer.WriteEndArrayAsync();
                         }
                     }
                 }
@@ -270,7 +270,7 @@ namespace Raven.Server.Documents
                     using (_txOpMerger._parent.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
                     using (var writer = new AsyncBlittableJsonTextWriter(context, _txOpMerger._recording.Stream))
                     {
-                        writer.WriteStartArray();
+                        writer.WriteStartArrayAsync();
 
                         var commandDetails = new StartRecordingDetails();
                         var commandDetailsReader = SerializeRecordingCommandDetails(context, commandDetails);

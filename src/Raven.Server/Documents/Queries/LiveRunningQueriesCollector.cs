@@ -72,7 +72,7 @@ namespace Raven.Server.Documents.Queries
 
         protected override void WriteStats(List<ExecutingQueryCollection> stats, AsyncBlittableJsonTextWriter writer, JsonOperationContext context)
         {
-            writer.WriteStartArray();
+            writer.WriteStartArrayAsync();
 
             var isFirst = true;
 
@@ -80,39 +80,39 @@ namespace Raven.Server.Documents.Queries
             {
                 if (isFirst == false)
                 {
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
                 }
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
                 isFirst = false;
-                writer.WritePropertyName(nameof(executingQueryCollection.DatabaseName));
-                writer.WriteString(executingQueryCollection.DatabaseName);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(executingQueryCollection.DatabaseName));
+                writer.WriteStringAsync(executingQueryCollection.DatabaseName);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(executingQueryCollection.IndexName));
-                writer.WriteString(executingQueryCollection.IndexName);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(executingQueryCollection.IndexName));
+                writer.WriteStringAsync(executingQueryCollection.IndexName);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(executingQueryCollection.RunningQueries));
-                writer.WriteStartArray();
+                writer.WritePropertyNameAsync(nameof(executingQueryCollection.RunningQueries));
+                writer.WriteStartArrayAsync();
 
                 var firstInnerQuery = true;
                 foreach (var executingQueryInfo in executingQueryCollection.RunningQueries)
                 {
                     if (firstInnerQuery == false)
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
 
                     firstInnerQuery = false;
                     executingQueryInfo.Write(writer, context);
                 }
-                writer.WriteEndArray();
+                writer.WriteEndArrayAsync();
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
 
             }
 
-            writer.WriteEndArray();
+            writer.WriteEndArrayAsync();
         }
 
         public class ExecutingQueryCollection

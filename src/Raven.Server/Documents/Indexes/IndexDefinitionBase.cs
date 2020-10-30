@@ -60,42 +60,42 @@ namespace Raven.Server.Documents.Indexes
 
         public void Persist(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(Name));
-            writer.WriteString(Name);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(Name));
+            writer.WriteStringAsync(Name);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(Version));
-            writer.WriteInteger(Version);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(Version));
+            writer.WriteIntegerAsync(Version);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(Collections));
-            writer.WriteStartArray();
+            writer.WritePropertyNameAsync(nameof(Collections));
+            writer.WriteStartArrayAsync();
             var isFirst = true;
             foreach (var collection in Collections)
             {
                 if (isFirst == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                 isFirst = false;
-                writer.WriteString((collection));
+                writer.WriteStringAsync((collection));
             }
 
-            writer.WriteEndArray();
-            writer.WriteComma();
+            writer.WriteEndArrayAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(LockMode));
-            writer.WriteInteger((int)LockMode);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(LockMode));
+            writer.WriteIntegerAsync((int)LockMode);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(Priority));
-            writer.WriteInteger((int)Priority);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(Priority));
+            writer.WriteIntegerAsync((int)Priority);
+            writer.WriteCommaAsync();
 
             PersistFields(context, writer);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public bool ContainsField(string name)
@@ -189,7 +189,7 @@ namespace Raven.Server.Documents.Indexes
             {
                 Persist(context, writer);
 
-                writer.Flush();
+                writer.FlushAsync();
 
                 stream.Position = 0;
 

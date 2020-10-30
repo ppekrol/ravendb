@@ -54,7 +54,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce.Auto
         {
             PersistMapFields(context, writer);
 
-            writer.WriteComma();
+            writer.WriteCommaAsync();
 
             PersistGroupByFields(context, writer);
         }
@@ -82,34 +82,34 @@ namespace Raven.Server.Documents.Indexes.MapReduce.Auto
 
         protected void PersistGroupByFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
-            writer.WritePropertyName((nameof(GroupByFields)));
-            writer.WriteStartArray();
+            writer.WritePropertyNameAsync((nameof(GroupByFields)));
+            writer.WriteStartArrayAsync();
             var first = true;
             foreach (var field in GroupByFields.Values)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(field.Name));
-                writer.WriteString(field.Name);
+                writer.WritePropertyNameAsync(nameof(field.Name));
+                writer.WriteStringAsync(field.Name);
 
-                writer.WriteComma();
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(field.Indexing));
-                writer.WriteString(field.Indexing.ToString());
+                writer.WritePropertyNameAsync(nameof(field.Indexing));
+                writer.WriteStringAsync(field.Indexing.ToString());
 
-                writer.WriteComma();
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(field.GroupByArrayBehavior));
-                writer.WriteString(field.GroupByArrayBehavior.ToString());
+                writer.WritePropertyNameAsync(nameof(field.GroupByArrayBehavior));
+                writer.WriteStringAsync(field.GroupByArrayBehavior.ToString());
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
 
                 first = false;
             }
-            writer.WriteEndArray();
+            writer.WriteEndArrayAsync();
         }
 
         protected override int ComputeRestOfHash(int hashCode)

@@ -30,26 +30,26 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
                 var first = true;
                 foreach (var alloc in allocations.OrderByDescending(x=>x.Allocations))
                 {
                     if (first == false)
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
 
                     first = false;
-                    writer.WritePropertyName(alloc.Type);
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Memory");
-                    writer.WriteString(new Size((long)alloc.Allocations, SizeUnit.Bytes).ToString());
-                    writer.WriteComma();
-                    writer.WritePropertyName("Allocations");
-                    writer.WriteInteger(alloc.NumberOfAllocations);
-                    writer.WriteEndObject();
+                    writer.WritePropertyNameAsync(alloc.Type);
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("Memory");
+                    writer.WriteStringAsync(new Size((long)alloc.Allocations, SizeUnit.Bytes).ToString());
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync("Allocations");
+                    writer.WriteIntegerAsync(alloc.NumberOfAllocations);
+                    writer.WriteEndObjectAsync();
                 }
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
         }
 

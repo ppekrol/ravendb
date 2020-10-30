@@ -21,9 +21,9 @@ namespace Raven.Server.Documents.Handlers.Admin
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName(("Environments"));
-                writer.WriteStartArray();
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync(("Environments"));
+                writer.WriteStartArrayAsync();
                 bool first = true;
                 foreach (var storageEnvironment in Database.GetAllStoragesEnvironment())
                 {
@@ -32,7 +32,7 @@ namespace Raven.Server.Documents.Handlers.Admin
 
                     if (first == false)
                     {
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                     }
                     first = false;
 
@@ -59,8 +59,8 @@ namespace Raven.Server.Documents.Handlers.Admin
 
                     context.Write(writer, djv);
                 }
-                writer.WriteEndArray();
-                writer.WriteEndObject();
+                writer.WriteEndArrayAsync();
+                writer.WriteEndObjectAsync();
             }
             return Task.CompletedTask;
         }

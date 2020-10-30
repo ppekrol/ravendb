@@ -90,7 +90,7 @@ namespace Raven.Server.Web.System
 
                     using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteObject(studioConfigurationJson);
+                        writer.WriteObjectAsync(studioConfigurationJson);
                     }
                 }
             }
@@ -133,7 +133,7 @@ namespace Raven.Server.Web.System
 
                     using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteObject(clientConfigurationJson);
+                        writer.WriteObjectAsync(clientConfigurationJson);
                     }
                 }
             }

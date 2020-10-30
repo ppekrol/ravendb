@@ -31,30 +31,30 @@ namespace Raven.Server.ServerWide
 
         public void WriteTo(AsyncBlittableJsonTextWriter writer)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(UpTime));
-            writer.WriteString(UpTime.ToString("c"));
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(UpTime));
+            writer.WriteStringAsync(UpTime.ToString("c"));
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(StartUpTime));
-            writer.WriteDateTime(StartUpTime, isUtc: true);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(StartUpTime));
+            writer.WriteDateTimeAsync(StartUpTime, isUtc: true);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(LastRequestTime));
+            writer.WritePropertyNameAsync(nameof(LastRequestTime));
             if (LastRequestTime.HasValue)
-                writer.WriteDateTime(LastRequestTime.Value, isUtc: true);
+                writer.WriteDateTimeAsync(LastRequestTime.Value, isUtc: true);
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(LastAuthorizedNonClusterAdminRequestTime));
+            writer.WritePropertyNameAsync(nameof(LastAuthorizedNonClusterAdminRequestTime));
             if (LastAuthorizedNonClusterAdminRequestTime.HasValue)
-                writer.WriteDateTime(LastAuthorizedNonClusterAdminRequestTime.Value, isUtc: true);
+                writer.WriteDateTimeAsync(LastAuthorizedNonClusterAdminRequestTime.Value, isUtc: true);
             else
-                writer.WriteNull();
+                writer.WriteNullAsync();
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         internal unsafe void Load(TransactionContextPool contextPool, Logger logger)
@@ -105,7 +105,7 @@ namespace Raven.Server.ServerWide
                         {
                             WriteTo(writer);
 
-                            writer.Flush();
+                            writer.FlushAsync();
                             ms.Position = 0;
 
                             var tree = tx.InnerTransaction.CreateTree(nameof(ServerStatistics));

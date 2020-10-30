@@ -66,12 +66,12 @@ namespace Raven.Server.Documents.Handlers.Streaming
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Results");
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("Results");
 
                     writer.WriteDocuments(context, documentsEnumerator, metadataOnly: false, numberOfResults: out long _);
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
 

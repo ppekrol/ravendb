@@ -30,12 +30,12 @@ namespace Raven.Server.Monitoring.Snmp
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName("Value");
-                writer.WriteString(data.ToString());
+                writer.WritePropertyNameAsync("Value");
+                writer.WriteStringAsync(data.ToString());
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;
@@ -93,7 +93,7 @@ namespace Raven.Server.Monitoring.Snmp
 
                     var json = context.ReadObject(djv, "snmp/oids");
 
-                    writer.WriteObject(json);
+                    writer.WriteObjectAsync(json);
                 }
             }
 
@@ -121,36 +121,36 @@ namespace Raven.Server.Monitoring.Snmp
 
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Results");
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Results");
 
-                writer.WriteStartArray();
+                writer.WriteStartArrayAsync();
 
                 var first = true;
                 foreach (var result in results)
                 {
                     if (first == false)
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
 
                     first = false;
 
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyName("OID");
-                    writer.WriteString(result.Oid);
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync("OID");
+                    writer.WriteStringAsync(result.Oid);
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName("Value");
+                    writer.WritePropertyNameAsync("Value");
                     if (result.Data != null)
-                        writer.WriteString(result.Data.ToString());
+                        writer.WriteStringAsync(result.Data.ToString());
                     else
-                        writer.WriteNull();
+                        writer.WriteNullAsync();
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
 
-                writer.WriteEndArray();
-                writer.WriteEndObject();
+                writer.WriteEndArrayAsync();
+                writer.WriteEndObjectAsync();
             }
         }
 

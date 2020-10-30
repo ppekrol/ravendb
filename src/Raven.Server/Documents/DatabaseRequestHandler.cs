@@ -75,7 +75,7 @@ namespace Raven.Server.Documents
                     };
                     fillJson?.Invoke(json, configurationJson, index);
                     context.Write(writer, json);
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
         }

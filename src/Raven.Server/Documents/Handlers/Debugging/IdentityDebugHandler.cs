@@ -18,20 +18,20 @@ namespace Raven.Server.Documents.Handlers.Debugging
             {
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
                     var first = true;
                     foreach (var identity in Database.ServerStore.Cluster.GetIdentitiesFromPrefix(context, Database.Name, start, pageSize))
                     {
                         if (first == false)
-                            writer.WriteComma();
+                            writer.WriteCommaAsync();
 
                         first = false;
-                        writer.WritePropertyName(identity.Prefix);
-                        writer.WriteInteger(identity.Value);
+                        writer.WritePropertyNameAsync(identity.Prefix);
+                        writer.WriteIntegerAsync(identity.Value);
                     }
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
 

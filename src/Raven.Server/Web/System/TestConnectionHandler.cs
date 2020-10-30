@@ -82,19 +82,19 @@ namespace Raven.Server.Web.System
 
         private static void WriteOperationHeaderToRemote(AsyncBlittableJsonTextWriter writer, TcpConnectionHeaderMessage.OperationTypes operation, string databaseName)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
             {
-                writer.WritePropertyName(nameof(TcpConnectionHeaderMessage.Operation));
-                writer.WriteString(operation.ToString());
-                writer.WriteComma();
-                writer.WritePropertyName(nameof(TcpConnectionHeaderMessage.OperationVersion));
-                writer.WriteInteger(TcpConnectionHeaderMessage.GetOperationTcpVersion(operation));
-                writer.WriteComma();
-                writer.WritePropertyName(nameof(TcpConnectionHeaderMessage.DatabaseName));
-                writer.WriteString(databaseName);
+                writer.WritePropertyNameAsync(nameof(TcpConnectionHeaderMessage.Operation));
+                writer.WriteStringAsync(operation.ToString());
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(nameof(TcpConnectionHeaderMessage.OperationVersion));
+                writer.WriteIntegerAsync(TcpConnectionHeaderMessage.GetOperationTcpVersion(operation));
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(nameof(TcpConnectionHeaderMessage.DatabaseName));
+                writer.WriteStringAsync(databaseName);
             }
-            writer.WriteEndObject();
-            writer.Flush();
+            writer.WriteEndObjectAsync();
+            writer.FlushAsync();
         }
     }
 

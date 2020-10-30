@@ -94,11 +94,11 @@ namespace FastTests.Server.Documents.Indexing.Lucene
             using (var ms = new MemoryStream())
             using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Test");
-                writer.WriteString(new string('c', 1024 * 1024));
-                writer.WriteEndObject();
-                writer.Flush();
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Test");
+                writer.WriteStringAsync(new string('c', 1024 * 1024));
+                writer.WriteEndObjectAsync();
+                writer.FlushAsync();
                 ms.Flush();
 
                 ms.Position = 0;

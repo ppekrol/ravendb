@@ -54,35 +54,35 @@ namespace Raven.Server.Documents.Indexes.Static
             var builder = IndexDefinition.ToJson();
             using (var json = context.ReadObject(builder, nameof(IndexDefinition), BlittableJsonDocumentBuilder.UsageMode.ToDisk))
             {
-                writer.WritePropertyName(nameof(IndexDefinition));
-                writer.WriteObject(json);
+                writer.WritePropertyNameAsync(nameof(IndexDefinition));
+                writer.WriteObjectAsync(json);
             }
         }
 
         protected override void PersistMapFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
-            writer.WritePropertyName(nameof(MapFields));
-            writer.WriteStartArray();
+            writer.WritePropertyNameAsync(nameof(MapFields));
+            writer.WriteStartArrayAsync();
             var first = true;
             foreach (var field in MapFields.Values.Select(x => x.As<IndexField>()))
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(field.Name));
-                writer.WriteString(field.Name);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(field.Name));
+                writer.WriteStringAsync(field.Name);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(field.Indexing));
-                writer.WriteString(field.Indexing.ToString());
+                writer.WritePropertyNameAsync(nameof(field.Indexing));
+                writer.WriteStringAsync(field.Indexing.ToString());
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
 
                 first = false;
             }
-            writer.WriteEndArray();
+            writer.WriteEndArrayAsync();
         }
 
         protected internal override IndexDefinition GetOrCreateIndexDefinitionInternal()

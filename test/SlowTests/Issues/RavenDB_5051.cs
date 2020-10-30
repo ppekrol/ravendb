@@ -83,11 +83,11 @@ namespace SlowTests.Issues
                         {
                             using (var writer = new AsyncBlittableJsonTextWriter(_context, stream))
                             {
-                                writer.WriteStartObject();
-                                writer.WritePropertyName(nameof(FormatOperation.Result.Expression));
-                                writer.WriteString(_expression);
+                                writer.WriteStartObjectAsync();
+                                writer.WritePropertyNameAsync(nameof(FormatOperation.Result.Expression));
+                                writer.WriteStringAsync(_expression);
 
-                                writer.WriteEndObject();
+                                writer.WriteEndObjectAsync();
                             }
                         })
                     };

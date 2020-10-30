@@ -382,7 +382,7 @@ namespace Raven.Server.Documents.Replication
                     };
 
                     documentsOperationContext.Write(writer, response);
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
             catch (Exception)

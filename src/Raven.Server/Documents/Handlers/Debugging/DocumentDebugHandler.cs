@@ -16,41 +16,41 @@ namespace Raven.Server.Documents.Handlers.Debugging
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Results");
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Results");
 
-                writer.WriteStartArray();
+                writer.WriteStartArrayAsync();
 
                 var isFirst = true;
 
                 foreach (var pair in context.DocumentDatabase.HugeDocuments.GetHugeDocuments())
                 {
                     if (isFirst == false)
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
 
                     isFirst = false;
 
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyName("Id");
-                    writer.WriteString(pair.Key.Item1);
+                    writer.WritePropertyNameAsync("Id");
+                    writer.WriteStringAsync(pair.Key.Item1);
 
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName("Size");
-                    writer.WriteInteger(pair.Value);
+                    writer.WritePropertyNameAsync("Size");
+                    writer.WriteIntegerAsync(pair.Value);
 
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName("LastAccess");
-                    writer.WriteString(pair.Key.Item2.ToString(DefaultFormat.DateTimeOffsetFormatsToWrite, CultureInfo.InvariantCulture));
+                    writer.WritePropertyNameAsync("LastAccess");
+                    writer.WriteStringAsync(pair.Key.Item2.ToString(DefaultFormat.DateTimeOffsetFormatsToWrite, CultureInfo.InvariantCulture));
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
 
-                writer.WriteEndArray();
+                writer.WriteEndArrayAsync();
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;

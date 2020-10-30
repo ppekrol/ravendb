@@ -34,7 +34,7 @@ namespace Raven.Server.Documents.ETL.Providers.Raven.Handlers
                         [nameof(result.DebugOutput)] = new DynamicJsonArray(result.DebugOutput)
                     };
 
-                    writer.WriteObject(context.ReadObject(djv, "et/raven/test"));
+                    writer.WriteObjectAsync(context.ReadObject(djv, "et/raven/test"));
                 }
             }
 

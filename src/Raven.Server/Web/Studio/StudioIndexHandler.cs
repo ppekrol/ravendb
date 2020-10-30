@@ -28,13 +28,13 @@ namespace Raven.Server.Web.Studio
 
                     using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartObject();
-                        writer.WritePropertyName(nameof(IndexTypeInfo.IndexType));
-                        writer.WriteString(indexType.ToString());
-                        writer.WriteComma();
-                        writer.WritePropertyName(nameof(IndexTypeInfo.IndexSourceType));
-                        writer.WriteString(indexSourceType.ToString());
-                        writer.WriteEndObject();
+                        writer.WriteStartObjectAsync();
+                        writer.WritePropertyNameAsync(nameof(IndexTypeInfo.IndexType));
+                        writer.WriteStringAsync(indexType.ToString());
+                        writer.WriteCommaAsync();
+                        writer.WritePropertyNameAsync(nameof(IndexTypeInfo.IndexSourceType));
+                        writer.WriteStringAsync(indexSourceType.ToString());
+                        writer.WriteEndObjectAsync();
                     }
                 }
             }
@@ -76,9 +76,9 @@ namespace Raven.Server.Web.Studio
 
                         using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                         {
-                            writer.WriteStartObject();
+                            writer.WriteStartObjectAsync();
                             writer.WriteArray(context, "Results", outputFields, (w, c, field) => { w.WriteString(field); });
-                            writer.WriteEndObject();
+                            writer.WriteEndObjectAsync();
                         }
                     }
                     catch (IndexCompilationException)
@@ -86,8 +86,8 @@ namespace Raven.Server.Web.Studio
                         // swallow compilation exception and return empty array as response
                         using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                         {
-                            writer.WriteStartArray();
-                            writer.WriteEndArray();
+                            writer.WriteStartArrayAsync();
+                            writer.WriteEndArrayAsync();
                         }
                     }
                 }

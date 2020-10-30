@@ -75,7 +75,7 @@ namespace Raven.Server.Documents.Handlers.Admin
                                 [nameof(ServerStore.PutRaftCommandResult.RaftCommandIndex)] = etag,
                                 [nameof(ServerStore.PutRaftCommandResult.Data)] = result,
                             });
-                            writer.Flush();
+                            writer.FlushAsync();
                         }
 
                         // now that we know that we properly serialized it
@@ -146,7 +146,7 @@ namespace Raven.Server.Documents.Handlers.Admin
                     };
 
                     context.Write(writer, json);
-                    writer.Flush();
+                    writer.FlushAsync();
                     return Task.CompletedTask;
                 }
             }
@@ -162,7 +162,7 @@ namespace Raven.Server.Documents.Handlers.Admin
             {
                 context.OpenReadTransaction();
                 context.Write(writer, ServerStore.GetLogDetails(context));
-                writer.Flush();
+                writer.FlushAsync();
             }
             return Task.CompletedTask;
         }
@@ -175,7 +175,7 @@ namespace Raven.Server.Documents.Handlers.Admin
             {
                 context.OpenReadTransaction();
                 writer.WriteArray("RachisLogHistory", ServerStore.Engine.LogHistory.GetHistoryLogs(context), context);
-                writer.Flush();
+                writer.FlushAsync();
             }
             return Task.CompletedTask;
         }
@@ -192,7 +192,7 @@ namespace Raven.Server.Documents.Handlers.Admin
                 json[nameof(ServerStore.Engine.LastStateChangeReason)] = ServerStore.LastStateChangeReason();
 
                 context.Write(writer, json);
-                writer.Flush();
+                writer.FlushAsync();
             }
 
             return Task.CompletedTask;
@@ -259,7 +259,7 @@ namespace Raven.Server.Documents.Handlers.Admin
                     json["Status"] = DynamicJsonValue.Convert(nodesStatues);
 
                     context.Write(writer, json);
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
 
@@ -279,7 +279,7 @@ namespace Raven.Server.Documents.Handlers.Admin
                 if (ServerStore.IsLeader())
                 {
                     context.Write(writer, DynamicJsonValue.Convert(ServerStore.ClusterMaintenanceSupervisor?.GetStats()));
-                    writer.Flush();
+                    writer.FlushAsync();
                     return Task.CompletedTask;
                 }
                 RedirectToLeader();

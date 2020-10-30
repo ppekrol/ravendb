@@ -231,10 +231,10 @@ namespace Raven.Server.Documents.Handlers
         {
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName(nameof(GetDocumentsResult.Results));
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync(nameof(GetDocumentsResult.Results));
                 writer.WriteDocuments(context, documentsToWrite, metadataOnly, out numberOfResults);
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
         }
 
@@ -321,15 +321,15 @@ namespace Raven.Server.Documents.Handlers
             long loadedRevisionsCount;
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Results");
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Results");
                 writer.WriteDocuments(context, revisions, metadataOnly, out loadedRevisionsCount);
 
-                writer.WriteComma();
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName("TotalResults");
-                writer.WriteInteger(count);
-                writer.WriteEndObject();
+                writer.WritePropertyNameAsync("TotalResults");
+                writer.WriteIntegerAsync(count);
+                writer.WriteEndObjectAsync();
             }
 
             AddPagingPerformanceHint(PagingOperationType.Revisions, nameof(GetRevisions), HttpContext.Request.QueryString.Value, loadedRevisionsCount, pageSize, sw.ElapsedMilliseconds);
@@ -345,11 +345,11 @@ namespace Raven.Server.Documents.Handlers
             using (context.OpenReadTransaction())
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Results");
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Results");
                 var revisions = Database.DocumentsStorage.RevisionsStorage.GetResolvedDocumentsSince(context, date, take);
                 writer.WriteDocuments(context, revisions, false, out _);
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
             return Task.CompletedTask;
         }
@@ -383,13 +383,13 @@ namespace Raven.Server.Documents.Handlers
                 long count;
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyName("Results");
+                    writer.WritePropertyNameAsync("Results");
                     var revisions = revisionsStorage.GetRevisionsBinEntries(context, etag, pageSize);
                     writer.WriteDocuments(context, revisions, false, out count);
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
 
                 AddPagingPerformanceHint(PagingOperationType.Revisions, nameof(GetRevisionsBin), HttpContext.Request.QueryString.Value, count, pageSize, sw.ElapsedMilliseconds);

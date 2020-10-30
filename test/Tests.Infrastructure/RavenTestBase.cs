@@ -583,8 +583,8 @@ namespace FastTests
             {
                 var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(total);
                 var json = context.ReadObject(djv, "errors");
-                writer.WriteObject(json);
-                writer.Flush();
+                writer.WriteObjectAsync(json);
+                writer.FlushAsync();
             }
 
             var statistics = admin.Send(new GetStatisticsOperation("wait-for-indexing", nodeTag));

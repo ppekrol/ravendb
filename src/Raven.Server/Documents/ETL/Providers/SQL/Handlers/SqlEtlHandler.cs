@@ -76,7 +76,7 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.Handlers
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(result);
-                    writer.WriteObject(context.ReadObject(djv, "et/sql/test"));
+                    writer.WriteObjectAsync(context.ReadObject(djv, "et/sql/test"));
                 }
             }
 

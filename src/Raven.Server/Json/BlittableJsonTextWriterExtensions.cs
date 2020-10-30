@@ -33,7 +33,7 @@ namespace Raven.Server.Json
     {
         public static void WritePerformanceStats(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<IndexPerformanceStats> stats)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
             writer.WriteArray(context, "Results", stats, (w, c, stat) =>
             {
                 w.WriteStartObject();
@@ -46,12 +46,12 @@ namespace Raven.Server.Json
 
                 w.WriteEndObject();
             });
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteEtlTaskPerformanceStats(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<EtlTaskPerformanceStats> stats)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
             writer.WriteArray(context, "Results", stats, (w, c, taskStats) =>
             {
                 w.WriteStartObject();
@@ -83,12 +83,12 @@ namespace Raven.Server.Json
 
                 w.WriteEndObject();
             });
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteEtlTaskProgress(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<EtlTaskProgress> progress)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
             writer.WriteArray(context, "Results", progress, (w, c, taskStats) =>
             {
                 w.WriteStartObject();
@@ -149,378 +149,378 @@ namespace Raven.Server.Json
 
                 w.WriteEndObject();
             });
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteExplanation(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, DynamicQueryToIndexMatcher.Explanation explanation)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(explanation.Index));
-            writer.WriteString(explanation.Index);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(explanation.Index));
+            writer.WriteStringAsync(explanation.Index);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(explanation.Reason));
-            writer.WriteString(explanation.Reason);
+            writer.WritePropertyNameAsync(nameof(explanation.Reason));
+            writer.WriteStringAsync(explanation.Reason);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteSuggestionQueryResult(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, SuggestionQueryResult result, out long numberOfResults)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(result.TotalResults));
-            writer.WriteInteger(result.TotalResults);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.TotalResults));
+            writer.WriteIntegerAsync(result.TotalResults);
+            writer.WriteCommaAsync();
 
             if (result.CappedMaxResults != null)
             {
-                writer.WritePropertyName(nameof(result.CappedMaxResults));
-                writer.WriteInteger(result.CappedMaxResults.Value);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(result.CappedMaxResults));
+                writer.WriteIntegerAsync(result.CappedMaxResults.Value);
+                writer.WriteCommaAsync();
             }
 
-            writer.WritePropertyName(nameof(result.DurationInMs));
-            writer.WriteInteger(result.DurationInMs);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.DurationInMs));
+            writer.WriteIntegerAsync(result.DurationInMs);
+            writer.WriteCommaAsync();
 
             writer.WriteQueryResult(context, result, metadataOnly: false, numberOfResults: out numberOfResults, partial: true);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteFacetedQueryResult(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, FacetedQueryResult result, out long numberOfResults)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(result.TotalResults));
-            writer.WriteInteger(result.TotalResults);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.TotalResults));
+            writer.WriteIntegerAsync(result.TotalResults);
+            writer.WriteCommaAsync();
 
             if (result.CappedMaxResults != null)
             {
-                writer.WritePropertyName(nameof(result.CappedMaxResults));
-                writer.WriteInteger(result.CappedMaxResults.Value);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(result.CappedMaxResults));
+                writer.WriteIntegerAsync(result.CappedMaxResults.Value);
+                writer.WriteCommaAsync();
             }
 
-            writer.WritePropertyName(nameof(result.DurationInMs));
-            writer.WriteInteger(result.DurationInMs);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.DurationInMs));
+            writer.WriteIntegerAsync(result.DurationInMs);
+            writer.WriteCommaAsync();
 
             writer.WriteQueryResult(context, result, metadataOnly: false, numberOfResults: out numberOfResults, partial: true);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteSuggestionResult(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, SuggestionResult result)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(result.Name));
-            writer.WriteString(result.Name);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.Name));
+            writer.WriteStringAsync(result.Name);
+            writer.WriteCommaAsync();
 
             writer.WriteArray(nameof(result.Suggestions), result.Suggestions);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteFacetResult(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, FacetResult result)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(result.Name));
-            writer.WriteString(result.Name);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.Name));
+            writer.WriteStringAsync(result.Name);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.Values));
-            writer.WriteStartArray();
+            writer.WritePropertyNameAsync(nameof(result.Values));
+            writer.WriteStartArrayAsync();
             var isFirstInternal = true;
             foreach (var value in result.Values)
             {
                 if (isFirstInternal == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                 isFirstInternal = false;
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(value.Name));
-                writer.WriteString(value.Name);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(value.Name));
+                writer.WriteStringAsync(value.Name);
+                writer.WriteCommaAsync();
 
                 if (value.Average.HasValue)
                 {
-                    writer.WritePropertyName(nameof(value.Average));
+                    writer.WritePropertyNameAsync(nameof(value.Average));
 
                     using (var lazyStringValue = context.GetLazyString(value.Average.ToInvariantString()))
-                        writer.WriteDouble(new LazyNumberValue(lazyStringValue));
+                        writer.WriteDoubleAsync(new LazyNumberValue(lazyStringValue));
 
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
                 }
 
                 if (value.Max.HasValue)
                 {
-                    writer.WritePropertyName(nameof(value.Max));
+                    writer.WritePropertyNameAsync(nameof(value.Max));
 
                     using (var lazyStringValue = context.GetLazyString(value.Max.ToInvariantString()))
-                        writer.WriteDouble(new LazyNumberValue(lazyStringValue));
+                        writer.WriteDoubleAsync(new LazyNumberValue(lazyStringValue));
 
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
                 }
 
                 if (value.Min.HasValue)
                 {
-                    writer.WritePropertyName(nameof(value.Min));
+                    writer.WritePropertyNameAsync(nameof(value.Min));
 
                     using (var lazyStringValue = context.GetLazyString(value.Min.ToInvariantString()))
-                        writer.WriteDouble(new LazyNumberValue(lazyStringValue));
+                        writer.WriteDoubleAsync(new LazyNumberValue(lazyStringValue));
 
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
                 }
 
                 if (value.Sum.HasValue)
                 {
-                    writer.WritePropertyName(nameof(value.Sum));
+                    writer.WritePropertyNameAsync(nameof(value.Sum));
 
                     using (var lazyStringValue = context.GetLazyString(value.Sum.ToInvariantString()))
-                        writer.WriteDouble(new LazyNumberValue(lazyStringValue));
+                        writer.WriteDoubleAsync(new LazyNumberValue(lazyStringValue));
 
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
                 }
 
-                writer.WritePropertyName(nameof(value.Count));
-                writer.WriteInteger(value.Count);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(value.Count));
+                writer.WriteIntegerAsync(value.Count);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(value.Range));
-                writer.WriteString(value.Range);
+                writer.WritePropertyNameAsync(nameof(value.Range));
+                writer.WriteStringAsync(value.Range);
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
-            writer.WriteEndArray();
-            writer.WriteComma();
+            writer.WriteEndArrayAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.RemainingHits));
-            writer.WriteInteger(result.RemainingHits);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.RemainingHits));
+            writer.WriteIntegerAsync(result.RemainingHits);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.RemainingTermsCount));
-            writer.WriteInteger(result.RemainingTermsCount);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.RemainingTermsCount));
+            writer.WriteIntegerAsync(result.RemainingTermsCount);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.RemainingTerms));
-            writer.WriteStartArray();
+            writer.WritePropertyNameAsync(nameof(result.RemainingTerms));
+            writer.WriteStartArrayAsync();
             isFirstInternal = true;
             foreach (var term in result.RemainingTerms)
             {
                 if (isFirstInternal == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                 isFirstInternal = false;
 
-                writer.WriteString(term);
+                writer.WriteStringAsync(term);
             }
-            writer.WriteEndArray();
+            writer.WriteEndArrayAsync();
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteIndexEntriesQueryResult(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IndexEntriesQueryResult result)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(result.TotalResults));
-            writer.WriteInteger(result.TotalResults);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.TotalResults));
+            writer.WriteIntegerAsync(result.TotalResults);
+            writer.WriteCommaAsync();
 
             if (result.CappedMaxResults != null)
             {
-                writer.WritePropertyName(nameof(result.CappedMaxResults));
-                writer.WriteInteger(result.CappedMaxResults.Value);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(result.CappedMaxResults));
+                writer.WriteIntegerAsync(result.CappedMaxResults.Value);
+                writer.WriteCommaAsync();
             }
 
-            writer.WritePropertyName(nameof(result.SkippedResults));
-            writer.WriteInteger(result.SkippedResults);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.SkippedResults));
+            writer.WriteIntegerAsync(result.SkippedResults);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.DurationInMs));
-            writer.WriteInteger(result.DurationInMs);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.DurationInMs));
+            writer.WriteIntegerAsync(result.DurationInMs);
+            writer.WriteCommaAsync();
 
             writer.WriteQueryResult(context, result, metadataOnly: false, numberOfResults: out long _, partial: true);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static async Task<int> WriteDocumentQueryResultAsync(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, DocumentQueryResult result, bool metadataOnly, Action<AsyncBlittableJsonTextWriter> writeAdditionalData = null)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(result.TotalResults));
-            writer.WriteInteger(result.TotalResults);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.TotalResults));
+            writer.WriteIntegerAsync(result.TotalResults);
+            writer.WriteCommaAsync();
 
             if (result.CappedMaxResults != null)
             {
-                writer.WritePropertyName(nameof(result.CappedMaxResults));
-                writer.WriteInteger(result.CappedMaxResults.Value);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(result.CappedMaxResults));
+                writer.WriteIntegerAsync(result.CappedMaxResults.Value);
+                writer.WriteCommaAsync();
             }
 
-            writer.WritePropertyName(nameof(result.SkippedResults));
-            writer.WriteInteger(result.SkippedResults);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.SkippedResults));
+            writer.WriteIntegerAsync(result.SkippedResults);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.DurationInMs));
-            writer.WriteInteger(result.DurationInMs);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.DurationInMs));
+            writer.WriteIntegerAsync(result.DurationInMs);
+            writer.WriteCommaAsync();
 
             writer.WriteArray(nameof(result.IncludedPaths), result.IncludedPaths);
-            writer.WriteComma();
+            writer.WriteCommaAsync();
 
             var numberOfResults = await writer.WriteQueryResultAsync(context, result, metadataOnly, partial: true);
 
             if (result.Highlightings != null)
             {
-                writer.WriteComma();
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(result.Highlightings));
-                writer.WriteStartObject();
+                writer.WritePropertyNameAsync(nameof(result.Highlightings));
+                writer.WriteStartObjectAsync();
                 var first = true;
                 foreach (var kvp in result.Highlightings)
                 {
                     if (first == false)
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                     first = false;
 
-                    writer.WritePropertyName(kvp.Key);
-                    writer.WriteStartObject();
+                    writer.WritePropertyNameAsync(kvp.Key);
+                    writer.WriteStartObjectAsync();
                     var firstInner = true;
                     foreach (var kvpInner in kvp.Value)
                     {
                         if (firstInner == false)
-                            writer.WriteComma();
+                            writer.WriteCommaAsync();
                         firstInner = false;
 
                         writer.WriteArray(kvpInner.Key, kvpInner.Value);
                     }
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             if (result.Explanations != null)
             {
-                writer.WriteComma();
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(result.Explanations));
-                writer.WriteStartObject();
+                writer.WritePropertyNameAsync(nameof(result.Explanations));
+                writer.WriteStartObjectAsync();
                 var first = true;
                 foreach (var kvp in result.Explanations)
                 {
                     if (first == false)
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                     first = false;
 
                     writer.WriteArray(kvp.Key, kvp.Value);
                 }
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             var counters = result.GetCounterIncludes();
             if (counters != null)
             {
-                writer.WriteComma();
-                writer.WritePropertyName(nameof(result.CounterIncludes));
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(nameof(result.CounterIncludes));
                 await writer.WriteCountersAsync(counters);
 
-                writer.WriteComma();
-                writer.WritePropertyName(nameof(result.IncludedCounterNames));
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(nameof(result.IncludedCounterNames));
                 writer.WriteIncludedCounterNames(result.IncludedCounterNames);
             }
 
             var timeSeries = result.GetTimeSeriesIncludes();
             if (timeSeries != null)
             {
-                writer.WriteComma();
-                writer.WritePropertyName(nameof(result.TimeSeriesIncludes));
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(nameof(result.TimeSeriesIncludes));
                 await writer.WriteTimeSeriesAsync(timeSeries);
             }
 
             var compareExchangeValues = result.GetCompareExchangeValueIncludes();
             if (compareExchangeValues != null)
             {
-                writer.WriteComma();
-                writer.WritePropertyName(nameof(result.CompareExchangeValueIncludes));
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(nameof(result.CompareExchangeValueIncludes));
                 await writer.WriteCompareExchangeValues(compareExchangeValues);
             }
 
             writeAdditionalData?.Invoke(writer);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
             return numberOfResults;
         }
 
         public static void WriteIncludedCounterNames(this AbstractBlittableJsonTextWriter writer, Dictionary<string, string[]> includedCounterNames)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
             var first = true;
             foreach (var kvp in includedCounterNames)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                 first = false;
 
                 writer.WriteArray(kvp.Key, kvp.Value);
             }
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteQueryResult<TResult, TInclude>(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, QueryResultBase<TResult, TInclude> result, bool metadataOnly, out long numberOfResults, bool partial = false)
         {
             if (partial == false)
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(result.IndexName));
-            writer.WriteString(result.IndexName);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.IndexName));
+            writer.WriteStringAsync(result.IndexName);
+            writer.WriteCommaAsync();
 
             var results = (object)result.Results;
             if (results is List<Document> documents)
             {
-                writer.WritePropertyName(nameof(result.Results));
+                writer.WritePropertyNameAsync(nameof(result.Results));
                 writer.WriteDocuments(context, documents, metadataOnly, out numberOfResults);
-                writer.WriteComma();
+                writer.WriteCommaAsync();
             }
             else if (results is List<BlittableJsonReaderObject> objects)
             {
-                writer.WritePropertyName(nameof(result.Results));
+                writer.WritePropertyNameAsync(nameof(result.Results));
                 writer.WriteObjects(context, objects, out numberOfResults);
-                writer.WriteComma();
+                writer.WriteCommaAsync();
             }
             else if (results is List<FacetResult> facets)
             {
                 numberOfResults = facets.Count;
 
                 writer.WriteArray(context, nameof(result.Results), facets, (w, c, facet) => w.WriteFacetResult(c, facet));
-                writer.WriteComma();
+                writer.WriteCommaAsync();
             }
             else if (results is List<SuggestionResult> suggestions)
             {
                 numberOfResults = suggestions.Count;
 
                 writer.WriteArray(context, nameof(result.Results), suggestions, (w, c, suggestion) => w.WriteSuggestionResult(c, suggestion));
-                writer.WriteComma();
+                writer.WriteCommaAsync();
             }
             else
                 throw new NotSupportedException($"Cannot write query result of '{typeof(TResult)}' type in '{result.GetType()}'.");
@@ -528,44 +528,44 @@ namespace Raven.Server.Json
             var includes = (object)result.Includes;
             if (includes is List<Document> includeDocuments)
             {
-                writer.WritePropertyName(nameof(result.Includes));
+                writer.WritePropertyNameAsync(nameof(result.Includes));
                 writer.WriteIncludes(context, includeDocuments);
-                writer.WriteComma();
+                writer.WriteCommaAsync();
             }
             else if (includes is List<BlittableJsonReaderObject> includeObjects)
             {
                 if (includeObjects.Count != 0)
                     throw new NotSupportedException("Cannot write query includes of List<BlittableJsonReaderObject>, but got non zero response");
 
-                writer.WritePropertyName(nameof(result.Includes));
-                writer.WriteStartObject();
-                writer.WriteEndObject();
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(result.Includes));
+                writer.WriteStartObjectAsync();
+                writer.WriteEndObjectAsync();
+                writer.WriteCommaAsync();
             }
             else
                 throw new NotSupportedException($"Cannot write query includes of '{typeof(TInclude)}' type in '{result.GetType()}'.");
 
-            writer.WritePropertyName(nameof(result.IndexTimestamp));
-            writer.WriteString(result.IndexTimestamp.ToString(DefaultFormat.DateTimeFormatsToWrite));
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.IndexTimestamp));
+            writer.WriteStringAsync(result.IndexTimestamp.ToString(DefaultFormat.DateTimeFormatsToWrite));
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.LastQueryTime));
-            writer.WriteString(result.LastQueryTime.ToString(DefaultFormat.DateTimeFormatsToWrite));
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.LastQueryTime));
+            writer.WriteStringAsync(result.LastQueryTime.ToString(DefaultFormat.DateTimeFormatsToWrite));
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.IsStale));
+            writer.WritePropertyNameAsync(nameof(result.IsStale));
             writer.WriteBool(result.IsStale);
-            writer.WriteComma();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.ResultEtag));
-            writer.WriteInteger(result.ResultEtag);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.ResultEtag));
+            writer.WriteIntegerAsync(result.ResultEtag);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.NodeTag));
-            writer.WriteString(result.NodeTag);
+            writer.WritePropertyNameAsync(nameof(result.NodeTag));
+            writer.WriteStringAsync(result.NodeTag);
 
             if (partial == false)
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
         }
 
         public static async Task<int> WriteQueryResultAsync<TResult>(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, QueryResultServerSide<TResult> result, bool metadataOnly, bool partial = false)
@@ -573,31 +573,31 @@ namespace Raven.Server.Json
             int numberOfResults;
 
             if (partial == false)
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(result.IndexName));
-            writer.WriteString(result.IndexName);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.IndexName));
+            writer.WriteStringAsync(result.IndexName);
+            writer.WriteCommaAsync();
 
             var results = (object)result.Results;
             if (results is List<Document> documents)
             {
-                writer.WritePropertyName(nameof(result.Results));
+                writer.WritePropertyNameAsync(nameof(result.Results));
                 numberOfResults = await writer.WriteDocumentsAsync(context, documents, metadataOnly);
-                writer.WriteComma();
+                writer.WriteCommaAsync();
             }
             else if (results is List<BlittableJsonReaderObject> objects)
             {
-                writer.WritePropertyName(nameof(result.Results));
+                writer.WritePropertyNameAsync(nameof(result.Results));
                 numberOfResults = await writer.WriteObjectsAsync(context, objects);
-                writer.WriteComma();
+                writer.WriteCommaAsync();
             }
             else if (results is List<FacetResult> facets)
             {
                 numberOfResults = facets.Count;
 
                 writer.WriteArray(context, nameof(result.Results), facets, (w, c, facet) => w.WriteFacetResult(c, facet));
-                writer.WriteComma();
+                writer.WriteCommaAsync();
                 await writer.MaybeOuterFlushAsync();
             }
             else if (results is List<SuggestionResult> suggestions)
@@ -605,7 +605,7 @@ namespace Raven.Server.Json
                 numberOfResults = suggestions.Count;
 
                 writer.WriteArray(context, nameof(result.Results), suggestions, (w, c, suggestion) => w.WriteSuggestionResult(c, suggestion));
-                writer.WriteComma();
+                writer.WriteCommaAsync();
                 await writer.MaybeOuterFlushAsync();
             }
             else
@@ -614,121 +614,121 @@ namespace Raven.Server.Json
             var includes = (object)result.Includes;
             if (includes is List<Document> includeDocuments)
             {
-                writer.WritePropertyName(nameof(result.Includes));
+                writer.WritePropertyNameAsync(nameof(result.Includes));
                 await writer.WriteIncludesAsync(context, includeDocuments);
-                writer.WriteComma();
+                writer.WriteCommaAsync();
             }
             else if (includes is List<BlittableJsonReaderObject> includeObjects)
             {
                 if (includeObjects.Count != 0)
                     throw new NotSupportedException("Cannot write query includes of List<BlittableJsonReaderObject>, but got non zero response");
 
-                writer.WritePropertyName(nameof(result.Includes));
-                writer.WriteStartObject();
-                writer.WriteEndObject();
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(result.Includes));
+                writer.WriteStartObjectAsync();
+                writer.WriteEndObjectAsync();
+                writer.WriteCommaAsync();
             }
             else
                 throw new NotSupportedException($"Cannot write query includes of '{includes.GetType()}' type in '{result.GetType()}'.");
 
-            writer.WritePropertyName(nameof(result.IndexTimestamp));
-            writer.WriteString(result.IndexTimestamp.ToString(DefaultFormat.DateTimeFormatsToWrite));
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.IndexTimestamp));
+            writer.WriteStringAsync(result.IndexTimestamp.ToString(DefaultFormat.DateTimeFormatsToWrite));
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.LastQueryTime));
-            writer.WriteString(result.LastQueryTime.ToString(DefaultFormat.DateTimeFormatsToWrite));
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.LastQueryTime));
+            writer.WriteStringAsync(result.LastQueryTime.ToString(DefaultFormat.DateTimeFormatsToWrite));
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.IsStale));
+            writer.WritePropertyNameAsync(nameof(result.IsStale));
             writer.WriteBool(result.IsStale);
-            writer.WriteComma();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.ResultEtag));
-            writer.WriteInteger(result.ResultEtag);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(result.ResultEtag));
+            writer.WriteIntegerAsync(result.ResultEtag);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(result.NodeTag));
-            writer.WriteString(result.NodeTag);
+            writer.WritePropertyNameAsync(nameof(result.NodeTag));
+            writer.WriteStringAsync(result.NodeTag);
 
             if (result.Timings != null)
             {
-                writer.WriteComma();
-                writer.WritePropertyName(nameof(result.Timings));
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(nameof(result.Timings));
                 writer.WriteQueryTimings(context, result.Timings);
             }
 
             if (result.TimeSeriesFields != null)
             {
-                writer.WriteComma();
+                writer.WriteCommaAsync();
                 writer.WriteArray(nameof(result.TimeSeriesFields), result.TimeSeriesFields);
             }
 
             if (partial == false)
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
 
             return numberOfResults;
         }
 
         public static void WriteQueryTimings(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, QueryTimings queryTimings)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(QueryTimings.DurationInMs));
-            writer.WriteInteger(queryTimings.DurationInMs);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(QueryTimings.DurationInMs));
+            writer.WriteIntegerAsync(queryTimings.DurationInMs);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(QueryTimings.Timings));
+            writer.WritePropertyNameAsync(nameof(QueryTimings.Timings));
             if (queryTimings.Timings != null)
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
                 var first = true;
 
                 foreach (var kvp in queryTimings.Timings)
                 {
                     if (first == false)
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
 
                     first = false;
 
-                    writer.WritePropertyName(kvp.Key);
+                    writer.WritePropertyNameAsync(kvp.Key);
                     writer.WriteQueryTimings(context, kvp.Value);
                 }
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
             else
-                writer.WriteNull();
+                writer.WriteNullAsync();
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteTermsQueryResult(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, TermsQueryResultServerSide queryResult)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(queryResult.IndexName));
-            writer.WriteString(queryResult.IndexName);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(queryResult.IndexName));
+            writer.WriteStringAsync(queryResult.IndexName);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(queryResult.ResultEtag));
-            writer.WriteInteger(queryResult.ResultEtag);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(queryResult.ResultEtag));
+            writer.WriteIntegerAsync(queryResult.ResultEtag);
+            writer.WriteCommaAsync();
 
             writer.WriteArray(nameof(queryResult.Terms), queryResult.Terms);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteIndexingPerformanceStats(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IndexingPerformanceStats stats)
         {
             var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(stats);
-            writer.WriteObject(context.ReadObject(djv, "index/performance"));
+            writer.WriteObjectAsync(context.ReadObject(djv, "index/performance"));
         }
 
         public static void WriteEtlPerformanceStats(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, EtlPerformanceStats stats)
         {
             var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(stats);
-            writer.WriteObject(context.ReadObject(djv, "etl/performance"));
+            writer.WriteObjectAsync(context.ReadObject(djv, "etl/performance"));
         }
 
         public static void WriteIndexQuery(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IIndexQuery query)
@@ -745,315 +745,315 @@ namespace Raven.Server.Json
 
         private static void WriteIndexQuery(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IndexQueryServerSide query)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(query.PageSize));
-            writer.WriteInteger(query.PageSize);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(query.PageSize));
+            writer.WriteIntegerAsync(query.PageSize);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(query.Query));
+            writer.WritePropertyNameAsync(nameof(query.Query));
             if (query.Query != null)
-                writer.WriteString(query.Query);
+                writer.WriteStringAsync(query.Query);
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(query.SkipDuplicateChecking));
+            writer.WritePropertyNameAsync(nameof(query.SkipDuplicateChecking));
             writer.WriteBool(query.SkipDuplicateChecking);
-            writer.WriteComma();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(query.Start));
-            writer.WriteInteger(query.Start);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(query.Start));
+            writer.WriteIntegerAsync(query.Start);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(query.WaitForNonStaleResults));
+            writer.WritePropertyNameAsync(nameof(query.WaitForNonStaleResults));
             writer.WriteBool(query.WaitForNonStaleResults);
-            writer.WriteComma();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(query.WaitForNonStaleResultsTimeout));
+            writer.WritePropertyNameAsync(nameof(query.WaitForNonStaleResultsTimeout));
             if (query.WaitForNonStaleResultsTimeout.HasValue)
-                writer.WriteString(query.WaitForNonStaleResultsTimeout.Value.ToString());
+                writer.WriteStringAsync(query.WaitForNonStaleResultsTimeout.Value.ToString());
             else
-                writer.WriteNull();
+                writer.WriteNullAsync();
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteDetailedDatabaseStatistics(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, DetailedDatabaseStatistics statistics)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(statistics.CountOfIdentities));
-            writer.WriteInteger(statistics.CountOfIdentities);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.CountOfIdentities));
+            writer.WriteIntegerAsync(statistics.CountOfIdentities);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.CountOfCompareExchange));
-            writer.WriteInteger(statistics.CountOfCompareExchange);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.CountOfCompareExchange));
+            writer.WriteIntegerAsync(statistics.CountOfCompareExchange);
+            writer.WriteCommaAsync();
 
             WriteDatabaseStatisticsInternal(writer, statistics);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteDatabaseStatistics(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, DatabaseStatistics statistics)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
             WriteDatabaseStatisticsInternal(writer, statistics);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         private static void WriteDatabaseStatisticsInternal(AsyncBlittableJsonTextWriter writer, DatabaseStatistics statistics)
         {
-            writer.WritePropertyName(nameof(statistics.CountOfIndexes));
-            writer.WriteInteger(statistics.CountOfIndexes);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.CountOfIndexes));
+            writer.WriteIntegerAsync(statistics.CountOfIndexes);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.CountOfDocuments));
-            writer.WriteInteger(statistics.CountOfDocuments);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.CountOfDocuments));
+            writer.WriteIntegerAsync(statistics.CountOfDocuments);
+            writer.WriteCommaAsync();
 
             if (statistics.CountOfRevisionDocuments > 0)
             {
-                writer.WritePropertyName(nameof(statistics.CountOfRevisionDocuments));
-                writer.WriteInteger(statistics.CountOfRevisionDocuments);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(statistics.CountOfRevisionDocuments));
+                writer.WriteIntegerAsync(statistics.CountOfRevisionDocuments);
+                writer.WriteCommaAsync();
             }
 
-            writer.WritePropertyName(nameof(statistics.CountOfTombstones));
-            writer.WriteInteger(statistics.CountOfTombstones);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.CountOfTombstones));
+            writer.WriteIntegerAsync(statistics.CountOfTombstones);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.CountOfDocumentsConflicts));
-            writer.WriteInteger(statistics.CountOfDocumentsConflicts);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.CountOfDocumentsConflicts));
+            writer.WriteIntegerAsync(statistics.CountOfDocumentsConflicts);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.CountOfConflicts));
-            writer.WriteInteger(statistics.CountOfConflicts);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.CountOfConflicts));
+            writer.WriteIntegerAsync(statistics.CountOfConflicts);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.CountOfAttachments));
-            writer.WriteInteger(statistics.CountOfAttachments);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.CountOfAttachments));
+            writer.WriteIntegerAsync(statistics.CountOfAttachments);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.CountOfCounterEntries));
-            writer.WriteInteger(statistics.CountOfCounterEntries);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.CountOfCounterEntries));
+            writer.WriteIntegerAsync(statistics.CountOfCounterEntries);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.CountOfTimeSeriesSegments));
-            writer.WriteInteger(statistics.CountOfTimeSeriesSegments);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.CountOfTimeSeriesSegments));
+            writer.WriteIntegerAsync(statistics.CountOfTimeSeriesSegments);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.CountOfUniqueAttachments));
-            writer.WriteInteger(statistics.CountOfUniqueAttachments);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.CountOfUniqueAttachments));
+            writer.WriteIntegerAsync(statistics.CountOfUniqueAttachments);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.DatabaseChangeVector));
-            writer.WriteString(statistics.DatabaseChangeVector);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.DatabaseChangeVector));
+            writer.WriteStringAsync(statistics.DatabaseChangeVector);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.DatabaseId));
-            writer.WriteString(statistics.DatabaseId);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.DatabaseId));
+            writer.WriteStringAsync(statistics.DatabaseId);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.NumberOfTransactionMergerQueueOperations));
-            writer.WriteInteger(statistics.NumberOfTransactionMergerQueueOperations);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.NumberOfTransactionMergerQueueOperations));
+            writer.WriteIntegerAsync(statistics.NumberOfTransactionMergerQueueOperations);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.Is64Bit));
+            writer.WritePropertyNameAsync(nameof(statistics.Is64Bit));
             writer.WriteBool(statistics.Is64Bit);
-            writer.WriteComma();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.Pager));
-            writer.WriteString(statistics.Pager);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.Pager));
+            writer.WriteStringAsync(statistics.Pager);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.LastDocEtag));
+            writer.WritePropertyNameAsync(nameof(statistics.LastDocEtag));
             if (statistics.LastDocEtag.HasValue)
-                writer.WriteInteger(statistics.LastDocEtag.Value);
+                writer.WriteIntegerAsync(statistics.LastDocEtag.Value);
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.LastDatabaseEtag));
+            writer.WritePropertyNameAsync(nameof(statistics.LastDatabaseEtag));
             if (statistics.LastDatabaseEtag.HasValue)
-                writer.WriteInteger(statistics.LastDatabaseEtag.Value);
+                writer.WriteIntegerAsync(statistics.LastDatabaseEtag.Value);
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName((nameof(statistics.DatabaseChangeVector)));
-            writer.WriteString(statistics.DatabaseChangeVector);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync((nameof(statistics.DatabaseChangeVector)));
+            writer.WriteStringAsync(statistics.DatabaseChangeVector);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.LastIndexingTime));
+            writer.WritePropertyNameAsync(nameof(statistics.LastIndexingTime));
             if (statistics.LastIndexingTime.HasValue)
-                writer.WriteDateTime(statistics.LastIndexingTime.Value, isUtc: true);
+                writer.WriteDateTimeAsync(statistics.LastIndexingTime.Value, isUtc: true);
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.SizeOnDisk));
-            writer.WriteStartObject();
+            writer.WritePropertyNameAsync(nameof(statistics.SizeOnDisk));
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(statistics.SizeOnDisk.HumaneSize));
-            writer.WriteString(statistics.SizeOnDisk.HumaneSize);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.SizeOnDisk.HumaneSize));
+            writer.WriteStringAsync(statistics.SizeOnDisk.HumaneSize);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.SizeOnDisk.SizeInBytes));
-            writer.WriteInteger(statistics.SizeOnDisk.SizeInBytes);
+            writer.WritePropertyNameAsync(nameof(statistics.SizeOnDisk.SizeInBytes));
+            writer.WriteIntegerAsync(statistics.SizeOnDisk.SizeInBytes);
 
-            writer.WriteEndObject();
-            writer.WriteComma();
+            writer.WriteEndObjectAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.TempBuffersSizeOnDisk));
-            writer.WriteStartObject();
+            writer.WritePropertyNameAsync(nameof(statistics.TempBuffersSizeOnDisk));
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(statistics.TempBuffersSizeOnDisk.HumaneSize));
-            writer.WriteString(statistics.TempBuffersSizeOnDisk.HumaneSize);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(statistics.TempBuffersSizeOnDisk.HumaneSize));
+            writer.WriteStringAsync(statistics.TempBuffersSizeOnDisk.HumaneSize);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.TempBuffersSizeOnDisk.SizeInBytes));
-            writer.WriteInteger(statistics.TempBuffersSizeOnDisk.SizeInBytes);
+            writer.WritePropertyNameAsync(nameof(statistics.TempBuffersSizeOnDisk.SizeInBytes));
+            writer.WriteIntegerAsync(statistics.TempBuffersSizeOnDisk.SizeInBytes);
 
-            writer.WriteEndObject();
-            writer.WriteComma();
+            writer.WriteEndObjectAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(statistics.Indexes));
-            writer.WriteStartArray();
+            writer.WritePropertyNameAsync(nameof(statistics.Indexes));
+            writer.WriteStartArrayAsync();
             var isFirstInternal = true;
             foreach (var index in statistics.Indexes)
             {
                 if (isFirstInternal == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                 isFirstInternal = false;
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(index.IsStale));
+                writer.WritePropertyNameAsync(nameof(index.IsStale));
                 writer.WriteBool(index.IsStale);
-                writer.WriteComma();
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(index.Name));
-                writer.WriteString(index.Name);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(index.Name));
+                writer.WriteStringAsync(index.Name);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(index.LockMode));
-                writer.WriteString(index.LockMode.ToString());
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(index.LockMode));
+                writer.WriteStringAsync(index.LockMode.ToString());
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(index.Priority));
-                writer.WriteString(index.Priority.ToString());
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(index.Priority));
+                writer.WriteStringAsync(index.Priority.ToString());
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(index.State));
-                writer.WriteString(index.State.ToString());
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(index.State));
+                writer.WriteStringAsync(index.State.ToString());
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(index.Type));
-                writer.WriteString(index.Type.ToString());
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(index.Type));
+                writer.WriteStringAsync(index.Type.ToString());
+                writer.WriteCommaAsync();
                 
-                writer.WritePropertyName(nameof(index.SourceType));
-                writer.WriteString(index.SourceType.ToString());
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(index.SourceType));
+                writer.WriteStringAsync(index.SourceType.ToString());
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(index.LastIndexingTime));
+                writer.WritePropertyNameAsync(nameof(index.LastIndexingTime));
                 if (index.LastIndexingTime.HasValue)
-                    writer.WriteDateTime(index.LastIndexingTime.Value, isUtc: true);
+                    writer.WriteDateTimeAsync(index.LastIndexingTime.Value, isUtc: true);
                 else
-                    writer.WriteNull();
+                    writer.WriteNullAsync();
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
-            writer.WriteEndArray();
+            writer.WriteEndArrayAsync();
         }
 
         public static void WriteIndexDefinition(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IndexDefinition indexDefinition, bool removeAnalyzers = false)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(indexDefinition.Name));
-            writer.WriteString(indexDefinition.Name);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(indexDefinition.Name));
+            writer.WriteStringAsync(indexDefinition.Name);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(indexDefinition.SourceType));
-            writer.WriteString(indexDefinition.SourceType.ToString());
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(indexDefinition.SourceType));
+            writer.WriteStringAsync(indexDefinition.SourceType.ToString());
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(indexDefinition.Type));
-            writer.WriteString(indexDefinition.Type.ToString());
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(indexDefinition.Type));
+            writer.WriteStringAsync(indexDefinition.Type.ToString());
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(indexDefinition.LockMode));
+            writer.WritePropertyNameAsync(nameof(indexDefinition.LockMode));
             if (indexDefinition.LockMode.HasValue)
-                writer.WriteString(indexDefinition.LockMode.ToString());
+                writer.WriteStringAsync(indexDefinition.LockMode.ToString());
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(indexDefinition.Priority));
+            writer.WritePropertyNameAsync(nameof(indexDefinition.Priority));
             if (indexDefinition.Priority.HasValue)
-                writer.WriteString(indexDefinition.Priority.ToString());
+                writer.WriteStringAsync(indexDefinition.Priority.ToString());
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(indexDefinition.OutputReduceToCollection));
-            writer.WriteString(indexDefinition.OutputReduceToCollection);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(indexDefinition.OutputReduceToCollection));
+            writer.WriteStringAsync(indexDefinition.OutputReduceToCollection);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(indexDefinition.ReduceOutputIndex));
+            writer.WritePropertyNameAsync(nameof(indexDefinition.ReduceOutputIndex));
 
             if (indexDefinition.ReduceOutputIndex.HasValue)
-                writer.WriteInteger(indexDefinition.ReduceOutputIndex.Value);
+                writer.WriteIntegerAsync(indexDefinition.ReduceOutputIndex.Value);
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(indexDefinition.PatternForOutputReduceToCollectionReferences));
-            writer.WriteString(indexDefinition.PatternForOutputReduceToCollectionReferences);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(indexDefinition.PatternForOutputReduceToCollectionReferences));
+            writer.WriteStringAsync(indexDefinition.PatternForOutputReduceToCollectionReferences);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(indexDefinition.PatternReferencesCollectionName));
-            writer.WriteString(indexDefinition.PatternReferencesCollectionName);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(indexDefinition.PatternReferencesCollectionName));
+            writer.WriteStringAsync(indexDefinition.PatternReferencesCollectionName);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(indexDefinition.Configuration));
-            writer.WriteStartObject();
+            writer.WritePropertyNameAsync(nameof(indexDefinition.Configuration));
+            writer.WriteStartObjectAsync();
             var isFirstInternal = true;
             foreach (var kvp in indexDefinition.Configuration)
             {
                 if (isFirstInternal == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                 isFirstInternal = false;
 
-                writer.WritePropertyName(kvp.Key);
-                writer.WriteString(kvp.Value);
+                writer.WritePropertyNameAsync(kvp.Key);
+                writer.WriteStringAsync(kvp.Value);
             }
-            writer.WriteEndObject();
-            writer.WriteComma();
+            writer.WriteEndObjectAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(indexDefinition.AdditionalSources));
-            writer.WriteStartObject();
+            writer.WritePropertyNameAsync(nameof(indexDefinition.AdditionalSources));
+            writer.WriteStartObjectAsync();
             isFirstInternal = true;
             foreach (var kvp in indexDefinition.AdditionalSources)
             {
                 if (isFirstInternal == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                 isFirstInternal = false;
 
-                writer.WritePropertyName(kvp.Key);
-                writer.WriteString(kvp.Value);
+                writer.WritePropertyNameAsync(kvp.Key);
+                writer.WriteStringAsync(kvp.Value);
             }
-            writer.WriteEndObject();
-            writer.WriteComma();
+            writer.WriteEndObjectAsync();
+            writer.WriteCommaAsync();
 
 #if FEATURE_TEST_INDEX
             writer.WritePropertyName(nameof(indexDefinition.IsTestIndex));
@@ -1061,219 +1061,219 @@ namespace Raven.Server.Json
             writer.WriteComma();
 #endif
 
-            writer.WritePropertyName(nameof(indexDefinition.Reduce));
+            writer.WritePropertyNameAsync(nameof(indexDefinition.Reduce));
             if (string.IsNullOrWhiteSpace(indexDefinition.Reduce) == false)
-                writer.WriteString(indexDefinition.Reduce);
+                writer.WriteStringAsync(indexDefinition.Reduce);
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(indexDefinition.Maps));
-            writer.WriteStartArray();
+            writer.WritePropertyNameAsync(nameof(indexDefinition.Maps));
+            writer.WriteStartArrayAsync();
             isFirstInternal = true;
             foreach (var map in indexDefinition.Maps)
             {
                 if (isFirstInternal == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                 isFirstInternal = false;
-                writer.WriteString(map);
+                writer.WriteStringAsync(map);
             }
-            writer.WriteEndArray();
-            writer.WriteComma();
+            writer.WriteEndArrayAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(indexDefinition.Fields));
-            writer.WriteStartObject();
+            writer.WritePropertyNameAsync(nameof(indexDefinition.Fields));
+            writer.WriteStartObjectAsync();
             isFirstInternal = true;
             foreach (var kvp in indexDefinition.Fields)
             {
                 if (isFirstInternal == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                 isFirstInternal = false;
-                writer.WritePropertyName(kvp.Key);
+                writer.WritePropertyNameAsync(kvp.Key);
                 if (kvp.Value != null)
                     writer.WriteIndexFieldOptions(context, kvp.Value, removeAnalyzers);
                 else
-                    writer.WriteNull();
+                    writer.WriteNullAsync();
             }
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteIndexProgress(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IndexProgress progress)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(progress.IsStale));
+            writer.WritePropertyNameAsync(nameof(progress.IsStale));
             writer.WriteBool(progress.IsStale);
-            writer.WriteComma();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(progress.IndexRunningStatus));
-            writer.WriteString(progress.IndexRunningStatus.ToString());
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(progress.IndexRunningStatus));
+            writer.WriteStringAsync(progress.IndexRunningStatus.ToString());
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(progress.ProcessedPerSecond));
-            writer.WriteDouble(progress.ProcessedPerSecond);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(progress.ProcessedPerSecond));
+            writer.WriteDoubleAsync(progress.ProcessedPerSecond);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(progress.Collections));
+            writer.WritePropertyNameAsync(nameof(progress.Collections));
             if (progress.Collections == null)
             {
-                writer.WriteNull();
+                writer.WriteNullAsync();
             }
             else
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
                 var isFirst = true;
                 foreach (var kvp in progress.Collections)
                 {
                     if (isFirst == false)
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
 
                     isFirst = false;
 
-                    writer.WritePropertyName(kvp.Key);
+                    writer.WritePropertyNameAsync(kvp.Key);
 
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyName(nameof(kvp.Value.LastProcessedDocumentEtag));
-                    writer.WriteInteger(kvp.Value.LastProcessedDocumentEtag);
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync(nameof(kvp.Value.LastProcessedDocumentEtag));
+                    writer.WriteIntegerAsync(kvp.Value.LastProcessedDocumentEtag);
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName(nameof(kvp.Value.LastProcessedTombstoneEtag));
-                    writer.WriteInteger(kvp.Value.LastProcessedTombstoneEtag);
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync(nameof(kvp.Value.LastProcessedTombstoneEtag));
+                    writer.WriteIntegerAsync(kvp.Value.LastProcessedTombstoneEtag);
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName(nameof(kvp.Value.NumberOfDocumentsToProcess));
-                    writer.WriteInteger(kvp.Value.NumberOfDocumentsToProcess);
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync(nameof(kvp.Value.NumberOfDocumentsToProcess));
+                    writer.WriteIntegerAsync(kvp.Value.NumberOfDocumentsToProcess);
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName(nameof(kvp.Value.NumberOfTombstonesToProcess));
-                    writer.WriteInteger(kvp.Value.NumberOfTombstonesToProcess);
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync(nameof(kvp.Value.NumberOfTombstonesToProcess));
+                    writer.WriteIntegerAsync(kvp.Value.NumberOfTombstonesToProcess);
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName(nameof(kvp.Value.TotalNumberOfDocuments));
-                    writer.WriteInteger(kvp.Value.TotalNumberOfDocuments);
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync(nameof(kvp.Value.TotalNumberOfDocuments));
+                    writer.WriteIntegerAsync(kvp.Value.TotalNumberOfDocuments);
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName(nameof(kvp.Value.TotalNumberOfTombstones));
-                    writer.WriteInteger(kvp.Value.TotalNumberOfTombstones);
+                    writer.WritePropertyNameAsync(nameof(kvp.Value.TotalNumberOfTombstones));
+                    writer.WriteIntegerAsync(kvp.Value.TotalNumberOfTombstones);
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
-            writer.WriteComma();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(progress.Name));
-            writer.WriteString(progress.Name);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(progress.Name));
+            writer.WriteStringAsync(progress.Name);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(progress.Type));
-            writer.WriteString(progress.Type.ToString());
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(progress.Type));
+            writer.WriteStringAsync(progress.Type.ToString());
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(progress.SourceType));
-            writer.WriteString(progress.SourceType.ToString());
+            writer.WritePropertyNameAsync(nameof(progress.SourceType));
+            writer.WriteStringAsync(progress.SourceType.ToString());
             
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteIndexStats(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IndexStats stats)
         {
             var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(stats);
-            writer.WriteObject(context.ReadObject(djv, "index/stats"));
+            writer.WriteObjectAsync(context.ReadObject(djv, "index/stats"));
         }
 
         private static void WriteIndexFieldOptions(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IndexFieldOptions options, bool removeAnalyzers)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(options.Analyzer));
+            writer.WritePropertyNameAsync(nameof(options.Analyzer));
             if (string.IsNullOrWhiteSpace(options.Analyzer) == false && !removeAnalyzers)
-                writer.WriteString(options.Analyzer);
+                writer.WriteStringAsync(options.Analyzer);
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(options.Indexing));
+            writer.WritePropertyNameAsync(nameof(options.Indexing));
             if (options.Indexing.HasValue)
-                writer.WriteString(options.Indexing.ToString());
+                writer.WriteStringAsync(options.Indexing.ToString());
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(options.Storage));
+            writer.WritePropertyNameAsync(nameof(options.Storage));
             if (options.Storage.HasValue)
-                writer.WriteString(options.Storage.ToString());
+                writer.WriteStringAsync(options.Storage.ToString());
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(options.Suggestions));
+            writer.WritePropertyNameAsync(nameof(options.Suggestions));
             if (options.Suggestions.HasValue)
                 writer.WriteBool(options.Suggestions.Value);
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(options.TermVector));
+            writer.WritePropertyNameAsync(nameof(options.TermVector));
             if (options.TermVector.HasValue)
-                writer.WriteString(options.TermVector.ToString());
+                writer.WriteStringAsync(options.TermVector.ToString());
             else
-                writer.WriteNull();
-            writer.WriteComma();
+                writer.WriteNullAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(options.Spatial));
+            writer.WritePropertyNameAsync(nameof(options.Spatial));
             if (options.Spatial != null)
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(options.Spatial.Type));
-                writer.WriteString(options.Spatial.Type.ToString());
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(options.Spatial.Type));
+                writer.WriteStringAsync(options.Spatial.Type.ToString());
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(options.Spatial.MaxTreeLevel));
-                writer.WriteInteger(options.Spatial.MaxTreeLevel);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(options.Spatial.MaxTreeLevel));
+                writer.WriteIntegerAsync(options.Spatial.MaxTreeLevel);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(options.Spatial.MaxX));
+                writer.WritePropertyNameAsync(nameof(options.Spatial.MaxX));
                 LazyStringValue lazyStringValue;
                 using (lazyStringValue = context.GetLazyString(CharExtensions.ToInvariantString(options.Spatial.MaxX)))
-                    writer.WriteDouble(new LazyNumberValue(lazyStringValue));
-                writer.WriteComma();
+                    writer.WriteDoubleAsync(new LazyNumberValue(lazyStringValue));
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(options.Spatial.MaxY));
+                writer.WritePropertyNameAsync(nameof(options.Spatial.MaxY));
                 using (lazyStringValue = context.GetLazyString(CharExtensions.ToInvariantString(options.Spatial.MaxY)))
-                    writer.WriteDouble(new LazyNumberValue(lazyStringValue));
-                writer.WriteComma();
+                    writer.WriteDoubleAsync(new LazyNumberValue(lazyStringValue));
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(options.Spatial.MinX));
+                writer.WritePropertyNameAsync(nameof(options.Spatial.MinX));
                 using (lazyStringValue = context.GetLazyString(CharExtensions.ToInvariantString(options.Spatial.MinX)))
-                    writer.WriteDouble(new LazyNumberValue(lazyStringValue));
-                writer.WriteComma();
+                    writer.WriteDoubleAsync(new LazyNumberValue(lazyStringValue));
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(options.Spatial.MinY));
+                writer.WritePropertyNameAsync(nameof(options.Spatial.MinY));
                 using (lazyStringValue = context.GetLazyString(CharExtensions.ToInvariantString(options.Spatial.MinY)))
-                    writer.WriteDouble(new LazyNumberValue(lazyStringValue));
-                writer.WriteComma();
+                    writer.WriteDoubleAsync(new LazyNumberValue(lazyStringValue));
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(options.Spatial.Strategy));
-                writer.WriteString(options.Spatial.Strategy.ToString());
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(options.Spatial.Strategy));
+                writer.WriteStringAsync(options.Spatial.Strategy.ToString());
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(options.Spatial.Units));
-                writer.WriteString(options.Spatial.Units.ToString());
+                writer.WritePropertyNameAsync(nameof(options.Spatial.Units));
+                writer.WriteStringAsync(options.Spatial.Units.ToString());
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
             else
-                writer.WriteNull();
+                writer.WriteNullAsync();
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteDocuments(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<Document> documents, bool metadataOnly, out long numberOfResults)
@@ -1286,7 +1286,7 @@ namespace Raven.Server.Json
         {
             numberOfResults = 0;
 
-            writer.WriteStartArray();
+            writer.WriteStartArrayAsync();
 
             var first = true;
 
@@ -1295,20 +1295,20 @@ namespace Raven.Server.Json
                 numberOfResults++;
 
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
                 first = false;
 
                 WriteDocument(writer, context, documents.Current, metadataOnly);
             }
 
-            writer.WriteEndArray();
+            writer.WriteEndArrayAsync();
         }
 
         public static async Task<int> WriteDocumentsAsync(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<Document> documents, bool metadataOnly)
         {
             int numberOfResults = 0;
 
-            writer.WriteStartArray();
+            writer.WriteStartArrayAsync();
 
             var first = true;
             foreach (var document in documents)
@@ -1316,14 +1316,14 @@ namespace Raven.Server.Json
                 numberOfResults++;
 
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
                 first = false;
 
                 WriteDocument(writer, context, document, metadataOnly);
                 await writer.MaybeOuterFlushAsync();
             }
 
-            writer.WriteEndArray();
+            writer.WriteEndArrayAsync();
             return numberOfResults;
         }
 
@@ -1331,13 +1331,13 @@ namespace Raven.Server.Json
         {
             if (document == null)
             {
-                writer.WriteNull();
+                writer.WriteNullAsync();
                 return;
             }
 
             if (document == Document.ExplicitNull)
             {
-                writer.WriteNull();
+                writer.WriteNullAsync();
                 return;
             }
 
@@ -1355,84 +1355,84 @@ namespace Raven.Server.Json
 
         public static void WriteIncludes(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, List<Document> includes)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
             var first = true;
             foreach (var document in includes)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
                 first = false;
 
                 if (document is IncludeDocumentsCommand.ConflictDocument conflict)
                 {
-                    writer.WritePropertyName(conflict.Id);
+                    writer.WritePropertyNameAsync(conflict.Id);
                     WriteConflict(writer, conflict);
                     continue;
                 }
 
-                writer.WritePropertyName(document.Id);
+                writer.WritePropertyNameAsync(document.Id);
                 WriteDocument(writer, context, metadataOnly: false, document: document);
             }
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static async Task WriteIncludesAsync(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, List<Document> includes)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
             var first = true;
             foreach (var document in includes)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
                 first = false;
 
                 if (document is IncludeDocumentsCommand.ConflictDocument conflict)
                 {
-                    writer.WritePropertyName(conflict.Id);
+                    writer.WritePropertyNameAsync(conflict.Id);
                     WriteConflict(writer, conflict);
                     await writer.MaybeOuterFlushAsync();
                     continue;
                 }
 
-                writer.WritePropertyName(document.Id);
+                writer.WritePropertyNameAsync(document.Id);
                 WriteDocument(writer, context, metadataOnly: false, document: document);
                 await writer.MaybeOuterFlushAsync();
             }
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         private static void WriteConflict(AbstractBlittableJsonTextWriter writer, IncludeDocumentsCommand.ConflictDocument conflict)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(Constants.Documents.Metadata.Key);
-            writer.WriteStartObject();
+            writer.WritePropertyNameAsync(Constants.Documents.Metadata.Key);
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(Constants.Documents.Metadata.Id);
-            writer.WriteString(conflict.Id);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(Constants.Documents.Metadata.Id);
+            writer.WriteStringAsync(conflict.Id);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(Constants.Documents.Metadata.ChangeVector);
-            writer.WriteString(string.Empty);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(Constants.Documents.Metadata.ChangeVector);
+            writer.WriteStringAsync(string.Empty);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(Constants.Documents.Metadata.Conflict);
+            writer.WritePropertyNameAsync(Constants.Documents.Metadata.Conflict);
             writer.WriteBool(true);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteObjects(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<BlittableJsonReaderObject> objects, out long numberOfResults)
         {
             numberOfResults = 0;
 
-            writer.WriteStartArray();
+            writer.WriteStartArrayAsync();
 
             var first = true;
             foreach (var o in objects)
@@ -1440,29 +1440,29 @@ namespace Raven.Server.Json
                 numberOfResults++;
 
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
                 first = false;
 
                 if (o == null)
                 {
-                    writer.WriteNull();
+                    writer.WriteNullAsync();
                     continue;
                 }
 
                 using (o)
                 {
-                    writer.WriteObject(o);
+                    writer.WriteObjectAsync(o);
                 }
             }
 
-            writer.WriteEndArray();
+            writer.WriteEndArrayAsync();
         }
 
         public static async Task<int> WriteObjectsAsync(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<BlittableJsonReaderObject> objects)
         {
             int numberOfResults = 0;
 
-            writer.WriteStartArray();
+            writer.WriteStartArrayAsync();
 
             var first = true;
             foreach (var o in objects)
@@ -1470,206 +1470,206 @@ namespace Raven.Server.Json
                 numberOfResults++;
 
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
                 first = false;
 
                 if (o == null)
                 {
-                    writer.WriteNull();
+                    writer.WriteNullAsync();
                     continue;
                 }
 
                 using (o)
                 {
-                    writer.WriteObject(o);
+                    writer.WriteObjectAsync(o);
                 }
 
                 await writer.MaybeOuterFlushAsync();
             }
 
-            writer.WriteEndArray();
+            writer.WriteEndArrayAsync();
             return numberOfResults;
         }
 
         public static void WriteCounters(this AsyncBlittableJsonTextWriter writer, Dictionary<string, List<CounterDetail>> counters)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
             var first = true;
             foreach (var kvp in counters)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                 first = false;
 
-                writer.WritePropertyName(kvp.Key);
+                writer.WritePropertyNameAsync(kvp.Key);
 
                 writer.WriteCountersForDocument(kvp.Value);
             }
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static async Task WriteCountersAsync(this AsyncBlittableJsonTextWriter writer, Dictionary<string, List<CounterDetail>> counters)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
             var first = true;
             foreach (var kvp in counters)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                 first = false;
 
-                writer.WritePropertyName(kvp.Key);
+                writer.WritePropertyNameAsync(kvp.Key);
 
                 await writer.WriteCountersForDocumentAsync(kvp.Value);
             }
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         private static void WriteCountersForDocument(this AsyncBlittableJsonTextWriter writer, List<CounterDetail> counters)
         {
-            writer.WriteStartArray();
+            writer.WriteStartArrayAsync();
 
             var first = true;
             foreach (var counter in counters)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
                 first = false;
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(CounterDetail.DocumentId));
-                writer.WriteString(counter.DocumentId);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(CounterDetail.DocumentId));
+                writer.WriteStringAsync(counter.DocumentId);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(CounterDetail.CounterName));
-                writer.WriteString(counter.CounterName);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(CounterDetail.CounterName));
+                writer.WriteStringAsync(counter.CounterName);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(CounterDetail.TotalValue));
-                writer.WriteInteger(counter.TotalValue);
+                writer.WritePropertyNameAsync(nameof(CounterDetail.TotalValue));
+                writer.WriteIntegerAsync(counter.TotalValue);
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
-            writer.WriteEndArray();
+            writer.WriteEndArrayAsync();
         }
 
         private static async Task WriteCountersForDocumentAsync(this AsyncBlittableJsonTextWriter writer, List<CounterDetail> counters)
         {
-            writer.WriteStartArray();
+            writer.WriteStartArrayAsync();
 
             var first = true;
             foreach (var counter in counters)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
                 first = false;
 
                 if (counter == null)
                 {
-                    writer.WriteNull();
+                    writer.WriteNullAsync();
                     await writer.MaybeOuterFlushAsync();
                     continue;
                 }
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(CounterDetail.DocumentId));
-                writer.WriteString(counter.DocumentId);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(CounterDetail.DocumentId));
+                writer.WriteStringAsync(counter.DocumentId);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(CounterDetail.CounterName));
-                writer.WriteString(counter.CounterName);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(CounterDetail.CounterName));
+                writer.WriteStringAsync(counter.CounterName);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(CounterDetail.TotalValue));
-                writer.WriteInteger(counter.TotalValue);
+                writer.WritePropertyNameAsync(nameof(CounterDetail.TotalValue));
+                writer.WriteIntegerAsync(counter.TotalValue);
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
 
                 await writer.MaybeOuterFlushAsync();
             }
 
-            writer.WriteEndArray();
+            writer.WriteEndArrayAsync();
         }
 
         public static async Task WriteCompareExchangeValues(this AsyncBlittableJsonTextWriter writer, Dictionary<string, CompareExchangeValue<BlittableJsonReaderObject>> compareExchangeValues)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
             var first = true;
             foreach (var kvp in compareExchangeValues)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                 first = false;
 
-                writer.WritePropertyName(kvp.Key);
+                writer.WritePropertyNameAsync(kvp.Key);
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(kvp.Value.Key));
-                writer.WriteString(kvp.Key);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(kvp.Value.Key));
+                writer.WriteStringAsync(kvp.Key);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(kvp.Value.Index));
-                writer.WriteInteger(kvp.Value.Index);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(kvp.Value.Index));
+                writer.WriteIntegerAsync(kvp.Value.Index);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(kvp.Value));
-                writer.WriteObject(kvp.Value.Value);
+                writer.WritePropertyNameAsync(nameof(kvp.Value));
+                writer.WriteObjectAsync(kvp.Value.Value);
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
 
                 await writer.MaybeOuterFlushAsync();
             }
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static async Task WriteTimeSeriesAsync(this AsyncBlittableJsonTextWriter writer,
             Dictionary<string, Dictionary<string, List<TimeSeriesRangeResult>>> timeSeries)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
             
             var first = true;
             foreach (var kvp in timeSeries)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                 first = false;
 
-                writer.WritePropertyName(kvp.Key);
+                writer.WritePropertyNameAsync(kvp.Key);
 
                 await TimeSeriesHandler.WriteTimeSeriesRangeResults(context: null, writer, documentId: null, kvp.Value);
             }
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteDocumentMetadata(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context,
             Document document, Func<LazyStringValue, bool> filterMetadataProperty = null)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
             document.Data.TryGet(Constants.Documents.Metadata.Key, out BlittableJsonReaderObject metadata);
             WriteMetadata(writer, document, metadata, filterMetadataProperty);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteMetadata(this AbstractBlittableJsonTextWriter writer, Document document, BlittableJsonReaderObject metadata, Func<LazyStringValue, bool> filterMetadataProperty = null)
         {
-            writer.WritePropertyName(Constants.Documents.Metadata.Key);
-            writer.WriteStartObject();
+            writer.WritePropertyNameAsync(Constants.Documents.Metadata.Key);
+            writer.WriteStartObjectAsync();
             bool first = true;
             if (metadata != null)
             {
@@ -1685,71 +1685,71 @@ namespace Raven.Server.Json
 
                     if (first == false)
                     {
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                     }
                     first = false;
-                    writer.WritePropertyName(prop.Name);
-                    writer.WriteValue(prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value);
+                    writer.WritePropertyNameAsync(prop.Name);
+                    writer.WriteValueAsync(prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value);
                 }
             }
 
             if (first == false)
             {
-                writer.WriteComma();
+                writer.WriteCommaAsync();
             }
-            writer.WritePropertyName(Constants.Documents.Metadata.ChangeVector);
-            writer.WriteString(document.ChangeVector);
+            writer.WritePropertyNameAsync(Constants.Documents.Metadata.ChangeVector);
+            writer.WriteStringAsync(document.ChangeVector);
 
             if (document.Flags != DocumentFlags.None)
             {
-                writer.WriteComma();
-                writer.WritePropertyName(Constants.Documents.Metadata.Flags);
-                writer.WriteString(document.Flags.ToString());
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(Constants.Documents.Metadata.Flags);
+                writer.WriteStringAsync(document.Flags.ToString());
             }
             if (document.Id != null)
             {
-                writer.WriteComma();
-                writer.WritePropertyName(Constants.Documents.Metadata.Id);
-                writer.WriteString(document.Id);
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(Constants.Documents.Metadata.Id);
+                writer.WriteStringAsync(document.Id);
             }
             if (document.IndexScore != null)
             {
-                writer.WriteComma();
-                writer.WritePropertyName(Constants.Documents.Metadata.IndexScore);
-                writer.WriteDouble(document.IndexScore.Value);
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(Constants.Documents.Metadata.IndexScore);
+                writer.WriteDoubleAsync(document.IndexScore.Value);
             }
             if (document.Distance != null)
             {
-                writer.WriteComma();
+                writer.WriteCommaAsync();
                 var result = document.Distance.Value;
-                writer.WritePropertyName(Constants.Documents.Metadata.SpatialResult);
-                writer.WriteStartObject();
-                writer.WritePropertyName(nameof(result.Distance));
-                writer.WriteDouble(result.Distance);
-                writer.WriteComma();
-                writer.WritePropertyName(nameof(result.Latitude));
-                writer.WriteDouble(result.Latitude);
-                writer.WriteComma();
-                writer.WritePropertyName(nameof(result.Longitude));
-                writer.WriteDouble(result.Longitude);
-                writer.WriteEndObject();
+                writer.WritePropertyNameAsync(Constants.Documents.Metadata.SpatialResult);
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync(nameof(result.Distance));
+                writer.WriteDoubleAsync(result.Distance);
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(nameof(result.Latitude));
+                writer.WriteDoubleAsync(result.Latitude);
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(nameof(result.Longitude));
+                writer.WriteDoubleAsync(result.Longitude);
+                writer.WriteEndObjectAsync();
             }
             if (document.LastModified != DateTime.MinValue)
             {
-                writer.WriteComma();
-                writer.WritePropertyName(Constants.Documents.Metadata.LastModified);
-                writer.WriteDateTime(document.LastModified, isUtc: true);
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync(Constants.Documents.Metadata.LastModified);
+                writer.WriteDateTimeAsync(document.LastModified, isUtc: true);
             }
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         private static readonly StringSegment MetadataKeySegment = new StringSegment(Constants.Documents.Metadata.Key);
 
         private static void WriteDocumentInternal(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, Document document, Func<LazyStringValue, bool> filterMetadataProperty = null)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
             WriteDocumentProperties(writer, context, document, filterMetadataProperty);
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         private static void WriteDocumentProperties(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, Document document, Func<LazyStringValue, bool> filterMetadataProperty = null)
@@ -1771,16 +1771,16 @@ namespace Raven.Server.Json
                     }
                     if (first == false)
                     {
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                     }
                     first = false;
-                    writer.WritePropertyName(prop.Name);
-                    writer.WriteValue(prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value);
+                    writer.WritePropertyNameAsync(prop.Name);
+                    writer.WriteValueAsync(prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value);
                 }
             }
 
             if (first == false)
-                writer.WriteComma();
+                writer.WriteCommaAsync();
             WriteMetadata(writer, document, metadata, filterMetadataProperty);
         }
 
@@ -1797,35 +1797,35 @@ namespace Raven.Server.Json
                     document.Data.GetPropertyByIndex(buffers.Properties.Array[i + buffers.Properties.Offset], ref prop);
                     if (first == false)
                     {
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                     }
                     first = false;
-                    writer.WritePropertyName(prop.Name);
-                    writer.WriteValue(prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value);
+                    writer.WritePropertyNameAsync(prop.Name);
+                    writer.WriteValueAsync(prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value);
                 }
             }
         }
 
         public static void WriteOperationIdAndNodeTag(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, long operationId, string nodeTag)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(OperationIdResult.OperationId));
-            writer.WriteInteger(operationId);
+            writer.WritePropertyNameAsync(nameof(OperationIdResult.OperationId));
+            writer.WriteIntegerAsync(operationId);
 
-            writer.WriteComma();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(OperationIdResult.OperationNodeTag));
-            writer.WriteString(nodeTag);
+            writer.WritePropertyNameAsync(nameof(OperationIdResult.OperationNodeTag));
+            writer.WriteStringAsync(nodeTag);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteArrayOfResultsAndCount(this AsyncBlittableJsonTextWriter writer, IEnumerable<string> results)
         {
-            writer.WriteStartObject();
-            writer.WritePropertyName("Results");
-            writer.WriteStartArray();
+            writer.WriteStartObjectAsync();
+            writer.WritePropertyNameAsync("Results");
+            writer.WriteStartArrayAsync();
 
             var first = true;
             var count = 0;
@@ -1833,70 +1833,70 @@ namespace Raven.Server.Json
             foreach (var id in results)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
-                writer.WriteString(id);
+                writer.WriteStringAsync(id);
                 count++;
 
                 first = false;
             }
 
-            writer.WriteEndArray();
-            writer.WriteComma();
+            writer.WriteEndArrayAsync();
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName("Count");
-            writer.WriteInteger(count);
+            writer.WritePropertyNameAsync("Count");
+            writer.WriteIntegerAsync(count);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteReduceTrees(this AsyncBlittableJsonTextWriter writer, IEnumerable<ReduceTree> trees)
         {
-            writer.WriteStartObject();
-            writer.WritePropertyName("Results");
+            writer.WriteStartObjectAsync();
+            writer.WritePropertyNameAsync("Results");
 
-            writer.WriteStartArray();
+            writer.WriteStartArrayAsync();
 
             var first = true;
 
             foreach (var tree in trees)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(ReduceTree.Name));
-                writer.WriteString(tree.Name);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(ReduceTree.Name));
+                writer.WriteStringAsync(tree.Name);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(ReduceTree.DisplayName));
-                writer.WriteString(tree.DisplayName);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(ReduceTree.DisplayName));
+                writer.WriteStringAsync(tree.DisplayName);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(ReduceTree.Depth));
-                writer.WriteInteger(tree.Depth);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(ReduceTree.Depth));
+                writer.WriteIntegerAsync(tree.Depth);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(ReduceTree.PageCount));
-                writer.WriteInteger(tree.PageCount);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(ReduceTree.PageCount));
+                writer.WriteIntegerAsync(tree.PageCount);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(ReduceTree.NumberOfEntries));
-                writer.WriteInteger(tree.NumberOfEntries);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(ReduceTree.NumberOfEntries));
+                writer.WriteIntegerAsync(tree.NumberOfEntries);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(ReduceTree.Root));
+                writer.WritePropertyNameAsync(nameof(ReduceTree.Root));
                 writer.WriteTreePagesRecursively(new[] { tree.Root });
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
 
                 first = false;
             }
 
-            writer.WriteEndArray();
+            writer.WriteEndArrayAsync();
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
 
         public static void WriteTreePagesRecursively(this AsyncBlittableJsonTextWriter writer, IEnumerable<ReduceTreePage> pages)
@@ -1906,63 +1906,63 @@ namespace Raven.Server.Json
             foreach (var page in pages)
             {
                 if (first == false)
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(TreePage.PageNumber));
-                writer.WriteInteger(page.PageNumber);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(TreePage.PageNumber));
+                writer.WriteIntegerAsync(page.PageNumber);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(ReduceTreePage.AggregationResult));
+                writer.WritePropertyNameAsync(nameof(ReduceTreePage.AggregationResult));
                 if (page.AggregationResult != null)
-                    writer.WriteObject(page.AggregationResult);
+                    writer.WriteObjectAsync(page.AggregationResult);
                 else
-                    writer.WriteNull();
-                writer.WriteComma();
+                    writer.WriteNullAsync();
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(ReduceTreePage.Children));
+                writer.WritePropertyNameAsync(nameof(ReduceTreePage.Children));
                 if (page.Children != null)
                 {
-                    writer.WriteStartArray();
+                    writer.WriteStartArrayAsync();
                     WriteTreePagesRecursively(writer, page.Children);
-                    writer.WriteEndArray();
+                    writer.WriteEndArrayAsync();
                 }
                 else
-                    writer.WriteNull();
-                writer.WriteComma();
+                    writer.WriteNullAsync();
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(ReduceTreePage.Entries));
+                writer.WritePropertyNameAsync(nameof(ReduceTreePage.Entries));
                 if (page.Entries != null)
                 {
-                    writer.WriteStartArray();
+                    writer.WriteStartArrayAsync();
 
                     var firstEntry = true;
                     foreach (var entry in page.Entries)
                     {
                         if (firstEntry == false)
-                            writer.WriteComma();
+                            writer.WriteCommaAsync();
 
-                        writer.WriteStartObject();
+                        writer.WriteStartObjectAsync();
 
-                        writer.WritePropertyName(nameof(MapResultInLeaf.Data));
-                        writer.WriteObject(entry.Data);
-                        writer.WriteComma();
+                        writer.WritePropertyNameAsync(nameof(MapResultInLeaf.Data));
+                        writer.WriteObjectAsync(entry.Data);
+                        writer.WriteCommaAsync();
 
-                        writer.WritePropertyName(nameof(MapResultInLeaf.Source));
-                        writer.WriteString(entry.Source);
+                        writer.WritePropertyNameAsync(nameof(MapResultInLeaf.Source));
+                        writer.WriteStringAsync(entry.Source);
 
-                        writer.WriteEndObject();
+                        writer.WriteEndObjectAsync();
 
                         firstEntry = false;
                     }
 
-                    writer.WriteEndArray();
+                    writer.WriteEndArrayAsync();
                 }
                 else
-                    writer.WriteNull();
+                    writer.WriteNullAsync();
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
                 first = false;
             }
         }

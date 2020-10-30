@@ -32,7 +32,7 @@ namespace Raven.Server.Documents.Handlers.Admin
 
                 var json = context.ReadObject(djv, "logs/configuration");
 
-                writer.WriteObject(json);
+                writer.WriteObjectAsync(json);
             }
 
             return Task.CompletedTask;

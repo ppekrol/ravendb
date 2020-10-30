@@ -38,7 +38,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                                 [nameof(RemoteConnection.RemoteConnectionInfo.Number)] = connection.Number,
                             }))
                     });
-                write.Flush();
+                write.FlushAsync();
             }
             return Task.CompletedTask;
         }
@@ -50,7 +50,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             using (var write = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(write, ServerStore.Engine.InMemoryDebug.ToJson());
-                write.Flush();
+                write.FlushAsync();
             }
             return Task.CompletedTask;
         }
@@ -61,9 +61,9 @@ namespace Raven.Server.Documents.Handlers.Debugging
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
                 writer.WriteArray("States", ServerStore.Engine.PrevStates.Select(s => s.ToString()));
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;
@@ -91,10 +91,10 @@ namespace Raven.Server.Documents.Handlers.Debugging
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             using (var write = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                write.WriteStartObject();
-                write.WritePropertyName("Result");
+                write.WriteStartObjectAsync();
+                write.WritePropertyNameAsync("Result");
 
-                write.WriteStartArray();
+                write.WriteStartArrayAsync();
                 while (tasks.Count > 0)
                 {
                     var task = await Task.WhenAny(tasks);
@@ -102,13 +102,13 @@ namespace Raven.Server.Documents.Handlers.Debugging
                     context.Write(write, task.Result.ToJson());
                     if (tasks.Count > 0)
                     {
-                        write.WriteComma();
+                        write.WriteCommaAsync();
                     }
-                    write.Flush();
+                    write.FlushAsync();
                 }
-                write.WriteEndArray();
-                write.WriteEndObject();
-                write.Flush();
+                write.WriteEndArrayAsync();
+                write.WriteEndObjectAsync();
+                write.FlushAsync();
             }
         }
 

@@ -1020,13 +1020,13 @@ namespace Raven.Server.Utils.Cli
             using (var ctx = JsonOperationContext.ShortTermSingleUse())
             using (var writer = new AsyncBlittableJsonTextWriter(ctx, ms))
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName("Result");
+                writer.WritePropertyNameAsync("Result");
 
                 if (result.IsNull)
                 {
-                    writer.WriteNull();
+                    writer.WriteNullAsync();
                 }
                 else if (result.RawJsValue.IsBoolean())
                 {
@@ -1034,24 +1034,24 @@ namespace Raven.Server.Utils.Cli
                 }
                 else if (result.RawJsValue.IsString())
                 {
-                    writer.WriteString(result.RawJsValue.AsString());
+                    writer.WriteStringAsync(result.RawJsValue.AsString());
                 }
                 else if (result.RawJsValue.IsDate())
                 {
                     var date = result.RawJsValue.AsDate();
-                    writer.WriteString(date.ToDateTime().ToString(DefaultFormat.DateTimeOffsetFormatsToWrite));
+                    writer.WriteStringAsync(date.ToDateTime().ToString(DefaultFormat.DateTimeOffsetFormatsToWrite));
                 }
                 else if (result.RawJsValue.IsNumber())
                 {
-                    writer.WriteDouble(result.RawJsValue.AsNumber());
+                    writer.WriteDoubleAsync(result.RawJsValue.AsNumber());
                 }
                 else
                 {
-                    writer.WriteObject(result.TranslateToObject(ctx));
+                    writer.WriteObjectAsync(result.TranslateToObject(ctx));
                 }
 
-                writer.WriteEndObject();
-                writer.Flush();
+                writer.WriteEndObjectAsync();
+                writer.FlushAsync();
             }
 
             var str = Encoding.UTF8.GetString(ms.ToArray());

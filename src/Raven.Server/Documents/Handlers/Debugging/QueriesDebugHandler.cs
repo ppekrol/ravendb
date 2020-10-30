@@ -37,33 +37,33 @@ namespace Raven.Server.Documents.Handlers.Debugging
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream(), Database.DatabaseShutdown))
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
                 var isFirst = true;
                 foreach (var group in Database.QueryRunner.CurrentlyRunningQueries.GroupBy(x => x.IndexName))
                 {
                     if (isFirst == false)
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                     isFirst = false;
 
-                    writer.WritePropertyName(group.Key);
-                    writer.WriteStartArray();
+                    writer.WritePropertyNameAsync(group.Key);
+                    writer.WriteStartArrayAsync();
 
                     var isFirstInternal = true;
                     foreach (var query in group)
                     {
                         if (isFirstInternal == false)
-                            writer.WriteComma();
+                            writer.WriteCommaAsync();
 
                         isFirstInternal = false;
 
                         query.Write(writer, context);
                     }
 
-                    writer.WriteEndArray();
+                    writer.WriteEndArrayAsync();
                 }
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;
@@ -79,11 +79,11 @@ namespace Raven.Server.Documents.Handlers.Debugging
 
                 var queriesList = new List<DynamicJsonValue>();
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName("TotalCachedQueries");
-                writer.WriteInteger(queryCache.Length);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync("TotalCachedQueries");
+                writer.WriteIntegerAsync(queryCache.Length);
+                writer.WriteCommaAsync();
 
                 foreach (var item in queryCache)
                 {
@@ -170,7 +170,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                 }
 
                 writer.WriteArray("Results", queriesList, context);
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;

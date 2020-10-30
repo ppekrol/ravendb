@@ -29,7 +29,7 @@ namespace Raven.Server.Documents.Handlers
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
 
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
                     writer.WriteArray(context, "Sorters", sorters.Values, (w, c, sorter) =>
                     {
@@ -45,7 +45,7 @@ namespace Raven.Server.Documents.Handlers
                         w.WriteEndObject();
                     });
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
 

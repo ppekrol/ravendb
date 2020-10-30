@@ -18,23 +18,23 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Environment");
-                writer.WriteString("Server");
-                writer.WriteComma();
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Environment");
+                writer.WriteStringAsync("Server");
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName("Type");
-                writer.WriteString(nameof(StorageEnvironmentWithType.StorageEnvironmentType.System));
-                writer.WriteComma();
+                writer.WritePropertyNameAsync("Type");
+                writer.WriteStringAsync(nameof(StorageEnvironmentWithType.StorageEnvironmentType.System));
+                writer.WriteCommaAsync();
 
                 using (var tx = env.ReadTransaction())
                 {
                     var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(env.GenerateDetailedReport(tx, details));
-                    writer.WritePropertyName("Report");
-                    writer.WriteObject(context.ReadObject(djv, "System"));
+                    writer.WritePropertyNameAsync("Report");
+                    writer.WriteObjectAsync(context.ReadObject(djv, "System"));
                 }
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;

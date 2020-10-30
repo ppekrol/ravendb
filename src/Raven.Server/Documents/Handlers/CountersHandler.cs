@@ -604,7 +604,7 @@ namespace Raven.Server.Documents.Handlers
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, countersDetail.ToJson());
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
 
@@ -661,7 +661,7 @@ namespace Raven.Server.Documents.Handlers
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     context.Write(writer, cmd.CountersDetail.ToJson());
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
             }
         }

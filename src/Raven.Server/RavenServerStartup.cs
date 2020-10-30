@@ -110,22 +110,22 @@ namespace Raven.Server
             using (_server.ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext ctx))
             using (var writer = new AsyncBlittableJsonTextWriter(ctx, context.Response.Body))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Message");
-                writer.WriteString(string.Join(" ", UnsafeWarning));
-                writer.WriteComma();
-                writer.WritePropertyName("MessageAsArray");
-                writer.WriteStartArray();
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Message");
+                writer.WriteStringAsync(string.Join(" ", UnsafeWarning));
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync("MessageAsArray");
+                writer.WriteStartArrayAsync();
                 var first = true;
                 foreach (var val in UnsafeWarning)
                 {
                     if (first == false)
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
                     first = false;
-                    writer.WriteString(val);
+                    writer.WriteStringAsync(val);
                 }
-                writer.WriteEndArray();
-                writer.WriteEndObject();
+                writer.WriteEndArrayAsync();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;
@@ -210,7 +210,7 @@ namespace Raven.Server
                     using (var writer = new AsyncBlittableJsonTextWriter(ctx, context.Response.Body))
                     {
                         var json = ctx.ReadObject(djv, "exception");
-                        writer.WriteObject(json);
+                        writer.WriteObjectAsync(json);
                     }
 
 #if EXCEPTION_ERROR_HUNT

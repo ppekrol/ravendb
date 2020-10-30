@@ -93,12 +93,12 @@ namespace SlowTests.Issues
 
                         using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
                         {
-                            writer.WriteStartObject();
+                            writer.WriteStartObjectAsync();
 
-                            writer.WritePropertyName("Name");
-                            writer.WriteString(expectedString);
+                            writer.WritePropertyNameAsync("Name");
+                            writer.WriteStringAsync(expectedString);
 
-                            writer.WriteEndObject();
+                            writer.WriteEndObjectAsync();
                         }
 
                         stream.Position = 0;
@@ -126,24 +126,24 @@ namespace SlowTests.Issues
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyName("Name0");
-                    writer.WriteString(expectedString0);
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync("Name0");
+                    writer.WriteStringAsync(expectedString0);
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName("Name1");
-                    writer.WriteString(expectedString1);
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync("Name1");
+                    writer.WriteStringAsync(expectedString1);
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName("Name2");
-                    writer.WriteString(expectedString2);
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync("Name2");
+                    writer.WriteStringAsync(expectedString2);
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName("Name3");
-                    writer.WriteString(expectedString3);
+                    writer.WritePropertyNameAsync("Name3");
+                    writer.WriteStringAsync(expectedString3);
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
 
                 stream.Position = 0;

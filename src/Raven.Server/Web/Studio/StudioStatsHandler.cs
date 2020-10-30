@@ -19,24 +19,24 @@ namespace Raven.Server.Web.Studio
             {
                 var indexes = Database.IndexStore.GetIndexes().ToList();
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(FooterStatistics.CountOfDocuments));
-                writer.WriteInteger(Database.DocumentsStorage.GetNumberOfDocuments(context.Documents));
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(FooterStatistics.CountOfDocuments));
+                writer.WriteIntegerAsync(Database.DocumentsStorage.GetNumberOfDocuments(context.Documents));
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(FooterStatistics.CountOfIndexes));
-                writer.WriteInteger(indexes.Count);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(FooterStatistics.CountOfIndexes));
+                writer.WriteIntegerAsync(indexes.Count);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(FooterStatistics.CountOfStaleIndexes));
-                writer.WriteInteger(indexes.Count(i => i.IsStale(context)));
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(FooterStatistics.CountOfStaleIndexes));
+                writer.WriteIntegerAsync(indexes.Count(i => i.IsStale(context)));
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(FooterStatistics.CountOfIndexingErrors));
-                writer.WriteInteger(indexes.Sum(index => index.GetErrorCount()));
+                writer.WritePropertyNameAsync(nameof(FooterStatistics.CountOfIndexingErrors));
+                writer.WriteIntegerAsync(indexes.Sum(index => index.GetErrorCount()));
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;

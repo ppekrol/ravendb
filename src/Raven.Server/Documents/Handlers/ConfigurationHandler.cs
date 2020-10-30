@@ -30,7 +30,7 @@ namespace Raven.Server.Documents.Handlers
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteObject(clientConfigurationJson);
+                    writer.WriteObjectAsync(clientConfigurationJson);
                 }
             }
 
@@ -61,23 +61,23 @@ namespace Raven.Server.Documents.Handlers
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyName(nameof(GetClientConfigurationOperation.Result.Etag));
-                    writer.WriteInteger(Database.GetClientConfigurationEtag());
-                    writer.WriteComma();
+                    writer.WritePropertyNameAsync(nameof(GetClientConfigurationOperation.Result.Etag));
+                    writer.WriteIntegerAsync(Database.GetClientConfigurationEtag());
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName(nameof(GetClientConfigurationOperation.Result.Configuration));
+                    writer.WritePropertyNameAsync(nameof(GetClientConfigurationOperation.Result.Configuration));
                     if (clientConfigurationJson != null)
                     {
-                        writer.WriteObject(clientConfigurationJson);
+                        writer.WriteObjectAsync(clientConfigurationJson);
                     }
                     else
                     {
-                        writer.WriteNull();
+                        writer.WriteNullAsync();
                     }
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
 

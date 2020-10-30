@@ -119,7 +119,7 @@ namespace Raven.Server.TrafficWatch
             using (var writer = new AsyncBlittableJsonTextWriter(_context, _bufferStream))
             {
                 _context.Write(writer, json);
-                writer.Flush();
+                writer.FlushAsync();
 
                 _bufferStream.TryGetBuffer(out var bytes);
                 return bytes;

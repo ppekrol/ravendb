@@ -518,17 +518,17 @@ namespace Raven.Server.Web.Authentication
 
                     using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartObject();
+                        writer.WriteStartObjectAsync();
                         writer.WriteArray(context, "Results", certificateList.ToArray(), (w, c, cert) =>
                         {
                             c.Write(w, cert.Value);
                         });
-                        writer.WriteComma();
-                        writer.WritePropertyName("LoadedServerCert");
-                        writer.WriteString(Server.Certificate.Certificate?.Thumbprint);
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
+                        writer.WritePropertyNameAsync("LoadedServerCert");
+                        writer.WriteStringAsync(Server.Certificate.Certificate?.Thumbprint);
+                        writer.WriteCommaAsync();
                         writer.WriteArray("WellKnownAdminCerts", wellKnown);
-                        writer.WriteEndObject();
+                        writer.WriteEndObjectAsync();
                     }
                 }
                 finally
@@ -634,7 +634,7 @@ namespace Raven.Server.Web.Authentication
 
                 using (var writer = new AsyncBlittableJsonTextWriter(ctx, ResponseBodyStream()))
                 {
-                    writer.WriteObject(certificate);
+                    writer.WriteObjectAsync(certificate);
                 }
             }
 
@@ -759,10 +759,10 @@ namespace Raven.Server.Web.Authentication
             {
                 using (var writer = new AsyncBlittableJsonTextWriter(ctx, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("SetupMode");
-                    writer.WriteString(ServerStore.Configuration.Core.SetupMode.ToString());
-                    writer.WriteEndObject();
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("SetupMode");
+                    writer.WriteStringAsync(ServerStore.Configuration.Core.SetupMode.ToString());
+                    writer.WriteEndObjectAsync();
                 }
             }
 
@@ -796,21 +796,21 @@ namespace Raven.Server.Web.Authentication
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("ClusterDomains");
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("ClusterDomains");
 
-                    writer.WriteStartArray();
+                    writer.WriteStartArrayAsync();
                     var first = true;
                     foreach (var domain in domains)
                     {
                         if (first == false)
-                            writer.WriteComma();
+                            writer.WriteCommaAsync();
                         first = false;
-                        writer.WriteString(domain);
+                        writer.WriteStringAsync(domain);
                     }
-                    writer.WriteEndArray();
+                    writer.WriteEndArrayAsync();
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
 
@@ -849,22 +849,22 @@ namespace Raven.Server.Web.Authentication
                         certStatus.TryGet(nameof(CertificateReplacement.Replaced), out int replaced);
 
                         // Not writing the certificate itself, because it has the private key
-                        writer.WriteStartObject();
-                        writer.WritePropertyName(nameof(CertificateReplacement.Confirmations));
-                        writer.WriteInteger(confirmations);
-                        writer.WriteComma();
-                        writer.WritePropertyName(nameof(CertificateReplacement.Thumbprint));
-                        writer.WriteString(thumbprint);
-                        writer.WriteComma();
-                        writer.WritePropertyName(nameof(CertificateReplacement.OldThumbprint));
-                        writer.WriteString(oldThumbprint);
-                        writer.WriteComma();
-                        writer.WritePropertyName(nameof(CertificateReplacement.ReplaceImmediately));
+                        writer.WriteStartObjectAsync();
+                        writer.WritePropertyNameAsync(nameof(CertificateReplacement.Confirmations));
+                        writer.WriteIntegerAsync(confirmations);
+                        writer.WriteCommaAsync();
+                        writer.WritePropertyNameAsync(nameof(CertificateReplacement.Thumbprint));
+                        writer.WriteStringAsync(thumbprint);
+                        writer.WriteCommaAsync();
+                        writer.WritePropertyNameAsync(nameof(CertificateReplacement.OldThumbprint));
+                        writer.WriteStringAsync(oldThumbprint);
+                        writer.WriteCommaAsync();
+                        writer.WritePropertyNameAsync(nameof(CertificateReplacement.ReplaceImmediately));
                         writer.WriteBool(replaceImmediately);
-                        writer.WriteComma();
-                        writer.WritePropertyName(nameof(CertificateReplacement.Replaced));
-                        writer.WriteInteger(replaced);
-                        writer.WriteEndObject();
+                        writer.WriteCommaAsync();
+                        writer.WritePropertyNameAsync(nameof(CertificateReplacement.Replaced));
+                        writer.WriteIntegerAsync(replaced);
+                        writer.WriteEndObjectAsync();
                     }
                     else
                     {
@@ -890,10 +890,10 @@ namespace Raven.Server.Web.Authentication
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("EstimatedRenewal");
-                writer.WriteDateTime(renewalDate, true);
-                writer.WriteEndObject();
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("EstimatedRenewal");
+                writer.WriteDateTimeAsync(renewalDate, true);
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;
@@ -916,10 +916,10 @@ namespace Raven.Server.Web.Authentication
                     using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
                     using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartObject();
-                        writer.WritePropertyName(nameof(ForceRenewResult.Success));
+                        writer.WriteStartObjectAsync();
+                        writer.WritePropertyNameAsync(nameof(ForceRenewResult.Success));
                         writer.WriteBool(success);
-                        writer.WriteEndObject();
+                        writer.WriteEndObjectAsync();
                     }
 
                     return Task.CompletedTask;
@@ -1065,12 +1065,12 @@ namespace Raven.Server.Web.Authentication
 
                     using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartObject();
+                        writer.WriteStartObjectAsync();
                         writer.WriteArray(context, "Results", certificateList.ToArray(), (w, c, cert) =>
                         {
                             c.Write(w, cert.Value);
                         });
-                        writer.WriteEndObject();
+                        writer.WriteEndObjectAsync();
                     }
                 }
                 finally

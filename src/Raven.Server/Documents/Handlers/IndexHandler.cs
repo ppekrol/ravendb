@@ -125,16 +125,16 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Index");
-                writer.WriteString(name);
-                writer.WriteComma();
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Index");
+                writer.WriteStringAsync(name);
+                writer.WriteCommaAsync();
 
                 if (history == null || history.Count == 0)
                 {
-                    writer.WriteStartArray();
-                    writer.WriteEndArray();
-                    writer.WriteEndObject();
+                    writer.WriteStartArrayAsync();
+                    writer.WriteEndArrayAsync();
+                    writer.WriteEndObjectAsync();
                     return Task.CompletedTask;
                 }
 
@@ -155,7 +155,7 @@ namespace Raven.Server.Documents.Handlers
                     w.WriteEndObject();
                 });
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
             return Task.CompletedTask;
         }
@@ -175,10 +175,10 @@ namespace Raven.Server.Documents.Handlers
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Changed");
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("Changed");
                     writer.WriteBool(changed);
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
 
@@ -240,14 +240,14 @@ namespace Raven.Server.Documents.Handlers
                 {
                     var fields = index.GetEntriesFields();
 
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
                     writer.WriteArray(nameof(fields.Static), fields.Static);
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
                     writer.WriteArray(nameof(fields.Dynamic), fields.Dynamic);
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
 
                     return Task.CompletedTask;
                 }
@@ -289,7 +289,7 @@ namespace Raven.Server.Documents.Handlers
                     indexDefinitions = new[] { index.GetIndexDefinition() };
                 }
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
                 writer.WriteArray(context, "Results", indexDefinitions, (w, c, indexDefinition) =>
                 {
@@ -302,7 +302,7 @@ namespace Raven.Server.Documents.Handlers
                     w.WriteIndexDefinition(c, indexDefinition);
                 });
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;
@@ -390,14 +390,14 @@ namespace Raven.Server.Documents.Handlers
                     }
                 }
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
                 writer.WriteArray(context.Documents, "Results", indexStats, (w, c, stats) =>
                 {
                     w.WriteIndexStats(context.Documents, stats);
                 });
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;
@@ -419,15 +419,15 @@ namespace Raven.Server.Documents.Handlers
                 var stalenessReasons = new List<string>();
                 var isStale = index.IsStale(context, stalenessReasons: stalenessReasons);
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName("IsStale");
+                writer.WritePropertyNameAsync("IsStale");
                 writer.WriteBool(isStale);
-                writer.WriteComma();
+                writer.WriteCommaAsync();
 
                 writer.WriteArray("StalenessReasons", stalenessReasons);
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;
@@ -440,9 +440,9 @@ namespace Raven.Server.Documents.Handlers
             using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Results");
-                writer.WriteStartArray();
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Results");
+                writer.WriteStartArrayAsync();
 
                 var first = true;
                 foreach (var index in Database.IndexStore.GetIndexes())
@@ -455,7 +455,7 @@ namespace Raven.Server.Documents.Handlers
                         var progress = index.GetProgress(context, isStale: true);
 
                         if (first == false)
-                            writer.WriteComma();
+                            writer.WriteCommaAsync();
 
                         first = false;
 
@@ -476,8 +476,8 @@ namespace Raven.Server.Documents.Handlers
                     }
                 }
 
-                writer.WriteEndArray();
-                writer.WriteEndObject();
+                writer.WriteEndArrayAsync();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;
@@ -498,10 +498,10 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("Index");
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("Index");
                 writer.WriteIndexDefinition(context, indexDefinition);
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;
@@ -582,38 +582,38 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(IndexingStatus.Status));
-                writer.WriteString(Database.IndexStore.Status.ToString());
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(IndexingStatus.Status));
+                writer.WriteStringAsync(Database.IndexStore.Status.ToString());
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(IndexingStatus.Indexes));
-                writer.WriteStartArray();
+                writer.WritePropertyNameAsync(nameof(IndexingStatus.Indexes));
+                writer.WriteStartArrayAsync();
                 var isFirst = true;
                 foreach (var index in Database.IndexStore.GetIndexes())
                 {
                     if (isFirst == false)
-                        writer.WriteComma();
+                        writer.WriteCommaAsync();
 
                     isFirst = false;
 
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyName(nameof(IndexingStatus.IndexStatus.Name));
-                    writer.WriteString(index.Name);
+                    writer.WritePropertyNameAsync(nameof(IndexingStatus.IndexStatus.Name));
+                    writer.WriteStringAsync(index.Name);
 
-                    writer.WriteComma();
+                    writer.WriteCommaAsync();
 
-                    writer.WritePropertyName(nameof(IndexingStatus.IndexStatus.Status));
-                    writer.WriteString(index.Status.ToString());
+                    writer.WritePropertyNameAsync(nameof(IndexingStatus.IndexStatus.Status));
+                    writer.WriteStringAsync(index.Status.ToString());
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
 
-                writer.WriteEndArray();
+                writer.WriteEndArrayAsync();
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
 
             return Task.CompletedTask;
@@ -717,7 +717,7 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
                 writer.WriteArray(context, "Results", indexes, (w, c, index) =>
                 {
                     w.WriteStartObject();
@@ -745,7 +745,7 @@ namespace Raven.Server.Documents.Handlers
                     });
                     w.WriteEndObject();
                 });
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
             return Task.CompletedTask;
         }
@@ -945,7 +945,7 @@ namespace Raven.Server.Documents.Handlers
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 context.Write(writer, mergeIndexSuggestions.ToJson());
-                writer.Flush();
+                writer.FlushAsync();
             }
             return Task.CompletedTask;
         }
@@ -1030,22 +1030,22 @@ namespace Raven.Server.Documents.Handlers
                     var first = true;
                     using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartObject();
-                        writer.WritePropertyName("MapResults");
-                        writer.WriteStartArray();
+                        writer.WriteStartObjectAsync();
+                        writer.WritePropertyNameAsync("MapResults");
+                        writer.WriteStartArrayAsync();
                         foreach (var mapResult in mapRes)
                         {
                             if (JavaScriptIndexUtils.StringifyObject(mapResult) is JsString jsStr)
                             {
                                 if (first == false)
                                 {
-                                    writer.WriteComma();
+                                    writer.WriteCommaAsync();
                                 }
-                                writer.WriteString(jsStr.ToString());
+                                writer.WriteStringAsync(jsStr.ToString());
                                 first = false;
                             }
                         }
-                        writer.WriteEndArray();
+                        writer.WriteEndArrayAsync();
                         if (indexDefinition.Reduce != null)
                         {
                             using (var bufferPool = new UnmanagedBuffersPoolWithLowMemoryHandling("JavaScriptIndexTest", Database.Name))
@@ -1053,8 +1053,8 @@ namespace Raven.Server.Documents.Handlers
                                 compiledIndex.SetBufferPoolForTestingPurposes(bufferPool);
                                 compiledIndex.SetAllocatorForTestingPurposes(context.Allocator);
                                 first = true;
-                                writer.WritePropertyName("ReduceResults");
-                                writer.WriteStartArray();
+                                writer.WritePropertyNameAsync("ReduceResults");
+                                writer.WriteStartArrayAsync();
 
                                 var reduceResults = compiledIndex.Reduce(mapRes.Select(mr => new DynamicBlittableJson(JsBlittableBridge.Translate(context, mr.Engine, mr))));
 
@@ -1064,18 +1064,18 @@ namespace Raven.Server.Documents.Handlers
                                     {
                                         if (first == false)
                                         {
-                                            writer.WriteComma();
+                                            writer.WriteCommaAsync();
                                         }
 
-                                        writer.WriteString(jsStr.ToString());
+                                        writer.WriteStringAsync(jsStr.ToString());
                                         first = false;
                                     }
                                 }
                             }
 
-                            writer.WriteEndArray();
+                            writer.WriteEndArrayAsync();
                         }
-                        writer.WriteEndObject();
+                        writer.WriteEndObjectAsync();
                     }
                 }
             }

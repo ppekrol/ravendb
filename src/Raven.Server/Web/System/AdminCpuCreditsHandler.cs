@@ -33,7 +33,7 @@ namespace Raven.Server.Web.System
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var json = Server.CpuCreditsBalance.ToJson();
-                writer.WriteObject(context.ReadObject(json, "cpu/credits"));
+                writer.WriteObjectAsync(context.ReadObject(json, "cpu/credits"));
                 return Task.CompletedTask;
             }
         }

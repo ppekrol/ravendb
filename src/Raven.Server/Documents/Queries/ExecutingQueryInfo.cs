@@ -40,36 +40,36 @@ namespace Raven.Server.Documents.Queries
 
         public void Write(AsyncBlittableJsonTextWriter writer, JsonOperationContext context)
         {
-            writer.WriteStartObject();
+            writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(nameof(DurationInMs));
-            writer.WriteDouble(DurationInMs);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(DurationInMs));
+            writer.WriteDoubleAsync(DurationInMs);
+            writer.WriteCommaAsync();
             
-            writer.WritePropertyName(nameof(Duration));
-            writer.WriteString(Duration.ToString());
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(Duration));
+            writer.WriteStringAsync(Duration.ToString());
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(IndexName));
-            writer.WriteString(IndexName);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(IndexName));
+            writer.WriteStringAsync(IndexName);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(QueryId));
-            writer.WriteInteger(QueryId);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(QueryId));
+            writer.WriteIntegerAsync(QueryId);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(StartTime));
-            writer.WriteDateTime(StartTime, isUtc: true);
-            writer.WriteComma();
+            writer.WritePropertyNameAsync(nameof(StartTime));
+            writer.WriteDateTimeAsync(StartTime, isUtc: true);
+            writer.WriteCommaAsync();
 
-            writer.WritePropertyName(nameof(QueryInfo));
+            writer.WritePropertyNameAsync(nameof(QueryInfo));
             writer.WriteIndexQuery(context, QueryInfo);
-            writer.WriteComma();
+            writer.WriteCommaAsync();
             
-            writer.WritePropertyName(nameof(IsStreaming));
+            writer.WritePropertyNameAsync(nameof(IsStreaming));
             writer.WriteBool(IsStreaming);
 
-            writer.WriteEndObject();
+            writer.WriteEndObjectAsync();
         }
     }
 }

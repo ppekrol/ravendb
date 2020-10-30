@@ -90,9 +90,9 @@ namespace Raven.Server.Documents.Handlers
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 using (context.OpenReadTransaction())
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Results");
-                    writer.WriteStartArray();
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("Results");
+                    writer.WriteStartArrayAsync();
                     var numberOfDocs = 0;
                     while (numberOfDocs == 0 && sp.Elapsed < timeLimit)
                     {
@@ -107,7 +107,7 @@ namespace Raven.Server.Documents.Handlers
                                     includeCmd.Gather(itemDetails.Doc);
 
                                     if (first == false)
-                                        writer.WriteComma();
+                                        writer.WriteCommaAsync();
 
                                     if (itemDetails.Exception == null)
                                     {
@@ -122,7 +122,7 @@ namespace Raven.Server.Documents.Handlers
                                             Id = itemDetails.Doc.Id,
                                             DocumentData = itemDetails.Doc.Data
                                         };
-                                        writer.WriteObject(context.ReadObject(documentWithException.ToJson(), ""));
+                                        writer.WriteObjectAsync(context.ReadObject(documentWithException.ToJson(), ""));
                                     }
 
                                     first = false;
@@ -144,13 +144,13 @@ namespace Raven.Server.Documents.Handlers
                         startEtag = lastEtag;
                     }
 
-                    writer.WriteEndArray();
-                    writer.WriteComma();
-                    writer.WritePropertyName("Includes");
+                    writer.WriteEndArrayAsync();
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync("Includes");
                     var includes = new List<Document>();
                     includeCmd.Fill(includes);
                     writer.WriteIncludes(context, includes);
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
         }
@@ -280,7 +280,7 @@ namespace Raven.Server.Documents.Handlers
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
                     var subscriptionsAsBlittable = subscriptions.Select(x => new DynamicJsonValue()
                     {
@@ -317,7 +317,7 @@ namespace Raven.Server.Documents.Handlers
                         c.Write(w, subscription);
                     });
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
 

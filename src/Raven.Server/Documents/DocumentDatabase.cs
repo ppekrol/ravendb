@@ -1051,10 +1051,10 @@ namespace Raven.Server.Documents
                     using (var outputStream = GetOutputStream(zipStream))
                     using (var writer = new AsyncBlittableJsonTextWriter(serverContext, outputStream))
                     {
-                        writer.WriteStartObject();
+                        writer.WriteStartObjectAsync();
 
                         // read and save the database record
-                        writer.WritePropertyName(nameof(RestoreSettings.DatabaseRecord));
+                        writer.WritePropertyNameAsync(nameof(RestoreSettings.DatabaseRecord));
                         using (serverContext.OpenReadTransaction())
                         using (var databaseRecord = _serverStore.Cluster.ReadRawDatabaseRecord(serverContext, Name, out _))
                         {
@@ -1062,9 +1062,9 @@ namespace Raven.Server.Documents
                         }
 
                         // save the database values (subscriptions, periodic backups statuses, etl states...)
-                        writer.WriteComma();
-                        writer.WritePropertyName(nameof(RestoreSettings.DatabaseValues));
-                        writer.WriteStartObject();
+                        writer.WriteCommaAsync();
+                        writer.WritePropertyNameAsync(nameof(RestoreSettings.DatabaseValues));
+                        writer.WriteStartObjectAsync();
 
                         var first = true;
                         var prefix = Helpers.ClusterStateMachineValuesPrefix(Name);
@@ -1076,21 +1076,21 @@ namespace Raven.Server.Documents
                                 cancellationToken.ThrowIfCancellationRequested();
 
                                 if (first == false)
-                                    writer.WriteComma();
+                                    writer.WriteCommaAsync();
 
                                 first = false;
 
                                 var key = keyValue.Key.ToString().Substring(prefix.Length);
-                                writer.WritePropertyName(key);
+                                writer.WritePropertyNameAsync(key);
                                 serverContext.Write(writer, keyValue.Value);
                             }
                         }
 
-                        writer.WriteEndObject();
+                        writer.WriteEndObjectAsync();
                         // end of values
 
-                        writer.WriteEndObject();
-                        writer.Flush();
+                        writer.WriteEndObjectAsync();
+                        writer.FlushAsync();
                         outputStream.Flush();
                     }
                 }

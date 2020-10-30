@@ -93,12 +93,12 @@ namespace SlowTests.Issues
                     {
                         using (var writer = new AsyncBlittableJsonTextWriter(ctx, stream))
                         {
-                            writer.WriteStartObject();
-                            writer.WritePropertyName(nameof(SubscriptionTryout.ChangeVector));
-                            writer.WriteString(_tryout.ChangeVector);
-                            writer.WritePropertyName(nameof(SubscriptionTryout.Query));
-                            writer.WriteString(_tryout.Query);
-                            writer.WriteEndObject();
+                            writer.WriteStartObjectAsync();
+                            writer.WritePropertyNameAsync(nameof(SubscriptionTryout.ChangeVector));
+                            writer.WriteStringAsync(_tryout.ChangeVector);
+                            writer.WritePropertyNameAsync(nameof(SubscriptionTryout.Query));
+                            writer.WriteStringAsync(_tryout.Query);
+                            writer.WriteEndObjectAsync();
                         }
                     })
                 };

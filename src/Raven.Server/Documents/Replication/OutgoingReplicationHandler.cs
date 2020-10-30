@@ -254,7 +254,7 @@ namespace Raven.Server.Documents.Replication
             using (var writer = new AsyncBlittableJsonTextWriter(documentsContext, _stream))
             {
                 documentsContext.Write(writer, request);
-                writer.Flush();
+                writer.FlushAsync();
             }
         }
 
@@ -512,7 +512,7 @@ namespace Raven.Server.Documents.Replication
             using (var writer = new AsyncBlittableJsonTextWriter(documentsContext, _stream))
             {
                 documentsContext.Write(writer, request);
-                writer.Flush();
+                writer.FlushAsync();
             }
 
             //handle initial response to last etag and staff
@@ -710,7 +710,7 @@ namespace Raven.Server.Documents.Replication
                 [nameof(TcpConnectionHeaderMessage.Info)] =
                     $"Couldn't agree on replication TCP version ours:{TcpConnectionHeaderMessage.ReplicationTcpVersion} theirs:{headerResponse.Version}"
             });
-            writer.Flush();
+            writer.FlushAsync();
         }
 
         private bool WaitForChanges(int timeout, CancellationToken token)
@@ -899,7 +899,7 @@ namespace Raven.Server.Documents.Replication
                         heartbeat[nameof(ReplicationMessageHeader.DatabaseChangeVector)] = changeVector;
                     }
                     documentsContext.Write(writer, heartbeat);
-                    writer.Flush();
+                    writer.FlushAsync();
                 }
                 catch (Exception e)
                 {

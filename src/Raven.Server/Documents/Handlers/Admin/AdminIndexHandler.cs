@@ -100,7 +100,7 @@ namespace Raven.Server.Documents.Handlers.Admin
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
                     writer.WriteArray(context, "Results", createdIndexes, (w, c, index) =>
                     {
@@ -113,7 +113,7 @@ namespace Raven.Server.Documents.Handlers.Admin
                         w.WriteEndObject();
                     });
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
         }

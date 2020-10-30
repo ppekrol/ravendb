@@ -35,14 +35,14 @@ namespace Raven.Server.Documents.Handlers
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
                     writer.WriteArray(context, "Results", connections, (w, c, connection) =>
                     {
                         c.Write(w, connection.GetConnectionStats());
                     });
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
             return Task.CompletedTask;

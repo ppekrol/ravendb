@@ -286,40 +286,40 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName(nameof(SetupParameters.FixedServerPortNumber));
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync(nameof(SetupParameters.FixedServerPortNumber));
 
                 if (setupParameters.FixedServerPortNumber.HasValue)
                 {
-                    writer.WriteInteger(setupParameters.FixedServerPortNumber.Value);
+                    writer.WriteIntegerAsync(setupParameters.FixedServerPortNumber.Value);
                 }
                 else
                 {
-                    writer.WriteNull();
+                    writer.WriteNullAsync();
                 }
 
-                writer.WriteComma();
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(SetupParameters.IsDocker));
+                writer.WritePropertyNameAsync(nameof(SetupParameters.IsDocker));
                 writer.WriteBool(setupParameters.IsDocker);
-                writer.WriteComma();
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(SetupParameters.IsAzure));
+                writer.WritePropertyNameAsync(nameof(SetupParameters.IsAzure));
                 writer.WriteBool(setupParameters.IsAzure);
-                writer.WriteComma();
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(SetupParameters.IsAws));
+                writer.WritePropertyNameAsync(nameof(SetupParameters.IsAws));
                 writer.WriteBool(setupParameters.IsAws);
-                writer.WriteComma();
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(SetupParameters.RunningOnPosix));
+                writer.WritePropertyNameAsync(nameof(SetupParameters.RunningOnPosix));
                 writer.WriteBool(setupParameters.RunningOnPosix);
-                writer.WriteComma();
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(SetupParameters.RunningOnMacOsx));
+                writer.WritePropertyNameAsync(nameof(SetupParameters.RunningOnMacOsx));
                 writer.WriteBool(setupParameters.RunningOnMacOsx);
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
         }
 
@@ -344,12 +344,12 @@ namespace Raven.Server.Web.System
             {
                 var setupParameters = await SetupParameters.Get(ServerStore);
 
-                writer.WriteStartObject();
-                writer.WritePropertyName("MachineName");
-                writer.WriteString(Environment.MachineName);
-                writer.WriteComma();
-                writer.WritePropertyName("NetworkInterfaces");
-                writer.WriteStartArray();
+                writer.WriteStartObjectAsync();
+                writer.WritePropertyNameAsync("MachineName");
+                writer.WriteStringAsync(Environment.MachineName);
+                writer.WriteCommaAsync();
+                writer.WritePropertyNameAsync("NetworkInterfaces");
+                writer.WriteStartArrayAsync();
                 var first = true;
 
                 List<string> ips;
@@ -379,18 +379,18 @@ namespace Raven.Server.Web.System
                             ips.Add(setupParameters.DockerHostname);
 
                         if (first == false)
-                            writer.WriteComma();
+                            writer.WriteCommaAsync();
                         first = false;
 
-                        writer.WriteStartObject();
-                        writer.WritePropertyName("Name");
-                        writer.WriteString(netInterface.Name);
-                        writer.WriteComma();
-                        writer.WritePropertyName("Description");
-                        writer.WriteString(netInterface.Description);
-                        writer.WriteComma();
+                        writer.WriteStartObjectAsync();
+                        writer.WritePropertyNameAsync("Name");
+                        writer.WriteStringAsync(netInterface.Name);
+                        writer.WriteCommaAsync();
+                        writer.WritePropertyNameAsync("Description");
+                        writer.WriteStringAsync(netInterface.Description);
+                        writer.WriteCommaAsync();
                         writer.WriteArray("Addresses", ips);
-                        writer.WriteEndObject();
+                        writer.WriteEndObjectAsync();
                     }
                 }
                 else
@@ -401,19 +401,19 @@ namespace Raven.Server.Web.System
                     {
                         "127.0.0.1"
                     };
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Name");
-                    writer.WriteString("Loopback Interface");
-                    writer.WriteComma();
-                    writer.WritePropertyName("Description");
-                    writer.WriteString("Loopback Interface");
-                    writer.WriteComma();
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("Name");
+                    writer.WriteStringAsync("Loopback Interface");
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync("Description");
+                    writer.WriteStringAsync("Loopback Interface");
+                    writer.WriteCommaAsync();
                     writer.WriteArray("Addresses", ips);
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
 
-                writer.WriteEndArray();
-                writer.WriteEndObject();
+                writer.WriteEndArrayAsync();
+                writer.WriteEndObjectAsync();
             }
         }
 
@@ -464,26 +464,26 @@ namespace Raven.Server.Web.System
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("CN");
-                    writer.WriteString(cn);
-                    writer.WriteComma();
-                    writer.WritePropertyName("AlternativeNames");
-                    writer.WriteStartArray();
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("CN");
+                    writer.WriteStringAsync(cn);
+                    writer.WriteCommaAsync();
+                    writer.WritePropertyNameAsync("AlternativeNames");
+                    writer.WriteStartArrayAsync();
 
                     var first = true;
                     foreach (var value in SetupManager.GetCertificateAlternativeNames(certificate))
                     {
                         if (first == false)
-                            writer.WriteComma();
+                            writer.WriteCommaAsync();
                         first = false;
 
-                        writer.WriteString(value);
+                        writer.WriteStringAsync(value);
                     }
 
-                    writer.WriteEndArray();
+                    writer.WriteEndArrayAsync();
 
-                    writer.WriteEndObject();
+                    writer.WriteEndObjectAsync();
                 }
             }
 
@@ -618,10 +618,10 @@ namespace Raven.Server.Web.System
 
                 using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Uri");
-                    writer.WriteString(uri.AbsoluteUri);
-                    writer.WriteEndObject();
+                    writer.WriteStartObjectAsync();
+                    writer.WritePropertyNameAsync("Uri");
+                    writer.WriteStringAsync(uri.AbsoluteUri);
+                    writer.WriteEndObjectAsync();
                 }
             }
         }
@@ -701,26 +701,26 @@ namespace Raven.Server.Web.System
 
                     using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartArray();
+                        writer.WriteStartArrayAsync();
                         var first = true;
 
                         foreach (var node in urlByTag)
                         {
                             if (first == false)
-                                writer.WriteComma();
+                                writer.WriteCommaAsync();
 
-                            writer.WriteStartObject();
-                            writer.WritePropertyName(nameof(ConfigurationNodeInfo.Tag));
-                            writer.WriteString(node.Key);
-                            writer.WriteComma();
-                            writer.WritePropertyName(nameof(ConfigurationNodeInfo.PublicServerUrl));
-                            writer.WriteString(node.Value);
-                            writer.WriteEndObject();
+                            writer.WriteStartObjectAsync();
+                            writer.WritePropertyNameAsync(nameof(ConfigurationNodeInfo.Tag));
+                            writer.WriteStringAsync(node.Key);
+                            writer.WriteCommaAsync();
+                            writer.WritePropertyNameAsync(nameof(ConfigurationNodeInfo.PublicServerUrl));
+                            writer.WriteStringAsync(node.Value);
+                            writer.WriteEndObjectAsync();
 
                             first = false;
                         }
 
-                        writer.WriteEndArray();
+                        writer.WriteEndArrayAsync();
                     }
                 }
                 catch (Exception e)

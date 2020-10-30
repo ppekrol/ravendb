@@ -100,20 +100,20 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
 
-                writer.WritePropertyName(nameof(keyPairInfo.PublicKey));
-                writer.WriteString(keyPairInfo.PublicKey);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(keyPairInfo.PublicKey));
+                writer.WriteStringAsync(keyPairInfo.PublicKey);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(keyPairInfo.Certificate));
-                writer.WriteString(keyPairInfo.Certificate);
-                writer.WriteComma();
+                writer.WritePropertyNameAsync(nameof(keyPairInfo.Certificate));
+                writer.WriteStringAsync(keyPairInfo.Certificate);
+                writer.WriteCommaAsync();
 
-                writer.WritePropertyName(nameof(keyPairInfo.Thumbprint));
-                writer.WriteString(keyPairInfo.Thumbprint);
+                writer.WritePropertyNameAsync(nameof(keyPairInfo.Thumbprint));
+                writer.WriteStringAsync(keyPairInfo.Thumbprint);
 
-                writer.WriteEndObject();
+                writer.WriteEndObjectAsync();
             }
             
             return Task.CompletedTask;
