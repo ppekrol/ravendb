@@ -381,7 +381,7 @@ namespace Raven.Server.Documents.Replication
                         [nameof(ReplicationMessageReply.DatabaseChangeVector)] = changeVector
                     };
 
-                    documentsOperationContext.Write(writer, response);
+                    documentsOperationContext.WriteAsync(writer, response);
                     writer.FlushAsync();
                 }
             }

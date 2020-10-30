@@ -10,7 +10,7 @@ namespace Raven.Server.Web.System
         public Task GetRootStats()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 Server.Statistics.WriteTo(writer);
             }

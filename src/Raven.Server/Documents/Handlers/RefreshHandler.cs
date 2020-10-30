@@ -30,9 +30,9 @@ namespace Raven.Server.Documents.Handlers
 
                 if (refreshConfig != null)
                 {
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.Write(writer, refreshConfig.ToJson());
+                        context.WriteAsync(writer, refreshConfig.ToJson());
                     }
                 }
                 else

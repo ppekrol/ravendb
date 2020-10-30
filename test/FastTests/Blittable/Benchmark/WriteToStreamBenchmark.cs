@@ -165,7 +165,7 @@ namespace FastTests.Blittable.Benchmark
                             using (var stream = SafeFileStream.Create("output2.junk", FileMode.Create))
                             {
                                 sp.Restart();
-                                blittableContext.Write(stream, employee);
+                                blittableContext.WriteAsync(stream, employee);
                                 streamWriter.Write(employee.Size + "," + sp.ElapsedMilliseconds + ",");
                             }
                             Console.WriteLine(" blit - {0:#,#} ms, Props: {1}",

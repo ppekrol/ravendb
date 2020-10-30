@@ -516,18 +516,18 @@ namespace Raven.Server.Web.Authentication
 
                     var wellKnown = ServerStore.Configuration.Security.WellKnownAdminCertificates;
 
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteStartObjectAsync();
-                        writer.WriteArray(context, "Results", certificateList.ToArray(), (w, c, cert) =>
+                        writer.WriteArrayAsync(context, "Results", certificateList.ToArray(), (w, c, cert) =>
                         {
-                            c.Write(w, cert.Value);
+                            c.WriteAsync(w, cert.Value);
                         });
                         writer.WriteCommaAsync();
                         writer.WritePropertyNameAsync("LoadedServerCert");
                         writer.WriteStringAsync(Server.Certificate.Certificate?.Thumbprint);
                         writer.WriteCommaAsync();
-                        writer.WriteArray("WellKnownAdminCerts", wellKnown);
+                        writer.WriteArrayAsync("WellKnownAdminCerts", wellKnown);
                         writer.WriteEndObjectAsync();
                     }
                 }
@@ -794,7 +794,7 @@ namespace Raven.Server.Web.Authentication
                     };
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
                     writer.WritePropertyNameAsync("ClusterDomains");
@@ -834,7 +834,7 @@ namespace Raven.Server.Web.Authentication
         public Task ReplacementStatus()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 using (context.OpenReadTransaction())
                 {
@@ -888,7 +888,7 @@ namespace Raven.Server.Web.Authentication
             var (_, renewalDate) = Server.CalculateRenewalDate(Server.Certificate, false);
             
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
                 writer.WritePropertyNameAsync("EstimatedRenewal");
@@ -914,7 +914,7 @@ namespace Raven.Server.Web.Authentication
                 {
                     var success = Server.RefreshClusterCertificate(true, GetRaftRequestIdFromQuery());
                     using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteStartObjectAsync();
                         writer.WritePropertyNameAsync(nameof(ForceRenewResult.Success));
@@ -1063,12 +1063,12 @@ namespace Raven.Server.Web.Authentication
                             localCertificate.Dispose();
                     }
 
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteStartObjectAsync();
-                        writer.WriteArray(context, "Results", certificateList.ToArray(), (w, c, cert) =>
+                        writer.WriteArrayAsync(context, "Results", certificateList.ToArray(), (w, c, cert) =>
                         {
-                            c.Write(w, cert.Value);
+                            c.WriteAsync(w, cert.Value);
                         });
                         writer.WriteEndObjectAsync();
                     }

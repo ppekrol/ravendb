@@ -67,7 +67,7 @@ namespace SlowTests.Blittable.BlittableJsonWriterTests
             using (var employee = blittableContext.Read(new MemoryStream(Encoding.UTF8.GetBytes(str)), "doc1"))
             {
                 var ms = new MemoryStream();
-                blittableContext.Write(ms, employee);
+                blittableContext.WriteAsync(ms, employee);
 
                 Assert.Equal(Encoding.UTF8.GetString(ms.ToArray()), str);
             }

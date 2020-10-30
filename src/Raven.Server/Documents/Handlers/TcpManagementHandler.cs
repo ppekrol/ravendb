@@ -33,13 +33,13 @@ namespace Raven.Server.Documents.Handlers
                     .Skip(start)
                     .Take(pageSize);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
 
-                    writer.WriteArray(context, "Results", connections, (w, c, connection) =>
+                    writer.WriteArrayAsync(context, "Results", connections, (w, c, connection) =>
                     {
-                        c.Write(w, connection.GetConnectionStats());
+                        c.WriteAsync(w, connection.GetConnectionStats());
                     });
 
                     writer.WriteEndObjectAsync();

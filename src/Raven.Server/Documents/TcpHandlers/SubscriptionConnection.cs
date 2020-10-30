@@ -218,7 +218,7 @@ namespace Raven.Server.Documents.TcpHandlers
             using (TcpConnection.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, TcpConnection.Stream))
             {
-                context.Write(writer, value);
+                context.WriteAsync(writer, value);
                 writtenBytes = writer.Position;
             }
 

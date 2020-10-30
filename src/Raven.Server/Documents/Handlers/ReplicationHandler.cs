@@ -26,7 +26,7 @@ namespace Raven.Server.Documents.Handlers
             var pageSize = GetPageSize();
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 var array = new DynamicJsonArray();
@@ -35,7 +35,7 @@ namespace Raven.Server.Documents.Handlers
                 {
                     array.Add(tombstone.ToJson());
                 }
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     ["Results"] = array
                 });
@@ -58,7 +58,7 @@ namespace Raven.Server.Documents.Handlers
         private Task GetConflictsByEtag(long etag)
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 var skip = GetStart();
@@ -86,7 +86,7 @@ namespace Raven.Server.Documents.Handlers
                     }
                 }
 
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     ["TotalResults"] = Database.DocumentsStorage.ConflictsStorage.GetNumberOfDocumentsConflicts(context),
                     [nameof(GetConflictsResult.Results)] = array
@@ -99,7 +99,7 @@ namespace Raven.Server.Documents.Handlers
         {
             long maxEtag = 0;
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 var array = new DynamicJsonArray();
@@ -118,7 +118,7 @@ namespace Raven.Server.Documents.Handlers
                     });
                 }
 
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     [nameof(GetConflictsResult.Id)] = docId,
                     [nameof(GetConflictsResult.LargestEtag)] = maxEtag,
@@ -132,11 +132,11 @@ namespace Raven.Server.Documents.Handlers
         public Task Performance()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
 
-                writer.WriteArray(context, nameof(ReplicationPerformance.Incoming), Database.ReplicationLoader.IncomingHandlers, (w, c, handler) =>
+                writer.WriteArrayAsync(context, nameof(ReplicationPerformance.Incoming), Database.ReplicationLoader.IncomingHandlers, (w, c, handler) =>
                 {
                     w.WriteStartObject();
 
@@ -144,10 +144,10 @@ namespace Raven.Server.Documents.Handlers
                     w.WriteString(handler.SourceFormatted);
                     w.WriteComma();
 
-                    w.WriteArray(c, nameof(ReplicationPerformance.IncomingStats.Performance), handler.GetReplicationPerformance(), (innerWriter, innerContext, performance) =>
+                    BlittableJsonTextWriterExtensions.WriteArrayAsync(w, c, nameof(ReplicationPerformance.IncomingStats.Performance), handler.GetReplicationPerformance(), (innerWriter, innerContext, performance) =>
                     {
                         var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(performance);
-                        innerWriter.WriteObject(context.ReadObject(djv, "replication/performance"));
+                        innerWriter.WriteObjectAsync(context.ReadObject(djv, "replication/performance"));
                     });
 
                     w.WriteEndObject();
@@ -157,7 +157,7 @@ namespace Raven.Server.Documents.Handlers
                 var reporters = Database.ReplicationLoader.OutgoingHandlers.Concat<IReportOutgoingReplicationPerformance>(Database.ReplicationLoader
                         .OutgoingConnectionsLastFailureToConnect.Values);
 
-                writer.WriteArray(context, nameof(ReplicationPerformance.Outgoing), reporters, (w, c, handler) =>
+                writer.WriteArrayAsync(context, nameof(ReplicationPerformance.Outgoing), reporters, (w, c, handler) =>
                 {
                     w.WriteStartObject();
 
@@ -165,10 +165,10 @@ namespace Raven.Server.Documents.Handlers
                     w.WriteString(handler.DestinationFormatted);
                     w.WriteComma();
 
-                    w.WriteArray(c, nameof(ReplicationPerformance.OutgoingStats.Performance), handler.GetReplicationPerformance(), (innerWriter, innerContext, performance) =>
+                    BlittableJsonTextWriterExtensions.WriteArrayAsync(w, c, nameof(ReplicationPerformance.OutgoingStats.Performance), handler.GetReplicationPerformance(), (innerWriter, innerContext, performance) =>
                     {
                         var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(performance);
-                        innerWriter.WriteObject(context.ReadObject(djv, "replication/performance"));
+                        innerWriter.WriteObjectAsync(context.ReadObject(djv, "replication/performance"));
                     });
 
                     w.WriteEndObject();
@@ -251,7 +251,7 @@ namespace Raven.Server.Documents.Handlers
             using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
             {
                 var pulse = tuple.Item2;
-                context.Write(writer, pulse.ToJson());
+                context.WriteAsync(writer, pulse.ToJson());
             }
 
             ms.TryGetBuffer(out ArraySegment<byte> bytes);
@@ -264,7 +264,7 @@ namespace Raven.Server.Documents.Handlers
         public Task GetReplicationActiveConnections()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var incoming = new DynamicJsonArray();
                 foreach (var item in Database.ReplicationLoader.IncomingConnections)
@@ -289,7 +289,7 @@ namespace Raven.Server.Documents.Handlers
                     });
                 }
 
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     ["IncomingConnections"] = incoming,
                     ["OutgoingConnections"] = outgoing
@@ -302,7 +302,7 @@ namespace Raven.Server.Documents.Handlers
         public Task GetReplicationOutgoingFailureStats()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var data = new DynamicJsonArray();
                 foreach (var item in Database.ReplicationLoader.OutgoingFailureInfo)
@@ -328,7 +328,7 @@ namespace Raven.Server.Documents.Handlers
                     });
                 }
 
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     ["Stats"] = data
                 });
@@ -341,7 +341,7 @@ namespace Raven.Server.Documents.Handlers
         public Task GetReplicationIncomingActivityTimes()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var data = new DynamicJsonArray();
                 foreach (var item in Database.ReplicationLoader.IncomingLastActivityTime)
@@ -359,7 +359,7 @@ namespace Raven.Server.Documents.Handlers
                     });
                 }
 
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     ["Stats"] = data
                 });
@@ -371,7 +371,7 @@ namespace Raven.Server.Documents.Handlers
         public Task GetReplicationIncomingRejectionInfo()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var stats = new DynamicJsonArray();
                 foreach (var statItem in Database.ReplicationLoader.IncomingRejectionStats)
@@ -393,7 +393,7 @@ namespace Raven.Server.Documents.Handlers
                     });
                 }
 
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     ["Stats"] = stats
                 });
@@ -406,7 +406,7 @@ namespace Raven.Server.Documents.Handlers
         public Task GetReplicationReconnectionQueue()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var data = new DynamicJsonArray();
                 foreach (var queueItem in Database.ReplicationLoader.ReconnectQueue)
@@ -419,7 +419,7 @@ namespace Raven.Server.Documents.Handlers
                     });
                 }
 
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     ["Queue-Info"] = data
                 });
@@ -432,14 +432,14 @@ namespace Raven.Server.Documents.Handlers
         {
             var docId = GetQueryStringValueAndAssertIfSingleAndNotEmpty("docId");
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 var conflicts = context.DocumentDatabase.DocumentsStorage.ConflictsStorage.GetConflictsFor(context, docId);
                 var advisor = new ConflictResolverAdvisor(conflicts.Select(c => c.Doc), context);
                 var resolved = advisor.Resolve();
 
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     [nameof(ConflictResolverAdvisor.MergeResult.Document)] = resolved.Document,
                     [nameof(ConflictResolverAdvisor.MergeResult.Metadata)] = resolved.Metadata
@@ -469,9 +469,9 @@ namespace Raven.Server.Documents.Handlers
                         resolveByCollection[collection.Key] = collection.Value.ToJson();
                     }
 
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.Write(writer, new DynamicJsonValue
+                        context.WriteAsync(writer, new DynamicJsonValue
                         {
                             [nameof(solverConfig.ResolveToLatest)] = solverConfig.ResolveToLatest,
                             [nameof(solverConfig.ResolveByCollection)] = resolveByCollection

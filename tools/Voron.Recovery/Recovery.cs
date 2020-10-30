@@ -1421,7 +1421,7 @@ namespace Voron.Recovery
                     return false;
                 }
 
-                context.Write(countersWriter, new DynamicJsonValue
+                context.WriteAsync(countersWriter, new DynamicJsonValue
                 {
                     [nameof(CounterItem.DocId)] = counterGroup.DocumentId.ToString(),
                     [nameof(CounterItem.ChangeVector)] = counterGroup.ChangeVector.ToString(),
@@ -1510,7 +1510,7 @@ namespace Voron.Recovery
                     return false;
                 }
 
-                context.Write(writer, document.Data);
+                context.WriteAsync(writer, document.Data);
 
                 _documentWritten = true;
                 _numberOfDocumentsRetrieved++;
@@ -1625,7 +1625,7 @@ namespace Voron.Recovery
                     return false;
                 }
 
-                context.Write(writer, revision.Data);
+                context.WriteAsync(writer, revision.Data);
 
                 _revisionWritten = true;
                 _numberOfDocumentsRetrieved++;
@@ -1672,7 +1672,7 @@ namespace Voron.Recovery
                     return false;
                 }
 
-                context.Write(writer, conflict.Doc);
+                context.WriteAsync(writer, conflict.Doc);
 
                 _conflictWritten = true;
                 _numberOfDocumentsRetrieved++;

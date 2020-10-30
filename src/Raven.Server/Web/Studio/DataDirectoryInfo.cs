@@ -71,7 +71,7 @@ namespace Raven.Server.Web.Studio
                 using (_serverStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
                 using (var writer = new AsyncBlittableJsonTextWriter(context, _responseBodyStream))
                 {
-                    context.Write(writer, currentNodeDirectoryInfo.ToJson());
+                    context.WriteAsync(writer, currentNodeDirectoryInfo.ToJson());
                 }
 
                 return;
@@ -91,7 +91,7 @@ namespace Raven.Server.Web.Studio
             using (_serverStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             using (var writer = new AsyncBlittableJsonTextWriter(context, _responseBodyStream))
             {
-                context.Write(writer, dataDirectoryResult.ToJson());
+                context.WriteAsync(writer, dataDirectoryResult.ToJson());
             }
         }
 

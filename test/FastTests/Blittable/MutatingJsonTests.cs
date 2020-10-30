@@ -147,7 +147,7 @@ namespace FastTests.Blittable
                     using (var document = ctx.ReadObject(writer, "foo"))
                     {
                         var ms = new MemoryStream();
-                        ctx.Write(ms, document);
+                        ctx.WriteAsync(ms, document);
                         var actual = Encoding.UTF8.GetString(ms.ToArray());
                         Assert.Equal(expected, actual);
                     }

@@ -14,7 +14,7 @@ namespace Raven.Server.Documents.Handlers.Admin
 
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
                     writer.WritePropertyNameAsync("ScriptRunners");

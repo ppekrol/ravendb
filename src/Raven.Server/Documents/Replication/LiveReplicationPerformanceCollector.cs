@@ -178,7 +178,7 @@ namespace Raven.Server.Documents.Replication
         {
             writer.WriteStartObjectAsync();
 
-            writer.WriteArray(context, "Results", stats, (w, c, p) => { p.Write(c, w); });
+            writer.WriteArrayAsync(context, "Results", stats, (w, c, p) => { p.Write(c, w); });
 
             writer.WriteEndObjectAsync();
         }
@@ -319,10 +319,10 @@ namespace Raven.Server.Documents.Replication
                 writer.WriteStringAsync(Type.ToString());
                 writer.WriteCommaAsync();
 
-                writer.WriteArray(context, nameof(Performance), Performance, (w, c, p) =>
+                writer.WriteArrayAsync(context, nameof(Performance), Performance, (w, c, p) =>
                 {
                     var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(p);
-                    w.WriteObject(c.ReadObject(djv, "incoming/replication/performance"));
+                    w.WriteObjectAsync(c.ReadObject(djv, "incoming/replication/performance"));
                 });
 
                 writer.WriteEndObjectAsync();

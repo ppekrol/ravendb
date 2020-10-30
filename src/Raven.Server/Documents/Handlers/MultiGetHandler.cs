@@ -35,7 +35,7 @@ namespace Raven.Server.Documents.Handlers
                 if (input.TryGet("Requests", out BlittableJsonReaderArray requests) == false)
                     ThrowRequiredPropertyNameInRequest("Requests");
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
                     writer.WritePropertyNameAsync("Results");
@@ -79,7 +79,7 @@ namespace Raven.Server.Documents.Handlers
                             writer.WritePropertyNameAsync(statusProperty);
                             writer.WriteIntegerAsync((int)HttpStatusCode.BadRequest);
                             writer.WritePropertyNameAsync(resultProperty);
-                            context.Write(writer, new DynamicJsonValue
+                            context.WriteAsync(writer, new DynamicJsonValue
                             {
                                 ["Error"] = $"There is no handler for path: {method} {url}{query}"
                             });
@@ -124,7 +124,7 @@ namespace Raven.Server.Documents.Handlers
                             {
                                 var requestBody = new MemoryStream();
                                 var contentWriter = new AsyncBlittableJsonTextWriter(context, requestBody);
-                                context.Write(contentWriter, (BlittableJsonReaderObject)content);
+                                context.WriteAsync(contentWriter, (BlittableJsonReaderObject)content);
                                 contentWriter.FlushAsync();
                                 HttpContext.Response.RegisterForDispose(requestBody);
                                 httpContext.Request.Body = requestBody;

@@ -162,7 +162,7 @@ namespace SlowTests.Issues
                         Method = HttpMethod.Put,
                         Content = new BlittableJsonContent(stream =>
                         {
-                            ctx.Write(stream, _configuration);
+                            ctx.WriteAsync(stream, _configuration);
                         })
                     };
                 }
@@ -211,7 +211,7 @@ namespace SlowTests.Issues
                         Method = HttpMethod.Put,
                         Content = new BlittableJsonContent(stream =>
                         {
-                            ctx.Write(stream, _configuration);
+                            ctx.WriteAsync(stream, _configuration);
                         })
                     };
                 }

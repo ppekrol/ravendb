@@ -23,7 +23,7 @@ namespace Raven.Server.Documents.ETL.Providers.Raven.Handlers
 
                 var result = (RavenEtlTestScriptResult) RavenEtl.TestScript(testScript, Database, ServerStore, context);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var defaultConventions = new DocumentConventions();
 

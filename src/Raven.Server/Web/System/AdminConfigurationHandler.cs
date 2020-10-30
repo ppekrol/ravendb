@@ -45,9 +45,9 @@ namespace Raven.Server.Web.System
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, settingsResult.ToJson());
+                    context.WriteAsync(writer, settingsResult.ToJson());
                 }
             }
 
@@ -88,7 +88,7 @@ namespace Raven.Server.Web.System
                         return Task.CompletedTask;
                     }
 
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteObjectAsync(studioConfigurationJson);
                     }
@@ -131,7 +131,7 @@ namespace Raven.Server.Web.System
                         return Task.CompletedTask;
                     }
 
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteObjectAsync(clientConfigurationJson);
                     }

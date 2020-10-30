@@ -13,7 +13,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
         public Task HugeDocuments()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 writer.WriteStartObjectAsync();

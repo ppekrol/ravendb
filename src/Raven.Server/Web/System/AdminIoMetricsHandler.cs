@@ -17,10 +17,10 @@ namespace Raven.Server.Web.System
         public Task IoMetrics()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var result = IoMetricsUtil.GetIoMetricsResponse(GetSystemEnvironment(ServerStore), null);
-                context.Write(writer, result.ToJson());
+                context.WriteAsync(writer, result.ToJson());
             }
             return Task.CompletedTask;
         }

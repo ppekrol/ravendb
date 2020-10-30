@@ -34,7 +34,7 @@ namespace Raven.Server.Json
         public static void WritePerformanceStats(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<IndexPerformanceStats> stats)
         {
             writer.WriteStartObjectAsync();
-            writer.WriteArray(context, "Results", stats, (w, c, stat) =>
+            writer.WriteArrayAsync(context, "Results", stats, (w, c, stat) =>
             {
                 w.WriteStartObject();
 
@@ -42,7 +42,7 @@ namespace Raven.Server.Json
                 w.WriteString(stat.Name);
                 w.WriteComma();
 
-                w.WriteArray(c, nameof(stat.Performance), stat.Performance, (wp, cp, performance) => { wp.WriteIndexingPerformanceStats(context, performance); });
+                Sparrow.Json.BlittableJsonTextWriterExtensions.WriteArrayAsync(w, c, nameof(stat.Performance), stat.Performance, (wp, cp, performance) => { wp.WriteIndexingPerformanceStats(context, performance); });
 
                 w.WriteEndObject();
             });
@@ -52,7 +52,7 @@ namespace Raven.Server.Json
         public static void WriteEtlTaskPerformanceStats(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<EtlTaskPerformanceStats> stats)
         {
             writer.WriteStartObjectAsync();
-            writer.WriteArray(context, "Results", stats, (w, c, taskStats) =>
+            writer.WriteArrayAsync(context, "Results", stats, (w, c, taskStats) =>
             {
                 w.WriteStartObject();
 
@@ -68,7 +68,7 @@ namespace Raven.Server.Json
                 w.WriteString(taskStats.EtlType.ToString());
                 w.WriteComma();
 
-                w.WriteArray(c, nameof(taskStats.Stats), taskStats.Stats, (wp, cp, scriptStats) =>
+                Sparrow.Json.BlittableJsonTextWriterExtensions.WriteArrayAsync(w, c, nameof(taskStats.Stats), taskStats.Stats, (wp, cp, scriptStats) =>
                 {
                     wp.WriteStartObject();
 
@@ -76,7 +76,7 @@ namespace Raven.Server.Json
                     wp.WriteString(scriptStats.TransformationName);
                     wp.WriteComma();
 
-                    wp.WriteArray(cp, nameof(scriptStats.Performance), scriptStats.Performance, (wpp, cpp, perfStats) => wpp.WriteEtlPerformanceStats(cpp, perfStats));
+                    Sparrow.Json.BlittableJsonTextWriterExtensions.WriteArrayAsync(wp, cp, nameof(scriptStats.Performance), scriptStats.Performance, (wpp, cpp, perfStats) => wpp.WriteEtlPerformanceStats(cpp, perfStats));
 
                     wp.WriteEndObject();
                 });
@@ -89,7 +89,7 @@ namespace Raven.Server.Json
         public static void WriteEtlTaskProgress(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<EtlTaskProgress> progress)
         {
             writer.WriteStartObjectAsync();
-            writer.WriteArray(context, "Results", progress, (w, c, taskStats) =>
+            writer.WriteArrayAsync(context, "Results", progress, (w, c, taskStats) =>
             {
                 w.WriteStartObject();
 
@@ -101,7 +101,7 @@ namespace Raven.Server.Json
                 w.WriteString(taskStats.EtlType.ToString());
                 w.WriteComma();
 
-                w.WriteArray(c, nameof(taskStats.ProcessesProgress), taskStats.ProcessesProgress, (wp, cp, processProgress) =>
+                Sparrow.Json.BlittableJsonTextWriterExtensions.WriteArrayAsync(w, c, nameof(taskStats.ProcessesProgress), taskStats.ProcessesProgress, (wp, cp, processProgress) =>
                 {
                     wp.WriteStartObject();
 
@@ -222,7 +222,7 @@ namespace Raven.Server.Json
             writer.WriteStringAsync(result.Name);
             writer.WriteCommaAsync();
 
-            writer.WriteArray(nameof(result.Suggestions), result.Suggestions);
+            writer.WriteArrayAsync(nameof(result.Suggestions), result.Suggestions);
 
             writer.WriteEndObjectAsync();
         }
@@ -379,7 +379,7 @@ namespace Raven.Server.Json
             writer.WriteIntegerAsync(result.DurationInMs);
             writer.WriteCommaAsync();
 
-            writer.WriteArray(nameof(result.IncludedPaths), result.IncludedPaths);
+            writer.WriteArrayAsync(nameof(result.IncludedPaths), result.IncludedPaths);
             writer.WriteCommaAsync();
 
             var numberOfResults = await writer.WriteQueryResultAsync(context, result, metadataOnly, partial: true);
@@ -406,7 +406,7 @@ namespace Raven.Server.Json
                             writer.WriteCommaAsync();
                         firstInner = false;
 
-                        writer.WriteArray(kvpInner.Key, kvpInner.Value);
+                        writer.WriteArrayAsync(kvpInner.Key, kvpInner.Value);
                     }
 
                     writer.WriteEndObjectAsync();
@@ -428,7 +428,7 @@ namespace Raven.Server.Json
                         writer.WriteCommaAsync();
                     first = false;
 
-                    writer.WriteArray(kvp.Key, kvp.Value);
+                    writer.WriteArrayAsync(kvp.Key, kvp.Value);
                 }
 
                 writer.WriteEndObjectAsync();
@@ -480,7 +480,7 @@ namespace Raven.Server.Json
 
                 first = false;
 
-                writer.WriteArray(kvp.Key, kvp.Value);
+                writer.WriteArrayAsync(kvp.Key, kvp.Value);
             }
 
             writer.WriteEndObjectAsync();
@@ -512,14 +512,14 @@ namespace Raven.Server.Json
             {
                 numberOfResults = facets.Count;
 
-                writer.WriteArray(context, nameof(result.Results), facets, (w, c, facet) => w.WriteFacetResult(c, facet));
+                writer.WriteArrayAsync(context, nameof(result.Results), facets, (w, c, facet) => w.WriteFacetResult(c, facet));
                 writer.WriteCommaAsync();
             }
             else if (results is List<SuggestionResult> suggestions)
             {
                 numberOfResults = suggestions.Count;
 
-                writer.WriteArray(context, nameof(result.Results), suggestions, (w, c, suggestion) => w.WriteSuggestionResult(c, suggestion));
+                writer.WriteArrayAsync(context, nameof(result.Results), suggestions, (w, c, suggestion) => w.WriteSuggestionResult(c, suggestion));
                 writer.WriteCommaAsync();
             }
             else
@@ -596,7 +596,7 @@ namespace Raven.Server.Json
             {
                 numberOfResults = facets.Count;
 
-                writer.WriteArray(context, nameof(result.Results), facets, (w, c, facet) => w.WriteFacetResult(c, facet));
+                writer.WriteArrayAsync(context, nameof(result.Results), facets, (w, c, facet) => w.WriteFacetResult(c, facet));
                 writer.WriteCommaAsync();
                 await writer.MaybeOuterFlushAsync();
             }
@@ -604,7 +604,7 @@ namespace Raven.Server.Json
             {
                 numberOfResults = suggestions.Count;
 
-                writer.WriteArray(context, nameof(result.Results), suggestions, (w, c, suggestion) => w.WriteSuggestionResult(c, suggestion));
+                writer.WriteArrayAsync(context, nameof(result.Results), suggestions, (w, c, suggestion) => w.WriteSuggestionResult(c, suggestion));
                 writer.WriteCommaAsync();
                 await writer.MaybeOuterFlushAsync();
             }
@@ -660,7 +660,7 @@ namespace Raven.Server.Json
             if (result.TimeSeriesFields != null)
             {
                 writer.WriteCommaAsync();
-                writer.WriteArray(nameof(result.TimeSeriesFields), result.TimeSeriesFields);
+                writer.WriteArrayAsync(nameof(result.TimeSeriesFields), result.TimeSeriesFields);
             }
 
             if (partial == false)
@@ -714,7 +714,7 @@ namespace Raven.Server.Json
             writer.WriteIntegerAsync(queryResult.ResultEtag);
             writer.WriteCommaAsync();
 
-            writer.WriteArray(nameof(queryResult.Terms), queryResult.Terms);
+            writer.WriteArrayAsync(nameof(queryResult.Terms), queryResult.Terms);
 
             writer.WriteEndObjectAsync();
         }

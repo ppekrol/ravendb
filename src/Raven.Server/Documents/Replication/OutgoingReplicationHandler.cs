@@ -253,7 +253,7 @@ namespace Raven.Server.Documents.Replication
             using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext documentsContext))
             using (var writer = new AsyncBlittableJsonTextWriter(documentsContext, _stream))
             {
-                documentsContext.Write(writer, request);
+                documentsContext.WriteAsync(writer, request);
                 writer.FlushAsync();
             }
         }
@@ -511,7 +511,7 @@ namespace Raven.Server.Documents.Replication
             using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext documentsContext))
             using (var writer = new AsyncBlittableJsonTextWriter(documentsContext, _stream))
             {
-                documentsContext.Write(writer, request);
+                documentsContext.WriteAsync(writer, request);
                 writer.FlushAsync();
             }
 
@@ -701,7 +701,7 @@ namespace Raven.Server.Documents.Replication
 
         private void SendDropMessage(JsonOperationContext context, AsyncBlittableJsonTextWriter writer, TcpConnectionHeaderResponse headerResponse)
         {
-            context.Write(writer, new DynamicJsonValue
+            context.WriteAsync(writer, new DynamicJsonValue
             {
                 [nameof(TcpConnectionHeaderMessage.DatabaseName)] = Destination.Database,
                 [nameof(TcpConnectionHeaderMessage.Operation)] = TcpConnectionHeaderMessage.OperationTypes.Drop.ToString(),
@@ -741,7 +741,7 @@ namespace Raven.Server.Documents.Replication
             using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext documentsContext))
             using (var writer = new AsyncBlittableJsonTextWriter(documentsContext, _stream))
             {
-                documentsContext.Write(writer, val);
+                documentsContext.WriteAsync(writer, val);
             }
         }
 
@@ -898,7 +898,7 @@ namespace Raven.Server.Documents.Replication
                         _lastSentChangeVectorDuringHeartbeat = changeVector;
                         heartbeat[nameof(ReplicationMessageHeader.DatabaseChangeVector)] = changeVector;
                     }
-                    documentsContext.Write(writer, heartbeat);
+                    documentsContext.WriteAsync(writer, heartbeat);
                     writer.FlushAsync();
                 }
                 catch (Exception e)

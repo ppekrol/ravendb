@@ -19,7 +19,7 @@ namespace Raven.Server.Documents.Handlers.Admin
             var configDuration = Database.Configuration.Storage.TransactionsModeDuration.AsTimeSpan;
             var duration = GetTimeSpanQueryString("duration", required: false) ?? configDuration;
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
                 writer.WritePropertyNameAsync(("Environments"));
@@ -57,7 +57,7 @@ namespace Raven.Server.Documents.Handlers.Admin
                             throw new ArgumentOutOfRangeException("Result is unexpected value: " + result);
                     }
 
-                    context.Write(writer, djv);
+                    context.WriteAsync(writer, djv);
                 }
                 writer.WriteEndArrayAsync();
                 writer.WriteEndObjectAsync();

@@ -16,7 +16,7 @@ namespace SlowTests.Blittable
                 //Pass to stream
                 using (var textWriter = new AsyncBlittableJsonTextWriter(context, stream))
                 {
-                    context.Write(textWriter, toStream);
+                    context.WriteAsync(textWriter, toStream);
                 }
 
                 //Get from stream

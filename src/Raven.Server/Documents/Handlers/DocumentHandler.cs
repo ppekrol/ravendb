@@ -92,9 +92,9 @@ namespace Raven.Server.Documents.Handlers
                     HumaneAllocatedSize = Sizes.Humane(document.Value.AllocatedSize)
                 };
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, documentSizeDetails.ToJson());
+                    context.WriteAsync(writer, documentSizeDetails.ToJson());
                     writer.FlushAsync();
                 }
 
@@ -421,7 +421,7 @@ namespace Raven.Server.Documents.Handlers
 
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
 
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteStartObjectAsync();
 
@@ -508,7 +508,7 @@ namespace Raven.Server.Documents.Handlers
                         throw new ArgumentOutOfRangeException();
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
 
@@ -532,7 +532,7 @@ namespace Raven.Server.Documents.Handlers
 
                         writer.WritePropertyNameAsync(nameof(command.PatchResult.Debug));
 
-                        context.Write(writer, new DynamicJsonValue
+                        context.WriteAsync(writer, new DynamicJsonValue
                         {
                             ["Info"] = new DynamicJsonArray(command.DebugOutput),
                             ["Actions"] = command.DebugActions

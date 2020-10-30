@@ -27,11 +27,11 @@ namespace Raven.Server.Documents.Handlers
         public Task LastEtag()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var sourceReplicationDocument = GetSourceReplicationInformation(context, GetRemoteServerInstanceId(), out _);
                 var blittable = DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(sourceReplicationDocument, context);
-                context.Write(writer, blittable);
+                context.WriteAsync(writer, blittable);
                 writer.FlushAsync();
             }
 

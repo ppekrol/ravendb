@@ -45,9 +45,9 @@ namespace Raven.Server.Web.System
             var result = GetOngoingTasksInternal();
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.Write(writer, result.ToJson());
+                context.WriteAsync(writer, result.ToJson());
             }
 
             return Task.CompletedTask;
@@ -360,9 +360,9 @@ namespace Raven.Server.Web.System
                     };
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, result);
+                    context.WriteAsync(writer, result);
                 }
             }
         }
@@ -381,9 +381,9 @@ namespace Raven.Server.Web.System
             };
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.Write(writer, result);
+                context.WriteAsync(writer, result);
             }
 
             return Task.CompletedTask;
@@ -447,7 +447,7 @@ namespace Raven.Server.Web.System
             {
                 var operationId = Database.PeriodicBackupRunner.StartBackupTask(taskId, isFullBackup ?? true);
                 using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
                     writer.WritePropertyNameAsync(nameof(StartBackupOperationResult.ResponsibleNode));
@@ -563,9 +563,9 @@ namespace Raven.Server.Web.System
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         ["RaftCommandIndex"] = index
                     });
@@ -615,14 +615,14 @@ namespace Raven.Server.Web.System
                     }
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var result = new GetConnectionStringsResult
                     {
                         RavenConnectionStrings = ravenConnectionStrings,
                         SqlConnectionStrings = sqlConnectionStrings
                     };
-                    context.Write(writer, result.ToJson());
+                    context.WriteAsync(writer, result.ToJson());
                     writer.FlushAsync();
                 }
             }
@@ -1089,9 +1089,9 @@ namespace Raven.Server.Web.System
         {
             HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.Write(writer, taskInfo.ToJson());
+                context.WriteAsync(writer, taskInfo.ToJson());
                 writer.FlushAsync();
             }
         }
@@ -1100,9 +1100,9 @@ namespace Raven.Server.Web.System
         {
             HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.Write(writer, dynamicJsonValue);
+                context.WriteAsync(writer, dynamicJsonValue);
                 writer.FlushAsync();
             }
         }
@@ -1142,9 +1142,9 @@ namespace Raven.Server.Web.System
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(ModifyOngoingTaskResult.TaskId)] = key,
                         [nameof(ModifyOngoingTaskResult.RaftCommandIndex)] = index
@@ -1227,9 +1227,9 @@ namespace Raven.Server.Web.System
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(ModifyOngoingTaskResult.TaskId)] = id,
                         [nameof(ModifyOngoingTaskResult.RaftCommandIndex)] = index

@@ -152,7 +152,7 @@ namespace FastTests.Blittable.BlittableJsonWriterTests
                     dynamicBlittableJObject.MegaDevices[i].Usages);
             }
             var ms = new MemoryStream();
-            blittableContext.Write(ms, doc);
+            blittableContext.WriteAsync(ms, doc);
 
             Assert.Equal(str, Encoding.UTF8.GetString(ms.ToArray()));
 

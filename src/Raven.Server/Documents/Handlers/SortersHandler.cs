@@ -26,12 +26,12 @@ namespace Raven.Server.Documents.Handlers
                     sorters = new Dictionary<string, SorterDefinition>();
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
 
                     writer.WriteStartObjectAsync();
 
-                    writer.WriteArray(context, "Sorters", sorters.Values, (w, c, sorter) =>
+                    writer.WriteArrayAsync(context, "Sorters", sorters.Values, (w, c, sorter) =>
                     {
                         w.WriteStartObject();
 

@@ -87,7 +87,7 @@ namespace Raven.Server.Documents.Handlers
                 var timeLimit = TimeSpan.FromSeconds(GetIntValueQueryString("timeLimit", false) ?? 15);
                 var startEtag = cv.Etag;
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 using (context.OpenReadTransaction())
                 {
                     writer.WriteStartObjectAsync();
@@ -187,7 +187,7 @@ namespace Raven.Server.Documents.Handlers
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 if (string.IsNullOrEmpty(subscriptionName))
                 {
@@ -205,7 +205,7 @@ namespace Raven.Server.Documents.Handlers
                     return Task.CompletedTask;
                 }
 
-                context.Write(writer, subscriptionState.ToJson());
+                context.WriteAsync(writer, subscriptionState.ToJson());
 
                 return Task.CompletedTask;
             }
@@ -218,7 +218,7 @@ namespace Raven.Server.Documents.Handlers
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 if (string.IsNullOrEmpty(subscriptionName))
                 {
@@ -234,7 +234,7 @@ namespace Raven.Server.Documents.Handlers
                     Strategy = state?.Connection?.Strategy
                 };
 
-                context.Write(writer, subscriptionConnectionDetails.ToJson());
+                context.WriteAsync(writer, subscriptionConnectionDetails.ToJson());
                 return Task.CompletedTask;
             }
         }
@@ -278,7 +278,7 @@ namespace Raven.Server.Documents.Handlers
                     subscriptions = new[] { subscription };
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
 
@@ -312,9 +312,9 @@ namespace Raven.Server.Documents.Handlers
                         }).ToList()
                     });
 
-                    writer.WriteArray(context, "Results", subscriptionsAsBlittable, (w, c, subscription) =>
+                    writer.WriteArrayAsync(context, "Results", subscriptionsAsBlittable, (w, c, subscription) =>
                     {
-                        c.Write(w, subscription);
+                        c.WriteAsync(w, subscription);
                     });
 
                     writer.WriteEndObjectAsync();
@@ -514,9 +514,9 @@ namespace Raven.Server.Documents.Handlers
 
             HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
 
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     [nameof(CreateSubscriptionResult.Name)] = name
                 });

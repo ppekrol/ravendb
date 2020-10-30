@@ -132,9 +132,9 @@ namespace Raven.Server.Documents.Handlers
         public Task Metrics()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.Write(writer, Database.Metrics.ToJson());
+                context.WriteAsync(writer, Database.Metrics.ToJson());
             }
 
             return Task.CompletedTask;
@@ -144,11 +144,11 @@ namespace Raven.Server.Documents.Handlers
         public Task PutsMetrics()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var empty = GetBoolValueQueryString("empty", required: false) ?? true;
 
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     [nameof(Database.Metrics.Docs)] = new DynamicJsonValue
                     {
@@ -176,11 +176,11 @@ namespace Raven.Server.Documents.Handlers
         public Task BytesMetrics()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var empty = GetBoolValueQueryString("empty", required: false) ?? true;
 
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     [nameof(Database.Metrics.Docs)] = new DynamicJsonValue
                     {

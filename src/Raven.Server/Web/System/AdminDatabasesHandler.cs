@@ -81,7 +81,7 @@ namespace Raven.Server.Web.System
                         HttpContext.Response.Headers["Database-Missing"] = name;
                         using (var writer = new AsyncBlittableJsonTextWriter(context, HttpContext.Response.Body))
                         {
-                            context.Write(writer,
+                            context.WriteAsync(writer,
                                 new DynamicJsonValue
                                 {
                                     ["Type"] = "Error",
@@ -91,7 +91,7 @@ namespace Raven.Server.Web.System
                         return Task.CompletedTask;
                     }
 
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteStartObjectAsync();
                         writer.WriteDocumentPropertiesWithoutMetadata(context, new Document
@@ -224,9 +224,9 @@ namespace Raven.Server.Web.System
 
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
 
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.Write(writer, new DynamicJsonValue
+                        context.WriteAsync(writer, new DynamicJsonValue
                         {
                             [nameof(DatabasePutResult.RaftCommandIndex)] = newIndex,
                             [nameof(DatabasePutResult.Name)] = name,
@@ -341,9 +341,9 @@ namespace Raven.Server.Web.System
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(DatabasePutResult.RaftCommandIndex)] = newIndex,
                         [nameof(DatabasePutResult.Name)] = databaseRecord.DatabaseName,
@@ -623,10 +623,10 @@ namespace Raven.Server.Web.System
                 if (restorePoints.List.Count == 0)
                     throw new InvalidOperationException("Couldn't locate any backup files.");
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var blittable = DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(restorePoints, context);
-                    context.Write(writer, blittable);
+                    context.WriteAsync(writer, blittable);
                     writer.FlushAsync();
                 }
             }
@@ -702,7 +702,7 @@ namespace Raven.Server.Web.System
                     taskFactory: onProgress => Task.Run(async () => await restoreBackupTask.Execute(onProgress), cancelToken.Token),
                     id: operationId, token: cancelToken);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                 }
@@ -815,9 +815,9 @@ namespace Raven.Server.Web.System
                     }
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         // we only send the successful index here, we might fail to delete the index
                         // because a node is down, and we don't want to cause the client to wait on an
@@ -920,7 +920,7 @@ namespace Raven.Server.Web.System
                 var (index, _) = await ServerStore.ToggleDatabasesStateAsync(ToggleDatabasesStateCommand.Parameters.ToggleType.Databases, parameters.DatabaseNames, disable, $"{raftRequestId}");
                 await ServerStore.Cluster.WaitForIndexNotification(index);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
                     writer.WritePropertyNameAsync("Status");
@@ -933,7 +933,7 @@ namespace Raven.Server.Web.System
                             writer.WriteCommaAsync();
                         first = false;
 
-                        context.Write(writer, result);
+                        context.WriteAsync(writer, result);
                     }
 
                     writer.WriteEndArrayAsync();
@@ -956,9 +956,9 @@ namespace Raven.Server.Web.System
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(DatabasePutResult.Name)] = name,
                         [nameof(DatabasePutResult.RaftCommandIndex)] = index
@@ -1052,9 +1052,9 @@ namespace Raven.Server.Web.System
                     if (conflictSolverConfig == null)
                         throw new InvalidOperationException($"Database record doesn't have {nameof(DatabaseRecord.ConflictSolverConfig)} property.");
 
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.Write(writer, new DynamicJsonValue
+                        context.WriteAsync(writer, new DynamicJsonValue
                         {
                             ["RaftCommandIndex"] = index,
                             ["Key"] = name,
@@ -1159,7 +1159,7 @@ namespace Raven.Server.Web.System
                     }, token.Token),
                     id: operationId, token: token);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                 }
@@ -1401,7 +1401,7 @@ namespace Raven.Server.Web.System
                 }, operationId, token: token);
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
             }

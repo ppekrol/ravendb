@@ -20,7 +20,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
 
                 using (var write = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(write, djv);
+                    context.WriteAsync(write, djv);
                 }
                 return Task.CompletedTask;
             }
@@ -35,7 +35,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
 
                 using (var write = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(write, djv);
+                    context.WriteAsync(write, djv);
                 }
                 return Task.CompletedTask;
             }

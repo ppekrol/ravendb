@@ -65,7 +65,7 @@ namespace Raven.Server.Web.Studio
                     FetchFieldsForCollection(context, collection, prefix, fields);
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
 

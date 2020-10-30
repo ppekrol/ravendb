@@ -559,7 +559,7 @@ namespace Raven.Server.Documents
                                     writer.WriteCommaAsync();
 
                                 first = false;
-                                context.Write(writer, value);
+                                context.WriteAsync(writer, value);
 
                                 writer.FlushAsync();
 

@@ -407,7 +407,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                 await migrator.UpdateBuildInfoIfNeeded();
                 var operationId = migrator.StartMigratingSingleDatabase(migrationConfigurationJson.MigrationSettings, Database);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                 }
@@ -423,7 +423,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                 var documents = Database.DocumentsStorage.GetDocumentsStartingWith(
                     context, Migrator.MigrationStateKeyBase, null, null, null, 0, 64);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
                     writer.WritePropertyNameAsync(nameof(MigratedServerUrls.List));
@@ -604,7 +604,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                         });
                     }, operationId, token: token).ConfigureAwait(false);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                 }
@@ -648,9 +648,9 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                 if (HttpContext.Request.HasFormContentType == false)
                 {
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest; // Bad request
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.Write(writer, new DynamicJsonValue
+                        context.WriteAsync(writer, new DynamicJsonValue
                         {
                             ["Type"] = "Error",
                             ["Error"] = "This endpoint requires form content type"
@@ -742,9 +742,9 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                 if (HttpContext.Request.HasFormContentType == false)
                 {
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.Write(writer, new DynamicJsonValue
+                        context.WriteAsync(writer, new DynamicJsonValue
                         {
                             ["Type"] = "Error",
                             ["Error"] = "Import from csv requires form content type"
@@ -926,7 +926,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
             using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
             {
                 var json = result.ToJson();
-                context.Write(writer, json);
+                context.WriteAsync(writer, json);
             }
         }
     }

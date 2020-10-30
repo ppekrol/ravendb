@@ -2181,7 +2181,7 @@ namespace Raven.Server
 
             using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
             {
-                context.Write(writer, message);
+                context.WriteAsync(writer, message);
                 writer.FlushAsync();
             }
         }
@@ -2197,7 +2197,7 @@ namespace Raven.Server
                 using (var context = JsonOperationContext.ShortTermSingleUse())
                 using (var errorWriter = new AsyncBlittableJsonTextWriter(context, tcpStream))
                 {
-                    context.Write(errorWriter, new DynamicJsonValue
+                    context.WriteAsync(errorWriter, new DynamicJsonValue
                     {
                         ["Type"] = "Error",
                         ["Exception"] = e.ToString(),

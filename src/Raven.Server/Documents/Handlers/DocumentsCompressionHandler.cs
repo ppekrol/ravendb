@@ -31,9 +31,9 @@ namespace Raven.Server.Documents.Handlers
 
                 if (compressionConfig != null)
                 {
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.Write(writer, compressionConfig.ToJson());
+                        context.WriteAsync(writer, compressionConfig.ToJson());
                     }
                 }
                 else

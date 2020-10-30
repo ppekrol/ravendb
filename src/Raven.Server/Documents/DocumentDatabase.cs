@@ -1058,7 +1058,7 @@ namespace Raven.Server.Documents
                         using (serverContext.OpenReadTransaction())
                         using (var databaseRecord = _serverStore.Cluster.ReadRawDatabaseRecord(serverContext, Name, out _))
                         {
-                            serverContext.Write(writer, databaseRecord.Raw);
+                            serverContext.WriteAsync(writer, databaseRecord.Raw);
                         }
 
                         // save the database values (subscriptions, periodic backups statuses, etl states...)
@@ -1082,7 +1082,7 @@ namespace Raven.Server.Documents
 
                                 var key = keyValue.Key.ToString().Substring(prefix.Length);
                                 writer.WritePropertyNameAsync(key);
-                                serverContext.Write(writer, keyValue.Value);
+                                serverContext.WriteAsync(writer, keyValue.Value);
                             }
                         }
 

@@ -24,7 +24,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             using (var write = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.Write(write,
+                context.WriteAsync(write,
                     new DynamicJsonValue
                     {
                         ["Remote-Connections"] = new DynamicJsonArray(RemoteConnection.RemoteConnectionsList
@@ -49,7 +49,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             using (var write = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.Write(write, ServerStore.Engine.InMemoryDebug.ToJson());
+                context.WriteAsync(write, ServerStore.Engine.InMemoryDebug.ToJson());
                 write.FlushAsync();
             }
             return Task.CompletedTask;
@@ -59,10 +59,10 @@ namespace Raven.Server.Documents.Handlers.Debugging
         public Task GetStateChangeHistory()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
-                writer.WriteArray("States", ServerStore.Engine.PrevStates.Select(s => s.ToString()));
+                writer.WriteArrayAsync("States", ServerStore.Engine.PrevStates.Select(s => s.ToString()));
                 writer.WriteEndObjectAsync();
             }
 
@@ -99,7 +99,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                 {
                     var task = await Task.WhenAny(tasks);
                     tasks.Remove(task);
-                    context.Write(write, task.Result.ToJson());
+                    context.WriteAsync(write, task.Result.ToJson());
                     if (tasks.Count > 0)
                     {
                         write.WriteCommaAsync();
@@ -161,7 +161,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                         using (var msgJson = context.ReadObject(msg, "message"))
                         {
                             result.SendTime = sp.ElapsedMilliseconds;
-                            context.Write(writer, msgJson);
+                            context.WriteAsync(writer, msgJson);
                         }
                         using (var response = context.ReadForMemory(stream, "cluster-ConnectToPeer-header-response"))
                         {

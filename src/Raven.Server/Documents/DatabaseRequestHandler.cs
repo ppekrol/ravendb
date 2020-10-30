@@ -67,14 +67,14 @@ namespace Raven.Server.Documents
                 await WaitForIndexToBeApplied(context, index);
                 HttpContext.Response.StatusCode = (int)statusCode;
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var json = new DynamicJsonValue
                     {
                         ["RaftCommandIndex"] = index,
                     };
                     fillJson?.Invoke(json, configurationJson, index);
-                    context.Write(writer, json);
+                    context.WriteAsync(writer, json);
                     writer.FlushAsync();
                 }
             }

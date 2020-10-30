@@ -393,7 +393,7 @@ namespace Raven.Server.Documents.Replication
                         [nameof(ReplicationMessageReply.Exception)] = mae.ToString()
                     };
 
-                    documentsContext.Write(writer, returnValue);
+                    documentsContext.WriteAsync(writer, returnValue);
                     writer.FlushAsync();
 
                     return;
@@ -411,7 +411,7 @@ namespace Raven.Server.Documents.Replication
                     [nameof(ReplicationMessageReply.Exception)] = e.ToString()
                 };
 
-                documentsContext.Write(writer, returnValue);
+                documentsContext.WriteAsync(writer, returnValue);
                 writer.FlushAsync();
 
                 throw;
@@ -534,7 +534,7 @@ namespace Raven.Server.Documents.Replication
                                    false)
                             {
                                 // send heartbeats while batch is processed in TxMerger. We wait until merger finishes with this command without timeouts
-                                msgContext.Write(writer, msg);
+                                msgContext.WriteAsync(writer, msg);
                                 writer.FlushAsync();
                             }
 
@@ -617,7 +617,7 @@ namespace Raven.Server.Documents.Replication
                 [nameof(ReplicationMessageReply.NodeTag)] = _parent._server.NodeTag
             };
 
-            documentsContext.Write(writer, heartbeat);
+            documentsContext.WriteAsync(writer, heartbeat);
 
             writer.FlushAsync();
             LastHeartbeatTicks = _database.Time.GetUtcNow().Ticks;

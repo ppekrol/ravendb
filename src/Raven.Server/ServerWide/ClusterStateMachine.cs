@@ -2994,7 +2994,7 @@ namespace Raven.Server.ServerWide
                             return reply.Version;
                         }
                         //Kindly request the server to drop the connection
-                        ctx.Write(writer, new DynamicJsonValue
+                        ctx.WriteAsync(writer, new DynamicJsonValue
                         {
                             [nameof(TcpConnectionHeaderMessage.DatabaseName)] = null,
                             [nameof(TcpConnectionHeaderMessage.Operation)] = TcpConnectionHeaderMessage.OperationTypes.Drop,

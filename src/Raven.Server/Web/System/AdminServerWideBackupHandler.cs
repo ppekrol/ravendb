@@ -42,9 +42,9 @@ namespace Raven.Server.Web.System
             };
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.Write(writer, result);
+                context.WriteAsync(writer, result);
             }
 
             return Task.CompletedTask;
@@ -67,7 +67,7 @@ namespace Raven.Server.Web.System
                 var (newIndex, _) = await ServerStore.PutServerWideBackupConfigurationAsync(configuration, GetRaftRequestIdFromQuery());
                 await ServerStore.WaitForCommitIndexChange(RachisConsensus.CommitIndexModification.GreaterOrEqual, newIndex);
                
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 using (context.OpenReadTransaction())
                 {
                     var backupName = ServerStore.Cluster.GetServerWideBackupNameByTaskId(context, newIndex);
@@ -81,7 +81,7 @@ namespace Raven.Server.Web.System
                     };
 
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
-                    context.Write(writer, putResponse.ToJson());
+                    context.WriteAsync(writer, putResponse.ToJson());
                     writer.FlushAsync();
                 }
             }
@@ -97,7 +97,7 @@ namespace Raven.Server.Web.System
                 var (newIndex, _) = await ServerStore.DeleteServerWideBackupConfigurationAsync(name, GetRaftRequestIdFromQuery());
                 await ServerStore.WaitForCommitIndexChange(RachisConsensus.CommitIndexModification.GreaterOrEqual, newIndex);
                
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 using (context.OpenReadTransaction())
                 {
                     var deleteResponse = new PutServerWideBackupConfigurationResponse()
@@ -107,7 +107,7 @@ namespace Raven.Server.Web.System
                     };
 
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
-                    context.Write(writer, deleteResponse.ToJson());
+                    context.WriteAsync(writer, deleteResponse.ToJson());
                     writer.FlushAsync();
                 }
             }
@@ -122,7 +122,7 @@ namespace Raven.Server.Web.System
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var backups = ServerStore.Cluster.GetServerWideBackupConfigurations(context, taskName);
                 ServerWideBackupConfigurationResults backupsResult = new ServerWideBackupConfigurationResults();
@@ -137,7 +137,7 @@ namespace Raven.Server.Web.System
                     backupsResult.Results.Add(backup);
                 }
                 
-                context.Write(writer, backupsResult.ToJson());
+                context.WriteAsync(writer, backupsResult.ToJson());
                 writer.FlushAsync();
 
                 return Task.CompletedTask;
@@ -167,7 +167,7 @@ namespace Raven.Server.Web.System
                 var (newIndex, _) = await ServerStore.PutServerWideBackupConfigurationAsync(serverWideBackup, GetRaftRequestIdFromQuery());
                 await ServerStore.WaitForCommitIndexChange(RachisConsensus.CommitIndexModification.GreaterOrEqual, newIndex);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var toggleResponse = new PutServerWideBackupConfigurationResponse()
                     {
@@ -175,7 +175,7 @@ namespace Raven.Server.Web.System
                         RaftCommandIndex = newIndex 
                     };
 
-                    context.Write(writer, toggleResponse.ToJson());
+                    context.WriteAsync(writer, toggleResponse.ToJson());
                     writer.FlushAsync();
                 }
             }

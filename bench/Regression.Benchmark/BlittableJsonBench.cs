@@ -66,7 +66,7 @@ namespace Regression.Benchmark
                         foreach (var obj in objects)
                         {
                             // We write the whole thing.
-                            context.Write(memoryStream, obj);
+                            context.WriteAsync(memoryStream, obj);
                         }
 
                     });

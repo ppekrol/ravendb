@@ -42,7 +42,7 @@ namespace SlowTests.Authentication
                     Method = HttpMethod.Post,
                     Content = new BlittableJsonContent(stream =>
                     {
-                        ctx.Write(stream, _payload);
+                        ctx.WriteAsync(stream, _payload);
                     })
                 };
             }
@@ -104,7 +104,7 @@ namespace SlowTests.Authentication
                     Method = HttpMethod.Post,
                     Content = new BlittableJsonContent(stream =>
                     {
-                        ctx.Write(stream, _payload);
+                        ctx.WriteAsync(stream, _payload);
                     })
                 };
             }

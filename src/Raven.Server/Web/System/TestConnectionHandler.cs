@@ -31,7 +31,7 @@ namespace Raven.Server.Web.System
             var result = await ServerStore.TestConnectionToRemote(url, database);
 
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 // test the connection from the remote node to this one
                 if (bidirectional == true && result.Success)
@@ -41,7 +41,7 @@ namespace Raven.Server.Web.System
                         result = await ServerStore.TestConnectionFromRemote(requestExecutor, context, url);
                     }
                 }
-                context.Write(writer, result.ToJson());
+                context.WriteAsync(writer, result.ToJson());
             }
         }
 

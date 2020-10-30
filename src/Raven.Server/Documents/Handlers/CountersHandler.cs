@@ -601,9 +601,9 @@ namespace Raven.Server.Documents.Handlers
                     countersDetail = GetInternal(Database, context, counters, docId, full);
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, countersDetail.ToJson());
+                    context.WriteAsync(writer, countersDetail.ToJson());
                     writer.FlushAsync();
                 }
             }
@@ -658,9 +658,9 @@ namespace Raven.Server.Documents.Handlers
                         cmd.ExecuteDirectly(context);
                     }
                 }
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, cmd.CountersDetail.ToJson());
+                    context.WriteAsync(writer, cmd.CountersDetail.ToJson());
                     writer.FlushAsync();
                 }
             }

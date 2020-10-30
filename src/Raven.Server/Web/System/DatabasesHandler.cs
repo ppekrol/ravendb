@@ -45,7 +45,7 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
                 context.OpenReadTransaction();
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
 
@@ -59,7 +59,7 @@ namespace Raven.Server.Web.System
                         items = items.Where(item => allowedDbs.ContainsKey(item.Item1.Substring(Constants.Documents.Prefix.Length)));
                     }
 
-                    writer.WriteArray(context, nameof(DatabasesInfo.Databases), items, (w, c, dbDoc) =>
+                    writer.WriteArrayAsync(context, nameof(DatabasesInfo.Databases), items, (w, c, dbDoc) =>
                     {
                         var databaseName = dbDoc.Item1.Substring(Constants.Documents.Prefix.Length);
                         if (namesOnly)
@@ -105,7 +105,7 @@ namespace Raven.Server.Web.System
                         HttpContext.Response.Headers["Database-Missing"] = name;
                         using (var writer = new AsyncBlittableJsonTextWriter(context, HttpContext.Response.Body))
                         {
-                            context.Write(writer,
+                            context.WriteAsync(writer,
                                 new DynamicJsonValue
                                 {
                                     ["Type"] = "Error",
@@ -126,9 +126,9 @@ namespace Raven.Server.Web.System
                     clusterTopology.ReplaceCurrentNodeUrlWithClientRequestedNodeUrlIfNecessary(ServerStore, HttpContext);
 
                     var dbRecord = JsonDeserializationCluster.DatabaseRecord(dbBlit);
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.Write(writer, new DynamicJsonValue
+                        context.WriteAsync(writer, new DynamicJsonValue
                         {
                             [nameof(Topology.Nodes)] = new DynamicJsonArray(
                                 dbRecord.Topology.Members.Select(x => new DynamicJsonValue
@@ -197,9 +197,9 @@ namespace Raven.Server.Web.System
             var isLoaded = ServerStore.DatabasesLandlord.IsDatabaseLoaded(name);
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(IsDatabaseLoadedCommand.CommandResult.DatabaseName)] = name,
                         [nameof(IsDatabaseLoadedCommand.CommandResult.IsLoaded)] = isLoaded
@@ -238,7 +238,7 @@ namespace Raven.Server.Web.System
             var fileSystemNames = await migrator.GetFileSystemNames(buildInfo.MajorVersion);
         
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var json = new DynamicJsonValue
                 {
@@ -252,7 +252,7 @@ namespace Raven.Server.Web.System
                     [nameof(BuildInfoWithResourceNames.IsLegacyOAuthToken)] = isLegacyOAuthToken.Value
                 };
 
-                context.Write(writer, json);
+                context.WriteAsync(writer, json);
                 writer.FlushAsync();
             }
         }
@@ -275,7 +275,7 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
                 context.OpenReadTransaction();
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var dbId = Constants.Documents.Prefix + dbName;
                     using (var dbRecord = ServerStore.Cluster.Read(context, dbId, out long _))
@@ -395,7 +395,7 @@ namespace Raven.Server.Web.System
                             [nameof(DatabaseInfo.Environment)] = studioEnvironment
                         };
 
-                        context.Write(writer, databaseInfoJson);
+                        context.WriteAsync(writer, databaseInfoJson);
                     }))
                     {
                         return;
@@ -440,7 +440,7 @@ namespace Raven.Server.Web.System
                 };
 
                 var doc = databaseInfo.ToJson();
-                context.Write(writer, doc);
+                context.WriteAsync(writer, doc);
             }
             catch (Exception e)
             {
@@ -506,7 +506,7 @@ namespace Raven.Server.Web.System
                 [nameof(DatabaseInfo.LoadError)] = exception.Message
             };
 
-            context.Write(writer, doc);
+            context.WriteAsync(writer, doc);
         }
 
         private static BackupInfo GetBackupInfo(DocumentDatabase db)

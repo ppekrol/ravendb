@@ -30,6 +30,7 @@ using Raven.Server.Utils;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Logging;
+using BlittableJsonTextWriterExtensions = Sparrow.Json.BlittableJsonTextWriterExtensions;
 using Index = Raven.Server.Documents.Indexes.Index;
 
 namespace Raven.Server.Documents.Handlers
@@ -92,9 +93,9 @@ namespace Raven.Server.Documents.Handlers
                 throw new InvalidOperationException("Could not retrieve source for given index.");
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     ["Index"] = index.Name,
                     ["Source"] = source
@@ -123,7 +124,7 @@ namespace Raven.Server.Documents.Handlers
             }
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
                 writer.WritePropertyNameAsync("Index");
@@ -138,7 +139,7 @@ namespace Raven.Server.Documents.Handlers
                     return Task.CompletedTask;
                 }
 
-                writer.WriteArray(context, "History", history, (w, c, entry) =>
+                writer.WriteArrayAsync(context, "History", history, (w, c, entry) =>
                 {
                     w.WriteStartObject();
 
@@ -173,7 +174,7 @@ namespace Raven.Server.Documents.Handlers
 
                 var changed = Database.IndexStore.HasChanged(indexDefinition);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
                     writer.WritePropertyNameAsync("Changed");
@@ -200,7 +201,7 @@ namespace Raven.Server.Documents.Handlers
             var operation = GetStringQueryString("op");
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 if (string.Equals(operation, "map-reduce-tree", StringComparison.OrdinalIgnoreCase))
                 {
@@ -208,7 +209,7 @@ namespace Raven.Server.Documents.Handlers
                     {
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 
-                        context.Write(writer, new DynamicJsonValue
+                        context.WriteAsync(writer, new DynamicJsonValue
                         {
                             ["Error"] = $"{index.Name} is not map-reduce index"
                         });
@@ -242,10 +243,10 @@ namespace Raven.Server.Documents.Handlers
 
                     writer.WriteStartObjectAsync();
 
-                    writer.WriteArray(nameof(fields.Static), fields.Static);
+                    writer.WriteArrayAsync(nameof(fields.Static), fields.Static);
                     writer.WriteCommaAsync();
 
-                    writer.WriteArray(nameof(fields.Dynamic), fields.Dynamic);
+                    writer.WriteArrayAsync(nameof(fields.Dynamic), fields.Dynamic);
 
                     writer.WriteEndObjectAsync();
 
@@ -266,7 +267,7 @@ namespace Raven.Server.Documents.Handlers
             var namesOnly = GetBoolValueQueryString("namesOnly", required: false) ?? false;
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 IndexDefinition[] indexDefinitions;
                 if (string.IsNullOrEmpty(name))
@@ -291,7 +292,7 @@ namespace Raven.Server.Documents.Handlers
 
                 writer.WriteStartObjectAsync();
 
-                writer.WriteArray(context, "Results", indexDefinitions, (w, c, indexDefinition) =>
+                writer.WriteArrayAsync(context, "Results", indexDefinitions, (w, c, indexDefinition) =>
                 {
                     if (namesOnly)
                     {
@@ -392,7 +393,7 @@ namespace Raven.Server.Documents.Handlers
 
                 writer.WriteStartObjectAsync();
 
-                writer.WriteArray(context.Documents, "Results", indexStats, (w, c, stats) =>
+                writer.WriteArrayAsync(context.Documents, "Results", indexStats, (w, c, stats) =>
                 {
                     w.WriteIndexStats(context.Documents, stats);
                 });
@@ -425,7 +426,7 @@ namespace Raven.Server.Documents.Handlers
                 writer.WriteBool(isStale);
                 writer.WriteCommaAsync();
 
-                writer.WriteArray("StalenessReasons", stalenessReasons);
+                writer.WriteArrayAsync("StalenessReasons", stalenessReasons);
 
                 writer.WriteEndObjectAsync();
             }
@@ -496,7 +497,7 @@ namespace Raven.Server.Documents.Handlers
             }
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
                 writer.WritePropertyNameAsync("Index");
@@ -580,7 +581,7 @@ namespace Raven.Server.Documents.Handlers
         public Task Status()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
 
@@ -715,16 +716,16 @@ namespace Raven.Server.Documents.Handlers
             }
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
-                writer.WriteArray(context, "Results", indexes, (w, c, index) =>
+                writer.WriteArrayAsync(context, "Results", indexes, (w, c, index) =>
                 {
                     w.WriteStartObject();
                     w.WritePropertyName("Name");
                     w.WriteString(index.Name);
                     w.WriteComma();
-                    w.WriteArray(c, "Errors", index.GetErrors(), (ew, ec, error) =>
+                    BlittableJsonTextWriterExtensions.WriteArrayAsync(w, c, "Errors", index.GetErrors(), (ew, ec, error) =>
                     {
                         ew.WriteStartObject();
                         ew.WritePropertyName(nameof(error.Timestamp));
@@ -825,7 +826,7 @@ namespace Raven.Server.Documents.Handlers
         {
             var indexes = GetIndexesToReportOn();
             using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var dja = new DynamicJsonArray();
 
@@ -867,7 +868,7 @@ namespace Raven.Server.Documents.Handlers
                     });
                 }
 
-                context.Write(writer, dja);
+                context.WriteAsync(writer, dja);
             }
             return Task.CompletedTask;
         }
@@ -884,7 +885,7 @@ namespace Raven.Server.Documents.Handlers
                 .ToArray();
 
             using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WritePerformanceStats(context, stats);
             }
@@ -942,9 +943,9 @@ namespace Raven.Server.Documents.Handlers
 
             HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
             using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.Write(writer, mergeIndexSuggestions.ToJson());
+                context.WriteAsync(writer, mergeIndexSuggestions.ToJson());
                 writer.FlushAsync();
             }
             return Task.CompletedTask;
@@ -1028,7 +1029,7 @@ namespace Raven.Server.Documents.Handlers
                         }
                     }
                     var first = true;
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteStartObjectAsync();
                         writer.WritePropertyNameAsync("MapResults");

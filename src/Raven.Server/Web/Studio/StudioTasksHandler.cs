@@ -204,9 +204,9 @@ namespace Raven.Server.Web.Studio
                         throw new ArgumentOutOfRangeException();
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(FolderPathOptions.List)] = TypeConverter.ToBlittableSupportedType(folderPathOptions.List)
                     });
@@ -244,9 +244,9 @@ namespace Raven.Server.Web.Studio
                     errorMessage = e.Message;
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(OfflineMigrationValidation.IsValid)] = isValid,
                         [nameof(OfflineMigrationValidation.ErrorMessage)] = errorMessage
@@ -289,9 +289,9 @@ namespace Raven.Server.Web.Studio
                         break;
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(NameValidation.IsValid)] = isValid,
                         [nameof(NameValidation.ErrorMessage)] = errorMessage
@@ -310,9 +310,9 @@ namespace Raven.Server.Web.Studio
             // If the path from the configuration is defined, the Studio will block the option to set the path in the import view
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [$"Has{nameof(MigrationConfiguration.MigratorPath)}"] = Server.Configuration.Migration.MigratorPath != null
                     });
@@ -374,9 +374,9 @@ namespace Raven.Server.Web.Studio
                         throw new NotSupportedException($"Unknown index type '{type}'.");
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, formattedExpression.ToJson());
+                    context.WriteAsync(writer, formattedExpression.ToJson());
                 }
             }
 
@@ -396,7 +396,7 @@ namespace Raven.Server.Web.Studio
             catch (Exception e)
             {
                 using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
                     writer.WritePropertyNameAsync(nameof(NextCronExpressionOccurrence.IsValid));
@@ -414,7 +414,7 @@ namespace Raven.Server.Web.Studio
             var nextOccurrence = crontabSchedule.GetNextOccurrence(SystemTime.UtcNow.ToLocalTime());
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
                 writer.WritePropertyNameAsync(nameof(NextCronExpressionOccurrence.IsValid));

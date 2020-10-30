@@ -1214,7 +1214,7 @@ namespace FastTests.Server.Documents.Revisions
                         Method = HttpMethod.Delete,
                         Content = new BlittableJsonContent(stream =>
                         {
-                            ctx.Write(stream, _parameters);
+                            ctx.WriteAsync(stream, _parameters);
                         })
                     };
                 }

@@ -26,7 +26,7 @@ namespace Raven.Server.Web.Studio
                     var indexType = indexDefinition.DetectStaticIndexType();
                     var indexSourceType = indexDefinition.DetectStaticIndexSourceType();
 
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteStartObjectAsync();
                         writer.WritePropertyNameAsync(nameof(IndexTypeInfo.IndexType));
@@ -74,17 +74,17 @@ namespace Raven.Server.Web.Studio
 
                         var outputFields = compiledIndex.OutputFields;
 
-                        using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                        await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                         {
                             writer.WriteStartObjectAsync();
-                            writer.WriteArray(context, "Results", outputFields, (w, c, field) => { w.WriteString(field); });
+                            writer.WriteArrayAsync(context, "Results", outputFields, (w, c, field) => { w.WriteString(field); });
                             writer.WriteEndObjectAsync();
                         }
                     }
                     catch (IndexCompilationException)
                     {
                         // swallow compilation exception and return empty array as response
-                        using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                        await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                         {
                             writer.WriteStartArrayAsync();
                             writer.WriteEndArrayAsync();

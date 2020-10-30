@@ -50,7 +50,7 @@ namespace Raven.Server.TrafficWatch
                             {
                                 using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
                                 {
-                                    context.Write(writer, new DynamicJsonValue
+                                    context.WriteAsync(writer, new DynamicJsonValue
                                     {
                                         ["Exception"] = ex
                                     });

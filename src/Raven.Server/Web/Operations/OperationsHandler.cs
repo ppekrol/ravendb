@@ -21,7 +21,7 @@ namespace Raven.Server.Web.Operations
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             {
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
                     writer.WritePropertyNameAsync("Id");
@@ -68,12 +68,12 @@ namespace Raven.Server.Web.Operations
                     operations = new List<Documents.Operations.Operations.Operation> { operation };
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
-                    writer.WriteArray(context, "Results", operations, (w, c, operation) =>
+                    writer.WriteArrayAsync(context, "Results", operations, (w, c, operation) =>
                     {
-                        c.Write(w, operation.ToJson());
+                        c.WriteAsync(w, operation.ToJson());
                     });
                     writer.WriteEndObjectAsync();
                 }
@@ -97,9 +97,9 @@ namespace Raven.Server.Web.Operations
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             {
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, state.ToJson());
+                    context.WriteAsync(writer, state.ToJson());
                     // writes Patch response
                     if (TrafficWatchManager.HasRegisteredClients)
                         AddStringToHttpContext(writer.ToString(), TrafficWatchChangeType.Operations);

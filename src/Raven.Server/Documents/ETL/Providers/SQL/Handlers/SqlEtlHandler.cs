@@ -36,9 +36,9 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.Handlers
                     };
                 
                 using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, result);
+                    context.WriteAsync(writer, result);
                 }
                 
             }
@@ -49,9 +49,9 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.Handlers
 
                 using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
                 {
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.Write(writer, new DynamicJsonValue
+                        context.WriteAsync(writer, new DynamicJsonValue
                         {
                             [nameof(NodeConnectionTestResult.Success)] = false,
                             [nameof(NodeConnectionTestResult.Error)] = ex.ToString()
@@ -73,7 +73,7 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.Handlers
 
                 var result = (SqlEtlTestScriptResult)SqlEtl.TestScript(testScript, Database, ServerStore, context);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(result);
                     writer.WriteObjectAsync(context.ReadObject(djv, "et/sql/test"));

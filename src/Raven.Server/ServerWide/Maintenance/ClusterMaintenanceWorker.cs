@@ -134,7 +134,7 @@ namespace Raven.Server.ServerWide.Maintenance
         {
             using (var writer = new AsyncBlittableJsonTextWriter(ctx, _tcp.Stream))
             {
-                ctx.Write(writer, DynamicJsonValue.Convert(nodeReport));
+                ctx.WriteAsync(writer, DynamicJsonValue.Convert(nodeReport));
             }
         }
 
@@ -149,7 +149,7 @@ namespace Raven.Server.ServerWide.Maintenance
 
             using (var writer = new AsyncBlittableJsonTextWriter(ctx, _tcp.Stream))
             {
-                ctx.Write(writer, report.ToJson());
+                ctx.WriteAsync(writer, report.ToJson());
             }
         }
 

@@ -44,15 +44,15 @@ namespace Raven.Server.Web.System
             var items = ServerStore.Cluster.GetCompareExchangeValuesStartsWith(context, Database.Name, CompareExchangeKey.GetStorageKey(Database.Name, startsWithKey), start, pageSize);
 
             var numberOfResults = 0;
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
                 
-                writer.WriteArray(context, "Results", items,
+                writer.WriteArrayAsync(context, "Results", items,
                     (textWriter, operationContext, item) =>
                     {
                         numberOfResults++;
-                        operationContext.Write(textWriter, new DynamicJsonValue
+                        operationContext.WriteAsync(textWriter, new DynamicJsonValue
                         {
                             [nameof(CompareExchangeListItem.Key)] = item.Key.Key,
                             [nameof(CompareExchangeListItem.Value)] = item.Value,
@@ -92,15 +92,15 @@ namespace Raven.Server.Web.System
             }
 
             var numberOfResults = 0;
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
                 
-                writer.WriteArray(context, "Results", items,
+                writer.WriteArrayAsync(context, "Results", items,
                     (textWriter, operationContext, item) =>
                     {
                         numberOfResults++;
-                        operationContext.Write(textWriter, new DynamicJsonValue
+                        operationContext.WriteAsync(textWriter, new DynamicJsonValue
                         {
                             ["Key"] = item.Key,
                             ["Value"] = item.Value,
@@ -131,13 +131,13 @@ namespace Raven.Server.Web.System
             {
                 var updateJson = await context.ReadForMemoryAsync(RequestBodyStream(), "read-unique-value");
                 var command = new AddOrUpdateCompareExchangeCommand(Database.Name, key, updateJson, index, context, raftRequestId);
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     (var raftIndex, var response) = await ServerStore.SendToLeaderAsync(context, command);
                     await ServerStore.Cluster.WaitForIndexNotification(raftIndex);
 
                     var result = (CompareExchangeCommandBase.CompareExchangeResult)response;
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(CompareExchangeResult<object>.Index)] = result.Index,
                         [nameof(CompareExchangeResult<object>.Value)] = result.Value,
@@ -161,13 +161,13 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
                 var command = new RemoveCompareExchangeCommand(Database.Name, key, index, context, raftRequestId);
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     (var raftIndex, var response) = await ServerStore.SendToLeaderAsync(context, command);
                     await ServerStore.Cluster.WaitForIndexNotification(raftIndex);
 
                     var result = (CompareExchangeCommandBase.CompareExchangeResult)response;
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(CompareExchangeResult<object>.Index)] = result.Index,
                         [nameof(CompareExchangeResult<object>.Value)] = result.Value,

@@ -20,8 +20,8 @@ namespace Raven.Server.Documents.Handlers
             {
                 DynamicJsonValue result = GetCollectionStats(context, false);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
-                    context.Write(writer, result);
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    context.WriteAsync(writer, result);
             }
 
             return Task.CompletedTask;
@@ -35,8 +35,8 @@ namespace Raven.Server.Documents.Handlers
             {
                 DynamicJsonValue result = GetCollectionStats(context, true);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
-                    context.Write(writer, result);
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    context.WriteAsync(writer, result);
             }
 
             return Task.CompletedTask;
@@ -79,7 +79,7 @@ namespace Raven.Server.Documents.Handlers
                 var documents = Database.DocumentsStorage.GetDocumentsInReverseEtagOrder(context, GetStringQueryString("name"), GetStart(), pageSize);
 
                 long numberOfResults;
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
 
                     writer.WriteStartObjectAsync();

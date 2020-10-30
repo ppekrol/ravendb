@@ -80,9 +80,9 @@ namespace Raven.Server.NotificationCenter
                 var notificationType = notification.GetType();
 
                 if (notificationType == typeof(DynamicJsonValue))
-                    _context.Write(writer, notification as DynamicJsonValue);
+                    _context.WriteAsync(writer, notification as DynamicJsonValue);
                 else if (notificationType == typeof(BlittableJsonReaderObject))
-                    _context.Write(writer, notification as BlittableJsonReaderObject);
+                    _context.WriteAsync(writer, notification as BlittableJsonReaderObject);
                 else
                     ThrowNotSupportedType(notification);
             }

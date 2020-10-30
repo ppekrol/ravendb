@@ -82,7 +82,7 @@ namespace Raven.Server.Web.Studio
                     propertiesPreviewToSend = bindings.Count > 0 ? new HashSet<string>(bindings) : availableColumns.Take(ColumnsSamplingLimit).Select(x => x.ToString()).ToHashSet();
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
                     writer.WritePropertyNameAsync("Results");
@@ -111,7 +111,7 @@ namespace Raven.Server.Web.Studio
 
                     writer.WriteCommaAsync();
 
-                    writer.WriteArray("AvailableColumns", availableColumns);
+                    writer.WriteArrayAsync("AvailableColumns", availableColumns);
 
                     writer.WriteEndObjectAsync();
                 }
@@ -334,7 +334,7 @@ namespace Raven.Server.Web.Studio
 
             task.ContinueWith(_ => returnContextToPool.Dispose());
 
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
             }

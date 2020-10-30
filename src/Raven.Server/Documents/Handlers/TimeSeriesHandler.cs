@@ -63,7 +63,7 @@ namespace Raven.Server.Documents.Handlers
                     }
                 }
                 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
                     
@@ -474,7 +474,7 @@ namespace Raven.Server.Documents.Handlers
                     writer.WritePropertyNameAsync(nameof(TimeSeriesEntry.Tag));
                     writer.WriteStringAsync(entries[i].Tag);
                     writer.WriteCommaAsync();
-                    writer.WriteArray(nameof(TimeSeriesEntry.Values), entries[i].Values);
+                    writer.WriteArrayAsync(nameof(TimeSeriesEntry.Values), entries[i].Values);
                     writer.WriteCommaAsync();
                     writer.WritePropertyNameAsync(nameof(TimeSeriesEntry.IsRollup));
                     writer.WriteBool(entries[i].IsRollup);
@@ -527,9 +527,9 @@ namespace Raven.Server.Documents.Handlers
 
                 if (timeSeriesConfig != null)
                 {
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.Write(writer, timeSeriesConfig.ToJson());
+                        context.WriteAsync(writer, timeSeriesConfig.ToJson());
                     }
                 }
                 else
@@ -709,10 +709,10 @@ namespace Raven.Server.Documents.Handlers
 
         private void SendConfigurationResponse(TransactionOperationContext context, long index)
         {
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var response = new DynamicJsonValue {["RaftCommandIndex"] = index,};
-                context.Write(writer, response);
+                context.WriteAsync(writer, response);
                 writer.FlushAsync();
             }
         }
@@ -905,7 +905,7 @@ namespace Raven.Server.Documents.Handlers
             {
                 var segmantsSummary = Database.DocumentsStorage.TimeSeriesStorage.GetSegmentsSummary(context, documentId, name, from, to);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
                     writer.WritePropertyNameAsync("Results");
@@ -915,7 +915,7 @@ namespace Raven.Server.Documents.Handlers
                     {
                         if (!first)
                             writer.WriteCommaAsync();
-                        context.Write(writer, summery.ToJson());
+                        context.WriteAsync(writer, summery.ToJson());
                         first = false;
                     }
                     writer.WriteEndArrayAsync();

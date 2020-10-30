@@ -118,9 +118,9 @@ namespace Raven.Server.Documents.Handlers
                 }
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(BatchCommandResult.Results)] = command.Reply
                     });
@@ -230,9 +230,9 @@ namespace Raven.Server.Documents.Handlers
             }
 
             HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     [nameof(BatchCommandResult.Results)] = array,
                     [nameof(BatchCommandResult.TransactionIndex)] = result.Index

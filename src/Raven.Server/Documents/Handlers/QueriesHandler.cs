@@ -186,7 +186,7 @@ namespace Raven.Server.Documents.Handlers
                 if (indexQuery.Diagnostics != null)
                 {
                     w.WriteCommaAsync();
-                    w.WriteArray(nameof(indexQuery.Diagnostics), indexQuery.Diagnostics);
+                    w.WriteArrayAsync(nameof(indexQuery.Diagnostics), indexQuery.Diagnostics);
                 }
             };
         }
@@ -297,7 +297,7 @@ namespace Raven.Server.Documents.Handlers
 
                 using (var writer = new AsyncBlittableJsonTextWriter(queryContext.Documents, ResponseBodyStream()))
                 {
-                    queryContext.Documents.Write(writer, output);
+                    queryContext.Documents.WriteAsync(writer, output);
                 }
             }
         }
@@ -314,7 +314,7 @@ namespace Raven.Server.Documents.Handlers
                 writer.WritePropertyNameAsync("IndexName");
                 writer.WriteStringAsync(indexName);
                 writer.WriteCommaAsync();
-                writer.WriteArray(queryContext.Documents, "Results", explanations, (w, c, explanation) =>
+                writer.WriteArrayAsync(queryContext.Documents, "Results", explanations, (w, c, explanation) =>
                 {
                     w.WriteExplanation(queryContext.Documents, explanation);
                 });
@@ -430,7 +430,7 @@ namespace Raven.Server.Documents.Handlers
 
         private void WritePatchResultToResponse(DocumentsOperationContext context, PatchDocumentCommand command)
         {
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
 
@@ -449,7 +449,7 @@ namespace Raven.Server.Documents.Handlers
 
                 writer.WritePropertyNameAsync(nameof(command.PatchResult.Debug));
 
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     ["Output"] = new DynamicJsonArray(command.DebugOutput),
                     ["Actions"] = command.DebugActions

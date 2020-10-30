@@ -33,7 +33,7 @@ namespace FastTests.Blittable.BlittableJsonWriterTests
                     var writer = context.Read(stream, "docs/1");
 
                     var memoryStream = new MemoryStream();
-                    context.Write(memoryStream, writer);
+                    context.WriteAsync(memoryStream, writer);
 
                     memoryStream.Position = 0;
                     var after = ((JObject)serializer.Deserialize(new JsonTextReader(new StreamReader(memoryStream))));
@@ -80,7 +80,7 @@ namespace FastTests.Blittable.BlittableJsonWriterTests
                         using (var writer = context.Read(stream, "docs/1 "))
                         {
                             var memoryStream = new MemoryStream();
-                            context.Write(memoryStream, writer);
+                            context.WriteAsync(memoryStream, writer);
                             var s = Encoding.UTF8.GetString(memoryStream.ToArray());
 
                             JObject.Parse(s); // can parse the output

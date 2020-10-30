@@ -27,9 +27,9 @@ namespace Raven.Server.Web.Studio
                 var dbDriver = DatabaseDriverDispatcher.CreateDriver(sourceSqlDatabase.Provider, sourceSqlDatabase.ConnectionString);
                 var schema = dbDriver.FindSchema();
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, schema.ToJson());
+                    context.WriteAsync(writer, schema.ToJson());
                 }
             }
 
@@ -89,7 +89,7 @@ namespace Raven.Server.Web.Studio
                         });
                     }, operationId, token: token);
                     
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                     }
@@ -123,7 +123,7 @@ namespace Raven.Server.Web.Studio
                     
                     var (testResultDocument, documentId) = dbDriver.Test(testRequest.Settings, schema, context);
                     
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         writer.WriteStartObjectAsync();
                         

@@ -258,7 +258,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             using (var ms = new MemoryStream())
             using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
             {
-                context.Write(writer, bodyJson);
+                context.WriteAsync(writer, bodyJson);
                 writer.FlushAsync();
                 ms.Flush();
 
@@ -286,7 +286,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                     using (var writer = new AsyncBlittableJsonTextWriter(context, entryStream))
                     using (var endpointOutput = await localEndpointClient.InvokeAndReadObjectAsync(route, context))
                     {
-                        context.Write(writer, endpointOutput);
+                        context.WriteAsync(writer, endpointOutput);
                         writer.FlushAsync();
                         await entryStream.FlushAsync();
                     }
@@ -350,7 +350,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                     {
                         using (var endpointOutput = await localEndpointClient.InvokeAndReadObjectAsync(route, jsonOperationContext, endpointParameters))
                         {
-                            jsonOperationContext.Write(writer, endpointOutput);
+                            jsonOperationContext.WriteAsync(writer, endpointOutput);
                             writer.FlushAsync();
                             await entryStream.FlushAsync();
                         }

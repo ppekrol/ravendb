@@ -25,10 +25,10 @@ namespace Raven.Server.Web.System
         public Task Get()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var output = Server.ServerStore.GetTcpInfoAndCertificates(HttpContext.Request.GetClientRequestedNodeUrl());
-                context.Write(writer, output);
+                context.WriteAsync(writer, output);
             }
 
             return Task.CompletedTask;
@@ -57,7 +57,7 @@ namespace Raven.Server.Web.System
             }
 
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var output = new DynamicJsonArray();
                 var clusterTopology = ServerStore.GetClusterTopology();
@@ -65,7 +65,7 @@ namespace Raven.Server.Web.System
                 {
                     output.Add(clusterTopology.GetUrlFromTag(node));
                 }
-                context.Write(writer, new DynamicJsonValue
+                context.WriteAsync(writer, new DynamicJsonValue
                 {
                     ["Results"] = output
                 });
@@ -94,10 +94,10 @@ namespace Raven.Server.Web.System
                 return;
 
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var output = Server.ServerStore.GetTcpInfoAndCertificates(HttpContext.Request.GetClientRequestedNodeUrl(), forExternalUse:true);
-                context.Write(writer, output);
+                context.WriteAsync(writer, output);
             }
         }
 

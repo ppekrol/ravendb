@@ -32,7 +32,7 @@ namespace Raven.Server.Web.System
                 var stream = new MemoryStream();
                 using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(BuildNumber.BuildVersion)] = ServerVersion.Build,
                         [nameof(BuildNumber.ProductVersion)] = ServerVersion.Version,
@@ -83,9 +83,9 @@ namespace Raven.Server.Web.System
             var versionUpdatesInfo = LatestVersionCheck.Instance.GetLastRetrievedVersionUpdatesInfo();
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, new DynamicJsonValue
+                    context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(LatestVersionCheck.VersionInfo.Version)] = versionUpdatesInfo?.Version,
                         [nameof(LatestVersionCheck.VersionInfo.PublishedAt)] = versionUpdatesInfo?.PublishedAt,

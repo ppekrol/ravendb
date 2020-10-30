@@ -290,7 +290,7 @@ namespace SlowTests.Issues
                     var _csvConfigBlittable = DocumentConventions.Default.Serialization.DefaultConverter.ToBlittable(_csvConfig, ctx);
                     form = new MultipartFormDataContent
                     {
-                        {new BlittableJsonContent(stream => { ctx.Write(stream, _csvConfigBlittable); }), Constants.Smuggler.CsvImportOptions},
+                        {new BlittableJsonContent(stream => { ctx.WriteAsync(stream, _csvConfigBlittable); }), Constants.Smuggler.CsvImportOptions},
                         {new StreamContent(_stream), "file", "name"}
                     };
                 }

@@ -45,7 +45,7 @@ namespace Raven.Server.Documents.Handlers
                             {
                                 using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
                                 {
-                                    context.Write(writer, new DynamicJsonValue
+                                    context.WriteAsync(writer, new DynamicJsonValue
                                     {
                                         ["Type"] = "Error",
                                         ["Exception"] = ex.ToString()
@@ -70,7 +70,7 @@ namespace Raven.Server.Documents.Handlers
         public Task GetConnectionsDebugInfo()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
                 writer.WritePropertyNameAsync("Connections");
@@ -82,7 +82,7 @@ namespace Raven.Server.Documents.Handlers
                     if (first == false)
                         writer.WriteCommaAsync();
                     first = false;
-                    context.Write(writer, connection.Value.GetDebugInfo());
+                    context.WriteAsync(writer, connection.Value.GetDebugInfo());
                 }
                 writer.WriteEndArrayAsync();
 

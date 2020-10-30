@@ -65,9 +65,9 @@ namespace Raven.Server.Documents.Handlers.Admin
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.Write(writer, settingsResult.ToJson());
+                    context.WriteAsync(writer, settingsResult.ToJson());
                 }
             }
 

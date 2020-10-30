@@ -50,7 +50,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                                 {
                                     using (var endpointOutput = await localEndpointClient.InvokeAndReadObjectAsync(route, context, endpointParameters))
                                     {
-                                        context.Write(writer, endpointOutput);
+                                        context.WriteAsync(writer, endpointOutput);
                                         writer.FlushAsync();
                                         await entryStream.FlushAsync();
                                     }

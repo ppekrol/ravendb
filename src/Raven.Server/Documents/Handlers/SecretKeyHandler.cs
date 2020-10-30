@@ -30,7 +30,7 @@ namespace Raven.Server.Documents.Handlers
 
                 using (var writer = new AsyncBlittableJsonTextWriter(ctx, ResponseBodyStream()))
                 {
-                    ctx.Write(writer, djv);
+                    ctx.WriteAsync(writer, djv);
                 }
             }
             return Task.CompletedTask;

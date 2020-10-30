@@ -28,7 +28,7 @@ namespace Raven.Server.Documents.Handlers
                 var val = configuration.ToJson();
                 var clientConfigurationJson = context.ReadObject(val, Constants.Configuration.StudioId);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteObjectAsync(clientConfigurationJson);
                 }
@@ -59,7 +59,7 @@ namespace Raven.Server.Documents.Handlers
                     clientConfigurationJson = context.ReadObject(val, Constants.Configuration.ClientId);
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
 

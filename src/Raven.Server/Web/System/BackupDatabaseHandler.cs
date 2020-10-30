@@ -23,14 +23,14 @@ namespace Raven.Server.Web.System
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             using (var rawRecord = ServerStore.Cluster.ReadRawDatabaseRecord(context, name))
             {
                 var periodicBackup = rawRecord.GetPeriodicBackupConfiguration(taskId);
                 if (periodicBackup == null)
                     throw new InvalidOperationException($"Periodic backup task ID: {taskId} doesn't exist");
 
-                context.Write(writer, periodicBackup.ToJson());
+                context.WriteAsync(writer, periodicBackup.ToJson());
                 writer.FlushAsync();
             }
 
@@ -52,7 +52,7 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
             using (var statusBlittable = ServerStore.Cluster.Read(context, PeriodicBackupStatus.GenerateItemName(name, taskId.Value)))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteStartObjectAsync();
                 writer.WritePropertyNameAsync(nameof(GetPeriodicBackupStatusOperationResult.Status));

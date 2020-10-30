@@ -93,7 +93,7 @@ namespace Raven.Server.Routing
                     using (var ctx = JsonOperationContext.ShortTermSingleUse())
                     using (var writer = new AsyncBlittableJsonTextWriter(ctx, context.Response.Body))
                     {
-                        ctx.Write(writer,
+                        ctx.WriteAsync(writer,
                             new DynamicJsonValue
                             {
                                 ["Type"] = "Error",
@@ -201,7 +201,7 @@ namespace Raven.Server.Routing
             using (var ctx = JsonOperationContext.ShortTermSingleUse())
             using (var writer = new AsyncBlittableJsonTextWriter(ctx, context.Response.Body))
             {
-                ctx.Write(writer,
+                ctx.WriteAsync(writer,
                     new DynamicJsonValue
                     {
                         ["Type"] = "Error",
@@ -452,7 +452,7 @@ namespace Raven.Server.Routing
                     return;
                 }
 
-                ctx.Write(writer,
+                ctx.WriteAsync(writer,
                     new DynamicJsonValue
                     {
                         ["Type"] = "InvalidAuth",

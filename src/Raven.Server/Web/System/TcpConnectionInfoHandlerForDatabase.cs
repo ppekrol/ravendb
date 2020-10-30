@@ -12,10 +12,10 @@ namespace Raven.Server.Web.System
         public Task Get()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var output = Server.ServerStore.GetTcpInfoAndCertificates(HttpContext.Request.GetClientRequestedNodeUrl());
-                context.Write(writer, output);
+                context.WriteAsync(writer, output);
             }
 
             return Task.CompletedTask;

@@ -381,7 +381,7 @@ namespace FastTests
                         Content = new BlittableJsonContent(stream =>
                         {
                             if (_payload != null)
-                                ctx.Write(stream, _payload);
+                                ctx.WriteAsync(stream, _payload);
                         })
                     };
 

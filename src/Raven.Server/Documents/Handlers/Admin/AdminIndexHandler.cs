@@ -98,11 +98,11 @@ namespace Raven.Server.Documents.Handlers.Admin
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     writer.WriteStartObjectAsync();
 
-                    writer.WriteArray(context, "Results", createdIndexes, (w, c, index) =>
+                    writer.WriteArrayAsync(context, "Results", createdIndexes, (w, c, index) =>
                     {
                         w.WriteStartObject();
                         w.WritePropertyName(nameof(PutIndexResult.Index));
@@ -298,7 +298,7 @@ namespace Raven.Server.Documents.Handlers.Admin
                 }, operationId, token: token);
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
             }

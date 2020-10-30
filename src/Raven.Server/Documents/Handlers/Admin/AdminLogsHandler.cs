@@ -17,7 +17,7 @@ namespace Raven.Server.Documents.Handlers.Admin
         public Task GetConfiguration()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var djv = new DynamicJsonValue
                 {
