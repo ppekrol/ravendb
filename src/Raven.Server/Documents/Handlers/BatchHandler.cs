@@ -120,7 +120,7 @@ namespace Raven.Server.Documents.Handlers
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.WriteAsync(writer, new DynamicJsonValue
+                    await context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(BatchCommandResult.Results)] = command.Reply
                     });
@@ -150,6 +150,7 @@ namespace Raven.Server.Documents.Handlers
                                 throw new NotSupportedException($"The document {document.Id} has time series, this is not supported in cluster wide transaction.");
                         }
                         break;
+
                     default:
                         throw new ArgumentOutOfRangeException($"The command type {document.Type} is not supported in cluster transaction.");
                 }
@@ -232,7 +233,7 @@ namespace Raven.Server.Documents.Handlers
             HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.WriteAsync(writer, new DynamicJsonValue
+                await context.WriteAsync(writer, new DynamicJsonValue
                 {
                     [nameof(BatchCommandResult.Results)] = array,
                     [nameof(BatchCommandResult.TransactionIndex)] = result.Index
@@ -593,6 +594,7 @@ namespace Raven.Server.Documents.Handlers
                                     }
 
                                     break;
+
                                 case CommandType.DELETE:
                                     if (current < count)
                                     {
@@ -634,6 +636,7 @@ namespace Raven.Server.Documents.Handlers
                                         }
                                     }
                                     break;
+
                                 default:
                                     throw new NotSupportedException($"{cmd.Type} is not supported in {nameof(ClusterTransactionMergedCommand)}.");
                             }
@@ -983,6 +986,7 @@ namespace Raven.Server.Documents.Handlers
                             acReplies.Add((acReply, nameof(Constants.Fields.CommandData.DocumentChangeVector)));
                             Reply.Add(acReply);
                             break;
+
                         case CommandType.TimeSeries:
                             var tsCmd = new TimeSeriesHandler.ExecuteTimeSeriesBatchCommand(Database, cmd.Id, cmd.TimeSeries, false);
 
@@ -1000,6 +1004,7 @@ namespace Raven.Server.Documents.Handlers
                             });
 
                             break;
+
                         case CommandType.TimeSeriesCopy:
 
                             var reader = Database.DocumentsStorage.TimeSeriesStorage.GetReader(context, cmd.Id, cmd.Name, DateTime.MinValue, DateTime.MaxValue);
@@ -1020,6 +1025,7 @@ namespace Raven.Server.Documents.Handlers
                                 [nameof(BatchRequestParser.CommandData.Type)] = nameof(CommandType.TimeSeriesCopy),
                             });
                             break;
+
                         case CommandType.Counters:
 
                             var counterDocId = cmd.Counters.DocumentId;

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Raven.Client.ServerWide.Operations.Logs;
 using Raven.Server.Json;
 using Raven.Server.Routing;
@@ -14,7 +13,7 @@ namespace Raven.Server.Documents.Handlers.Admin
     public class AdminLogsHandler : ServerRequestHandler
     {
         [RavenAction("/admin/logs/configuration", "GET", AuthorizationStatus.Operator)]
-        public Task GetConfiguration()
+        public async Task GetConfiguration()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
@@ -32,10 +31,8 @@ namespace Raven.Server.Documents.Handlers.Admin
 
                 var json = context.ReadObject(djv, "logs/configuration");
 
-                writer.WriteObjectAsync(json);
+                await writer.WriteObjectAsync(json);
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/admin/logs/configuration", "POST", AuthorizationStatus.Operator)]
@@ -51,8 +48,8 @@ namespace Raven.Server.Documents.Handlers.Admin
                     configuration.RetentionTime = ServerStore.Configuration.Logs.RetentionTime?.AsTimeSpan;
 
                 LoggingSource.Instance.SetupLogMode(
-                    configuration.Mode, 
-                    Server.Configuration.Logs.Path.FullPath, 
+                    configuration.Mode,
+                    Server.Configuration.Logs.Path.FullPath,
                     configuration.RetentionTime,
                     configuration.RetentionSize?.GetValue(SizeUnit.Bytes),
                     configuration.Compress);

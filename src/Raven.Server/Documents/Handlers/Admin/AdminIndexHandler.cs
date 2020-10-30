@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -8,7 +7,6 @@ using Raven.Client;
 using Raven.Client.Documents.Changes;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations;
-using Raven.Client.Documents.Operations.Backups;
 using Raven.Client.Documents.Smuggler;
 using Raven.Client.Exceptions.Documents.Indexes;
 using Raven.Server.Json;
@@ -95,25 +93,24 @@ namespace Raven.Server.Documents.Handlers.Admin
                 if (TrafficWatchManager.HasRegisteredClients)
                     AddStringToHttpContext(indexes.ToString(), TrafficWatchChangeType.Index);
 
-
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
+                    await writer.WriteStartObjectAsync();
 
-                    writer.WriteArrayAsync(context, "Results", createdIndexes, (w, c, index) =>
+                    await writer.WriteArrayAsync(context, "Results", createdIndexes, async (w, c, index) =>
                     {
-                        w.WriteStartObject();
-                        w.WritePropertyName(nameof(PutIndexResult.Index));
-                        w.WriteString(index.Name);
-                        w.WriteComma();
-                        w.WritePropertyName(nameof(PutIndexResult.RaftCommandIndex));
-                        w.WriteInteger(index.RaftIndex);
-                        w.WriteEndObject();
+                        await w.WriteStartObjectAsync();
+                        await w.WritePropertyNameAsync(nameof(PutIndexResult.Index));
+                        await w.WriteStringAsync(index.Name);
+                        await w.WriteCommaAsync();
+                        await w.WritePropertyNameAsync(nameof(PutIndexResult.RaftCommandIndex));
+                        await w.WriteIntegerAsync(index.RaftIndex);
+                        await w.WriteEndObjectAsync();
                     });
 
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteEndObjectAsync();
                 }
             }
         }
@@ -270,7 +267,7 @@ namespace Raven.Server.Documents.Handlers.Admin
         }
 
         [RavenAction("/databases/*/admin/indexes/dump", "POST", AuthorizationStatus.DatabaseAdmin)]
-        public Task Dump()
+        public async Task Dump()
         {
             var name = GetStringQueryString("name");
             var path = GetStringQueryString("path");
@@ -278,13 +275,13 @@ namespace Raven.Server.Documents.Handlers.Admin
             if (index == null)
             {
                 IndexDoesNotExistException.ThrowFor(name);
-                return null;//never hit
+                return; //never hit
             }
 
             var operationId = Database.Operations.GetNextOperationId();
             var token = CreateTimeLimitedQueryOperationToken();
 
-            Database.Operations.AddOperation(
+            _ = Database.Operations.AddOperation(
                 Database,
                 "Dump index " + name + " to " + path,
                 Operations.Operations.OperationType.DumpRawIndexData,
@@ -300,15 +297,14 @@ namespace Raven.Server.Documents.Handlers.Admin
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
+                await writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
             }
-
-            return Task.CompletedTask;
         }
 
         public class DumpIndexResult : IOperationResult
         {
             public string Message { get; set; }
+
             public DynamicJsonValue ToJson()
             {
                 return new DynamicJsonValue(GetType())

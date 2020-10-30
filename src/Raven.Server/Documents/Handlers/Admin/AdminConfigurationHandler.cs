@@ -19,7 +19,7 @@ namespace Raven.Server.Documents.Handlers.Admin
     public class AdminConfigurationHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/admin/configuration/settings", "GET", AuthorizationStatus.DatabaseAdmin, IsDebugInformationEndpoint = true)]
-        public Task GetSettings()
+        public async Task GetSettings()
         {
             ConfigurationEntryScope? scope = null;
             var scopeAsString = GetStringQueryString("scope", required: false);
@@ -45,7 +45,7 @@ namespace Raven.Server.Documents.Handlers.Admin
                     if (dbDoc == null)
                     {
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                        return Task.CompletedTask;
+                        return;
                     }
 
                     databaseRecord = JsonDeserializationCluster.DatabaseRecord(dbDoc);
@@ -67,11 +67,9 @@ namespace Raven.Server.Documents.Handlers.Admin
             {
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.WriteAsync(writer, settingsResult.ToJson());
+                    await context.WriteAsync(writer, settingsResult.ToJson());
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/admin/configuration/settings", "PUT", AuthorizationStatus.DatabaseAdmin)]
@@ -89,13 +87,10 @@ namespace Raven.Server.Documents.Handlers.Admin
                 for (int i = 0; i < databaseSettingsJson.Count; i++)
                 {
                     databaseSettingsJson.GetPropertyByIndex(i, ref prop);
-                    settings.Add(prop.Name, prop.Value?.ToString() ?? null);
+                    settings.Add(prop.Name, prop.Value?.ToString());
                 }
 
-                await UpdateDatabaseRecord(context, (record, _) =>
-                {
-                    record.Settings = settings;
-                }, GetRaftRequestIdFromQuery());
+                await UpdateDatabaseRecord(context, (record, _) => record.Settings = settings, GetRaftRequestIdFromQuery());
             }
 
             NoContentStatus();
