@@ -19,18 +19,17 @@ namespace Raven.Server.Documents.Handlers.Debugging
     public class StorageHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/debug/storage/trees", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = false)]
-        public Task Trees()
+        public async Task Trees()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (var tx = context.OpenReadTransaction())
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
+                    await writer.WriteStartObjectAsync();
 
-                    writer.WriteStartObject();
-
-                    writer.WritePropertyName("Results");
-                    writer.WriteStartArray();
+                    await writer.WritePropertyNameAsync("Results");
+                    await writer.WriteStartArrayAsync();
                     var first = true;
 
                     foreach (var treeType in new[] { RootObjectType.VariableSizeTree, RootObjectType.FixedSizeTree, RootObjectType.EmbeddedFixedSizeTree })
@@ -38,30 +37,28 @@ namespace Raven.Server.Documents.Handlers.Debugging
                         foreach (var name in GetTreeNames(tx.InnerTransaction, treeType))
                         {
                             if (first == false)
-                                writer.WriteComma();
+                                await writer.WriteCommaAsync();
 
                             first = false;
 
-                            writer.WriteStartObject();
+                            await writer.WriteStartObjectAsync();
 
-                            writer.WritePropertyName("Name");
-                            writer.WriteString(name);
-                            writer.WriteComma();
+                            await writer.WritePropertyNameAsync("Name");
+                            await writer.WriteStringAsync(name);
+                            await writer.WriteCommaAsync();
 
-                            writer.WritePropertyName("Type");
-                            writer.WriteString(treeType.ToString());
+                            await writer.WritePropertyNameAsync("Type");
+                            await writer.WriteStringAsync(treeType.ToString());
 
-                            writer.WriteEndObject();
+                            await writer.WriteEndObjectAsync();
                         }
                     }
 
-                    writer.WriteEndArray();
+                    await writer.WriteEndArrayAsync();
 
-                    writer.WriteEndObject();
+                    await writer.WriteEndObjectAsync();
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/debug/storage/btree-structure", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = false)]
@@ -70,7 +67,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             var treeName = GetStringQueryString("name", required: true);
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using(var tx = context.OpenReadTransaction())
+            using (var tx = context.OpenReadTransaction())
             {
                 var tree = tx.InnerTransaction.ReadTree(treeName)
                     ?? throw new InvalidOperationException("Tree name '" + treeName + "' was not found. Existing trees: " +
@@ -103,7 +100,6 @@ namespace Raven.Server.Documents.Handlers.Debugging
                             string.Join(", ", GetTreeNames(tx.InnerTransaction, RootObjectType.FixedSizeTree))
                         , e);
                 }
-                
 
                 HttpContext.Response.ContentType = "text/html";
                 DebugStuff.DumpFixedSizedTreeToStream(tx.InnerTransaction.LowLevelTransaction, tree, ResponseBodyStream());
@@ -111,7 +107,6 @@ namespace Raven.Server.Documents.Handlers.Debugging
 
             return Task.CompletedTask;
         }
-
 
         private IEnumerable<string> GetTreeNames(Transaction tx, RootObjectType type)
         {
@@ -126,54 +121,53 @@ namespace Raven.Server.Documents.Handlers.Debugging
                         continue;
 
                     yield return rootIterator.CurrentKey.ToString();
-
                 } while (rootIterator.MoveNext());
             }
         }
 
         [RavenAction("/databases/*/debug/storage/report", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = true)]
-        public Task Report()
+        public async Task Report()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
                     writer.WritePropertyName("BasePath");
                     writer.WriteString(Database.Configuration.Core.DataDirectory.FullPath);
-                    writer.WriteComma();
+                    await writer.WriteCommaAsync();
 
                     writer.WritePropertyName("Results");
-                    writer.WriteStartArray();
+                    await writer.WriteStartArrayAsync();
                     var first = true;
                     foreach (var env in Database.GetAllStoragesEnvironment())
                     {
                         if (first == false)
-                            writer.WriteComma();
+                            await writer.WriteCommaAsync();
 
                         first = false;
 
-                        writer.WriteStartObject();
+                        writer.WriteStartObjectAsync();
 
                         writer.WritePropertyName("Name");
                         writer.WriteString(env.Name);
-                        writer.WriteComma();
+                        await writer.WriteCommaAsync();
 
                         writer.WritePropertyName("Type");
                         writer.WriteString(env.Type.ToString());
-                        writer.WriteComma();
+                        await writer.WriteCommaAsync();
 
                         var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(GetReport(env));
                         writer.WritePropertyName("Report");
                         writer.WriteObject(context.ReadObject(djv, env.Name));
 
-                        writer.WriteEndObject();
+                        await writer.WriteEndObjectAsync();
                     }
 
-                    writer.WriteEndArray();
+                    writer.WriteEndArrayAsync();
 
-                    writer.WriteEndObject();
+                    await writer.WriteEndObjectAsync();
                 }
             }
 
@@ -187,27 +181,27 @@ namespace Raven.Server.Documents.Handlers.Debugging
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
                     writer.WritePropertyName("DatabaseName");
                     writer.WriteString(name);
-                    writer.WriteComma();
+                    await writer.WriteCommaAsync();
 
                     writer.WritePropertyName("Environments");
-                    writer.WriteStartArray();
+                    await writer.WriteStartArrayAsync();
                     WriteAllEnvs(writer, context);
-                    writer.WriteEndArray();
+                    writer.WriteEndArrayAsync();
 
-                    writer.WriteEndObject();
+                    await writer.WriteEndObjectAsync();
                 }
             }
 
             return Task.CompletedTask;
         }
 
-        private void WriteAllEnvs(BlittableJsonTextWriter writer, DocumentsOperationContext context)
+        private void WriteAllEnvs(AsyncBlittableJsonTextWriter writer, DocumentsOperationContext context)
         {
             var envs = Database.GetAllStoragesEnvironment();
 
@@ -218,23 +212,23 @@ namespace Raven.Server.Documents.Handlers.Debugging
                     continue;
 
                 if (!first)
-                    writer.WriteComma();
+                    await writer.WriteCommaAsync();
                 first = false;
 
-                writer.WriteStartObject();
+                writer.WriteStartObjectAsync();
                 writer.WritePropertyName("Environment");
                 writer.WriteString(env.Name);
-                writer.WriteComma();
+                await writer.WriteCommaAsync();
 
                 writer.WritePropertyName("Type");
                 writer.WriteString(env.Type.ToString());
-                writer.WriteComma();
+                await writer.WriteCommaAsync();
 
                 var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(GetDetailedReport(env, false));
                 writer.WritePropertyName("Report");
                 writer.WriteObject(context.ReadObject(djv, env.Name));
 
-                writer.WriteEndObject();
+                await writer.WriteEndObjectAsync();
             }
         }
 
@@ -259,23 +253,23 @@ namespace Raven.Server.Documents.Handlers.Debugging
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             {
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    writer.WriteStartObjectAsync();
 
                     writer.WritePropertyName("Name");
                     writer.WriteString(env.Name);
-                    writer.WriteComma();
+                    await writer.WriteCommaAsync();
 
                     writer.WritePropertyName("Type");
                     writer.WriteString(env.Type.ToString());
-                    writer.WriteComma();
+                    await writer.WriteCommaAsync();
 
                     var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(GetDetailedReport(env, details));
                     writer.WritePropertyName("Report");
                     writer.WriteObject(context.ReadObject(djv, env.Name));
 
-                    writer.WriteEndObject();
+                    await writer.WriteEndObjectAsync();
                 }
             }
 

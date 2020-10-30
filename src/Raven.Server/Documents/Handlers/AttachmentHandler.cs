@@ -79,11 +79,11 @@ namespace Raven.Server.Documents.Handlers
                     throw new ArgumentException($"The '{nameof(GetAttachmentsOperation.GetAttachmentsCommand.Attachments)}' field in the body request is mandatory");
 
                 var attachmentsStreams = new List<Stream>();
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName(nameof(GetAttachmentsOperation.GetAttachmentsCommand.AttachmentsMetadata));
-                    writer.WriteStartArray();
+                    await writer.WriteStartObjectAsync();
+                    await writer.WritePropertyNameAsync(nameof(GetAttachmentsOperation.GetAttachmentsCommand.AttachmentsMetadata));
+                    await writer.WriteStartArrayAsync();
                     var first = true;
                     foreach (BlittableJsonReaderObject bjro in attachments)
                     {
@@ -97,16 +97,16 @@ namespace Raven.Server.Documents.Handlers
                             continue;
 
                         if (first == false)
-                            writer.WriteComma();
+                            await writer.WriteCommaAsync();
                         first = false;
 
                         attachment.Size = attachment.Stream.Length;
                         attachmentsStreams.Add(attachment.Stream);
-                        WriteAttachmentDetails(writer, attachment, id);
+                        await WriteAttachmentDetailsAsync(writer, attachment, id);
                     }
 
-                    writer.WriteEndArray();
-                    writer.WriteEndObject();
+                    await writer.WriteEndArrayAsync();
+                    await writer.WriteEndObjectAsync();
                 }
 
                 using (context.GetMemoryBuffer(out var buffer))
@@ -116,11 +116,11 @@ namespace Raven.Server.Documents.Handlers
                     {
                         using (var tmpStream = stream)
                         {
-                            var count = await tmpStream.ReadAsync(buffer.Memory);
+                            var count = await tmpStream.ReadAsync(buffer.Memory.Memory);
                             while (count > 0)
                             {
-                                await responseStream.WriteAsync(buffer.Memory.Slice(0, count), Database.DatabaseShutdown);
-                                count = await tmpStream.ReadAsync(buffer.Memory);
+                                await responseStream.WriteAsync(buffer.Memory.Memory.Slice(0, count), Database.DatabaseShutdown);
+                                count = await tmpStream.ReadAsync(buffer.Memory.Memory);
                             }
                         }
                     }
@@ -128,31 +128,31 @@ namespace Raven.Server.Documents.Handlers
             }
         }
 
-        private static void WriteAttachmentDetails(BlittableJsonTextWriter writer, Attachment attachment, string documentId)
+        private static async ValueTask WriteAttachmentDetailsAsync(AsyncBlittableJsonTextWriter writer, Attachment attachment, string documentId)
         {
-            writer.WriteStartObject();
-            writer.WritePropertyName(nameof(AttachmentDetails.Name));
-            writer.WriteString(attachment.Name);
-            writer.WriteComma();
-            writer.WritePropertyName(nameof(AttachmentDetails.Hash));
-            writer.WriteString(attachment.Base64Hash.ToString());
-            writer.WriteComma();
-            writer.WritePropertyName(nameof(AttachmentDetails.ContentType));
-            writer.WriteString(attachment.ContentType);
-            writer.WriteComma();
-            writer.WritePropertyName(nameof(AttachmentDetails.Size));
-            writer.WriteInteger(attachment.Size);
-            writer.WriteComma();
-            writer.WritePropertyName(nameof(AttachmentDetails.ChangeVector));
-            writer.WriteString(attachment.ChangeVector);
-            writer.WriteComma();
-            writer.WritePropertyName(nameof(AttachmentDetails.DocumentId));
-            writer.WriteString(documentId);
-            writer.WriteEndObject();
+            await writer.WriteStartObjectAsync();
+            await writer.WritePropertyNameAsync(nameof(AttachmentDetails.Name));
+            await writer.WriteStringAsync(attachment.Name);
+            await writer.WriteCommaAsync();
+            await writer.WritePropertyNameAsync(nameof(AttachmentDetails.Hash));
+            await writer.WriteStringAsync(attachment.Base64Hash.ToString());
+            await writer.WriteCommaAsync();
+            await writer.WritePropertyNameAsync(nameof(AttachmentDetails.ContentType));
+            await writer.WriteStringAsync(attachment.ContentType);
+            await writer.WriteCommaAsync();
+            await writer.WritePropertyNameAsync(nameof(AttachmentDetails.Size));
+            await writer.WriteIntegerAsync(attachment.Size);
+            await writer.WriteCommaAsync();
+            await writer.WritePropertyNameAsync(nameof(AttachmentDetails.ChangeVector));
+            await writer.WriteStringAsync(attachment.ChangeVector);
+            await writer.WriteCommaAsync();
+            await writer.WritePropertyNameAsync(nameof(AttachmentDetails.DocumentId));
+            await writer.WriteStringAsync(documentId);
+            await writer.WriteEndObjectAsync();
         }
 
         [RavenAction("/databases/*/debug/attachments/hash", "GET", AuthorizationStatus.ValidUser, DisableOnCpuCreditsExhaustion = true)]
-        public Task Exists()
+        public async Task Exists()
         {
             var hash = GetStringQueryString("hash");
 
@@ -161,39 +161,37 @@ namespace Raven.Server.Documents.Handlers
             using (Slice.From(context.Allocator, hash, out var hashSlice))
             {
                 var count = AttachmentsStorage.GetCountOfAttachmentsForHash(context, hashSlice);
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Hash");
-                    writer.WriteString(hash);
-                    writer.WriteComma();
-                    writer.WritePropertyName("Count");
-                    writer.WriteInteger(count);
-                    writer.WriteEndObject();
+                    await writer.WriteStartObjectAsync();
+                    await writer.WritePropertyNameAsync("Hash");
+                    await writer.WriteStringAsync(hash);
+                    await writer.WriteCommaAsync();
+                    await writer.WritePropertyNameAsync("Count");
+                    await writer.WriteIntegerAsync(count);
+                    await writer.WriteEndObjectAsync();
                 }
             }
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/debug/attachments/metadata", "GET", AuthorizationStatus.ValidUser, DisableOnCpuCreditsExhaustion = true)]
-        public Task GetDocumentsAttachmentMetadataWithCounts()
+        public async Task GetDocumentsAttachmentMetadataWithCounts()
         {
             var id = GetStringQueryString("id", false);
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (context.OpenReadTransaction())
             {
                 var array = Database.DocumentsStorage.AttachmentsStorage.GetAttachmentsMetadataForDocumentWithCounts(context, id.ToLowerInvariant());
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName("Id");
-                    writer.WriteString(id);
-                    writer.WriteComma();
-                    writer.WriteArray("Attachments", array, context);
-                    writer.WriteEndObject();
+                    await writer.WriteStartObjectAsync();
+                    await writer.WritePropertyNameAsync("Id");
+                    await writer.WriteStringAsync(id);
+                    await writer.WriteCommaAsync();
+                    await writer.WriteArrayAsync("Attachments", array, context);
+                    await writer.WriteEndObjectAsync();
                 }
             }
-            return Task.CompletedTask;
         }
 
         private async Task GetAttachment(bool isDocument)
@@ -263,12 +261,12 @@ namespace Raven.Server.Documents.Handlers
                 using (var stream = attachment.Stream)
                 {
                     var responseStream = ResponseBodyStream();
-                    var count = stream.Read(buffer.Memory.Span); // can never wait, so no need for async
+                    var count = stream.Read(buffer.Memory.Memory.Span); // can never wait, so no need for async
                     while (count > 0)
                     {
-                        await responseStream.WriteAsync(buffer.Memory.Slice(0, count), Database.DatabaseShutdown);
+                        await responseStream.WriteAsync(buffer.Memory.Memory.Slice(0, count), Database.DatabaseShutdown);
                         // we know that this can never wait, so no need to do async i/o here
-                        count = stream.Read(buffer.Memory.Span);
+                        count = stream.Read(buffer.Memory.Memory.Span);
                     }
                 }
             }
@@ -331,34 +329,34 @@ namespace Raven.Server.Documents.Handlers
 
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
 
-                using (var writer = new BlittableJsonTextWriter(context, ResponseBodyStream()))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObject();
+                    await writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyName(nameof(AttachmentDetails.ChangeVector));
-                    writer.WriteString(result.ChangeVector);
-                    writer.WriteComma();
+                    await writer.WritePropertyNameAsync(nameof(AttachmentDetails.ChangeVector));
+                    await writer.WriteStringAsync(result.ChangeVector);
+                    await writer.WriteCommaAsync();
 
-                    writer.WritePropertyName(nameof(AttachmentDetails.Name));
-                    writer.WriteString(result.Name);
-                    writer.WriteComma();
+                    await writer.WritePropertyNameAsync(nameof(AttachmentDetails.Name));
+                    await writer.WriteStringAsync(result.Name);
+                    await writer.WriteCommaAsync();
 
-                    writer.WritePropertyName(nameof(AttachmentDetails.DocumentId));
-                    writer.WriteString(result.DocumentId);
-                    writer.WriteComma();
+                    await writer.WritePropertyNameAsync(nameof(AttachmentDetails.DocumentId));
+                    await writer.WriteStringAsync(result.DocumentId);
+                    await writer.WriteCommaAsync();
 
-                    writer.WritePropertyName(nameof(AttachmentDetails.ContentType));
-                    writer.WriteString(result.ContentType);
-                    writer.WriteComma();
+                    await writer.WritePropertyNameAsync(nameof(AttachmentDetails.ContentType));
+                    await writer.WriteStringAsync(result.ContentType);
+                    await writer.WriteCommaAsync();
 
-                    writer.WritePropertyName(nameof(AttachmentDetails.Hash));
-                    writer.WriteString(result.Hash);
-                    writer.WriteComma();
+                    await writer.WritePropertyNameAsync(nameof(AttachmentDetails.Hash));
+                    await writer.WriteStringAsync(result.Hash);
+                    await writer.WriteCommaAsync();
 
-                    writer.WritePropertyName(nameof(AttachmentDetails.Size));
-                    writer.WriteInteger(result.Size);
+                    await writer.WritePropertyNameAsync(nameof(AttachmentDetails.Size));
+                    await writer.WriteIntegerAsync(result.Size);
 
-                    writer.WriteEndObject();
+                    await writer.WriteEndObjectAsync();
                 }
             }
         }
