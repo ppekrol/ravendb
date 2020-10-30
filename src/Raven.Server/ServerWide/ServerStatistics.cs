@@ -102,17 +102,24 @@ namespace Raven.Server.ServerWide
                     using (var tx = context.OpenWriteTransaction())
                     {
                         using (var ms = new MemoryStream())
-                        using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
                         {
-                            await WriteTo(writer); TODO arek
+                            var writer = new AsyncBlittableJsonTextWriter(context, ms);
+                            try
+                            {
+                                WriteTo(writer).ConfigureAwait(false).GetAwaiter().GetResult();
+                                writer.FlushAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
 
-                            writer.FlushAsync();
-                            ms.Position = 0;
+                                ms.Position = 0;
 
-                            var tree = tx.InnerTransaction.CreateTree(nameof(ServerStatistics));
-                            tree.Add(nameof(ServerStatistics), ms);
+                                var tree = tx.InnerTransaction.CreateTree(nameof(ServerStatistics));
+                                tree.Add(nameof(ServerStatistics), ms);
 
-                            tx.Commit();
+                                tx.Commit();
+                            }
+                            finally
+                            {
+                                writer.DisposeAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+                            }
                         }
                     }
                 }
