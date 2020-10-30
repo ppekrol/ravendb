@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Sparrow.Json;
 
@@ -52,7 +53,7 @@ namespace Raven.Client.Documents.Commands.MultiGet
 
         public interface IContent
         {
-            ValueTask WriteContentAsync(AsyncBlittableJsonTextWriter writer, JsonOperationContext context);
+            ValueTask WriteContentAsync(AsyncBlittableJsonTextWriter writer, JsonOperationContext context, CancellationToken token = default);
         }
     }
 }

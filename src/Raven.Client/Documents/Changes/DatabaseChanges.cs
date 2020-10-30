@@ -424,7 +424,7 @@ namespace Raven.Client.Documents.Changes
             {
                 currentCommandId = ++_commandId;
                 using (_requestExecutor.ContextPool.AllocateOperationContext(out var context))
-                await using (var writer = new AsyncBlittableJsonTextWriter(context, _ms, _cts.Token))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, _ms))
                 {
                     await writer.WriteStartObjectAsync().ConfigureAwait(false);
                     await writer.WritePropertyNameAsync("CommandId").ConfigureAwait(false);

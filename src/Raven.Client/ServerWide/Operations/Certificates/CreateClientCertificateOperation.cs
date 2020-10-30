@@ -56,42 +56,42 @@ namespace Raven.Client.ServerWide.Operations.Certificates
                     Method = HttpMethod.Post
                 };
 
-                request.Content = new BlittableJsonContent(stream =>
+                request.Content = new BlittableJsonContent(async stream =>
                 {
-                    using (var writer = new BlittableJsonTextWriter(ctx, stream))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(ctx, stream))
                     {
-                        writer.WriteStartObject();
+                        await writer.WriteStartObjectAsync().ConfigureAwait(false);
 
-                        writer.WritePropertyName(nameof(CertificateDefinition.Name));
-                        writer.WriteString(_name.ToString());
-                        writer.WriteComma();
-                        writer.WritePropertyName(nameof(SecurityClearance));
-                        writer.WriteString(_clearance.ToString());
-                        writer.WriteComma();
+                        await writer.WritePropertyNameAsync(nameof(CertificateDefinition.Name)).ConfigureAwait(false);
+                        await writer.WriteStringAsync(_name).ConfigureAwait(false);
+                        await writer.WriteCommaAsync().ConfigureAwait(false);
+                        await writer.WritePropertyNameAsync(nameof(SecurityClearance)).ConfigureAwait(false);
+                        await writer.WriteStringAsync(_clearance.ToString()).ConfigureAwait(false);
+                        await writer.WriteCommaAsync().ConfigureAwait(false);
 
                         if (_password != null)
                         {
-                            writer.WritePropertyName(nameof(CertificateDefinition.Password));
-                            writer.WriteString(_password);
-                            writer.WriteComma();
+                            await writer.WritePropertyNameAsync(nameof(CertificateDefinition.Password)).ConfigureAwait(false);
+                            await writer.WriteStringAsync(_password).ConfigureAwait(false);
+                            await writer.WriteCommaAsync().ConfigureAwait(false);
                         }
 
-                        writer.WritePropertyName(nameof(CertificateDefinition.Permissions));
-                        writer.WriteStartObject();
+                        await writer.WritePropertyNameAsync(nameof(CertificateDefinition.Permissions)).ConfigureAwait(false);
+                        await writer.WriteStartObjectAsync().ConfigureAwait(false);
                         bool first = true;
                         foreach (var kvp in _permissions)
                         {
                             if (first == false)
-                                writer.WriteComma();
+                                await writer.WriteCommaAsync().ConfigureAwait(false);
                             first = false;
 
-                            writer.WriteString(kvp.Key);
-                            writer.WriteComma();
-                            writer.WriteString(kvp.Value.ToString());
+                            await writer.WriteStringAsync(kvp.Key).ConfigureAwait(false);
+                            await writer.WriteCommaAsync().ConfigureAwait(false);
+                            await writer.WriteStringAsync(kvp.Value.ToString()).ConfigureAwait(false);
                         }
-                        writer.WriteEndObject();
+                        await writer.WriteEndObjectAsync().ConfigureAwait(false);
 
-                        writer.WriteEndObject();
+                        await writer.WriteEndObjectAsync().ConfigureAwait(false);
                     }
                 });
 

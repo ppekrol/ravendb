@@ -1021,40 +1021,40 @@ namespace Sparrow.Json
             _activeAllocatePathCaches.ReleasePathCache(pathCache, pathCacheByIndex);
         }
 
-        public async ValueTask WriteAsync(Stream stream, BlittableJsonReaderObject json, CancellationToken token)
+        public async ValueTask WriteAsync(Stream stream, BlittableJsonReaderObject json, CancellationToken token = default)
         {
             EnsureNotDisposed();
-            await using (var writer = new AsyncBlittableJsonTextWriter(this, stream, token))
+            await using (var writer = new AsyncBlittableJsonTextWriter(this, stream))
             {
-                await writer.WriteObjectAsync(json).ConfigureAwait(false);
+                await writer.WriteObjectAsync(json, token).ConfigureAwait(false);
             }
         }
 
-        public ValueTask WriteAsync(AbstractBlittableJsonTextWriter writer, BlittableJsonReaderObject json)
+        public ValueTask WriteAsync(AbstractBlittableJsonTextWriter writer, BlittableJsonReaderObject json, CancellationToken token = default)
         {
             EnsureNotDisposed();
-            return WriteInternalAsync(writer, json);
+            return WriteInternalAsync(writer, json, token);
         }
 
-        private async ValueTask WriteInternalAsync(AbstractBlittableJsonTextWriter writer, object json)
+        private async ValueTask WriteInternalAsync(AbstractBlittableJsonTextWriter writer, object json, CancellationToken token)
         {
             _jsonParserState.Reset();
             _objectJsonParser.Reset(json);
 
             _objectJsonParser.Read();
 
-            await WriteObjectAsync(writer, _jsonParserState, _objectJsonParser).ConfigureAwait(false);
+            await WriteObjectAsync(writer, _jsonParserState, _objectJsonParser, token).ConfigureAwait(false);
 
             _objectJsonParser.Reset(null);
         }
 
-        public ValueTask WriteAsync(AbstractBlittableJsonTextWriter writer, DynamicJsonValue json)
+        public ValueTask WriteAsync(AbstractBlittableJsonTextWriter writer, DynamicJsonValue json, CancellationToken token = default)
         {
             EnsureNotDisposed();
-            return WriteInternalAsync(writer, json);
+            return WriteInternalAsync(writer, json, token);
         }
 
-        public async ValueTask WriteAsync(AbstractBlittableJsonTextWriter writer, DynamicJsonArray json)
+        public async ValueTask WriteAsync(AbstractBlittableJsonTextWriter writer, DynamicJsonArray json, CancellationToken token = default)
         {
             EnsureNotDisposed();
             _jsonParserState.Reset();
@@ -1062,18 +1062,18 @@ namespace Sparrow.Json
 
             _objectJsonParser.Read();
 
-            await WriteArrayAsync(writer, _jsonParserState, _objectJsonParser).ConfigureAwait(false);
+            await WriteArrayAsync(writer, _jsonParserState, _objectJsonParser, token).ConfigureAwait(false);
 
             _objectJsonParser.Reset(null);
         }
 
-        public async ValueTask WriteObjectAsync(AbstractBlittableJsonTextWriter writer, JsonParserState state, ObjectJsonParser parser)
+        public async ValueTask WriteObjectAsync(AbstractBlittableJsonTextWriter writer, JsonParserState state, ObjectJsonParser parser, CancellationToken token = default)
         {
             EnsureNotDisposed();
             if (state.CurrentTokenType != JsonParserToken.StartObject)
                 throw new InvalidOperationException("StartObject expected, but got " + state.CurrentTokenType);
 
-            await writer.WriteStartObjectAsync().ConfigureAwait(false);
+            await writer.WriteStartObjectAsync(token).ConfigureAwait(false);
             bool first = true;
             while (true)
             {
@@ -1086,34 +1086,34 @@ namespace Sparrow.Json
                     throw new InvalidOperationException("Property expected, but got " + state.CurrentTokenType);
 
                 if (first == false)
-                    await writer.WriteCommaAsync().ConfigureAwait(false);
+                    await writer.WriteCommaAsync(token).ConfigureAwait(false);
                 first = false;
 
                 var lazyStringValue = AllocateStringValue(null, state.StringBuffer, state.StringSize);
-                await writer.WritePropertyNameAsync(lazyStringValue).ConfigureAwait(false);
+                await writer.WritePropertyNameAsync(lazyStringValue, token).ConfigureAwait(false);
 
                 if (parser.Read() == false)
                     throw new InvalidOperationException("Object json parser can't return partial results");
 
-                await WriteValueAsync(writer, state, parser).ConfigureAwait(false);
+                await WriteValueAsync(writer, state, parser, token).ConfigureAwait(false);
             }
-            await writer.WriteEndObjectAsync().ConfigureAwait(false);
+            await writer.WriteEndObjectAsync(token).ConfigureAwait(false);
         }
 
-        private async ValueTask WriteValueAsync(AbstractBlittableJsonTextWriter writer, JsonParserState state, ObjectJsonParser parser)
+        private async ValueTask WriteValueAsync(AbstractBlittableJsonTextWriter writer, JsonParserState state, ObjectJsonParser parser, CancellationToken token)
         {
             switch (state.CurrentTokenType)
             {
                 case JsonParserToken.Null:
-                    await writer.WriteNullAsync().ConfigureAwait(false);
+                    await writer.WriteNullAsync(token).ConfigureAwait(false);
                     break;
 
                 case JsonParserToken.False:
-                    await writer.WriteBoolAsync(false).ConfigureAwait(false);
+                    await writer.WriteBoolAsync(false, token).ConfigureAwait(false);
                     break;
 
                 case JsonParserToken.True:
-                    await writer.WriteBoolAsync(true).ConfigureAwait(false);
+                    await writer.WriteBoolAsync(true, token).ConfigureAwait(false);
                     break;
 
                 case JsonParserToken.String:
@@ -1121,28 +1121,28 @@ namespace Sparrow.Json
                     {
                         var lazyCompressedStringValue = new LazyCompressedStringValue(null, state.StringBuffer,
                             state.StringSize, state.CompressedSize.Value, this);
-                        await writer.WriteStringAsync(lazyCompressedStringValue).ConfigureAwait(false);
+                        await writer.WriteStringAsync(lazyCompressedStringValue, token).ConfigureAwait(false);
                     }
                     else
                     {
-                        await writer.WriteStringAsync(AllocateStringValue(null, state.StringBuffer, state.StringSize)).ConfigureAwait(false);
+                        await writer.WriteStringAsync(AllocateStringValue(null, state.StringBuffer, state.StringSize), token: token).ConfigureAwait(false);
                     }
                     break;
 
                 case JsonParserToken.Float:
-                    await writer.WriteDoubleAsync(new LazyNumberValue(AllocateStringValue(null, state.StringBuffer, state.StringSize))).ConfigureAwait(false);
+                    await writer.WriteDoubleAsync(new LazyNumberValue(AllocateStringValue(null, state.StringBuffer, state.StringSize)), token).ConfigureAwait(false);
                     break;
 
                 case JsonParserToken.Integer:
-                    await writer.WriteIntegerAsync(state.Long).ConfigureAwait(false);
+                    await writer.WriteIntegerAsync(state.Long, token).ConfigureAwait(false);
                     break;
 
                 case JsonParserToken.StartObject:
-                    await WriteObjectAsync(writer, state, parser).ConfigureAwait(false);
+                    await WriteObjectAsync(writer, state, parser, token).ConfigureAwait(false);
                     break;
 
                 case JsonParserToken.StartArray:
-                    await WriteArrayAsync(writer, state, parser).ConfigureAwait(false);
+                    await WriteArrayAsync(writer, state, parser, token).ConfigureAwait(false);
                     break;
 
                 default:
@@ -1150,13 +1150,13 @@ namespace Sparrow.Json
             }
         }
 
-        public async ValueTask WriteArrayAsync(AbstractBlittableJsonTextWriter writer, JsonParserState state, ObjectJsonParser parser)
+        public async ValueTask WriteArrayAsync(AbstractBlittableJsonTextWriter writer, JsonParserState state, ObjectJsonParser parser, CancellationToken token)
         {
             EnsureNotDisposed();
             if (state.CurrentTokenType != JsonParserToken.StartArray)
                 throw new InvalidOperationException("StartArray expected, but got " + state.CurrentTokenType);
 
-            await writer.WriteStartArrayAsync().ConfigureAwait(false);
+            await writer.WriteStartArrayAsync(token).ConfigureAwait(false);
             bool first = true;
             while (true)
             {
@@ -1167,12 +1167,12 @@ namespace Sparrow.Json
                     break;
 
                 if (first == false)
-                    await writer.WriteCommaAsync().ConfigureAwait(false);
+                    await writer.WriteCommaAsync(token).ConfigureAwait(false);
                 first = false;
 
-                await WriteValueAsync(writer, state, parser).ConfigureAwait(false);
+                await WriteValueAsync(writer, state, parser, token).ConfigureAwait(false);
             }
-            await writer.WriteEndArrayAsync().ConfigureAwait(false);
+            await writer.WriteEndArrayAsync(token).ConfigureAwait(false);
         }
 
         public bool GrowAllocation(AllocatedMemoryData allocation, int sizeIncrease)

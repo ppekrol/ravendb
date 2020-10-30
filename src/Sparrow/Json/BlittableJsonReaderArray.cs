@@ -47,11 +47,11 @@ namespace Sparrow.Json
 
             using (var memoryStream = new MemoryStream())
             {
-                var tw = new AsyncBlittableJsonTextWriter(_context, memoryStream, CancellationToken.None);
+                var tw = new AsyncBlittableJsonTextWriter(_context, memoryStream);
                 try
                 {
-                    tw.WriteValueAsync(BlittableJsonToken.StartArray, this).ConfigureAwait(false).GetAwaiter().GetResult();
-                    tw.FlushAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                    tw.WriteValueAsync(BlittableJsonToken.StartArray, this).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+                    tw.FlushAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
                     memoryStream.Position = 0;
 
                     return new StreamReader(memoryStream).ReadToEnd();

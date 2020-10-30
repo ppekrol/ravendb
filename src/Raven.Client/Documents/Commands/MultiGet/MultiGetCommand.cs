@@ -124,7 +124,7 @@ namespace Raven.Client.Documents.Commands.MultiGet
 
                                 await writer.WritePropertyNameAsync(nameof(GetRequest.Content)).ConfigureAwait(false);
                                 if (command.Content != null)
-                                    command.Content.WriteContent(writer, ctx);
+                                    await command.Content.WriteContentAsync(writer, ctx).ConfigureAwait(false);
                                 else
                                     await writer.WriteNullAsync().ConfigureAwait(false);
 

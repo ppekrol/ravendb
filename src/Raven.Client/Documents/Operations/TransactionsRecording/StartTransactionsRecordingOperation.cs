@@ -37,13 +37,10 @@ namespace Raven.Client.Documents.Operations.TransactionsRecording
                 var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
-                    Content = new BlittableJsonContent(stream =>
+                    Content = new BlittableJsonContent(async stream =>
                     {
-                        var jsonReaderObject = DocumentConventions.Default.Serialization.DefaultConverter.ToBlittable(
-                                new Parameters { File = _filePath },
-                                ctx
-                            );
-                        return ctx.WriteAsync(stream, jsonReaderObject);
+                        var parametersJson = DocumentConventions.Default.Serialization.DefaultConverter.ToBlittable(new Parameters { File = _filePath }, ctx);
+                        await ctx.WriteAsync(stream, parametersJson).ConfigureAwait(false);
                     })
                 };
                 return request;

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Documents.Queries;
 using Sparrow.Json;
@@ -7,7 +8,7 @@ namespace Raven.Client.Extensions
 {
     internal static class BlittableJsonTextWriterExtensions
     {
-        public static async ValueTask WriteIndexQueryAsync(this AsyncBlittableJsonTextWriter writer, DocumentConventions conventions, JsonOperationContext context, IndexQuery query)
+        public static async ValueTask WriteIndexQueryAsync(this AsyncBlittableJsonTextWriter writer, DocumentConventions conventions, JsonOperationContext context, IndexQuery query, CancellationToken token = default)
         {
             await writer.WriteStartObjectAsync().ConfigureAwait(false);
 

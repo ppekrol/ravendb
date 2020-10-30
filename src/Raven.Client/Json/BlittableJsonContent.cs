@@ -14,7 +14,7 @@ namespace Raven.Client.Json
         private readonly Action<Stream> _writer;
 
         public BlittableJsonContent(Func<Stream, Task> writer)
-                        : this()
+            : this()
         {
             _asyncWriter = writer ?? throw new ArgumentNullException(nameof(writer));
             Headers.ContentEncoding.Add("gzip");

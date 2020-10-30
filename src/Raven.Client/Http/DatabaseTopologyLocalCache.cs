@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Json.Serialization;
@@ -62,7 +63,7 @@ namespace Raven.Client.Http
             }
         }
 
-        public static async Task TrySavingAsync(string databaseName, string topologyHash, Topology topology, DocumentConventions conventions, JsonOperationContext context)
+        public static async Task TrySavingAsync(string databaseName, string topologyHash, Topology topology, DocumentConventions conventions, JsonOperationContext context, CancellationToken token)
         {
             try
             {

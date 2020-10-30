@@ -96,7 +96,7 @@ namespace Raven.Client.Http
                     var command = new GetClusterTopologyCommand(parameters.DebugTag);
                     await ExecuteAsync(parameters.Node, null, context, command, shouldRetry: false, sessionInfo: null, token: CancellationToken.None).ConfigureAwait(false);
 
-                    ClusterTopologyLocalCache.TrySaving(TopologyHash, command.Result, Conventions, context);
+                    await ClusterTopologyLocalCache.TrySavingAsync(TopologyHash, command.Result, Conventions, context, CancellationToken.None).ConfigureAwait(false);
 
                     var results = command.Result;
                     var newTopology = new Topology
