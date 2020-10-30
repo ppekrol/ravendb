@@ -358,7 +358,6 @@ namespace Raven.Server.Documents
                     try
                     {
                         await ExecuteClusterTransactionTask();
-
                     }
                     catch (OperationCanceledException)
                     {
@@ -986,6 +985,7 @@ namespace Raven.Server.Documents
                             Env = storageEnvironmentWithType.Environment
                         };
                         break;
+
                     case StorageEnvironmentWithType.StorageEnvironmentType.Index:
                         yield return new FullBackup.StorageEnvironmentInformation
                         {
@@ -994,6 +994,7 @@ namespace Raven.Server.Documents
                             Env = storageEnvironmentWithType.Environment
                         };
                         break;
+
                     case StorageEnvironmentWithType.StorageEnvironmentType.Configuration:
                         yield return new FullBackup.StorageEnvironmentInformation
                         {
@@ -1002,13 +1003,14 @@ namespace Raven.Server.Documents
                             Env = storageEnvironmentWithType.Environment
                         };
                         break;
+
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
         }
 
-        public SmugglerResult FullBackupTo(string backupPath, CompressionLevel compressionLevel = CompressionLevel.Optimal,
+        public async Task<SmugglerResult> FullBackupToAsync(string backupPath, CompressionLevel compressionLevel = CompressionLevel.Optimal,
             Action<(string Message, int FilesCount)> infoNotify = null, CancellationToken cancellationToken = default)
         {
             SmugglerResult smugglerResult;
@@ -1047,24 +1049,24 @@ namespace Raven.Server.Documents
                     infoNotify?.Invoke(("Backed up Database Record", 1));
 
                     zipArchiveEntry = package.CreateEntry(RestoreSettings.SettingsFileName, compressionLevel);
-                    using (var zipStream = zipArchiveEntry.Open())
-                    using (var outputStream = GetOutputStream(zipStream))
-                    using (var writer = new AsyncBlittableJsonTextWriter(serverContext, outputStream))
+                    await using (var zipStream = zipArchiveEntry.Open())
+                    await using (var outputStream = GetOutputStream(zipStream))
+                    await using (var writer = new AsyncBlittableJsonTextWriter(serverContext, outputStream))
                     {
-                        writer.WriteStartObjectAsync();
+                        await writer.WriteStartObjectAsync();
 
                         // read and save the database record
-                        writer.WritePropertyNameAsync(nameof(RestoreSettings.DatabaseRecord));
+                        await writer.WritePropertyNameAsync(nameof(RestoreSettings.DatabaseRecord));
                         using (serverContext.OpenReadTransaction())
                         using (var databaseRecord = _serverStore.Cluster.ReadRawDatabaseRecord(serverContext, Name, out _))
                         {
-                            serverContext.WriteAsync(writer, databaseRecord.Raw);
+                            await serverContext.WriteAsync(writer, databaseRecord.Raw);
                         }
 
                         // save the database values (subscriptions, periodic backups statuses, etl states...)
-                        writer.WriteCommaAsync();
-                        writer.WritePropertyNameAsync(nameof(RestoreSettings.DatabaseValues));
-                        writer.WriteStartObjectAsync();
+                        await writer.WriteCommaAsync();
+                        await writer.WritePropertyNameAsync(nameof(RestoreSettings.DatabaseValues));
+                        await writer.WriteStartObjectAsync();
 
                         var first = true;
                         var prefix = Helpers.ClusterStateMachineValuesPrefix(Name);
@@ -1076,22 +1078,22 @@ namespace Raven.Server.Documents
                                 cancellationToken.ThrowIfCancellationRequested();
 
                                 if (first == false)
-                                    writer.WriteCommaAsync();
+                                    await writer.WriteCommaAsync();
 
                                 first = false;
 
                                 var key = keyValue.Key.ToString().Substring(prefix.Length);
-                                writer.WritePropertyNameAsync(key);
-                                serverContext.WriteAsync(writer, keyValue.Value);
+                                await writer.WritePropertyNameAsync(key);
+                                await serverContext.WriteAsync(writer, keyValue.Value);
                             }
                         }
 
-                        writer.WriteEndObjectAsync();
+                        await writer.WriteEndObjectAsync();
                         // end of values
 
-                        writer.WriteEndObjectAsync();
-                        writer.FlushAsync();
-                        outputStream.Flush();
+                        await writer.WriteEndObjectAsync();
+                        await writer.FlushAsync();
+                        await outputStream.FlushAsync();
                     }
                 }
 
@@ -1112,7 +1114,7 @@ namespace Raven.Server.Documents
         }
 
         /// <summary>
-        /// this event is intended for entities that are not singletons 
+        /// this event is intended for entities that are not singletons
         /// per database and still need to be informed on changes to the database record.
         /// </summary>
         public event Action<DatabaseRecord> DatabaseRecordChanged;
@@ -1133,7 +1135,6 @@ namespace Raven.Server.Documents
 
                 NotifyFeaturesAboutValueChange(record, index);
                 RachisLogIndexNotifications.NotifyListenersAbout(index, null);
-
             }
             catch (Exception e)
             {
@@ -1271,7 +1272,7 @@ namespace Raven.Server.Documents
         {
             if (LastDatabaseRecordChangeIndex > index)
             {
-                // index and LastDatabaseRecordIndex could have equal values when we transit from/to passive and want to update the tasks. 
+                // index and LastDatabaseRecordIndex could have equal values when we transit from/to passive and want to update the tasks.
                 if (_logger.IsInfoEnabled)
                     _logger.Info($"Skipping record {index} (current {LastDatabaseRecordChangeIndex}) for {database} because it was already precessed.");
                 return true;
@@ -1284,7 +1285,7 @@ namespace Raven.Server.Documents
         {
             if (LastValueChangeIndex > index)
             {
-                // index and LastDatabaseRecordIndex could have equal values when we transit from/to passive and want to update the tasks. 
+                // index and LastDatabaseRecordIndex could have equal values when we transit from/to passive and want to update the tasks.
                 if (_logger.IsInfoEnabled)
                     _logger.Info($"Skipping value change for index {index} (current {LastValueChangeIndex}) for {database} because it was already precessed.");
                 return true;
@@ -1386,7 +1387,7 @@ namespace Raven.Server.Documents
                     {
                         if (databaseTopology.Rehabs.Contains(lastResponsibleNode) &&
                             databaseTopology.PromotablesStatus.TryGetValue(lastResponsibleNode, out var status) &&
-                            (status == DatabasePromotionStatus.OutOfCpuCredits || 
+                            (status == DatabasePromotionStatus.OutOfCpuCredits ||
                              status == DatabasePromotionStatus.EarlyOutOfMemory ||
                              status == DatabasePromotionStatus.HighDirtyMemory))
                         {
@@ -1420,7 +1421,7 @@ namespace Raven.Server.Documents
 
         private void RaiseAlertIfNecessary(DatabaseTopology databaseTopology, IDatabaseTask configuration, string lastResponsibleNode)
         {
-            // raise alert if redistribution is necessary 
+            // raise alert if redistribution is necessary
             if (databaseTopology.Count > 1 &&
                 ServerStore.NodeTag != lastResponsibleNode &&
                 databaseTopology.Members.Contains(lastResponsibleNode) == false)
@@ -1547,10 +1548,12 @@ namespace Raven.Server.Documents
                     if (type == StorageEnvironmentWithType.StorageEnvironmentType.Configuration)
                         title += " (configuration storage)";
                     break;
+
                 case StorageEnvironmentWithType.StorageEnvironmentType.Index:
                     nc = NotificationCenter;
                     title = $"Index Recovery Error - {resourceName ?? "Unknown Index"}";
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type.ToString());
             }
@@ -1593,10 +1596,12 @@ namespace Raven.Server.Documents
                     if (type == StorageEnvironmentWithType.StorageEnvironmentType.Configuration)
                         title += " (configuration storage)";
                     break;
+
                 case StorageEnvironmentWithType.StorageEnvironmentType.Index:
                     nc = NotificationCenter;
                     title = $"Integrity error of already synced index data - {resourceName ?? "Unknown Index"}";
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type.ToString());
             }

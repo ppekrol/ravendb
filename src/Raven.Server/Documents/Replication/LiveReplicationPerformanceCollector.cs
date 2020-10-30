@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Raven.Client.Documents.Replication;
 using Raven.Server.Utils;
@@ -78,6 +79,7 @@ namespace Raven.Server.Documents.Replication
         {
             _incomingErrors.AddOrUpdate(node, incomingFailureReporter, (_, __) => incomingFailureReporter);
         }
+
         protected IEnumerable<IReplicationPerformanceStats> PrepareInitialPerformanceStats()
         {
             foreach (var handler in Database.ReplicationLoader.IncomingHandlers)
@@ -126,7 +128,7 @@ namespace Raven.Server.Documents.Replication
                 {
                     var stats = itemsToSend.Select(item => item.ToReplicationPerformanceLiveStatsWithDetails()).ToArray();
                     results.Add(handler.PullReplication
-                        ? IncomingPerformanceStats.ForPullReplication(handler.ConnectionInfo.SourceDatabaseId, handler.SourceFormatted, stats) 
+                        ? IncomingPerformanceStats.ForPullReplication(handler.ConnectionInfo.SourceDatabaseId, handler.SourceFormatted, stats)
                         : IncomingPerformanceStats.ForPushReplication(handler.ConnectionInfo.SourceDatabaseId, handler.SourceFormatted, stats));
                 }
             }
@@ -174,13 +176,13 @@ namespace Raven.Server.Documents.Replication
             return results;
         }
 
-        protected override void WriteStats(List<IReplicationPerformanceStats> stats, AsyncBlittableJsonTextWriter writer, JsonOperationContext context)
+        protected override async ValueTask WriteStatsAsync(List<IReplicationPerformanceStats> stats, AsyncBlittableJsonTextWriter writer, JsonOperationContext context, CancellationToken token)
         {
-            writer.WriteStartObjectAsync();
+            await writer.WriteStartObjectAsync();
 
-            writer.WriteArrayAsync(context, "Results", stats, (w, c, p) => { p.Write(c, w); });
+            await writer.WriteArrayAsync(context, "Results", stats, (w, c, p) => p.WriteAsync(c, w));
 
-            writer.WriteEndObjectAsync();
+            await writer.WriteEndObjectAsync();
         }
 
         private void OutgoingHandlerRemoved(OutgoingReplicationHandler handler)
@@ -277,7 +279,7 @@ namespace Raven.Server.Documents.Replication
             {
                 return new IncomingPerformanceStats(id, description, ReplicationPerformanceType.IncomingPull, performance);
             }
-            
+
             public static IncomingPerformanceStats ForPushReplication(string id, string description, IncomingReplicationPerformanceStats[] performance)
             {
                 return new IncomingPerformanceStats(id, description, ReplicationPerformanceType.IncomingPush, performance);
@@ -303,29 +305,29 @@ namespace Raven.Server.Documents.Replication
 
             public TPerformance[] Performance { get; }
 
-            public void Write(JsonOperationContext context, AbstractBlittableJsonTextWriter writer)
+            public async ValueTask WriteAsync(JsonOperationContext context, AbstractBlittableJsonTextWriter writer)
             {
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
 
-                writer.WritePropertyNameAsync(nameof(Id));
-                writer.WriteStringAsync(Id);
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(Id));
+                await writer.WriteStringAsync(Id);
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(Description));
-                writer.WriteStringAsync(Description);
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(Description));
+                await writer.WriteStringAsync(Description);
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(Type));
-                writer.WriteStringAsync(Type.ToString());
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(Type));
+                await writer.WriteStringAsync(Type.ToString());
+                await writer.WriteCommaAsync();
 
-                writer.WriteArrayAsync(context, nameof(Performance), Performance, (w, c, p) =>
+                await writer.WriteArrayAsync(context, nameof(Performance), Performance, (w, c, p) =>
                 {
                     var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(p);
-                    w.WriteObjectAsync(c.ReadObject(djv, "incoming/replication/performance"));
+                    return w.WriteObjectAsync(c.ReadObject(djv, "incoming/replication/performance"));
                 });
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
         }
 
@@ -339,7 +341,7 @@ namespace Raven.Server.Documents.Replication
 
         public interface IReplicationPerformanceStats
         {
-            void Write(JsonOperationContext context, AbstractBlittableJsonTextWriter writer);
+            ValueTask WriteAsync(JsonOperationContext context, AbstractBlittableJsonTextWriter writer);
         }
     }
 }

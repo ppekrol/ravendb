@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Raven.Client.Documents.Operations.ETL;
 using Raven.Server.Documents.ETL.Stats;
@@ -184,9 +185,9 @@ namespace Raven.Server.Documents.ETL
             return preparedStats;
         }
 
-        protected override void WriteStats(List<EtlTaskPerformanceStats> stats, AsyncBlittableJsonTextWriter writer, JsonOperationContext context)
+        protected override ValueTask WriteStatsAsync(List<EtlTaskPerformanceStats> stats, AsyncBlittableJsonTextWriter writer, JsonOperationContext context, CancellationToken token)
         {
-            writer.WriteEtlTaskPerformanceStats(context, stats);
+            return writer.WriteEtlTaskPerformanceStats(context, stats);
         }
 
         private class EtlProcessAndPerformanceStatsList : HandlerAndPerformanceStatsList<EtlProcess, EtlStatsAggregator>

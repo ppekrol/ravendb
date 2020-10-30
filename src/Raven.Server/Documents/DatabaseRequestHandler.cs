@@ -2,10 +2,10 @@
 using System.Net;
 using System.Threading.Tasks;
 using Raven.Client;
-using Raven.Client.Util;
 using Raven.Client.Documents.Changes;
 using Raven.Client.Exceptions;
 using Raven.Client.ServerWide;
+using Raven.Client.Util;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
@@ -50,7 +50,6 @@ namespace Raven.Server.Documents
            Action<DynamicJsonValue, BlittableJsonReaderObject, long> fillJson = null,
            HttpStatusCode statusCode = HttpStatusCode.OK)
         {
-
             if (TryGetAllowedDbs(Database.Name, out var _, requireAdmin: true) == false)
                 return;
 
@@ -74,11 +73,12 @@ namespace Raven.Server.Documents
                         ["RaftCommandIndex"] = index,
                     };
                     fillJson?.Invoke(json, configurationJson, index);
-                    context.WriteAsync(writer, json);
-                    writer.FlushAsync();
+                    await context.WriteAsync(writer, json);
+                    await writer.FlushAsync();
                 }
             }
         }
+
         protected async Task WaitForIndexToBeApplied(TransactionOperationContext context, long index)
         {
             DatabaseTopology dbTopology;

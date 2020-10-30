@@ -22,25 +22,24 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.Handlers
     public class SqlEtlHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/admin/etl/sql/test-connection", "POST", AuthorizationStatus.Operator)]
-        public Task GetTestSqlConnection()
+        public async Task GetTestSqlConnection()
         {
             try
             {
                 var factoryName = GetStringQueryString("factoryName");
                 var connectionString = new StreamReader(HttpContext.Request.Body).ReadToEnd();
                 RelationalDatabaseWriter.TestConnection(factoryName, connectionString);
-                
+
                 DynamicJsonValue result = new DynamicJsonValue
-                    {
-                        [nameof(NodeConnectionTestResult.Success)] = true,
-                    };
-                
+                {
+                    [nameof(NodeConnectionTestResult.Success)] = true,
+                };
+
                 using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.WriteAsync(writer, result);
+                    await context.WriteAsync(writer, result);
                 }
-                
             }
             catch (Exception ex)
             {
@@ -51,7 +50,7 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.Handlers
                 {
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.WriteAsync(writer, new DynamicJsonValue
+                        await context.WriteAsync(writer, new DynamicJsonValue
                         {
                             [nameof(NodeConnectionTestResult.Success)] = false,
                             [nameof(NodeConnectionTestResult.Error)] = ex.ToString()
@@ -59,12 +58,10 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.Handlers
                     }
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/admin/etl/sql/test", "POST", AuthorizationStatus.Operator)]
-        public Task PostScriptTest()
+        public async Task PostScriptTest()
         {
             using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             {
@@ -76,11 +73,9 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.Handlers
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(result);
-                    writer.WriteObjectAsync(context.ReadObject(djv, "et/sql/test"));
+                    await writer.WriteObjectAsync(context.ReadObject(djv, "et/sql/test"));
                 }
             }
-
-            return Task.CompletedTask;
         }
     }
 }

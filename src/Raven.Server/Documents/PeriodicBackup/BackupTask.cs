@@ -619,7 +619,7 @@ namespace Raven.Server.Documents.PeriodicBackup
                         var totalSw = Stopwatch.StartNew();
                         var sw = Stopwatch.StartNew();
                         var compressionLevel = _configuration.SnapshotSettings?.CompressionLevel ?? CompressionLevel.Optimal;
-                        var smugglerResult = _database.FullBackupTo(tempBackupFilePath, compressionLevel,
+                        var smugglerResult = _database.FullBackupToAsync(tempBackupFilePath, compressionLevel,
                             info =>
                             {
                                 AddInfo(info.Message);

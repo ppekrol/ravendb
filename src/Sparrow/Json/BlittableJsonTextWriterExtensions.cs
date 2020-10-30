@@ -10,7 +10,7 @@ namespace Sparrow.Json
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static async ValueTask WriteArrayAsync<T>(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, string name, IEnumerable<T> items,
-            Action<AbstractBlittableJsonTextWriter, JsonOperationContext, T> onWrite)
+            Func<AbstractBlittableJsonTextWriter, JsonOperationContext, T, ValueTask> onWrite)
         {
             await writer.WritePropertyNameAsync(name).ConfigureAwait(false);
 
@@ -23,7 +23,7 @@ namespace Sparrow.Json
 
                 first = false;
 
-                onWrite(writer, context, item);
+                await onWrite(writer, context, item).ConfigureAwait(false);
             }
 
             await writer.WriteEndArrayAsync().ConfigureAwait(false);

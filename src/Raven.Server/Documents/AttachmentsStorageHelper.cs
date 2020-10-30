@@ -23,7 +23,7 @@ namespace Raven.Server.Documents
                 var bufferRead = 0;
                 while (true)
                 {
-                    var count = await requestStream.ReadAsync(buffer.Memory.Slice(bufferRead), cancellationToken);
+                    var count = await requestStream.ReadAsync(buffer.Memory.Memory.Slice(bufferRead), cancellationToken);
                     if (count == 0)
                         break;
 
@@ -32,11 +32,11 @@ namespace Raven.Server.Documents
                     if (bufferRead == buffer.Length)
                     {
                         PartialComputeHash(cryptoState, buffer, bufferRead);
-                        await file.WriteAsync(buffer.Memory, cancellationToken);
+                        await file.WriteAsync(buffer.Memory.Memory, cancellationToken);
                         bufferRead = 0;
                     }
                 }
-                await file.WriteAsync(buffer.Memory.Slice(0, bufferRead), cancellationToken);
+                await file.WriteAsync(buffer.Memory.Memory.Slice(0, bufferRead), cancellationToken);
                 PartialComputeHash(cryptoState, buffer, bufferRead);
                 var hash = FinalizeGetHash(cryptoState, buffer);
                 return hash;
@@ -57,7 +57,7 @@ namespace Raven.Server.Documents
             if (rc != 0)
                 throw new InvalidOperationException("Unable to hash attachment: " + rc);
 
-            return Convert.ToBase64String(buffer.Memory.Span.Slice(0, (int)size));
+            return Convert.ToBase64String(buffer.Memory.Memory.Span.Slice(0, (int)size));
         }
 
         private static unsafe void PartialComputeHash(JsonOperationContext.MemoryBuffer cryptoState, JsonOperationContext.MemoryBuffer buffer, int bufferRead)

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Raven.Client.Documents.Changes;
 using Raven.Client.Documents.Indexes;
@@ -14,7 +14,7 @@ namespace Raven.Server.Documents.Indexes
 {
     public class LiveIndexingPerformanceCollector : DatabaseAwareLivePerformanceCollector<IndexPerformanceStats>
     {
-        private readonly ConcurrentDictionary<string, IndexAndPerformanceStatsList> _perIndexStats = 
+        private readonly ConcurrentDictionary<string, IndexAndPerformanceStatsList> _perIndexStats =
             new ConcurrentDictionary<string, IndexAndPerformanceStatsList>();
 
         public LiveIndexingPerformanceCollector(DocumentDatabase documentDatabase, IEnumerable<string> indexNames)
@@ -49,7 +49,7 @@ namespace Raven.Server.Documents.Indexes
                         });
                     }
                 }
-                
+
                 Stats.Enqueue(stats);
 
                 await RunInLoop();
@@ -72,18 +72,18 @@ namespace Raven.Server.Documents.Indexes
                 var indexAndPerformanceStatsList = keyValue.Value;
                 var indexName = indexAndPerformanceStatsList.Handler;
                 var performance = indexAndPerformanceStatsList.Performance;
-                
+
                 var itemsToSend = new List<IndexingStatsAggregator>(performance.Count);
 
                 while (performance.TryTake(out IndexingStatsAggregator stat))
                     itemsToSend.Add(stat);
-                
-                // if index still exists let's fetch latest stats from live instance 
+
+                // if index still exists let's fetch latest stats from live instance
                 var index = Database.IndexStore.GetIndex(indexName);
 
                 var latestStats = index?.GetLatestIndexingStat();
                 if (latestStats != null &&
-                    latestStats.Completed == false && 
+                    latestStats.Completed == false &&
                     itemsToSend.Contains(latestStats) == false)
                     itemsToSend.Add(latestStats);
 
@@ -99,9 +99,9 @@ namespace Raven.Server.Documents.Indexes
             return preparedStats;
         }
 
-        protected override void WriteStats(List<IndexPerformanceStats> stats, AsyncBlittableJsonTextWriter writer, JsonOperationContext context)
+        protected override ValueTask WriteStatsAsync(List<IndexPerformanceStats> stats, AsyncBlittableJsonTextWriter writer, JsonOperationContext context, CancellationToken token)
         {
-            writer.WritePerformanceStats(context, stats);
+            return writer.WritePerformanceStatsAsync(context, stats);
         }
 
         private void OnIndexChange(IndexChange change)
@@ -112,6 +112,7 @@ namespace Raven.Server.Documents.Indexes
                 case IndexChangeTypes.IndexRemoved:
                     _perIndexStats.TryRemove(change.Name, out indexAndPerformanceStats);
                     return;
+
                 case IndexChangeTypes.Renamed:
                     var indexRenameChange = change as IndexRenameChange;
                     Debug.Assert(indexRenameChange != null);
@@ -121,7 +122,7 @@ namespace Raven.Server.Documents.Indexes
 
             if (change.Type != IndexChangeTypes.BatchCompleted && change.Type != IndexChangeTypes.IndexPaused)
                 return;
-            
+
             if (_perIndexStats.TryGetValue(change.Name, out indexAndPerformanceStats) == false)
             {
                 var index = Database.IndexStore.GetIndex(change.Name);
