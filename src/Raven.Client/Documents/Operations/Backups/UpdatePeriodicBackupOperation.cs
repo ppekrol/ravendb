@@ -41,11 +41,7 @@ namespace Raven.Client.Documents.Operations.Backups
                 var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
-                    Content = new BlittableJsonContent(async stream =>
-                    {
-                        var config = DocumentConventions.Default.Serialization.DefaultConverter.ToBlittable(_configuration, ctx);
-                        await ctx.WriteAsync(stream, config).ConfigureAwait(false);
-                    })
+                    Content = new BlittableJsonContent(stream => ctx.WriteAsync(stream, DocumentConventions.Default.Serialization.DefaultConverter.ToBlittable(_configuration, ctx)))
                 };
 
                 return request;

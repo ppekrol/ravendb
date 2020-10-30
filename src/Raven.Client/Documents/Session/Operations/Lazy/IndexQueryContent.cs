@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Raven.Client.Documents.Commands.MultiGet;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Documents.Queries;
@@ -18,9 +19,9 @@ namespace Raven.Client.Documents.Session.Operations.Lazy
             _query = query ?? throw new ArgumentNullException(nameof(query));
         }
 
-        public void WriteContent(AsyncBlittableJsonTextWriter writer, JsonOperationContext context)
+        public ValueTask WriteContentAsync(AsyncBlittableJsonTextWriter writer, JsonOperationContext context)
         {
-            writer.WriteIndexQuery(_conventions, context, _query);
+            return writer.WriteIndexQueryAsync(_conventions, context, _query);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Logging;
@@ -12,16 +13,16 @@ namespace Raven.Client.ServerWide.Tcp
         public const int OutOfRangeStatus = -1;
         public const int DropStatus = -2;
 
-        private static readonly Logger Log = LoggingSource.Instance.GetLogger<TcpNegotiation>("TCP Negotiation"); 
+        private static readonly Logger Log = LoggingSource.Instance.GetLogger<TcpNegotiation>("TCP Negotiation");
 
-        public static TcpConnectionHeaderMessage.SupportedFeatures NegotiateProtocolVersion(JsonOperationContext context, Stream stream, TcpNegotiateParameters parameters)
+        public static async ValueTask<TcpConnectionHeaderMessage.SupportedFeatures> NegotiateProtocolVersionAsync(JsonOperationContext context, Stream stream, TcpNegotiateParameters parameters)
         {
             if (Log.IsInfoEnabled)
             {
                 Log.Info($"Start negotiation for {parameters.Operation} operation with {parameters.DestinationNodeTag ?? parameters.DestinationUrl}");
             }
 
-            using (var writer = new BlittableJsonTextWriter(context, stream))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
             {
                 var current = parameters.Version;
                 while (true)
@@ -29,8 +30,8 @@ namespace Raven.Client.ServerWide.Tcp
                     if (parameters.CancellationToken.IsCancellationRequested)
                         throw new OperationCanceledException($"Stopped TCP negotiation for {parameters.Operation} because of cancellation request");
 
-                    SendTcpVersionInfo(context, writer, parameters, current);
-                    var version = parameters.ReadResponseAndGetVersionCallback(context, writer, stream, parameters.DestinationUrl);
+                    await SendTcpVersionInfoAsync(context, writer, parameters, current).ConfigureAwait(false);
+                    var version = await parameters.ReadResponseAndGetVersionCallbackAsync(context, writer).ConfigureAwait(false);
                     if (Log.IsInfoEnabled)
                     {
                         Log.Info($"Read response from {parameters.SourceNodeTag ?? parameters.DestinationUrl} for '{parameters.Operation}', received version is '{version}'");
@@ -47,7 +48,7 @@ namespace Raven.Client.ServerWide.Tcp
                     var status = TcpConnectionHeaderMessage.OperationVersionSupported(parameters.Operation, version, out current);
                     if (status == TcpConnectionHeaderMessage.SupportedStatus.OutOfRange)
                     {
-                        SendTcpVersionInfo(context, writer, parameters, OutOfRangeStatus);
+                        await SendTcpVersionInfoAsync(context, writer, parameters, OutOfRangeStatus).ConfigureAwait(false);
                         throw new ArgumentException($"The {parameters.Operation} version {parameters.Version} is out of range, our lowest version is {current}");
                     }
                     if (Log.IsInfoEnabled)
@@ -63,22 +64,22 @@ namespace Raven.Client.ServerWide.Tcp
             }
         }
 
-        private static void SendTcpVersionInfo(JsonOperationContext context, AsyncBlittableJsonTextWriter writer, TcpNegotiateParameters parameters, int currentVersion)
+        private static async ValueTask SendTcpVersionInfoAsync(JsonOperationContext context, AsyncBlittableJsonTextWriter writer, TcpNegotiateParameters parameters, int currentVersion)
         {
             if (Log.IsInfoEnabled)
             {
                 Log.Info($"Send negotiation for {parameters.Operation} in version {currentVersion}");
             }
 
-            context.Write(writer, new DynamicJsonValue
+            await context.WriteAsync(writer, new DynamicJsonValue
             {
                 [nameof(TcpConnectionHeaderMessage.DatabaseName)] = parameters.Database,
                 [nameof(TcpConnectionHeaderMessage.Operation)] = parameters.Operation.ToString(),
                 [nameof(TcpConnectionHeaderMessage.SourceNodeTag)] = parameters.SourceNodeTag,
                 [nameof(TcpConnectionHeaderMessage.OperationVersion)] = currentVersion,
                 [nameof(TcpConnectionHeaderMessage.AuthorizeInfo)] = parameters.AuthorizeInfo?.ToJson()
-            });
-            writer.Flush();
+            }).ConfigureAwait(false);
+            await writer.FlushAsync().ConfigureAwait(false);
         }
     }
 
@@ -101,6 +102,6 @@ namespace Raven.Client.ServerWide.Tcp
         /// If the respond is 'None' the function should throw.
         /// If the respond is 'TcpMismatch' the function should return the read version.
         /// </summary>
-        public Func<JsonOperationContext, AsyncBlittableJsonTextWriter, Stream, string, int> ReadResponseAndGetVersionCallback { get; set; }
+        public Func<JsonOperationContext, AsyncBlittableJsonTextWriter, ValueTask<int>> ReadResponseAndGetVersionCallbackAsync { get; set; }
     }
 }

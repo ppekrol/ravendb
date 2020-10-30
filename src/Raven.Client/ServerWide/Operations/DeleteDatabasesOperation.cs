@@ -68,10 +68,7 @@ namespace Raven.Client.ServerWide.Operations
                 var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Delete,
-                    Content = new BlittableJsonContent(stream =>
-                    {
-                        ctx.Write(stream, _parameters);
-                    })
+                    Content = new BlittableJsonContent(stream => ctx.WriteAsync(stream, _parameters))
                 };
 
                 return request;

@@ -9,65 +9,65 @@ namespace Raven.Client.Extensions
     {
         public static async ValueTask WriteIndexQueryAsync(this AsyncBlittableJsonTextWriter writer, DocumentConventions conventions, JsonOperationContext context, IndexQuery query)
         {
-            writer.WriteStartObject();
+            await writer.WriteStartObjectAsync().ConfigureAwait(false);
 
-            writer.WritePropertyName(nameof(query.Query));
-            writer.WriteString(query.Query);
-            writer.WriteComma();
+            await writer.WritePropertyNameAsync(nameof(query.Query)).ConfigureAwait(false);
+            await writer.WriteStringAsync(query.Query).ConfigureAwait(false);
+            await writer.WriteCommaAsync().ConfigureAwait(false);
 
 #pragma warning disable 618
             if (query.PageSizeSet && query.PageSize >= 0)
             {
-                writer.WritePropertyName(nameof(query.PageSize));
-                writer.WriteInteger(query.PageSize);
-                writer.WriteComma();
+                await writer.WritePropertyNameAsync(nameof(query.PageSize)).ConfigureAwait(false);
+                await writer.WriteIntegerAsync(query.PageSize).ConfigureAwait(false);
+                await writer.WriteCommaAsync().ConfigureAwait(false);
             }
 #pragma warning restore 618
 
             if (query.WaitForNonStaleResults)
             {
-                writer.WritePropertyName(nameof(query.WaitForNonStaleResults));
-                writer.WriteBool(query.WaitForNonStaleResults);
-                writer.WriteComma();
+                await writer.WritePropertyNameAsync(nameof(query.WaitForNonStaleResults)).ConfigureAwait(false);
+                await writer.WriteBoolAsync(query.WaitForNonStaleResults).ConfigureAwait(false);
+                await writer.WriteCommaAsync().ConfigureAwait(false);
             }
 
 #pragma warning disable 618
             if (query.Start > 0)
             {
-                writer.WritePropertyName(nameof(query.Start));
-                writer.WriteInteger(query.Start);
-                writer.WriteComma();
+                await writer.WritePropertyNameAsync(nameof(query.Start)).ConfigureAwait(false);
+                await writer.WriteIntegerAsync(query.Start).ConfigureAwait(false);
+                await writer.WriteCommaAsync().ConfigureAwait(false);
             }
 #pragma warning restore 618
 
             if (query.WaitForNonStaleResultsTimeout.HasValue)
             {
-                writer.WritePropertyName(nameof(query.WaitForNonStaleResultsTimeout));
-                writer.WriteString(query.WaitForNonStaleResultsTimeout.Value.ToInvariantString());
-                writer.WriteComma();
+                await writer.WritePropertyNameAsync(nameof(query.WaitForNonStaleResultsTimeout)).ConfigureAwait(false);
+                await writer.WriteStringAsync(query.WaitForNonStaleResultsTimeout.Value.ToInvariantString()).ConfigureAwait(false);
+                await writer.WriteCommaAsync().ConfigureAwait(false);
             }
 
             if (query.DisableCaching)
             {
-                writer.WritePropertyName(nameof(query.DisableCaching));
-                writer.WriteBool(query.DisableCaching);
-                writer.WriteComma();
+                await writer.WritePropertyNameAsync(nameof(query.DisableCaching)).ConfigureAwait(false);
+                await writer.WriteBoolAsync(query.DisableCaching).ConfigureAwait(false);
+                await writer.WriteCommaAsync().ConfigureAwait(false);
             }
 
             if (query.SkipDuplicateChecking)
             {
-                writer.WritePropertyName(nameof(query.SkipDuplicateChecking));
-                writer.WriteBool(query.SkipDuplicateChecking);
-                writer.WriteComma();
+                await writer.WritePropertyNameAsync(nameof(query.SkipDuplicateChecking)).ConfigureAwait(false);
+                await writer.WriteBoolAsync(query.SkipDuplicateChecking).ConfigureAwait(false);
+                await writer.WriteCommaAsync().ConfigureAwait(false);
             }
 
-            writer.WritePropertyName(nameof(query.QueryParameters));
+            await writer.WritePropertyNameAsync(nameof(query.QueryParameters)).ConfigureAwait(false);
             if (query.QueryParameters != null)
-                writer.WriteObject(conventions.Serialization.DefaultConverter.ToBlittable(query.QueryParameters, context));
+                await writer.WriteObjectAsync(conventions.Serialization.DefaultConverter.ToBlittable(query.QueryParameters, context)).ConfigureAwait(false);
             else
-                writer.WriteNull();
+                await writer.WriteNullAsync().ConfigureAwait(false);
 
-            writer.WriteEndObject();
+            await writer.WriteEndObjectAsync().ConfigureAwait(false);
         }
     }
 }

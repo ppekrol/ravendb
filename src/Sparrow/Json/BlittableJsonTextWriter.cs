@@ -12,13 +12,11 @@ namespace Sparrow.Json
     public class AsyncBlittableJsonTextWriter : AbstractBlittableJsonTextWriter
     {
         private readonly Stream _outputStream;
-        private readonly CancellationToken _token;
 
-        public AsyncBlittableJsonTextWriter(JsonOperationContext context, Stream stream, CancellationToken token = default)
+        public AsyncBlittableJsonTextWriter(JsonOperationContext context, Stream stream)
             : base(context, context.CheckoutMemoryStream())
         {
             _outputStream = stream;
-            _token = token;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -553,13 +551,13 @@ namespace Sparrow.Json
             await FlushAsync().ConfigureAwait(false);
         }
 
-        public async ValueTask FlushAsync()
+        public async ValueTask FlushAsync(CancellationToken token)
         {
             if (_stream == null)
                 ThrowStreamClosed();
             if (_pos == 0)
                 return;
-            await _stream.WriteAsync(_buffer.Memory.Slice(0, _pos)).ConfigureAwait(false);
+            await _stream.WriteAsync(_buffer.Memory.Slice(0, _pos), token).ConfigureAwait(false);
             _pos = 0;
         }
 

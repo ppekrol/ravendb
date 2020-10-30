@@ -62,7 +62,7 @@ namespace Raven.Client.Documents.Operations.Replication
                             ["PullReplicationAsSink"] = _pullReplication.ToJson()
                         };
 
-                        ctx.Write(stream, ctx.ReadObject(json, "update-pull-replication"));
+                        return ctx.WriteAsync(stream, ctx.ReadObject(json, "update-pull-replication"));
                     })
                 };
 

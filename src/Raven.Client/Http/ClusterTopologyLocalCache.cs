@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Json.Serialization;
 using Sparrow;
@@ -57,7 +59,7 @@ namespace Raven.Client.Http
             }
         }
 
-        public static void TrySaving(string topologyHash, ClusterTopologyResponse clusterTopology, DocumentConventions conventions, JsonOperationContext context)
+        public static async Task TrySavingAsync(string topologyHash, ClusterTopologyResponse clusterTopology, DocumentConventions conventions, JsonOperationContext context, CancellationToken token)
         {
             try
             {
@@ -69,7 +71,7 @@ namespace Raven.Client.Http
                 }
 
                 using (var stream = SafeFileStream.Create(path, FileMode.Create, FileAccess.Write, FileShare.Read))
-                using (var writer = new BlittableJsonTextWriter(context, stream))
+                await using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
                 {
                     var json = new DynamicJsonValue
                     {
@@ -80,8 +82,8 @@ namespace Raven.Client.Http
                         ["PersistedAt"] = DateTimeOffset.UtcNow.ToString(DefaultFormat.DateTimeOffsetFormatsToWrite),
                     };
 
-                    context.Write(writer, json);
-                    writer.Flush();
+                    await context.WriteAsync(writer, json, token).ConfigureAwait(false);
+                    await writer.FlushAsync(token).ConfigureAwait(false);
                 }
             }
             catch (Exception e)

@@ -53,7 +53,7 @@ namespace Raven.Client.ServerWide.Operations
                     Content = new BlittableJsonContent(stream =>
                     {
                         var config = DocumentConventions.Default.Serialization.DefaultConverter.ToBlittable(_configuration, ctx);
-                        ctx.Write(stream, config);
+                        return ctx.WriteAsync(stream, config);
                     })
                 };
 

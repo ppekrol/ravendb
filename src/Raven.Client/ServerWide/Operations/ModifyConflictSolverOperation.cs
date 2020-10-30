@@ -59,7 +59,7 @@ namespace Raven.Client.ServerWide.Operations
                             ResolveByCollection = _solver.CollectionByScript,
                             ResolveToLatest = _solver.ResolveToLatest,
                         }, ctx);
-                        ctx.Write(stream, solver);
+                        return ctx.WriteAsync(stream, solver);
                     })
                 };
 

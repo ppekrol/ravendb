@@ -48,7 +48,7 @@ namespace Raven.Client.Documents.Operations.Replication
                             ["Watcher"] = _newWatcher.ToJson()
                         };
 
-                        ctx.Write(stream, ctx.ReadObject(json, "update-replication"));
+                        return ctx.WriteAsync(stream, ctx.ReadObject(json, "update-replication"));
                     })
                 };
 
@@ -67,5 +67,4 @@ namespace Raven.Client.Documents.Operations.Replication
             public string RaftUniqueRequestId { get; } = RaftIdGenerator.NewId();
         }
     }
-
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Http;
 using Raven.Client.Json;
@@ -44,7 +43,7 @@ namespace Raven.Client.Documents.Operations.TransactionsRecording
                                 new Parameters { File = _filePath },
                                 ctx
                             );
-                        ctx.Write(stream, jsonReaderObject);
+                        return ctx.WriteAsync(stream, jsonReaderObject);
                     })
                 };
                 return request;
