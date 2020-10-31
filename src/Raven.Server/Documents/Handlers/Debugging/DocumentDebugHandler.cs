@@ -8,52 +8,50 @@ using Sparrow.Json;
 namespace Raven.Server.Documents.Handlers.Debugging
 {
     public class DocumentDebugHandler : DatabaseRequestHandler
-    {       
+    {
         [RavenAction("/databases/*/debug/documents/huge", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = true)]
-        public Task HugeDocuments()
+        public async Task HugeDocuments()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync("Results");
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync("Results");
 
-                writer.WriteStartArrayAsync();
+                await writer.WriteStartArrayAsync();
 
                 var isFirst = true;
 
                 foreach (var pair in context.DocumentDatabase.HugeDocuments.GetHugeDocuments())
                 {
                     if (isFirst == false)
-                        writer.WriteCommaAsync();
+                        await writer.WriteCommaAsync();
 
                     isFirst = false;
 
-                    writer.WriteStartObjectAsync();
+                    await writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyNameAsync("Id");
-                    writer.WriteStringAsync(pair.Key.Item1);
+                    await writer.WritePropertyNameAsync("Id");
+                    await writer.WriteStringAsync(pair.Key.Item1);
 
-                    writer.WriteCommaAsync();
+                    await writer.WriteCommaAsync();
 
-                    writer.WritePropertyNameAsync("Size");
-                    writer.WriteIntegerAsync(pair.Value);
+                    await writer.WritePropertyNameAsync("Size");
+                    await writer.WriteIntegerAsync(pair.Value);
 
-                    writer.WriteCommaAsync();
+                    await writer.WriteCommaAsync();
 
-                    writer.WritePropertyNameAsync("LastAccess");
-                    writer.WriteStringAsync(pair.Key.Item2.ToString(DefaultFormat.DateTimeOffsetFormatsToWrite, CultureInfo.InvariantCulture));
+                    await writer.WritePropertyNameAsync("LastAccess");
+                    await writer.WriteStringAsync(pair.Key.Item2.ToString(DefaultFormat.DateTimeOffsetFormatsToWrite, CultureInfo.InvariantCulture));
 
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteEndObjectAsync();
                 }
 
-                writer.WriteEndArrayAsync();
+                await writer.WriteEndArrayAsync();
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
-
-            return Task.CompletedTask;
         }
     }
 }

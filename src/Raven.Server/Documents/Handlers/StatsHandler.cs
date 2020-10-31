@@ -14,7 +14,7 @@ namespace Raven.Server.Documents.Handlers
     public class StatsHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/stats/detailed", "GET", AuthorizationStatus.ValidUser)]
-        public Task DetailedStats()
+        public async Task DetailedStats()
         {
             using (var context = QueryOperationContext.Allocate(Database, needsServerContext: true))
             {
@@ -30,15 +30,13 @@ namespace Raven.Server.Documents.Handlers
                     stats.CountOfCompareExchangeTombstones = ServerStore.Cluster.GetNumberOfCompareExchangeTombstones(serverContext, Database.Name);
                 }
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
-                    writer.WriteDetailedDatabaseStatistics(context.Documents, stats);
+                await using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+                    await writer.WriteDetailedDatabaseStatistics(context.Documents, stats);
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/stats", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = true)]
-        public Task Stats()
+        public async Task Stats()
         {
             using (var context = QueryOperationContext.Allocate(Database, needsServerContext: true))
             {
@@ -46,11 +44,9 @@ namespace Raven.Server.Documents.Handlers
 
                 FillDatabaseStatistics(stats, context);
 
-                using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
-                    writer.WriteDatabaseStatistics(context.Documents, stats);
+                await using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+                    await writer.WriteDatabaseStatistics(context.Documents, stats);
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/healthcheck", "GET", AuthorizationStatus.ValidUser)]
@@ -59,7 +55,7 @@ namespace Raven.Server.Documents.Handlers
             NoContentStatus();
             return Task.CompletedTask;
         }
-        
+
         private void FillDatabaseStatistics(DatabaseStatistics stats, QueryOperationContext context)
         {
             using (context.OpenReadTransaction())
@@ -129,26 +125,24 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/metrics", "GET", AuthorizationStatus.ValidUser)]
-        public Task Metrics()
+        public async Task Metrics()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                context.WriteAsync(writer, Database.Metrics.ToJson());
+                await context.WriteAsync(writer, Database.Metrics.ToJson());
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/metrics/puts", "GET", AuthorizationStatus.ValidUser)]
-        public Task PutsMetrics()
+        public async Task PutsMetrics()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var empty = GetBoolValueQueryString("empty", required: false) ?? true;
 
-                context.WriteAsync(writer, new DynamicJsonValue
+                await context.WriteAsync(writer, new DynamicJsonValue
                 {
                     [nameof(Database.Metrics.Docs)] = new DynamicJsonValue
                     {
@@ -168,19 +162,17 @@ namespace Raven.Server.Documents.Handlers
                     }
                 });
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/metrics/bytes", "GET", AuthorizationStatus.ValidUser)]
-        public Task BytesMetrics()
+        public async Task BytesMetrics()
         {
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var empty = GetBoolValueQueryString("empty", required: false) ?? true;
 
-                context.WriteAsync(writer, new DynamicJsonValue
+                await context.WriteAsync(writer, new DynamicJsonValue
                 {
                     [nameof(Database.Metrics.Docs)] = new DynamicJsonValue
                     {
@@ -200,8 +192,6 @@ namespace Raven.Server.Documents.Handlers
                     }
                 });
             }
-
-            return Task.CompletedTask;
         }
     }
 }

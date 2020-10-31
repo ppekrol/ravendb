@@ -23,7 +23,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
             HttpContext.Response.Headers["Content-Disposition"] = contentDisposition;
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {
-                using (var ms = new MemoryStream())
+                await using (var ms = new MemoryStream())
                 {
                     using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, true))
                     {
@@ -45,13 +45,13 @@ namespace Raven.Server.Documents.Handlers.Debugging
                                 var entry = archive.CreateEntry(entryName);
                                 entry.ExternalAttributes = ((int)(FilePermissions.S_IRUSR | FilePermissions.S_IWUSR)) << 16;
 
-                                using (var entryStream = entry.Open())
-                                using (var writer = new AsyncBlittableJsonTextWriter(context, entryStream))
+                                await using (var entryStream = entry.Open())
+                                await using (var writer = new AsyncBlittableJsonTextWriter(context, entryStream))
                                 {
                                     using (var endpointOutput = await localEndpointClient.InvokeAndReadObjectAsync(route, context, endpointParameters))
                                     {
-                                        context.WriteAsync(writer, endpointOutput);
-                                        writer.FlushAsync();
+                                        await context.WriteAsync(writer, endpointOutput);
+                                        await writer.FlushAsync();
                                         await entryStream.FlushAsync();
                                     }
                                 }

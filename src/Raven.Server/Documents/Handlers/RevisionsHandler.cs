@@ -26,7 +26,7 @@ namespace Raven.Server.Documents.Handlers
     public class RevisionsHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/revisions/config", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetRevisionsConfig()
+        public async Task GetRevisionsConfig()
         {
             using (Server.ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
@@ -47,7 +47,7 @@ namespace Raven.Server.Documents.Handlers
 
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.WriteAsync(writer, new DynamicJsonValue
+                        await context.WriteAsync(writer, new DynamicJsonValue
                         {
                             [nameof(revisionsConfig.Default)] = revisionsConfig.Default?.ToJson(),
                             [nameof(revisionsConfig.Collections)] = revisionsCollection
@@ -59,28 +59,27 @@ namespace Raven.Server.Documents.Handlers
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 }
             }
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/admin/revisions/conflicts/config", "POST", AuthorizationStatus.DatabaseAdmin)]
-        public async Task ConfigConflictedRevisions()
+        public Task ConfigConflictedRevisions()
         {
-            await DatabaseConfigurations(
+            return DatabaseConfigurations(
                 ServerStore.ModifyRevisionsForConflicts,
                 "conflicted-revisions-config",
                 GetRaftRequestIdFromQuery());
         }
 
         [RavenAction("/databases/*/admin/revisions/config", "POST", AuthorizationStatus.DatabaseAdmin)]
-        public async Task ConfigRevisions()
+        public Task ConfigRevisions()
         {
-            await DatabaseConfigurations(
+            return DatabaseConfigurations(
                 ServerStore.ModifyDatabaseRevisions,
-                "read-revisions-config", 
+                "read-revisions-config",
                 GetRaftRequestIdFromQuery(),
                 beforeSetupConfiguration: (string name, ref BlittableJsonReaderObject configuration, JsonOperationContext context) =>
                 {
-                    if (configuration == null || 
+                    if (configuration == null ||
                         configuration.TryGet(nameof(RevisionsConfiguration.Collections), out BlittableJsonReaderObject collections) == false ||
                         collections?.Count > 0 == false)
                         return;
@@ -102,7 +101,7 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/admin/revisions/config/enforce", "POST", AuthorizationStatus.DatabaseAdmin)]
-        public Task EnforceConfigRevisions()
+        public async Task EnforceConfigRevisions()
         {
             var token = CreateTimeLimitedOperationToken();
             var operationId = ServerStore.Operations.GetNextOperationId();
@@ -118,26 +117,22 @@ namespace Raven.Server.Documents.Handlers
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
+                await writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/revisions/count", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetRevisionsCountFor()
+        public async Task GetRevisionsCountFor()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (context.OpenReadTransaction())
             {
-                GetRevisionsCount(context);
-
-                return Task.CompletedTask;
+                await GetRevisionsCount(context);
             }
         }
-        
+
         [RavenAction("/databases/*/revisions", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetRevisionsFor()
+        public async Task GetRevisionsFor()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             using (context.OpenReadTransaction())
@@ -146,11 +141,9 @@ namespace Raven.Server.Documents.Handlers
                 var metadataOnly = GetBoolValueQueryString("metadataOnly", required: false) ?? false;
 
                 if (changeVectors.Count > 0)
-                    GetRevisionByChangeVector(context, changeVectors, metadataOnly);
+                    await GetRevisionByChangeVector(context, changeVectors, metadataOnly);
                 else
-                    GetRevisions(context, metadataOnly);
-
-                return Task.CompletedTask;
+                    await GetRevisions(context, metadataOnly);
             }
         }
 
@@ -158,7 +151,7 @@ namespace Raven.Server.Documents.Handlers
         public async Task Revert()
         {
             RevertRevisionsRequest configuration;
-            
+
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {
                 var json = await context.ReadForMemoryAsync(RequestBodyStream(), "revisions/revert");
@@ -180,11 +173,11 @@ namespace Raven.Server.Documents.Handlers
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
+                await writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
             }
         }
 
-        private void GetRevisionByChangeVector(DocumentsOperationContext context, Microsoft.Extensions.Primitives.StringValues changeVectors, bool metadataOnly)
+        private async Task GetRevisionByChangeVector(DocumentsOperationContext context, Microsoft.Extensions.Primitives.StringValues changeVectors, bool metadataOnly)
         {
             var revisionsStorage = Database.DocumentsStorage.RevisionsStorage;
             var sw = Stopwatch.StartNew();
@@ -221,21 +214,24 @@ namespace Raven.Server.Documents.Handlers
             }
             else
             {
-                WriteRevisionsJson(context, metadataOnly, revisions, out numberOfResults);
+                numberOfResults = await WriteRevisionsJsonAsync(context, metadataOnly, revisions);
             }
 
             AddPagingPerformanceHint(PagingOperationType.Documents, nameof(GetRevisionByChangeVector), HttpContext.Request.QueryString.Value, numberOfResults, revisions.Count, sw.ElapsedMilliseconds);
         }
 
-        private void WriteRevisionsJson(JsonOperationContext context, bool metadataOnly, IEnumerable<Document> documentsToWrite, out long numberOfResults)
+        private async Task<long> WriteRevisionsJsonAsync(JsonOperationContext context, bool metadataOnly, IEnumerable<Document> documentsToWrite)
         {
+            long numberOfResults;
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync(nameof(GetDocumentsResult.Results));
-                writer.WriteDocuments(context, documentsToWrite, metadataOnly, out numberOfResults);
-                writer.WriteEndObjectAsync();
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync(nameof(GetDocumentsResult.Results));
+                numberOfResults = await writer.WriteDocuments(context, documentsToWrite, metadataOnly);
+                await writer.WriteEndObjectAsync();
             }
+
+            return numberOfResults;
         }
 
         private void WriteRevisionsBlittable(DocumentsOperationContext context, IEnumerable<Document> documentsToWrite, out long numberOfResults)
@@ -266,7 +262,7 @@ namespace Raven.Server.Documents.Handlers
             }
         }
 
-        private void GetRevisionsCount(DocumentsOperationContext documentContext)
+        private async Task GetRevisionsCount(DocumentsOperationContext documentContext)
         {
             var docId = GetQueryStringValueAndAssertIfSingleAndNotEmpty("id");
 
@@ -277,13 +273,13 @@ namespace Raven.Server.Documents.Handlers
 
             documentRevisionsDetails.RevisionsCount = Database.DocumentsStorage.RevisionsStorage.GetRevisionsCount(documentContext, docId);
 
-            using (var writer = new AsyncBlittableJsonTextWriter(documentContext, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(documentContext, ResponseBodyStream()))
             {
-                documentContext.WriteAsync(writer, documentRevisionsDetails.ToJson());
+                await documentContext.WriteAsync(writer, documentRevisionsDetails.ToJson());
             }
         }
-        
-        private void GetRevisions(DocumentsOperationContext context, bool metadataOnly)
+
+        private async Task GetRevisions(DocumentsOperationContext context, bool metadataOnly)
         {
             var sw = Stopwatch.StartNew();
 
@@ -321,22 +317,22 @@ namespace Raven.Server.Documents.Handlers
             long loadedRevisionsCount;
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync("Results");
-                writer.WriteDocuments(context, revisions, metadataOnly, out loadedRevisionsCount);
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync("Results");
+                loadedRevisionsCount = await writer.WriteDocuments(context, revisions, metadataOnly);
 
-                writer.WriteCommaAsync();
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync("TotalResults");
-                writer.WriteIntegerAsync(count);
-                writer.WriteEndObjectAsync();
+                await writer.WritePropertyNameAsync("TotalResults");
+                await writer.WriteIntegerAsync(count);
+                await writer.WriteEndObjectAsync();
             }
 
             AddPagingPerformanceHint(PagingOperationType.Revisions, nameof(GetRevisions), HttpContext.Request.QueryString.Value, loadedRevisionsCount, pageSize, sw.ElapsedMilliseconds);
         }
 
         [RavenAction("/databases/*/revisions/resolved", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetResolvedConflictsSince()
+        public async Task GetResolvedConflictsSince()
         {
             var since = GetStringQueryString("since", required: false);
             var take = GetIntValueQueryString("take", required: false) ?? 1024;
@@ -345,17 +341,16 @@ namespace Raven.Server.Documents.Handlers
             using (context.OpenReadTransaction())
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync("Results");
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync("Results");
                 var revisions = Database.DocumentsStorage.RevisionsStorage.GetResolvedDocumentsSince(context, date, take);
-                writer.WriteDocuments(context, revisions, false, out _);
-                writer.WriteEndObjectAsync();
+                await writer.WriteDocuments(context, revisions, false);
+                await writer.WriteEndObjectAsync();
             }
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/revisions/bin", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetRevisionsBin()
+        public async Task GetRevisionsBin()
         {
             var revisionsStorage = Database.DocumentsStorage.RevisionsStorage;
             if (revisionsStorage.Configuration == null)
@@ -374,7 +369,7 @@ namespace Raven.Server.Documents.Handlers
                     if (GetStringFromHeaders("If-None-Match") == actualChangeVector)
                     {
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotModified;
-                        return Task.CompletedTask;
+                        return;
                     }
 
                     HttpContext.Response.Headers["ETag"] = "\"" + actualChangeVector + "\"";
@@ -383,26 +378,24 @@ namespace Raven.Server.Documents.Handlers
                 long count;
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
+                    await writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyNameAsync("Results");
+                    await writer.WritePropertyNameAsync("Results");
                     var revisions = revisionsStorage.GetRevisionsBinEntries(context, etag, pageSize);
-                    writer.WriteDocuments(context, revisions, false, out count);
+                    count = await writer.WriteDocuments(context, revisions, false);
 
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteEndObjectAsync();
                 }
 
                 AddPagingPerformanceHint(PagingOperationType.Revisions, nameof(GetRevisionsBin), HttpContext.Request.QueryString.Value, count, pageSize, sw.ElapsedMilliseconds);
             }
-
-            return Task.CompletedTask;
         }
     }
 
     public class DocumentRevisionsCount : IDynamicJson
     {
         public long RevisionsCount { get; set; }
-        
+
         public DynamicJsonValue ToJson()
         {
             return new DynamicJsonValue

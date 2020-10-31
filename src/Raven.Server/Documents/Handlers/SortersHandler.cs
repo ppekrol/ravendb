@@ -10,7 +10,7 @@ namespace Raven.Server.Documents.Handlers
     public class SortersHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/sorters", "GET", AuthorizationStatus.ValidUser)]
-        public Task Get()
+        public async Task Get()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
@@ -28,29 +28,25 @@ namespace Raven.Server.Documents.Handlers
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
+                    await writer.WriteStartObjectAsync();
 
-                    writer.WriteStartObjectAsync();
-
-                    writer.WriteArrayAsync(context, "Sorters", sorters.Values, (w, c, sorter) =>
+                    await writer.WriteArrayAsync(context, "Sorters", sorters.Values, async (w, c, sorter) =>
                     {
-                        w.WriteStartObject();
+                        await w.WriteStartObjectAsync();
 
-                        w.WritePropertyName(nameof(SorterDefinition.Name));
-                        w.WriteString(sorter.Name);
-                        w.WriteComma();
+                        await w.WritePropertyNameAsync(nameof(SorterDefinition.Name));
+                        await w.WriteStringAsync(sorter.Name);
+                        await w.WriteCommaAsync();
 
-                        w.WritePropertyName(nameof(SorterDefinition.Code));
-                        w.WriteString(sorter.Code);
+                        await w.WritePropertyNameAsync(nameof(SorterDefinition.Code));
+                        await w.WriteStringAsync(sorter.Code);
 
-                        w.WriteEndObject();
+                        await w.WriteEndObjectAsync();
                     });
 
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteEndObjectAsync();
                 }
             }
-
-            return Task.CompletedTask;
         }
-
     }
 }

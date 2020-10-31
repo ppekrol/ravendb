@@ -6,7 +6,6 @@
 
 using System.Net;
 using System.Threading.Tasks;
-using Raven.Client.Documents.Operations.Expiration;
 using Raven.Client.Documents.Operations.Refresh;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide.Context;
@@ -17,7 +16,7 @@ namespace Raven.Server.Documents.Handlers
     public class RefreshHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/refresh/config", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetRefreshConfig()
+        public async Task GetRefreshConfig()
         {
             using (Server.ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
@@ -32,7 +31,7 @@ namespace Raven.Server.Documents.Handlers
                 {
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.WriteAsync(writer, refreshConfig.ToJson());
+                        await context.WriteAsync(writer, refreshConfig.ToJson());
                     }
                 }
                 else
@@ -40,9 +39,8 @@ namespace Raven.Server.Documents.Handlers
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 }
             }
-            return Task.CompletedTask;
         }
-        
+
         [RavenAction("/databases/*/admin/refresh/config", "POST", AuthorizationStatus.DatabaseAdmin)]
         public async Task ConfigRefresh()
         {

@@ -67,6 +67,7 @@ namespace Raven.Server.Documents.Handlers
                         case Constants.Documents.SubscriptionChangeVectorSpecialStates.DoNotChange:
                             state.ChangeVectorForNextBatchStartingPoint = null;
                             break;
+
                         case Constants.Documents.SubscriptionChangeVectorSpecialStates.LastDocument:
                             using (context.OpenReadTransaction())
                             {
@@ -181,7 +182,7 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/subscriptions/state", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetSubscriptionState()
+        public async Task GetSubscriptionState()
         {
             var subscriptionName = GetStringQueryString("name", false);
 
@@ -192,7 +193,7 @@ namespace Raven.Server.Documents.Handlers
                 if (string.IsNullOrEmpty(subscriptionName))
                 {
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 var subscriptionState = Database
@@ -202,17 +203,15 @@ namespace Raven.Server.Documents.Handlers
                 if (subscriptionState == null)
                 {
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    return Task.CompletedTask;
+                    return;
                 }
 
-                context.WriteAsync(writer, subscriptionState.ToJson());
-
-                return Task.CompletedTask;
+                await context.WriteAsync(writer, subscriptionState.ToJson());
             }
         }
 
         [RavenAction("/databases/*/subscriptions/connection-details", "GET", AuthorizationStatus.ValidUser, CorsMode = CorsMode.Cluster)]
-        public Task GetSubscriptionConnectionDetails()
+        public async Task GetSubscriptionConnectionDetails()
         {
             var subscriptionName = GetStringQueryString("name", false);
 
@@ -223,7 +222,7 @@ namespace Raven.Server.Documents.Handlers
                 if (string.IsNullOrEmpty(subscriptionName))
                 {
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 var state = Database.SubscriptionStorage.GetSubscriptionConnection(context, subscriptionName);
@@ -234,13 +233,13 @@ namespace Raven.Server.Documents.Handlers
                     Strategy = state?.Connection?.Strategy
                 };
 
-                context.WriteAsync(writer, subscriptionConnectionDetails.ToJson());
-                return Task.CompletedTask;
+                await context.WriteAsync(writer, subscriptionConnectionDetails.ToJson());
+                return;
             }
         }
 
         [RavenAction("/databases/*/subscriptions", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = true)]
-        public Task GetAll()
+        public async Task GetAll()
         {
             var start = GetStart();
             var pageSize = GetPageSize();
@@ -272,7 +271,7 @@ namespace Raven.Server.Documents.Handlers
                     if (subscription == null)
                     {
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                        return Task.CompletedTask;
+                        return;
                     }
 
                     subscriptions = new[] { subscription };
@@ -280,7 +279,7 @@ namespace Raven.Server.Documents.Handlers
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
+                    await writer.WriteStartObjectAsync();
 
                     var subscriptionsAsBlittable = subscriptions.Select(x => new DynamicJsonValue()
                     {
@@ -291,7 +290,7 @@ namespace Raven.Server.Documents.Handlers
                         [nameof(SubscriptionState.Disabled)] = x.Disabled,
                         [nameof(SubscriptionState.LastClientConnectionTime)] = x.LastClientConnectionTime,
                         [nameof(SubscriptionState.LastBatchAckTime)] = x.LastBatchAckTime,
-                        ["Connection"] = GetSubscriptionConnectionDJV(x.Connection),
+                        ["Connection"] = GetSubscriptionConnectionJson(x.Connection),
                         ["RecentConnections"] = x.RecentConnections?.Select(r => new DynamicJsonValue()
                         {
                             ["State"] = new DynamicJsonValue()
@@ -299,7 +298,7 @@ namespace Raven.Server.Documents.Handlers
                                 ["LatestChangeVectorClientACKnowledged"] = r.SubscriptionState.ChangeVectorForNextBatchStartingPoint,
                                 ["Query"] = r.SubscriptionState.Query
                             },
-                            ["Connection"] = GetSubscriptionConnectionDJV(r)
+                            ["Connection"] = GetSubscriptionConnectionJson(r)
                         }),
                         ["FailedConnections"] = x.RecentRejectedConnections?.Select(r => new DynamicJsonValue()
                         {
@@ -308,23 +307,18 @@ namespace Raven.Server.Documents.Handlers
                                 ["LatestChangeVectorClientACKnowledged"] = r.SubscriptionState.ChangeVectorForNextBatchStartingPoint,
                                 ["Query"] = r.SubscriptionState.Query
                             },
-                            ["Connection"] = GetSubscriptionConnectionDJV(r)
+                            ["Connection"] = GetSubscriptionConnectionJson(r)
                         }).ToList()
                     });
 
-                    writer.WriteArrayAsync(context, "Results", subscriptionsAsBlittable, (w, c, subscription) =>
-                    {
-                        c.WriteAsync(w, subscription);
-                    });
+                    await writer.WriteArrayAsync(context, "Results", subscriptionsAsBlittable, (w, c, subscription) => c.WriteAsync(w, subscription));
 
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteEndObjectAsync();
                 }
             }
-
-            return Task.CompletedTask;
         }
 
-        private static DynamicJsonValue GetSubscriptionConnectionDJV(SubscriptionConnection x)
+        private static DynamicJsonValue GetSubscriptionConnectionJson(SubscriptionConnection x)
         {
             if (x == null)
                 return new DynamicJsonValue();
@@ -333,14 +327,14 @@ namespace Raven.Server.Documents.Handlers
             {
                 [nameof(SubscriptionConnection.ClientUri)] = x.ClientUri,
                 [nameof(SubscriptionConnection.Strategy)] = x.Strategy,
-                [nameof(SubscriptionConnection.Stats)] = GetConnectionStatsDJV(x.Stats),
+                [nameof(SubscriptionConnection.Stats)] = GetConnectionStatsJson(x.Stats),
                 [nameof(SubscriptionConnection.ConnectionException)] = x.ConnectionException?.Message,
                 ["TcpConnectionStats"] = x.TcpConnection.GetConnectionStats(),
                 [nameof(SubscriptionConnection.RecentSubscriptionStatuses)] = new DynamicJsonArray(x.RecentSubscriptionStatuses?.ToArray() ?? Array.Empty<string>())
             };
         }
 
-        private static DynamicJsonValue GetConnectionStatsDJV(SubscriptionConnectionStats x)
+        private static DynamicJsonValue GetConnectionStatsJson(SubscriptionConnectionStats x)
         {
             return new DynamicJsonValue()
             {
@@ -490,6 +484,7 @@ namespace Raven.Server.Documents.Handlers
 
                         options.ChangeVector = null;
                         break;
+
                     case Constants.Documents.SubscriptionChangeVectorSpecialStates.LastDocument:
                         options.ChangeVector = Database.DocumentsStorage.GetLastDocumentChangeVector(context.Transaction.InnerTransaction, context, sub.Collection);
                         break;
