@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Raven.Client.Documents.Session;
 using Raven.Server.Json;
@@ -10,9 +11,9 @@ namespace Raven.Server.Documents.Queries
 {
     public class StreamJsonDocumentQueryResultWriter : IStreamQueryResultWriter<Document>
     {
-        private AsyncBlittableJsonTextWriter _writer;
+        private readonly AsyncBlittableJsonTextWriter _writer;
         private HttpResponse _response;
-        private JsonOperationContext _context;
+        private readonly JsonOperationContext _context;
         private bool _first = true;
 
         public StreamJsonDocumentQueryResultWriter(HttpResponse response, Stream stream, JsonOperationContext context)
@@ -22,80 +23,80 @@ namespace Raven.Server.Documents.Queries
             _response = response;
         }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
-            _writer.Dispose();
+            return _writer.DisposeAsync();
         }
 
-        public void StartResponse()
+        public ValueTask StartResponse()
         {
-            _writer.WriteStartObjectAsync();
+            return _writer.WriteStartObjectAsync();
         }
 
-        public void StartResults()
+        public async ValueTask StartResults()
         {
-            _writer.WritePropertyNameAsync("Results");
-            _writer.WriteStartArrayAsync();
+            await _writer.WritePropertyNameAsync("Results");
+            await _writer.WriteStartArrayAsync();
         }
 
-        public void EndResults()
+        public ValueTask EndResults()
         {
-            _writer.WriteEndArrayAsync();
+            return _writer.WriteEndArrayAsync();
         }
 
-        public void AddResult(Document res)
+        public async ValueTask AddResult(Document res)
         {
             if (_first == false)
             {
-                _writer.WriteCommaAsync();
+                await _writer.WriteCommaAsync();
             }
             else
             {
                 _first = false;
             }
-            _writer.WriteDocument(_context, res, metadataOnly: false);
+            await _writer.WriteDocument(_context, res, metadataOnly: false);
         }
 
-        public void EndResponse()
+        public ValueTask EndResponse()
         {
-            _writer.WriteEndObjectAsync();
+            return _writer.WriteEndObjectAsync();
         }
 
-        public void WriteError(Exception e)
+        public async ValueTask WriteError(Exception e)
         {
-            _writer.WriteCommaAsync();
+            await _writer.WriteCommaAsync();
 
-            _writer.WritePropertyNameAsync("Error");
-            _writer.WriteStringAsync(e.ToString());
+            await _writer.WritePropertyNameAsync("Error");
+            await _writer.WriteStringAsync(e.ToString());
         }
 
-        public void WriteError(string error)
-        {            
-            _writer.WritePropertyNameAsync("Error");
-            _writer.WriteStringAsync(error);
-        }
-
-        public void WriteQueryStatistics(long resultEtag, bool isStale, string indexName, long totalResults, DateTime timestamp)
+        public async ValueTask WriteError(string error)
         {
-            _writer.WritePropertyNameAsync(nameof(StreamQueryStatistics.ResultEtag));
-            _writer.WriteIntegerAsync(resultEtag);
-            _writer.WriteCommaAsync();
+            await _writer.WritePropertyNameAsync("Error");
+            await _writer.WriteStringAsync(error);
+        }
 
-            _writer.WritePropertyNameAsync(nameof(StreamQueryStatistics.IsStale));
-            _writer.WriteBoolAsync(isStale);
-            _writer.WriteCommaAsync();
+        public async ValueTask WriteQueryStatistics(long resultEtag, bool isStale, string indexName, long totalResults, DateTime timestamp)
+        {
+            await _writer.WritePropertyNameAsync(nameof(StreamQueryStatistics.ResultEtag));
+            await _writer.WriteIntegerAsync(resultEtag);
+            await _writer.WriteCommaAsync();
 
-            _writer.WritePropertyNameAsync(nameof(StreamQueryStatistics.IndexName));
-            _writer.WriteStringAsync(indexName);
-            _writer.WriteCommaAsync();
+            await _writer.WritePropertyNameAsync(nameof(StreamQueryStatistics.IsStale));
+            await _writer.WriteBoolAsync(isStale);
+            await _writer.WriteCommaAsync();
 
-            _writer.WritePropertyNameAsync(nameof(StreamQueryStatistics.TotalResults));
-            _writer.WriteIntegerAsync(totalResults);
-            _writer.WriteCommaAsync();
+            await _writer.WritePropertyNameAsync(nameof(StreamQueryStatistics.IndexName));
+            await _writer.WriteStringAsync(indexName);
+            await _writer.WriteCommaAsync();
 
-            _writer.WritePropertyNameAsync(nameof(StreamQueryStatistics.IndexTimestamp));
-            _writer.WriteStringAsync(timestamp.GetDefaultRavenFormat(isUtc: true));
-            _writer.WriteCommaAsync();
+            await _writer.WritePropertyNameAsync(nameof(StreamQueryStatistics.TotalResults));
+            await _writer.WriteIntegerAsync(totalResults);
+            await _writer.WriteCommaAsync();
+
+            await _writer.WritePropertyNameAsync(nameof(StreamQueryStatistics.IndexTimestamp));
+            await _writer.WriteStringAsync(timestamp.GetDefaultRavenFormat(isUtc: true));
+            await _writer.WriteCommaAsync();
         }
 
         public bool SupportError => true;

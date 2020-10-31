@@ -27,21 +27,20 @@ namespace Raven.Server.Web.System
         }
 
         [RavenAction("/debug/cpu-credits", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = true)]
-        public Task GetCpuCredits()
+        public async Task GetCpuCredits()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 var json = Server.CpuCreditsBalance.ToJson();
-                writer.WriteObjectAsync(context.ReadObject(json, "cpu/credits"));
-                return Task.CompletedTask;
+                await writer.WriteObjectAsync(context.ReadObject(json, "cpu/credits"));
             }
         }
 
         public class CpuCredits
         {
             public double RemainingCredits;
-            
+
             public DynamicJsonValue ToJson()
             {
                 return new DynamicJsonValue

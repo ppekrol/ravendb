@@ -184,29 +184,28 @@ namespace Raven.Server.Web.System
         // we can't use '/database/is-loaded` because that conflict with the `/databases/<db-name>`
         // route prefix
         [RavenAction("/debug/is-loaded", "GET", AuthorizationStatus.ValidUser)]
-        public Task IsDatabaseLoaded()
+        public async Task IsDatabaseLoaded()
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
 
             HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
             if (TryGetAllowedDbs(name, out var _, requireAdmin: false) == false)
-                return Task.CompletedTask;
+                return;
 
             var isLoaded = ServerStore.DatabasesLandlord.IsDatabaseLoaded(name);
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.WriteAsync(writer, new DynamicJsonValue
+                    await context.WriteAsync(writer, new DynamicJsonValue
                     {
                         [nameof(IsDatabaseLoadedCommand.CommandResult.DatabaseName)] = name,
                         [nameof(IsDatabaseLoadedCommand.CommandResult.IsLoaded)] = isLoaded
                     });
-                    writer.FlushAsync();
+                    await writer.FlushAsync();
                 }
             }
-            return Task.CompletedTask;
         }
 
         [RavenAction("/admin/remote-server/build/version", "GET", AuthorizationStatus.Operator)]

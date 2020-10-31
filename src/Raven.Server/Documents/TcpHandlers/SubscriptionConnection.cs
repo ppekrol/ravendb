@@ -216,9 +216,9 @@ namespace Raven.Server.Documents.TcpHandlers
         {
             int writtenBytes;
             using (TcpConnection.ContextPool.AllocateOperationContext(out JsonOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, TcpConnection.Stream))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, TcpConnection.Stream))
             {
-                context.WriteAsync(writer, value);
+                await context.WriteAsync(writer, value);
                 writtenBytes = writer.Position;
             }
 
@@ -455,7 +455,7 @@ namespace Raven.Server.Documents.TcpHandlers
         {
             void RegisterNotification(DocumentChange notification)
             {
-                if (Client.Constants.Documents.Collections.AllDocumentsCollection.Equals(Subscription.Collection, StringComparison.OrdinalIgnoreCase) || 
+                if (Client.Constants.Documents.Collections.AllDocumentsCollection.Equals(Subscription.Collection, StringComparison.OrdinalIgnoreCase) ||
                     notification.CollectionName.Equals(Subscription.Collection, StringComparison.OrdinalIgnoreCase))
                 {
                     try
@@ -674,6 +674,7 @@ namespace Raven.Server.Documents.TcpHandlers
                 case SubscriptionConnectionClientMessage.MessageType.DisposedNotification:
                     CancellationTokenSource.Cancel();
                     break;
+
                 default:
                     throw new ArgumentException("Unknown message type from client " +
                                                 clientReply.Type);
@@ -694,7 +695,7 @@ namespace Raven.Server.Documents.TcpHandlers
 
             bool anyDocumentsSentInCurrentIteration = false;
             int docsToFlush = 0;
-            using (var writer = new AsyncBlittableJsonTextWriter(docsContext, _buffer))
+            await using (var writer = new AsyncBlittableJsonTextWriter(docsContext, _buffer))
             {
                 using (docsContext.OpenReadTransaction())
                 {
@@ -726,12 +727,12 @@ namespace Raven.Server.Documents.TcpHandlers
                         }
 
                         anyDocumentsSentInCurrentIteration = true;
-                        writer.WriteStartObjectAsync();
+                        await writer.WriteStartObjectAsync();
 
-                        writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(TypeSegment));
-                        writer.WriteValueAsync(BlittableJsonToken.String, docsContext.GetLazyStringForFieldWithCaching(DataSegment));
-                        writer.WriteCommaAsync();
-                        writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(DataSegment));
+                        await writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(TypeSegment));
+                        await writer.WriteValueAsync(BlittableJsonToken.String, docsContext.GetLazyStringForFieldWithCaching(DataSegment));
+                        await writer.WriteCommaAsync();
+                        await writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(DataSegment));
                         result.Doc.EnsureMetadata();
 
                         if (result.Exception != null)
@@ -742,25 +743,25 @@ namespace Raven.Server.Documents.TcpHandlers
                             }
 
                             var metadata = result.Doc.Data[Client.Constants.Documents.Metadata.Key];
-                            writer.WriteValueAsync(BlittableJsonToken.StartObject,
+                            await writer.WriteValueAsync(BlittableJsonToken.StartObject,
                                 docsContext.ReadObject(new DynamicJsonValue
                                 {
                                     [Client.Constants.Documents.Metadata.Key] = metadata
                                 }, result.Doc.Id)
                             );
-                            writer.WriteCommaAsync();
-                            writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(ExceptionSegment));
-                            writer.WriteValueAsync(BlittableJsonToken.String, docsContext.GetLazyStringForFieldWithCaching(result.Exception.ToString()));
+                            await writer.WriteCommaAsync();
+                            await writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(ExceptionSegment));
+                            await writer.WriteValueAsync(BlittableJsonToken.String, docsContext.GetLazyStringForFieldWithCaching(result.Exception.ToString()));
                         }
                         else
                         {
                             includeDocumentsCommand?.Gather(result.Doc);
                             includeCountersCommand?.Fill(result.Doc);
 
-                            writer.WriteDocument(docsContext, result.Doc, metadataOnly: false);
+                            await writer.WriteDocument(docsContext, result.Doc, metadataOnly: false);
                         }
 
-                        writer.WriteEndObjectAsync();
+                        await writer.WriteEndObjectAsync();
                         docsToFlush++;
 
                         TcpConnection._lastEtagSent = -1;
@@ -778,39 +779,39 @@ namespace Raven.Server.Documents.TcpHandlers
                     {
                         if (includeDocumentsCommand != null)
                         {
-                            writer.WriteStartObjectAsync();
-                            writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(TypeSegment));
-                            writer.WriteValueAsync(BlittableJsonToken.String, docsContext.GetLazyStringForFieldWithCaching(IncludesSegment));
-                            writer.WriteCommaAsync();
-                            writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(IncludesSegment));
+                            await writer.WriteStartObjectAsync();
+                            await writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(TypeSegment));
+                            await writer.WriteValueAsync(BlittableJsonToken.String, docsContext.GetLazyStringForFieldWithCaching(IncludesSegment));
+                            await writer.WriteCommaAsync();
+                            await writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(IncludesSegment));
                             var includes = new List<Document>();
                             includeDocumentsCommand.Fill(includes);
-                            writer.WriteIncludes(docsContext, includes);
-                            writer.WriteEndObjectAsync();
+                            await writer.WriteIncludes(docsContext, includes);
+                            await writer.WriteEndObjectAsync();
                         }
 
                         if (includeCountersCommand != null)
                         {
-                            writer.WriteStartObjectAsync();
+                            await writer.WriteStartObjectAsync();
 
-                            writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(TypeSegment));
-                            writer.WriteValueAsync(BlittableJsonToken.String, docsContext.GetLazyStringForFieldWithCaching(CounterIncludesSegment));
-                            writer.WriteCommaAsync();
+                            await writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(TypeSegment));
+                            await writer.WriteValueAsync(BlittableJsonToken.String, docsContext.GetLazyStringForFieldWithCaching(CounterIncludesSegment));
+                            await writer.WriteCommaAsync();
 
-                            writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(CounterIncludesSegment));
-                            writer.WriteCounters(includeCountersCommand.Results);
-                            writer.WriteCommaAsync();
+                            await writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(CounterIncludesSegment));
+                            await writer.WriteCounters(includeCountersCommand.Results);
+                            await writer.WriteCommaAsync();
 
-                            writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(IncludedCounterNamesSegment));
-                            writer.WriteIncludedCounterNames(includeCountersCommand.CountersToGetByDocId);
+                            await writer.WritePropertyNameAsync(docsContext.GetLazyStringForFieldWithCaching(IncludedCounterNamesSegment));
+                            await writer.WriteIncludedCounterNames(includeCountersCommand.CountersToGetByDocId);
 
-                            writer.WriteEndObjectAsync();
+                            await writer.WriteEndObjectAsync();
                         }
 
-                        writer.WriteStartObjectAsync();
-                        writer.WritePropertyNameAsync(nameof(SubscriptionConnectionServerMessage.Type));
-                        writer.WriteStringAsync(nameof(SubscriptionConnectionServerMessage.MessageType.EndOfBatch));
-                        writer.WriteEndObjectAsync();
+                        await writer.WriteStartObjectAsync();
+                        await writer.WritePropertyNameAsync(nameof(SubscriptionConnectionServerMessage.Type));
+                        await writer.WriteStringAsync(nameof(SubscriptionConnectionServerMessage.MessageType.EndOfBatch));
+                        await writer.WriteEndObjectAsync();
 
                         AddToStatusDescription("Flushing sent docs to client");
                         await FlushDocsToClient(writer, docsToFlush, true);
@@ -972,7 +973,7 @@ namespace Raven.Server.Documents.TcpHandlers
                 {
                     // ignored
                 }
-                
+
                 try
                 {
                     CancellationTokenSource.Dispose();
@@ -1037,6 +1038,7 @@ namespace Raven.Server.Documents.TcpHandlers
                             throw new NotSupportedException("Subscription collection filter can only specify 'Revisions = true'");
                         }
                         break;
+
                     default:
                         throw new NotSupportedException("Subscription must not specify a collection filter (move it to the where clause)");
                 }
@@ -1071,6 +1073,7 @@ namespace Raven.Server.Documents.TcpHandlers
                                 counterIncludes.Add(ExtractPathFromExpression(argument));
                             }
                             break;
+
                         default:
                             if (includes == null)
                                 includes = new List<string>();
@@ -1087,9 +1090,11 @@ namespace Raven.Server.Documents.TcpHandlers
                         case FieldExpression fe:
                             (string fieldPath, string _) = QueryMetadata.ParseExpressionPath(expression, fe.FieldValue, q.From.Alias);
                             return fieldPath;
+
                         case ValueExpression ve:
                             (string memberPath, string _) = QueryMetadata.ParseExpressionPath(expression, ve.Token.Value, q.From.Alias);
                             return memberPath;
+
                         default:
                             throw new InvalidOperationException("Subscription only support include of fields, but got: " + expression);
                     }

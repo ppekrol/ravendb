@@ -735,7 +735,7 @@ namespace Raven.Server.ServerWide
         {
             if (PlatformDetails.RunningOnLinux)
             {
-                if (PlatformDetails.RunningOnDocker) 
+                if (PlatformDetails.RunningOnDocker)
                     return;
 
                 var swapSize = MemoryInformation.GetMemoryInfo().TotalSwapSize;
@@ -748,10 +748,10 @@ namespace Raven.Server.ServerWide
                 return;
             }
 
-            if(PlatformDetails.RunningOnPosix == false)
+            if (PlatformDetails.RunningOnPosix == false)
             {
                 var memoryInfo = MemoryInformation.GetMemoryInfo();
-                if(memoryInfo.TotalCommittableMemory - memoryInfo.TotalPhysicalMemory <= Sparrow.Size.Zero)
+                if (memoryInfo.TotalCommittableMemory - memoryInfo.TotalPhysicalMemory <= Sparrow.Size.Zero)
                     NotificationCenter.Add(AlertRaised.Create(null,
                         "No PageFile available",
                         "Your system has no PageFile. It is recommended to have a PageFile in order for Server to work properly",
@@ -2735,11 +2735,11 @@ namespace Raven.Server.ServerWide
                 var request = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
-                    Content = new BlittableJsonContent(stream =>
+                    Content = new BlittableJsonContent(async stream =>
                     {
-                        using (var writer = new AsyncBlittableJsonTextWriter(ctx, stream))
+                        await using (var writer = new AsyncBlittableJsonTextWriter(ctx, stream))
                         {
-                            writer.WriteObjectAsync(_command);
+                            await writer.WriteObjectAsync(_command);
                         }
                     })
                 };

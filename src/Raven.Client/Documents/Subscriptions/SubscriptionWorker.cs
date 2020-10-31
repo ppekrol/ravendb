@@ -290,7 +290,7 @@ namespace Raven.Client.Documents.Subscriptions
             return tcpCommand.Result;
         }
 
-        private async ValueTask<int> ReadServerResponseAndGetVersionAsync(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
+        private async ValueTask<int> ReadServerResponseAndGetVersionAsync(JsonOperationContext context, AsyncBlittableJsonTextWriter writer, Stream stream, string destinationUrl)
         {
             //Reading reply from server
             using (var response = context.ReadForMemory(_stream, "Subscription/tcp-header-response"))

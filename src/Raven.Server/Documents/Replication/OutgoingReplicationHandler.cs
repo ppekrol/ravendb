@@ -641,7 +641,7 @@ namespace Raven.Server.Documents.Replication
                     SourceNodeTag = _parent._server.NodeTag,
                     DestinationNodeTag = GetNode(),
                     DestinationUrl = Destination.Url,
-                    ReadResponseAndGetVersionCallback = ReadHeaderResponseAndThrowIfUnAuthorized,
+                    ReadResponseAndGetVersionCallbackAsync = ReadHeaderResponseAndThrowIfUnAuthorized,
                     Version = TcpConnectionHeaderMessage.ReplicationTcpVersion,
                     AuthorizeInfo = authorizationInfo
                 };

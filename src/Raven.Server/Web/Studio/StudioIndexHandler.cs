@@ -28,13 +28,13 @@ namespace Raven.Server.Web.Studio
 
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartObjectAsync();
-                        writer.WritePropertyNameAsync(nameof(IndexTypeInfo.IndexType));
-                        writer.WriteStringAsync(indexType.ToString());
-                        writer.WriteCommaAsync();
-                        writer.WritePropertyNameAsync(nameof(IndexTypeInfo.IndexSourceType));
-                        writer.WriteStringAsync(indexSourceType.ToString());
-                        writer.WriteEndObjectAsync();
+                        await writer.WriteStartObjectAsync();
+                        await writer.WritePropertyNameAsync(nameof(IndexTypeInfo.IndexType));
+                        await writer.WriteStringAsync(indexType.ToString());
+                        await writer.WriteCommaAsync();
+                        await writer.WritePropertyNameAsync(nameof(IndexTypeInfo.IndexSourceType));
+                        await writer.WriteStringAsync(indexSourceType.ToString());
+                        await writer.WriteEndObjectAsync();
                     }
                 }
             }
@@ -45,7 +45,7 @@ namespace Raven.Server.Web.Studio
             public IndexType IndexType { get; set; }
             public IndexSourceType IndexSourceType { get; set; }
         }
-        
+
         [RavenAction("/databases/*/studio/index-fields", "POST", AuthorizationStatus.ValidUser)]
         public async Task PostIndexFields()
         {
@@ -76,9 +76,9 @@ namespace Raven.Server.Web.Studio
 
                         await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                         {
-                            writer.WriteStartObjectAsync();
-                            writer.WriteArrayAsync(context, "Results", outputFields, (w, c, field) => { w.WriteString(field); });
-                            writer.WriteEndObjectAsync();
+                            await writer.WriteStartObjectAsync();
+                            await writer.WriteArrayAsync(context, "Results", outputFields, (w, c, field) => w.WriteStringAsync(field));
+                            await writer.WriteEndObjectAsync();
                         }
                     }
                     catch (IndexCompilationException)
@@ -86,12 +86,11 @@ namespace Raven.Server.Web.Studio
                         // swallow compilation exception and return empty array as response
                         await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                         {
-                            writer.WriteStartArrayAsync();
-                            writer.WriteEndArrayAsync();
+                            await writer.WriteStartArrayAsync();
+                            await writer.WriteEndArrayAsync();
                         }
                     }
                 }
-
             }
         }
 
@@ -114,4 +113,3 @@ namespace Raven.Server.Web.Studio
         }
     }
 }
-

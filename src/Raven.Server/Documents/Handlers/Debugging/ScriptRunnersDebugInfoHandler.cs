@@ -7,7 +7,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
     public class ScriptRunnersDebugInfoHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/debug/script-runners", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = true)]
-        public Task GetJSDebugInfo()
+        public async Task GetJSDebugInfo()
         {
             var detailed = GetBoolValueQueryString("detailed", required: false) ?? false;
 
@@ -15,24 +15,23 @@ namespace Raven.Server.Documents.Handlers.Debugging
             {
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
-                    writer.WritePropertyNameAsync("ScriptRunners");
+                    await writer.WriteStartObjectAsync();
+                    await writer.WritePropertyNameAsync("ScriptRunners");
 
-                    writer.WriteStartArrayAsync();
+                    await writer.WriteStartArrayAsync();
                     var first = true;
                     foreach (var runnerInfo in Database.Scripts.GetDebugInfo(detailed))
                     {
                         if (first == false)
-                            writer.WriteCommaAsync();
+                            await writer.WriteCommaAsync();
                         first = false;
                         using (var runnerInfoReader = context.ReadObject(runnerInfo, "runnerInfo"))
-                            writer.WriteObjectAsync(runnerInfoReader);
+                            await writer.WriteObjectAsync(runnerInfoReader);
                     }
-                    writer.WriteEndArrayAsync();
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteEndArrayAsync();
+                    await writer.WriteEndObjectAsync();
                 }
             }
-            return Task.CompletedTask;
         }
     }
 }

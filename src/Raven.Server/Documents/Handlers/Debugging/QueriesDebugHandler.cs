@@ -32,45 +32,43 @@ namespace Raven.Server.Documents.Handlers.Debugging
         }
 
         [RavenAction("/databases/*/debug/queries/running", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = true)]
-        public Task RunningQueries()
+        public async Task RunningQueries()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-            using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream(), Database.DatabaseShutdown))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
 
                 var isFirst = true;
                 foreach (var group in Database.QueryRunner.CurrentlyRunningQueries.GroupBy(x => x.IndexName))
                 {
                     if (isFirst == false)
-                        writer.WriteCommaAsync();
+                        await writer.WriteCommaAsync();
                     isFirst = false;
 
-                    writer.WritePropertyNameAsync(group.Key);
-                    writer.WriteStartArrayAsync();
+                    await writer.WritePropertyNameAsync(group.Key);
+                    await writer.WriteStartArrayAsync();
 
                     var isFirstInternal = true;
                     foreach (var query in group)
                     {
                         if (isFirstInternal == false)
-                            writer.WriteCommaAsync();
+                            await writer.WriteCommaAsync();
 
                         isFirstInternal = false;
 
                         query.Write(writer, context);
                     }
 
-                    writer.WriteEndArrayAsync();
+                    await writer.WriteEndArrayAsync();
                 }
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/debug/queries/cache/list", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = true)]
-        public Task QueriesCacheList()
+        public async Task QueriesCacheList()
         {
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
@@ -79,11 +77,11 @@ namespace Raven.Server.Documents.Handlers.Debugging
 
                 var queriesList = new List<DynamicJsonValue>();
 
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
 
-                writer.WritePropertyNameAsync("TotalCachedQueries");
-                writer.WriteIntegerAsync(queryCache.Length);
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync("TotalCachedQueries");
+                await writer.WriteIntegerAsync(queryCache.Length);
+                await writer.WriteCommaAsync();
 
                 foreach (var item in queryCache)
                 {
@@ -169,11 +167,9 @@ namespace Raven.Server.Documents.Handlers.Debugging
                     }
                 }
 
-                writer.WriteArrayAsync("Results", queriesList, context);
-                writer.WriteEndObjectAsync();
+                await writer.WriteArrayAsync("Results", queriesList, context);
+                await writer.WriteEndObjectAsync();
             }
-
-            return Task.CompletedTask;
         }
     }
 }

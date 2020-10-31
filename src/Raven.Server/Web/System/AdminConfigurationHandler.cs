@@ -17,7 +17,7 @@ namespace Raven.Server.Web.System
     public class AdminConfigurationHandler : ServerRequestHandler
     {
         [RavenAction("/admin/configuration/settings", "GET", AuthorizationStatus.ClusterAdmin)]
-        public Task GetSettings()
+        public async Task GetSettings()
         {
             ConfigurationEntryScope? scope = null;
             var scopeAsString = GetStringQueryString("scope", required: false);
@@ -47,11 +47,9 @@ namespace Raven.Server.Web.System
             {
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.WriteAsync(writer, settingsResult.ToJson());
+                    await context.WriteAsync(writer, settingsResult.ToJson());
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/admin/configuration/studio", "PUT", AuthorizationStatus.Operator)]
@@ -75,7 +73,7 @@ namespace Raven.Server.Web.System
         }
 
         [RavenAction("/configuration/studio", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetStudioConfiguration()
+        public async Task GetStudioConfiguration()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
@@ -85,17 +83,15 @@ namespace Raven.Server.Web.System
                     if (studioConfigurationJson == null)
                     {
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                        return Task.CompletedTask;
+                        return;
                     }
 
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteObjectAsync(studioConfigurationJson);
+                        await writer.WriteObjectAsync(studioConfigurationJson);
                     }
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/admin/configuration/client", "PUT", AuthorizationStatus.Operator)]
@@ -118,7 +114,7 @@ namespace Raven.Server.Web.System
         }
 
         [RavenAction("/configuration/client", "GET", AuthorizationStatus.ValidUser)]
-        public Task GetClientConfiguration()
+        public async Task GetClientConfiguration()
         {
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
@@ -128,17 +124,15 @@ namespace Raven.Server.Web.System
                     if (clientConfigurationJson == null)
                     {
                         HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                        return Task.CompletedTask;
+                        return;
                     }
 
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteObjectAsync(clientConfigurationJson);
+                        await writer.WriteObjectAsync(clientConfigurationJson);
                     }
                 }
             }
-
-            return Task.CompletedTask;
         }
     }
 }

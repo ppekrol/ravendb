@@ -1661,7 +1661,7 @@ namespace Raven.Server.Json
 
                 await writer.WritePropertyNameAsync(kvp.Key);
 
-                await TimeSeriesHandler.WriteTimeSeriesRangeResults(context: null, writer, documentId: null, kvp.Value);
+                await TimeSeriesHandler.WriteTimeSeriesRangeResultsAsync(context: null, writer, documentId: null, kvp.Value);
             }
 
             await writer.WriteEndObjectAsync();

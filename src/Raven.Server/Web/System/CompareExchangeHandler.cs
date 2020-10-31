@@ -14,13 +14,13 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Web.System
 {
-    class CompareExchangeHandler : DatabaseRequestHandler
+    internal class CompareExchangeHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/cmpxchg", "GET", AuthorizationStatus.ValidUser, DisableOnCpuCreditsExhaustion = true)]
         public async Task GetCompareExchangeValues()
         {
             var keys = GetStringValuesQueryString("key", required: false);
-            
+
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
             {
@@ -45,12 +45,12 @@ namespace Raven.Server.Web.System
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 await writer.WriteStartObjectAsync();
-                
+
                 await writer.WriteArrayAsync(context, "Results", items,
                     (textWriter, operationContext, item) =>
                     {
                         numberOfResults++;
-                        operationContext.WriteAsync(textWriter, new DynamicJsonValue
+                        return operationContext.WriteAsync(textWriter, new DynamicJsonValue
                         {
                             [nameof(CompareExchangeListItem.Key)] = item.Key.Key,
                             [nameof(CompareExchangeListItem.Value)] = item.Value,
@@ -61,17 +61,17 @@ namespace Raven.Server.Web.System
                 await writer.WriteEndObjectAsync();
             }
 
-            AddPagingPerformanceHint(PagingOperationType.CompareExchange, nameof(ClusterStateMachine.GetCompareExchangeValuesStartsWith), 
+            AddPagingPerformanceHint(PagingOperationType.CompareExchange, nameof(ClusterStateMachine.GetCompareExchangeValuesStartsWith),
                 HttpContext.Request.QueryString.Value, numberOfResults, pageSize, sw.ElapsedMilliseconds);
         }
-        
+
         public class CompareExchangeListItem
         {
             public string Key { get; set; }
             public object Value { get; set; }
             public long Index { get; set; }
         }
-        
+
         private async Task GetCompareExchangeValuesByKey(TransactionOperationContext context, Microsoft.Extensions.Primitives.StringValues keys)
         {
             var sw = Stopwatch.StartNew();
@@ -93,12 +93,12 @@ namespace Raven.Server.Web.System
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
                 await writer.WriteStartObjectAsync();
-                
+
                 await writer.WriteArrayAsync(context, "Results", items,
                     (textWriter, operationContext, item) =>
                     {
                         numberOfResults++;
-                        operationContext.WriteAsync(textWriter, new DynamicJsonValue
+                        return operationContext.WriteAsync(textWriter, new DynamicJsonValue
                         {
                             ["Key"] = item.Key,
                             ["Value"] = item.Value,
@@ -109,10 +109,9 @@ namespace Raven.Server.Web.System
                 await writer.WriteEndObjectAsync();
             }
 
-            AddPagingPerformanceHint(PagingOperationType.CompareExchange, nameof(GetCompareExchangeValuesByKey), HttpContext.Request.QueryString.Value, 
+            AddPagingPerformanceHint(PagingOperationType.CompareExchange, nameof(GetCompareExchangeValuesByKey), HttpContext.Request.QueryString.Value,
                 numberOfResults, keys.Count, sw.ElapsedMilliseconds);
         }
-
 
         [RavenAction("/databases/*/cmpxchg", "PUT", AuthorizationStatus.ValidUser, DisableOnCpuCreditsExhaustion = true)]
         public async Task PutCompareExchangeValue()
@@ -144,7 +143,7 @@ namespace Raven.Server.Web.System
                 }
             }
         }
-        
+
         [RavenAction("/databases/*/cmpxchg", "DELETE", AuthorizationStatus.ValidUser, DisableOnCpuCreditsExhaustion = true)]
         public async Task DeleteCompareExchangeValue()
         {

@@ -11,35 +11,33 @@ namespace Raven.Server.Web.Studio
     public class StudioStatsHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/studio/footer/stats", "GET", AuthorizationStatus.ValidUser)]
-        public Task FooterStats()
+        public async Task FooterStats()
         {
             using (var context = QueryOperationContext.Allocate(Database, needsServerContext: true))
-            using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
+            await using (var writer = new AsyncBlittableJsonTextWriter(context.Documents, ResponseBodyStream()))
             using (context.OpenReadTransaction())
             {
                 var indexes = Database.IndexStore.GetIndexes().ToList();
 
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
 
-                writer.WritePropertyNameAsync(nameof(FooterStatistics.CountOfDocuments));
-                writer.WriteIntegerAsync(Database.DocumentsStorage.GetNumberOfDocuments(context.Documents));
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(FooterStatistics.CountOfDocuments));
+                await writer.WriteIntegerAsync(Database.DocumentsStorage.GetNumberOfDocuments(context.Documents));
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(FooterStatistics.CountOfIndexes));
-                writer.WriteIntegerAsync(indexes.Count);
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(FooterStatistics.CountOfIndexes));
+                await writer.WriteIntegerAsync(indexes.Count);
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(FooterStatistics.CountOfStaleIndexes));
-                writer.WriteIntegerAsync(indexes.Count(i => i.IsStale(context)));
-                writer.WriteCommaAsync();
+                await writer.WritePropertyNameAsync(nameof(FooterStatistics.CountOfStaleIndexes));
+                await writer.WriteIntegerAsync(indexes.Count(i => i.IsStale(context)));
+                await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync(nameof(FooterStatistics.CountOfIndexingErrors));
-                writer.WriteIntegerAsync(indexes.Sum(index => index.GetErrorCount()));
+                await writer.WritePropertyNameAsync(nameof(FooterStatistics.CountOfIndexingErrors));
+                await writer.WriteIntegerAsync(indexes.Sum(index => index.GetErrorCount()));
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
-
-            return Task.CompletedTask;
         }
     }
 }

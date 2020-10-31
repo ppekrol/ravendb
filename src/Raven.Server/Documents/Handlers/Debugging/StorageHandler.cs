@@ -132,13 +132,13 @@ namespace Raven.Server.Documents.Handlers.Debugging
             {
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
+                    await writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyNameAsync("BasePath");
-                    writer.WriteStringAsync(Database.Configuration.Core.DataDirectory.FullPath);
+                    await writer.WritePropertyNameAsync("BasePath");
+                    await writer.WriteStringAsync(Database.Configuration.Core.DataDirectory.FullPath);
                     await writer.WriteCommaAsync();
 
-                    writer.WritePropertyNameAsync("Results");
+                    await writer.WritePropertyNameAsync("Results");
                     await writer.WriteStartArrayAsync();
                     var first = true;
                     foreach (var env in Database.GetAllStoragesEnvironment())
@@ -148,34 +148,32 @@ namespace Raven.Server.Documents.Handlers.Debugging
 
                         first = false;
 
-                        writer.WriteStartObjectAsync();
+                        await writer.WriteStartObjectAsync();
 
-                        writer.WritePropertyNameAsync("Name");
-                        writer.WriteStringAsync(env.Name);
+                        await writer.WritePropertyNameAsync("Name");
+                        await writer.WriteStringAsync(env.Name);
                         await writer.WriteCommaAsync();
 
-                        writer.WritePropertyNameAsync("Type");
-                        writer.WriteStringAsync(env.Type.ToString());
+                        await writer.WritePropertyNameAsync("Type");
+                        await writer.WriteStringAsync(env.Type.ToString());
                         await writer.WriteCommaAsync();
 
                         var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(GetReport(env));
-                        writer.WritePropertyNameAsync("Report");
-                        writer.WriteObjectAsync(context.ReadObject(djv, env.Name));
+                        await writer.WritePropertyNameAsync("Report");
+                        await writer.WriteObjectAsync(context.ReadObject(djv, env.Name));
 
                         await writer.WriteEndObjectAsync();
                     }
 
-                    writer.WriteEndArrayAsync();
+                    await writer.WriteEndArrayAsync();
 
                     await writer.WriteEndObjectAsync();
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         [RavenAction("/databases/*/debug/storage/all-environments/report", "GET", AuthorizationStatus.ValidUser, IsDebugInformationEndpoint = true)]
-        public Task AllEnvironmentsReport()
+        public async Task AllEnvironmentsReport()
         {
             var name = GetStringQueryString("database");
 
@@ -183,25 +181,23 @@ namespace Raven.Server.Documents.Handlers.Debugging
             {
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
+                    await writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyNameAsync("DatabaseName");
-                    writer.WriteStringAsync(name);
+                    await writer.WritePropertyNameAsync("DatabaseName");
+                    await writer.WriteStringAsync(name);
                     await writer.WriteCommaAsync();
 
-                    writer.WritePropertyNameAsync("Environments");
+                    await writer.WritePropertyNameAsync("Environments");
                     await writer.WriteStartArrayAsync();
                     WriteAllEnvs(writer, context);
-                    writer.WriteEndArrayAsync();
+                    await writer.WriteEndArrayAsync();
 
                     await writer.WriteEndObjectAsync();
                 }
             }
-
-            return Task.CompletedTask;
         }
 
-        private void WriteAllEnvs(AsyncBlittableJsonTextWriter writer, DocumentsOperationContext context)
+        private async Task WriteAllEnvs(AsyncBlittableJsonTextWriter writer, DocumentsOperationContext context)
         {
             var envs = Database.GetAllStoragesEnvironment();
 
@@ -215,25 +211,25 @@ namespace Raven.Server.Documents.Handlers.Debugging
                     await writer.WriteCommaAsync();
                 first = false;
 
-                writer.WriteStartObjectAsync();
-                writer.WritePropertyNameAsync("Environment");
-                writer.WriteStringAsync(env.Name);
+                await writer.WriteStartObjectAsync();
+                await writer.WritePropertyNameAsync("Environment");
+                await writer.WriteStringAsync(env.Name);
                 await writer.WriteCommaAsync();
 
-                writer.WritePropertyNameAsync("Type");
-                writer.WriteStringAsync(env.Type.ToString());
+                await writer.WritePropertyNameAsync("Type");
+                await writer.WriteStringAsync(env.Type.ToString());
                 await writer.WriteCommaAsync();
 
                 var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(GetDetailedReport(env, false));
-                writer.WritePropertyNameAsync("Report");
-                writer.WriteObjectAsync(context.ReadObject(djv, env.Name));
+                await writer.WritePropertyNameAsync("Report");
+                await writer.WriteObjectAsync(context.ReadObject(djv, env.Name));
 
                 await writer.WriteEndObjectAsync();
             }
         }
 
         [RavenAction("/databases/*/debug/storage/environment/report", "GET", AuthorizationStatus.ValidUser)]
-        public Task EnvironmentReport()
+        public async Task EnvironmentReport()
         {
             var name = GetStringQueryString("name");
             var typeAsString = GetStringQueryString("type");
@@ -248,32 +244,30 @@ namespace Raven.Server.Documents.Handlers.Debugging
             if (env == null)
             {
                 HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return Task.CompletedTask;
+                return;
             }
 
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             {
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
+                    await writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyNameAsync("Name");
-                    writer.WriteStringAsync(env.Name);
+                    await writer.WritePropertyNameAsync("Name");
+                    await writer.WriteStringAsync(env.Name);
                     await writer.WriteCommaAsync();
 
-                    writer.WritePropertyNameAsync("Type");
-                    writer.WriteStringAsync(env.Type.ToString());
+                    await writer.WritePropertyNameAsync("Type");
+                    await writer.WriteStringAsync(env.Type.ToString());
                     await writer.WriteCommaAsync();
 
                     var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(GetDetailedReport(env, details));
-                    writer.WritePropertyNameAsync("Report");
-                    writer.WriteObjectAsync(context.ReadObject(djv, env.Name));
+                    await writer.WritePropertyNameAsync("Report");
+                    await writer.WriteObjectAsync(context.ReadObject(djv, env.Name));
 
                     await writer.WriteEndObjectAsync();
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         private static StorageReport GetReport(StorageEnvironmentWithType environment)

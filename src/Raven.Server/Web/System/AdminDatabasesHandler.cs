@@ -93,9 +93,9 @@ namespace Raven.Server.Web.System
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
                         await writer.WriteStartObjectAsync();
-                        await writer.WriteDocumentPropertiesWithoutMetadataAsync(context, new Document
+                        await writer.WriteDocumentPropertiesWithoutMetadata(context, new Document
                         {
-                                 Data = dbDoc
+                            Data = dbDoc
                         });
                         await writer.WriteCommaAsync();
                         await writer.WritePropertyNameAsync("Etag");
@@ -1158,7 +1158,7 @@ namespace Raven.Server.Web.System
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    await writer.WriteOperationIdAndNodeTagAsync(context, operationId, ServerStore.NodeTag);
+                    await writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                 }
             }
         }

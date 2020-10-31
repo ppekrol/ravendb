@@ -31,7 +31,7 @@ namespace Raven.Client.ServerWide.Tcp
                         throw new OperationCanceledException($"Stopped TCP negotiation for {parameters.Operation} because of cancellation request");
 
                     await SendTcpVersionInfoAsync(context, writer, parameters, current).ConfigureAwait(false);
-                    var version = await parameters.ReadResponseAndGetVersionCallbackAsync(context, writer).ConfigureAwait(false);
+                    var version = await parameters.ReadResponseAndGetVersionCallbackAsync(context, writer, stream, parameters.DestinationUrl).ConfigureAwait(false);
                     if (Log.IsInfoEnabled)
                     {
                         Log.Info($"Read response from {parameters.SourceNodeTag ?? parameters.DestinationUrl} for '{parameters.Operation}', received version is '{version}'");
@@ -102,6 +102,6 @@ namespace Raven.Client.ServerWide.Tcp
         /// If the respond is 'None' the function should throw.
         /// If the respond is 'TcpMismatch' the function should return the read version.
         /// </summary>
-        public Func<JsonOperationContext, AsyncBlittableJsonTextWriter, ValueTask<int>> ReadResponseAndGetVersionCallbackAsync { get; set; }
+        public Func<JsonOperationContext, AsyncBlittableJsonTextWriter, Stream, string, ValueTask<int>> ReadResponseAndGetVersionCallbackAsync { get; set; }
     }
 }

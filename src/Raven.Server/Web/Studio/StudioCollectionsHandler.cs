@@ -26,7 +26,7 @@ namespace Raven.Server.Web.Studio
         private const string TrimmedValueKey = "$t";
 
         [RavenAction("/databases/*/studio/collections/preview", "GET", AuthorizationStatus.ValidUser)]
-        public Task PreviewCollection()
+        public async Task PreviewCollection()
         {
             var start = GetStart();
             var pageSize = GetPageSize();
@@ -64,7 +64,7 @@ namespace Raven.Server.Web.Studio
                 if (etag != null && GetStringFromHeaders("If-None-Match") == etag)
                 {
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.NotModified;
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 HttpContext.Response.Headers["ETag"] = "\"" + etag + "\"";
@@ -84,45 +84,43 @@ namespace Raven.Server.Web.Studio
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
-                    writer.WritePropertyNameAsync("Results");
+                    await writer.WriteStartObjectAsync();
+                    await writer.WritePropertyNameAsync("Results");
 
-                    writer.WriteStartArrayAsync();
+                    await writer.WriteStartArrayAsync();
 
                     var first = true;
                     foreach (var document in documents)
                     {
                         if (first == false)
-                            writer.WriteCommaAsync();
+                            await writer.WriteCommaAsync();
                         first = false;
 
                         using (document.Data)
                         {
-                            WriteDocument(writer, context, document, propertiesPreviewToSend, fullPropertiesToSend);
+                            await WriteDocumentAsync(writer, context, document, propertiesPreviewToSend, fullPropertiesToSend);
                         }
                     }
 
-                    writer.WriteEndArrayAsync();
+                    await writer.WriteEndArrayAsync();
 
-                    writer.WriteCommaAsync();
+                    await writer.WriteCommaAsync();
 
-                    writer.WritePropertyNameAsync("TotalResults");
-                    writer.WriteIntegerAsync(totalResults);
+                    await writer.WritePropertyNameAsync("TotalResults");
+                    await writer.WriteIntegerAsync(totalResults);
 
-                    writer.WriteCommaAsync();
+                    await writer.WriteCommaAsync();
 
-                    writer.WriteArrayAsync("AvailableColumns", availableColumns);
+                    await writer.WriteArrayAsync("AvailableColumns", availableColumns);
 
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteEndObjectAsync();
                 }
-
-                return Task.CompletedTask;
             }
         }
 
-        private void WriteDocument(AsyncBlittableJsonTextWriter writer, JsonOperationContext context, Document document, HashSet<string> propertiesPreviewToSend, HashSet<string> fullPropertiesToSend)
+        private async ValueTask WriteDocumentAsync(AsyncBlittableJsonTextWriter writer, JsonOperationContext context, Document document, HashSet<string> propertiesPreviewToSend, HashSet<string> fullPropertiesToSend)
         {
-            writer.WriteStartObjectAsync();
+            await writer.WriteStartObjectAsync();
 
             document.Data.TryGet(Constants.Documents.Metadata.Key, out BlittableJsonReaderObject metadata);
 
@@ -148,7 +146,7 @@ namespace Raven.Server.Web.Studio
                         {
                             if (first == false)
                             {
-                                writer.WriteCommaAsync();
+                                await writer.WriteCommaAsync();
                             }
                             first = false;
                         }
@@ -156,17 +154,20 @@ namespace Raven.Server.Web.Studio
                         switch (strategy)
                         {
                             case ValueWriteStrategy.Passthrough:
-                                writer.WritePropertyNameAsync(prop.Name);
-                                writer.WriteValueAsync(prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value);
+                                await writer.WritePropertyNameAsync(prop.Name);
+                                await writer.WriteValueAsync(prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value);
                                 break;
+
                             case ValueWriteStrategy.SubstituteWithArrayStub:
                                 arrayStubsJson[prop.Name] = ((BlittableJsonReaderArray)prop.Value).Length;
                                 break;
+
                             case ValueWriteStrategy.SubstituteWithObjectStub:
                                 objectStubsJson[prop.Name] = ((BlittableJsonReaderObject)prop.Value).Count;
                                 break;
+
                             case ValueWriteStrategy.Trim:
-                                writer.WritePropertyNameAsync(prop.Name);
+                                await writer.WritePropertyNameAsync(prop.Name);
                                 WriteTrimmedValue(writer, prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value);
                                 trimmedValue.Add(prop.Name);
                                 break;
@@ -175,7 +176,7 @@ namespace Raven.Server.Web.Studio
                 }
             }
             if (first == false)
-                writer.WriteCommaAsync();
+                await writer.WriteCommaAsync();
 
             var extraMetadataProperties = new DynamicJsonValue(metadata)
             {
@@ -205,24 +206,25 @@ namespace Raven.Server.Web.Studio
                 metadata = context.ReadObject(extraMetadataProperties, document.Id);
             }
 
-            writer.WriteMetadata(document, metadata);
-            writer.WriteEndObjectAsync();
+            await writer.WriteMetadata(document, metadata);
+            await writer.WriteEndObjectAsync();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void WriteTrimmedValue(AsyncBlittableJsonTextWriter writer, BlittableJsonToken token, object val)
+        private async ValueTask WriteTrimmedValue(AsyncBlittableJsonTextWriter writer, BlittableJsonToken token, object val)
         {
             switch (token)
             {
                 case BlittableJsonToken.String:
                     var lazyString = (LazyStringValue)val;
-                    writer.WriteStringAsync(lazyString?.Substring(0,
+                    await writer.WriteStringAsync(lazyString?.Substring(0,
                         Math.Min(lazyString.Length, StringLengthLimit)));
                     break;
+
                 case BlittableJsonToken.CompressedString:
                     var lazyCompressedString = (LazyCompressedStringValue)val;
                     string actualString = lazyCompressedString.ToString();
-                    writer.WriteStringAsync(actualString.Substring(0, Math.Min(actualString.Length, StringLengthLimit)));
+                    await writer.WriteStringAsync(actualString.Substring(0, Math.Min(actualString.Length, StringLengthLimit)));
                     break;
 
                 default:
@@ -231,27 +233,33 @@ namespace Raven.Server.Web.Studio
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ValueWriteStrategy FindWriteStrategy(BlittableJsonToken token, object val)
+        private static ValueWriteStrategy FindWriteStrategy(BlittableJsonToken token, object val)
         {
             switch (token)
             {
                 case BlittableJsonToken.String:
                     var lazyString = (LazyStringValue)val;
                     return lazyString.Length > StringLengthLimit ? ValueWriteStrategy.Trim : ValueWriteStrategy.Passthrough;
+
                 case BlittableJsonToken.Integer:
                     return ValueWriteStrategy.Passthrough;
+
                 case BlittableJsonToken.StartArray:
                     return ValueWriteStrategy.SubstituteWithArrayStub;
+
                 case BlittableJsonToken.EmbeddedBlittable:
                 case BlittableJsonToken.StartObject:
                     return ValueWriteStrategy.SubstituteWithObjectStub;
+
                 case BlittableJsonToken.CompressedString:
                     var lazyCompressedString = (LazyCompressedStringValue)val;
                     return lazyCompressedString.UncompressedSize > StringLengthLimit ? ValueWriteStrategy.Trim : ValueWriteStrategy.Passthrough;
+
                 case BlittableJsonToken.LazyNumber:
                 case BlittableJsonToken.Boolean:
                 case BlittableJsonToken.Null:
                     return ValueWriteStrategy.Passthrough;
+
                 default:
                     throw new DataMisalignedException($"Unidentified Type {token}");
             }
@@ -316,7 +324,7 @@ namespace Raven.Server.Web.Studio
             return Task.CompletedTask;
         }
 
-        private void ExecuteCollectionOperation(Func<CollectionRunner, string, CollectionOperationOptions, Action<IOperationProgress>, OperationCancelToken, Task<IOperationResult>> operation, DocumentsOperationContext context, IDisposable returnContextToPool, Documents.Operations.Operations.OperationType operationType, HashSet<string> excludeIds)
+        private async Task ExecuteCollectionOperation(Func<CollectionRunner, string, CollectionOperationOptions, Action<IOperationProgress>, OperationCancelToken, Task<IOperationResult>> operation, DocumentsOperationContext context, IDisposable returnContextToPool, Documents.Operations.Operations.OperationType operationType, HashSet<string> excludeIds)
         {
             var collectionName = GetStringQueryString("name");
 
@@ -332,11 +340,11 @@ namespace Raven.Server.Web.Studio
             var task = Database.Operations.AddOperation(Database, collectionName, operationType, onProgress =>
                      operation(collectionRunner, collectionName, options, onProgress, token), operationId, token: token);
 
-            task.ContinueWith(_ => returnContextToPool.Dispose());
+            _ = task.ContinueWith(_ => returnContextToPool.Dispose());
 
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
+                await writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
             }
         }
 
