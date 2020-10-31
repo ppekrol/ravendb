@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
@@ -18,7 +17,7 @@ namespace Raven.Server.NotificationCenter
         private readonly NotificationsBase _notificationsBase;
         private readonly JsonOperationContext _context;
         private readonly CancellationToken _resourceShutdown;
-        
+
         private readonly MemoryStream _ms = new MemoryStream();
         public Action AfterTrackActionsRegistration;
         private readonly IDisposable _returnContext;
@@ -68,28 +67,28 @@ namespace Raven.Server.NotificationCenter
             }
         }
 
-        public Task WriteToWebSocket<TNotification>(TNotification notification)
+        public async Task WriteToWebSocket<TNotification>(TNotification notification)
         {
             _context.Reset();
             _context.Renew();
 
             _ms.SetLength(0);
 
-            using (var writer = new AsyncBlittableJsonTextWriter(_context, _ms))
+            await using (var writer = new AsyncBlittableJsonTextWriter(_context, _ms))
             {
                 var notificationType = notification.GetType();
 
                 if (notificationType == typeof(DynamicJsonValue))
-                    _context.WriteAsync(writer, notification as DynamicJsonValue);
+                    await _context.WriteAsync(writer, notification as DynamicJsonValue);
                 else if (notificationType == typeof(BlittableJsonReaderObject))
-                    _context.WriteAsync(writer, notification as BlittableJsonReaderObject);
+                    await _context.WriteAsync(writer, notification as BlittableJsonReaderObject);
                 else
                     ThrowNotSupportedType(notification);
             }
 
             _ms.TryGetBuffer(out ArraySegment<byte> bytes);
 
-            return _webSocket.SendAsync(bytes, WebSocketMessageType.Text, true, _resourceShutdown);
+            await _webSocket.SendAsync(bytes, WebSocketMessageType.Text, true, _resourceShutdown);
         }
 
         private async Task SendHeartbeat()
