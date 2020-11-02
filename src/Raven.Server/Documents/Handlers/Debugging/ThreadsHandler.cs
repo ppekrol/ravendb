@@ -53,7 +53,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                 {
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.WriteAsync(writer, DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(result, context));
+                        await context.WriteAsync(writer, DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(result, context));
                     }
                 }
             }
@@ -74,7 +74,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
                         await Task.Delay(100);
 
                         var result = threadsUsage.Calculate();
-                        context.WriteAsync(writer,
+                        await context.WriteAsync(writer,
                             new DynamicJsonValue
                             {
                                 ["Runaway Threads"] = result.ToJson()
@@ -82,14 +82,14 @@ namespace Raven.Server.Documents.Handlers.Debugging
                     }
                     catch (Exception e)
                     {
-                        context.WriteAsync(writer,
+                        await context.WriteAsync(writer,
                             new DynamicJsonValue
                             {
                                 ["Error"] = e.ToString()
                             });
                     }
 
-                    writer.FlushAsync();
+                    await writer.FlushAsync();
                 }
             }
         }

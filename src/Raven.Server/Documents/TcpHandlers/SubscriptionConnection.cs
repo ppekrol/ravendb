@@ -876,7 +876,7 @@ namespace Raven.Server.Documents.TcpHandlers
                     $"Flushing {flushedDocs} documents for subscription {SubscriptionId} sending to {TcpConnection.TcpClient.Client.RemoteEndPoint} {(endOfBatch ? ", ending batch" : string.Empty)}");
             }
 
-            writer.FlushAsync();
+            await writer.FlushAsync();
             var bufferSize = _buffer.Length;
             await FlushBufferToNetwork();
             Stats.LastMessageSentAt = DateTime.UtcNow;

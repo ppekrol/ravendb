@@ -30,7 +30,7 @@ namespace Raven.Server.Documents.Handlers
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.WriteAsync(writer, new DynamicJsonValue
+                        await context.WriteAsync(writer, new DynamicJsonValue
                         {
                             ["Type"] = "Error",
                             ["Error"] = "Transactions replay requires form content type"
@@ -38,7 +38,7 @@ namespace Raven.Server.Documents.Handlers
                         return;
                     }
                 }
-                
+
                 var operationId = GetLongQueryString("operationId", false) ?? Database.Operations.GetNextOperationId();
 
                 using (var operationCancelToken = CreateOperationToken())
@@ -72,7 +72,7 @@ namespace Raven.Server.Documents.Handlers
                                     return DoReplay(progress, section.Body, operationCancelToken.Token);
                                 }
                             }
-                            
+
                             throw new BadRequestException("Please upload source file using FormData");
                         }),
                         id: operationId,
@@ -81,7 +81,7 @@ namespace Raven.Server.Documents.Handlers
 
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.WriteAsync(writer, result.ToJson());
+                        await context.WriteAsync(writer, result.ToJson());
                     }
                 }
             }
@@ -101,10 +101,10 @@ namespace Raven.Server.Documents.Handlers
                 {
                     Processed = 0
                 };
-                
+
                 // send initial progress
                 onProgress(progress);
-                
+
                 long commandsProgress = 0;
                 foreach (var replayProgress in ReplayTxCommandHelper.Replay(Database, replayStream))
                 {
@@ -141,7 +141,7 @@ namespace Raven.Server.Documents.Handlers
             {
                 throw new BadRequestException("Another recording is already in progress");
             }
-            
+
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             {
                 var json = await context.ReadForMemoryAsync(RequestBodyStream(), null);
@@ -151,9 +151,9 @@ namespace Raven.Server.Documents.Handlers
                     ThrowRequiredPropertyNameInRequest(nameof(parameters.File));
                 }
 
-                var tcs = new TaskCompletionSource<IOperationResult>(TaskCreationOptions.RunContinuationsAsynchronously); 
+                var tcs = new TaskCompletionSource<IOperationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
                 var operationId = ServerStore.Operations.GetNextOperationId();
-                
+
                 var command = new StartTransactionsRecordingCommand(
                         Database.TxMerger,
                         parameters.File,
@@ -169,19 +169,19 @@ namespace Raven.Server.Documents.Handlers
                     {
                         // push this notification to studio
                         progress(null);
-                        
+
                         return tcs.Task;
                     },
-                    operationId, 
+                    operationId,
                     new RecordingDetails
                     {
                         DatabaseName = Database.Name,
                         FilePath = parameters.File
                     });
-                
+
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
+                    await writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                 }
             }
         }
@@ -194,11 +194,11 @@ namespace Raven.Server.Documents.Handlers
             await Database.TxMerger.Enqueue(command);
             NoContentStatus();
         }
-        
+
         public class RecordingDetails : IOperationDetailedDescription
         {
             public string DatabaseName { get; set; }
-            
+
             public string FilePath { get; set; }
 
             public DynamicJsonValue ToJson()
@@ -241,7 +241,7 @@ namespace Raven.Server.Documents.Handlers
             return 0;
         }
     }
-    
+
     public class StopTransactionsRecordingCommand : TransactionOperationsMerger.MergedTransactionCommand
     {
         private readonly TransactionOperationsMerger _databaseTxMerger;

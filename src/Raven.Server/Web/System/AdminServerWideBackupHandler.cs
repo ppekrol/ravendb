@@ -79,8 +79,8 @@ namespace Raven.Server.Web.System
                     };
 
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.Created;
-                    context.WriteAsync(writer, putResponse.ToJson());
-                    writer.FlushAsync();
+                    await context.WriteAsync(writer, putResponse.ToJson());
+                    await writer.FlushAsync();
                 }
             }
         }
@@ -105,8 +105,8 @@ namespace Raven.Server.Web.System
                     };
 
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
-                    context.WriteAsync(writer, deleteResponse.ToJson());
-                    writer.FlushAsync();
+                    await context.WriteAsync(writer, deleteResponse.ToJson());
+                    await writer.FlushAsync();
                 }
             }
         }
@@ -171,8 +171,8 @@ namespace Raven.Server.Web.System
                         RaftCommandIndex = newIndex 
                     };
 
-                    context.WriteAsync(writer, toggleResponse.ToJson());
-                    writer.FlushAsync();
+                    await context.WriteAsync(writer, toggleResponse.ToJson());
+                    await writer.FlushAsync();
                 }
             }
         }

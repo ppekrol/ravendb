@@ -57,7 +57,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
 
                         isFirstInternal = false;
 
-                        query.Write(writer, context);
+                        await query.Write(writer, context);
                     }
 
                     await writer.WriteEndArrayAsync();

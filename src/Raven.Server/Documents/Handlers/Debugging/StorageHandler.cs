@@ -189,7 +189,7 @@ namespace Raven.Server.Documents.Handlers.Debugging
 
                     await writer.WritePropertyNameAsync("Environments");
                     await writer.WriteStartArrayAsync();
-                    WriteAllEnvs(writer, context);
+                    await WriteAllEnvs(writer, context);
                     await writer.WriteEndArrayAsync();
 
                     await writer.WriteEndObjectAsync();

@@ -25,7 +25,7 @@ namespace Raven.Server.Web.System
             using (context.OpenReadTransaction())
             {
                 if (keys.Count > 0)
-                    GetCompareExchangeValuesByKey(context, keys);
+                    await GetCompareExchangeValuesByKey(context, keys);
                 else
                     await GetCompareExchangeValues(context);
             }

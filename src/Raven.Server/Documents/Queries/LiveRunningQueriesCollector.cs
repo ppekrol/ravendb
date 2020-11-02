@@ -105,7 +105,7 @@ namespace Raven.Server.Documents.Queries
                         await writer.WriteCommaAsync();
 
                     firstInnerQuery = false;
-                    executingQueryInfo.Write(writer, context);
+                    await executingQueryInfo.Write(writer, context);
                 }
                 await writer.WriteEndArrayAsync();
 

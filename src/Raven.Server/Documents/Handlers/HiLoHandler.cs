@@ -73,7 +73,7 @@ namespace Raven.Server.Documents.Handlers
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    context.WriteAsync(writer, new DynamicJsonValue
+                    await context.WriteAsync(writer, new DynamicJsonValue
                     {
                         ["Prefix"] = cmd.Prefix,
                         ["Low"] = cmd.OldMax + 1,
@@ -132,7 +132,6 @@ namespace Raven.Server.Documents.Handlers
                     }
                     else
                     {
-
                         hiloDocReader.TryGet("Max", out long oldMax);
                         OldMax = Math.Max(oldMax, LastRangeMax);
 
@@ -231,7 +230,6 @@ namespace Raven.Server.Documents.Handlers
                 };
             }
         }
-
     }
 
     internal class MergedHiLoReturnCommandDto : TransactionOperationsMerger.IReplayableCommandDto<HiLoHandler.MergedHiLoReturnCommand>

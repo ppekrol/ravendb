@@ -21,12 +21,12 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
 
-                writer.WritePropertyNameAsync("NewIdentityValue");
-                writer.WriteIntegerAsync(newIdentityValue);
+                await writer.WritePropertyNameAsync("NewIdentityValue");
+                await writer.WriteIntegerAsync(newIdentityValue);
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
         }
 
@@ -35,7 +35,7 @@ namespace Raven.Server.Documents.Handlers
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
             var value = GetLongQueryString("value", true);
-            var forced = GetBoolValueQueryString("force", false)??false;
+            var forced = GetBoolValueQueryString("force", false) ?? false;
             if (value == null)
                 throw new ArgumentException("Query string value 'value' must have a non empty value");
 
@@ -46,12 +46,12 @@ namespace Raven.Server.Documents.Handlers
             using (ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
             {
-                writer.WriteStartObjectAsync();
+                await writer.WriteStartObjectAsync();
 
-                writer.WritePropertyNameAsync("NewSeedValue");
-                writer.WriteIntegerAsync(newIdentityValue);
+                await writer.WritePropertyNameAsync("NewSeedValue");
+                await writer.WriteIntegerAsync(newIdentityValue);
 
-                writer.WriteEndObjectAsync();
+                await writer.WriteEndObjectAsync();
             }
         }
     }

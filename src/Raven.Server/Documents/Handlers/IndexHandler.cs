@@ -1007,22 +1007,22 @@ namespace Raven.Server.Documents.Handlers
                     var first = true;
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartObjectAsync();
-                        writer.WritePropertyNameAsync("MapResults");
-                        writer.WriteStartArrayAsync();
+                        await writer.WriteStartObjectAsync();
+                        await writer.WritePropertyNameAsync("MapResults");
+                        await writer.WriteStartArrayAsync();
                         foreach (var mapResult in mapRes)
                         {
                             if (JavaScriptIndexUtils.StringifyObject(mapResult) is JsString jsStr)
                             {
                                 if (first == false)
                                 {
-                                    writer.WriteCommaAsync();
+                                    await writer.WriteCommaAsync();
                                 }
-                                writer.WriteStringAsync(jsStr.ToString());
+                                await writer.WriteStringAsync(jsStr.ToString());
                                 first = false;
                             }
                         }
-                        writer.WriteEndArrayAsync();
+                        await writer.WriteEndArrayAsync();
                         if (indexDefinition.Reduce != null)
                         {
                             using (var bufferPool = new UnmanagedBuffersPoolWithLowMemoryHandling("JavaScriptIndexTest", Database.Name))
@@ -1030,8 +1030,8 @@ namespace Raven.Server.Documents.Handlers
                                 compiledIndex.SetBufferPoolForTestingPurposes(bufferPool);
                                 compiledIndex.SetAllocatorForTestingPurposes(context.Allocator);
                                 first = true;
-                                writer.WritePropertyNameAsync("ReduceResults");
-                                writer.WriteStartArrayAsync();
+                                await writer.WritePropertyNameAsync("ReduceResults");
+                                await writer.WriteStartArrayAsync();
 
                                 var reduceResults = compiledIndex.Reduce(mapRes.Select(mr => new DynamicBlittableJson(JsBlittableBridge.Translate(context, mr.Engine, mr))));
 
@@ -1041,18 +1041,18 @@ namespace Raven.Server.Documents.Handlers
                                     {
                                         if (first == false)
                                         {
-                                            writer.WriteCommaAsync();
+                                            await writer.WriteCommaAsync();
                                         }
 
-                                        writer.WriteStringAsync(jsStr.ToString());
+                                        await writer.WriteStringAsync(jsStr.ToString());
                                         first = false;
                                     }
                                 }
                             }
 
-                            writer.WriteEndArrayAsync();
+                            await writer.WriteEndArrayAsync();
                         }
-                        writer.WriteEndObjectAsync();
+                        await writer.WriteEndObjectAsync();
                     }
                 }
             }

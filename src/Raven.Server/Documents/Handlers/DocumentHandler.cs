@@ -420,16 +420,16 @@ namespace Raven.Server.Documents.Handlers
 
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        writer.WriteStartObjectAsync();
+                        await writer.WriteStartObjectAsync();
 
-                        writer.WritePropertyNameAsync(nameof(PutResult.Id));
-                        writer.WriteStringAsync(cmd.PutResult.Id);
-                        writer.WriteCommaAsync();
+                        await writer.WritePropertyNameAsync(nameof(PutResult.Id));
+                        await writer.WriteStringAsync(cmd.PutResult.Id);
+                        await writer.WriteCommaAsync();
 
-                        writer.WritePropertyNameAsync(nameof(PutResult.ChangeVector));
-                        writer.WriteStringAsync(cmd.PutResult.ChangeVector);
+                        await writer.WritePropertyNameAsync(nameof(PutResult.ChangeVector));
+                        await writer.WriteStringAsync(cmd.PutResult.ChangeVector);
 
-                        writer.WriteEndObjectAsync();
+                        await writer.WriteEndObjectAsync();
                     }
                 }
             }
@@ -511,29 +511,29 @@ namespace Raven.Server.Documents.Handlers
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteStartObjectAsync();
+                    await writer.WriteStartObjectAsync();
 
-                    writer.WritePropertyNameAsync(nameof(command.PatchResult.Status));
-                    writer.WriteStringAsync(command.PatchResult.Status.ToString());
-                    writer.WriteCommaAsync();
+                    await writer.WritePropertyNameAsync(nameof(command.PatchResult.Status));
+                    await writer.WriteStringAsync(command.PatchResult.Status.ToString());
+                    await writer.WriteCommaAsync();
 
-                    writer.WritePropertyNameAsync(nameof(command.PatchResult.ModifiedDocument));
-                    writer.WriteObjectAsync(command.PatchResult.ModifiedDocument);
+                    await writer.WritePropertyNameAsync(nameof(command.PatchResult.ModifiedDocument));
+                    await writer.WriteObjectAsync(command.PatchResult.ModifiedDocument);
 
                     if (debugMode)
                     {
-                        writer.WriteCommaAsync();
-                        writer.WritePropertyNameAsync(nameof(command.PatchResult.OriginalDocument));
+                        await writer.WriteCommaAsync();
+                        await writer.WritePropertyNameAsync(nameof(command.PatchResult.OriginalDocument));
                         if (isTest)
-                            writer.WriteObjectAsync(command.PatchResult.OriginalDocument);
+                            await writer.WriteObjectAsync(command.PatchResult.OriginalDocument);
                         else
-                            writer.WriteNullAsync();
+                            await writer.WriteNullAsync();
 
-                        writer.WriteCommaAsync();
+                        await writer.WriteCommaAsync();
 
-                        writer.WritePropertyNameAsync(nameof(command.PatchResult.Debug));
+                        await writer.WritePropertyNameAsync(nameof(command.PatchResult.Debug));
 
-                        context.WriteAsync(writer, new DynamicJsonValue
+                        await context.WriteAsync(writer, new DynamicJsonValue
                         {
                             ["Info"] = new DynamicJsonArray(command.DebugOutput),
                             ["Actions"] = command.DebugActions
@@ -545,22 +545,22 @@ namespace Raven.Server.Documents.Handlers
                         case PatchStatus.Created:
                         case PatchStatus.Patched:
 
-                            writer.WriteCommaAsync();
+                            await writer.WriteCommaAsync();
 
-                            writer.WritePropertyNameAsync(nameof(command.PatchResult.LastModified));
-                            writer.WriteStringAsync(command.PatchResult.LastModified.GetDefaultRavenFormat());
-                            writer.WriteCommaAsync();
+                            await writer.WritePropertyNameAsync(nameof(command.PatchResult.LastModified));
+                            await writer.WriteStringAsync(command.PatchResult.LastModified.GetDefaultRavenFormat());
+                            await writer.WriteCommaAsync();
 
-                            writer.WritePropertyNameAsync(nameof(command.PatchResult.ChangeVector));
-                            writer.WriteStringAsync(command.PatchResult.ChangeVector);
-                            writer.WriteCommaAsync();
+                            await writer.WritePropertyNameAsync(nameof(command.PatchResult.ChangeVector));
+                            await writer.WriteStringAsync(command.PatchResult.ChangeVector);
+                            await writer.WriteCommaAsync();
 
-                            writer.WritePropertyNameAsync(nameof(command.PatchResult.Collection));
-                            writer.WriteStringAsync(command.PatchResult.Collection);
+                            await writer.WritePropertyNameAsync(nameof(command.PatchResult.Collection));
+                            await writer.WriteStringAsync(command.PatchResult.Collection);
                             break;
                     }
 
-                    writer.WriteEndObjectAsync();
+                    await writer.WriteEndObjectAsync();
                 }
             }
         }

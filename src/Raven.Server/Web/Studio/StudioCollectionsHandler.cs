@@ -168,7 +168,7 @@ namespace Raven.Server.Web.Studio
 
                             case ValueWriteStrategy.Trim:
                                 await writer.WritePropertyNameAsync(prop.Name);
-                                WriteTrimmedValue(writer, prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value);
+                                await WriteTrimmedValue(writer, prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value);
                                 trimmedValue.Add(prop.Name);
                                 break;
                         }
@@ -304,7 +304,7 @@ namespace Raven.Server.Web.Studio
         }
 
         [RavenAction("/databases/*/studio/collections/docs", "DELETE", AuthorizationStatus.ValidUser)]
-        public Task Delete()
+        public async Task Delete()
         {
             var returnContextToPool = ContextPool.AllocateOperationContext(out DocumentsOperationContext context);
 
@@ -319,9 +319,8 @@ namespace Raven.Server.Web.Studio
                 }
             }
 
-            ExecuteCollectionOperation((runner, collectionName, options, onProgress, token) => Task.Run(async () => await runner.ExecuteDelete(collectionName, 0, long.MaxValue, options, onProgress, token)),
+            await ExecuteCollectionOperation((runner, collectionName, options, onProgress, token) => Task.Run(async () => await runner.ExecuteDelete(collectionName, 0, long.MaxValue, options, onProgress, token)),
                 context, returnContextToPool, Documents.Operations.Operations.OperationType.DeleteByCollection, excludeIds);
-            return Task.CompletedTask;
         }
 
         private async Task ExecuteCollectionOperation(Func<CollectionRunner, string, CollectionOperationOptions, Action<IOperationProgress>, OperationCancelToken, Task<IOperationResult>> operation, DocumentsOperationContext context, IDisposable returnContextToPool, Documents.Operations.Operations.OperationType operationType, HashSet<string> excludeIds)

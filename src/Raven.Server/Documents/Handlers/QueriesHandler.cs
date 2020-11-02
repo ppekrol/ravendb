@@ -336,7 +336,7 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/queries", "DELETE", AuthorizationStatus.ValidUser)]
-        public Task Delete()
+        public async Task Delete()
         {
             var queryContext = QueryOperationContext.Allocate(Database); // we don't dispose this as operation is async
 
@@ -350,11 +350,9 @@ namespace Raven.Server.Documents.Handlers
                     if (TrafficWatchManager.HasRegisteredClients)
                         TrafficWatchQuery(query);
 
-                    ExecuteQueryOperation(query,
+                    await ExecuteQueryOperation(query,
                         (runner, options, onProgress, token) => runner.ExecuteDeleteQuery(query, options, queryContext, onProgress, token),
                         queryContext, queryContext, Operations.Operations.OperationType.DeleteByQuery);
-
-                    return Task.CompletedTask;
                 }
             }
             catch
@@ -459,7 +457,7 @@ namespace Raven.Server.Documents.Handlers
         }
 
         [RavenAction("/databases/*/queries", "PATCH", AuthorizationStatus.ValidUser, DisableOnCpuCreditsExhaustion = true)]
-        public Task Patch()
+        public async Task Patch()
         {
             var queryContext = QueryOperationContext.Allocate(Database); // we don't dispose this as operation is async
 
@@ -478,12 +476,10 @@ namespace Raven.Server.Documents.Handlers
 
                 var patch = new PatchRequest(query.Metadata.GetUpdateBody(query.QueryParameters), PatchRequestType.Patch, query.Metadata.DeclaredFunctions);
 
-                ExecuteQueryOperation(query,
+                await ExecuteQueryOperation(query,
                     (runner, options, onProgress, token) => runner.ExecutePatchQuery(
                         query, options, patch, query.QueryParameters, queryContext, onProgress, token),
                     queryContext, queryContext, Operations.Operations.OperationType.UpdateByQuery);
-
-                return Task.CompletedTask;
             }
             catch
             {
