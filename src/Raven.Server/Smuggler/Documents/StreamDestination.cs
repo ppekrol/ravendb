@@ -348,7 +348,7 @@ namespace Raven.Server.Smuggler.Documents
                         _writer.WriteComma();
                     first = false;
 
-                    _context.WriteAsync(_writer, pullReplication.ToJson());
+                    _context.Sync.Write(_writer, pullReplication.ToJson());
                 }
                 _writer.WriteEndArray();
             }
@@ -368,7 +368,7 @@ namespace Raven.Server.Smuggler.Documents
                         _writer.WriteComma();
                     first = false;
 
-                    _context.WriteAsync(_writer, pullReplication.ToJson());
+                    _context.Sync.Write(_writer, pullReplication.ToJson());
                 }
                 _writer.WriteEndArray();
             }
@@ -390,7 +390,7 @@ namespace Raven.Server.Smuggler.Documents
                     first = false;
 
                     _writer.WritePropertyName(sorter.Key);
-                    _context.WriteAsync(_writer, sorter.Value.ToJson());
+                    _context.Sync.Write(_writer, sorter.Value.ToJson());
                 }
 
                 _writer.WriteEndObject();
@@ -449,7 +449,7 @@ namespace Raven.Server.Smuggler.Documents
                     if (first == false)
                         _writer.WriteComma();
                     first = false;
-                    _context.WriteAsync(_writer, etl.ToJson());
+                    _context.Sync.Write(_writer, etl.ToJson());
                 }
 
                 _writer.WriteEndArray();
@@ -470,7 +470,7 @@ namespace Raven.Server.Smuggler.Documents
                     if (first == false)
                         _writer.WriteComma();
                     first = false;
-                    _context.WriteAsync(_writer, etl.ToJson());
+                    _context.Sync.Write(_writer, etl.ToJson());
                 }
 
                 _writer.WriteEndArray();
@@ -492,7 +492,7 @@ namespace Raven.Server.Smuggler.Documents
                         _writer.WriteComma();
                     first = false;
 
-                    _context.WriteAsync(_writer, replication.ToJson());
+                    _context.Sync.Write(_writer, replication.ToJson());
                 }
 
                 _writer.WriteEndArray();
@@ -514,7 +514,7 @@ namespace Raven.Server.Smuggler.Documents
                     if (first == false)
                         _writer.WriteComma();
                     first = false;
-                    _context.WriteAsync(_writer, backup.ToJson());
+                    _context.Sync.Write(_writer, backup.ToJson());
                 }
                 _writer.WriteEndArray();
             }
@@ -526,7 +526,7 @@ namespace Raven.Server.Smuggler.Documents
                     _writer.WriteNull();
                     return;
                 }
-                _context.WriteAsync(_writer, conflictSolver.ToJson());
+                _context.Sync.Write(_writer, conflictSolver.ToJson());
             }
 
             private void WriteClientConfiguration(ClientConfiguration clientConfiguration)
@@ -536,7 +536,7 @@ namespace Raven.Server.Smuggler.Documents
                     _writer.WriteNull();
                     return;
                 }
-                _context.WriteAsync(_writer, clientConfiguration.ToJson());
+                _context.Sync.Write(_writer, clientConfiguration.ToJson());
             }
 
             private void WriteExpiration(ExpirationConfiguration expiration)
@@ -547,7 +547,7 @@ namespace Raven.Server.Smuggler.Documents
                     return;
                 }
 
-                _context.WriteAsync(_writer, expiration.ToJson());
+                _context.Sync.Write(_writer, expiration.ToJson());
             }
 
             private void WriteRevisions(RevisionsConfiguration revisions)
@@ -557,7 +557,7 @@ namespace Raven.Server.Smuggler.Documents
                     _writer.WriteNull();
                     return;
                 }
-                _context.WriteAsync(_writer, revisions.ToJson());
+                _context.Sync.Write(_writer, revisions.ToJson());
             }
 
             private void WriteTimeSeries(TimeSeriesConfiguration timeSeries)
@@ -567,7 +567,7 @@ namespace Raven.Server.Smuggler.Documents
                     _writer.WriteNull();
                     return;
                 }
-                _context.WriteAsync(_writer, timeSeries.ToJson());
+                _context.Sync.Write(_writer, timeSeries.ToJson());
             }
 
             private void WriteDocumentsCompression(DocumentsCompressionConfiguration compressionConfiguration)
@@ -577,7 +577,7 @@ namespace Raven.Server.Smuggler.Documents
                     _writer.WriteNull();
                     return;
                 }
-                _context.WriteAsync(_writer, compressionConfiguration.ToJson());
+                _context.Sync.Write(_writer, compressionConfiguration.ToJson());
             }
 
             private void WriteRavenConnectionStrings(Dictionary<string, RavenConnectionString> connections)
@@ -593,7 +593,7 @@ namespace Raven.Server.Smuggler.Documents
 
                     _writer.WritePropertyName(ravenConnectionString.Key);
 
-                    _context.WriteAsync(_writer, ravenConnectionString.Value.ToJson());
+                    _context.Sync.Write(_writer, ravenConnectionString.Value.ToJson());
                 }
 
                 _writer.WriteEndObject();
@@ -612,7 +612,7 @@ namespace Raven.Server.Smuggler.Documents
 
                     _writer.WritePropertyName(sqlConnectionString.Key);
 
-                    _context.WriteAsync(_writer, sqlConnectionString.Value.ToJson());
+                    _context.Sync.Write(_writer, sqlConnectionString.Value.ToJson());
                 }
 
                 _writer.WriteEndObject();
@@ -797,7 +797,7 @@ namespace Raven.Server.Smuggler.Documents
                     Writer.WriteComma();
                 First = false;
 
-                _context.WriteAsync(_writer, subscriptionState.ToJson());
+                _context.Sync.Write(_writer, subscriptionState.ToJson());
             }
         }
 
@@ -845,7 +845,7 @@ namespace Raven.Server.Smuggler.Documents
 
                 using (tombstone)
                 {
-                    _context.WriteAsync(Writer, new DynamicJsonValue
+                    _context.Sync.Write(Writer, new DynamicJsonValue
                     {
                         ["Key"] = tombstone.LowerId,
                         [nameof(Tombstone.Type)] = tombstone.Type.ToString(),
@@ -867,7 +867,7 @@ namespace Raven.Server.Smuggler.Documents
 
                 using (conflict)
                 {
-                    _context.WriteAsync(Writer, new DynamicJsonValue
+                    _context.Sync.Write(Writer, new DynamicJsonValue
                     {
                         [nameof(DocumentConflict.Id)] = conflict.Id,
                         [nameof(DocumentConflict.Collection)] = conflict.Collection,

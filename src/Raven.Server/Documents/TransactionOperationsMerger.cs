@@ -209,7 +209,7 @@ namespace Raven.Server.Documents
                     using (var writer = new BlittableJsonTextWriter(context, _txOpMerger._recording.Stream))
                     {
                         writer.WriteComma();
-                        context.WriteAsync(writer, commandDetailsReader);
+                        context.Sync.Write(writer, commandDetailsReader);
                     }
                 }
 
@@ -275,7 +275,7 @@ namespace Raven.Server.Documents
                         var commandDetails = new StartRecordingDetails();
                         var commandDetailsReader = SerializeRecordingCommandDetails(context, commandDetails);
 
-                        context.WriteAsync(writer, commandDetailsReader);
+                        context.Sync.Write(writer, commandDetailsReader);
                     }
 
                     state = new EnabledRecordingState(_txOpMerger);

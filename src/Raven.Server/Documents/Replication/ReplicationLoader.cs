@@ -361,16 +361,16 @@ namespace Raven.Server.Documents.Replication
 
             try
             {
-                using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext documentsOperationContext))
+                using (Database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext documentsContext))
                 using (Database.ConfigurationStorage.ContextPool.AllocateOperationContext(out TransactionOperationContext configurationContext))
-                using (var writer = new BlittableJsonTextWriter(documentsOperationContext, tcpConnectionOptions.Stream))
-                using (documentsOperationContext.OpenReadTransaction())
+                using (var writer = new BlittableJsonTextWriter(documentsContext, tcpConnectionOptions.Stream))
+                using (documentsContext.OpenReadTransaction())
                 using (configurationContext.OpenReadTransaction())
                 {
-                    var changeVector = DocumentsStorage.GetDatabaseChangeVector(documentsOperationContext);
+                    var changeVector = DocumentsStorage.GetDatabaseChangeVector(documentsContext);
 
                     var lastEtagFromSrc = DocumentsStorage.GetLastReplicatedEtagFrom(
-                        documentsOperationContext, getLatestEtagMessage.SourceDatabaseId);
+                        documentsContext, getLatestEtagMessage.SourceDatabaseId);
                     if (_log.IsInfoEnabled)
                         _log.Info($"GetLastEtag response, last etag: {lastEtagFromSrc}");
                     var response = new DynamicJsonValue
@@ -382,7 +382,7 @@ namespace Raven.Server.Documents.Replication
                         [nameof(ReplicationMessageReply.DatabaseChangeVector)] = changeVector
                     };
 
-                    documentsOperationContext.WriteAsync(writer, response);
+                    documentsContext.Sync.Write(writer, response);
                     writer.Flush();
                 }
             }

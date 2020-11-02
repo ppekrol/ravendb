@@ -4,11 +4,18 @@ namespace Sparrow.Json
 {
     public partial class JsonOperationContext
     {
-        internal class Sync
-        {
-            internal JsonOperationContext Context { get; }
+        private SyncJsonOperationContext _sync;
 
-            internal Sync(JsonOperationContext context)
+        internal SyncJsonOperationContext Sync
+        {
+            get => _sync ??= new SyncJsonOperationContext(this);
+        }
+
+        internal class SyncJsonOperationContext
+        {
+            internal readonly JsonOperationContext Context;
+
+            internal SyncJsonOperationContext(JsonOperationContext context)
             {
                 Context = context;
             }

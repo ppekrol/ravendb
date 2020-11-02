@@ -96,7 +96,7 @@ namespace Raven.Server.Rachis.Remote
             using (_disposerLock.EnsureNotDisposed())
             using (var writer = new BlittableJsonTextWriter(context, _stream))
             {
-                context.WriteAsync(writer, msg);
+                context.Sync.Write(writer, msg);
             }
         }
 

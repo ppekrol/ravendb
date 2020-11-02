@@ -258,7 +258,7 @@ namespace Raven.Server.Documents.Replication
             using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext documentsContext))
             using (var writer = new BlittableJsonTextWriter(documentsContext, _stream))
             {
-                documentsContext.WriteAsync(writer, request);
+                documentsContext.Sync.Write(writer, request);
                 writer.Flush();
             }
         }
@@ -516,7 +516,7 @@ namespace Raven.Server.Documents.Replication
             using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext documentsContext))
             using (var writer = new BlittableJsonTextWriter(documentsContext, _stream))
             {
-                documentsContext.WriteAsync(writer, request);
+                documentsContext.Sync.Write(writer, request);
                 writer.Flush();
             }
 
@@ -748,7 +748,7 @@ namespace Raven.Server.Documents.Replication
             using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext documentsContext))
             using (var writer = new BlittableJsonTextWriter(documentsContext, _stream))
             {
-                documentsContext.WriteAsync(writer, val);
+                documentsContext.Sync.Write(writer, val);
             }
         }
 
@@ -906,7 +906,7 @@ namespace Raven.Server.Documents.Replication
                         _lastSentChangeVectorDuringHeartbeat = changeVector;
                         heartbeat[nameof(ReplicationMessageHeader.DatabaseChangeVector)] = changeVector;
                     }
-                    documentsContext.WriteAsync(writer, heartbeat);
+                    documentsContext.Sync.Write(writer, heartbeat);
                     writer.Flush();
                 }
                 catch (Exception e)
