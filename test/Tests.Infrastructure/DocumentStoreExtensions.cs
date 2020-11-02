@@ -378,10 +378,10 @@ namespace FastTests
                     var request = new HttpRequestMessage
                     {
                         Method = _method,
-                        Content = new BlittableJsonContent(stream =>
+                        Content = new BlittableJsonContent(async stream =>
                         {
                             if (_payload != null)
-                                ctx.WriteAsync(stream, _payload);
+                                await ctx.WriteAsync(stream, _payload);
                         })
                     };
 

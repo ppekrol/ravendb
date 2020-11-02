@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using FastTests;
 using Raven.Server.Documents.Indexes.Static;
 using Sparrow.Json;
@@ -59,7 +60,7 @@ namespace SlowTests.Blittable.BlittableJsonWriterTests
         [InlineData(byte.MaxValue)]
         [InlineData(short.MaxValue)]
         [InlineData(short.MaxValue + 1)]
-        public void FlatBoundarySizeFieldsAmountStreamRead(int maxValue)
+        public async Task FlatBoundarySizeFieldsAmountStreamRead(int maxValue)
         {
             var str = GetJsonString(maxValue);
 
@@ -67,7 +68,7 @@ namespace SlowTests.Blittable.BlittableJsonWriterTests
             using (var employee = blittableContext.Read(new MemoryStream(Encoding.UTF8.GetBytes(str)), "doc1"))
             {
                 var ms = new MemoryStream();
-                blittableContext.WriteAsync(ms, employee);
+                await blittableContext.WriteAsync(ms, employee);
 
                 Assert.Equal(Encoding.UTF8.GetString(ms.ToArray()), str);
             }

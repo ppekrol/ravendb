@@ -40,10 +40,7 @@ namespace SlowTests.Authentication
                 return new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
-                    Content = new BlittableJsonContent(stream =>
-                    {
-                        ctx.WriteAsync(stream, _payload);
-                    })
+                    Content = new BlittableJsonContent(stream => ctx.WriteAsync(stream, _payload))
                 };
             }
 
@@ -102,10 +99,7 @@ namespace SlowTests.Authentication
                 return new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
-                    Content = new BlittableJsonContent(stream =>
-                    {
-                        ctx.WriteAsync(stream, _payload);
-                    })
+                    Content = new BlittableJsonContent(stream => ctx.WriteAsync(stream, _payload))
                 };
             }
 

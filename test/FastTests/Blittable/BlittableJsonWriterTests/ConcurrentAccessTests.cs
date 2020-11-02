@@ -65,12 +65,12 @@ namespace FastTests.Blittable.BlittableJsonWriterTests
             var size = employee.Size;
 
             Parallel.ForEach(Enumerable.Range(0, 100), RavenTestHelper.DefaultParallelOptions, x =>
-             {
-                 using (var localCtx = JsonOperationContext.ShortTermSingleUse())
-                 {
-                     AssertComplexEmployee(str, new BlittableJsonReaderObject(basePointer, size, localCtx), localCtx);
-                 }
-             });
+            {
+                using (var localCtx = JsonOperationContext.ShortTermSingleUse())
+                {
+                    AssertComplexEmployee(str, new BlittableJsonReaderObject(basePointer, size, localCtx), localCtx);
+                }
+            });
         }
     }
 }

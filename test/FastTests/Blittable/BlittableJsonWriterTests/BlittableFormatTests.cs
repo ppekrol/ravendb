@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Raven.Client.Documents.Conventions;
@@ -11,7 +11,6 @@ using Xunit.Abstractions;
 
 namespace FastTests.Blittable.BlittableJsonWriterTests
 {
-
     public class BlittableFormatTests : NoDisposalNeeded
     {
         public BlittableFormatTests(ITestOutputHelper output) : base(output)
@@ -20,9 +19,9 @@ namespace FastTests.Blittable.BlittableJsonWriterTests
 
         [Theory]
         [MemberData(nameof(Samples))]
-        public void CheckRoundtrip(string name)
+        public async Task CheckRoundtrip(string name)
         {
-            using (var stream = typeof(BlittableFormatTests).Assembly.GetManifestResourceStream(name))
+            await using (var stream = typeof(BlittableFormatTests).Assembly.GetManifestResourceStream(name))
             {
                 var serializer = (JsonSerializer)DocumentConventions.Default.Serialization.CreateSerializer();
 
@@ -33,7 +32,7 @@ namespace FastTests.Blittable.BlittableJsonWriterTests
                     var writer = context.Read(stream, "docs/1");
 
                     var memoryStream = new MemoryStream();
-                    context.WriteAsync(memoryStream, writer);
+                    await context.WriteAsync(memoryStream, writer);
 
                     memoryStream.Position = 0;
                     var after = ((JObject)serializer.Deserialize(new JsonTextReader(new StreamReader(memoryStream))));
@@ -62,7 +61,7 @@ namespace FastTests.Blittable.BlittableJsonWriterTests
         }
 
         [Fact]
-        public void ShouldNotCrashForManyDifferentProperties()
+        public async Task ShouldNotCrashForManyDifferentProperties()
         {
             foreach (var name in new[] { "geo.json", "comments.json", "blog_post.json" })
             {
@@ -70,7 +69,7 @@ namespace FastTests.Blittable.BlittableJsonWriterTests
                 {
                     var resource = typeof(BlittableFormatTests).Namespace + ".Jsons." + name;
 
-                    using (var stream = typeof(BlittableFormatTests).Assembly.GetManifestResourceStream(resource))
+                    await using (var stream = typeof(BlittableFormatTests).Assembly.GetManifestResourceStream(resource))
                     {
                         var serializer = (JsonSerializer)DocumentConventions.Default.Serialization.CreateSerializer();
 
@@ -80,7 +79,7 @@ namespace FastTests.Blittable.BlittableJsonWriterTests
                         using (var writer = context.Read(stream, "docs/1 "))
                         {
                             var memoryStream = new MemoryStream();
-                            context.WriteAsync(memoryStream, writer);
+                            await context.WriteAsync(memoryStream, writer);
                             var s = Encoding.UTF8.GetString(memoryStream.ToArray());
 
                             JObject.Parse(s); // can parse the output

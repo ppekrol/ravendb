@@ -1212,10 +1212,7 @@ namespace FastTests.Server.Documents.Revisions
                     return new HttpRequestMessage
                     {
                         Method = HttpMethod.Delete,
-                        Content = new BlittableJsonContent(stream =>
-                        {
-                            ctx.WriteAsync(stream, _parameters);
-                        })
+                        Content = new BlittableJsonContent(stream => ctx.WriteAsync(stream, _parameters))
                     };
                 }
             }
