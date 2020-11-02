@@ -53,12 +53,14 @@ namespace Raven.Server.Web.System
 
                     var items = ServerStore.Cluster.ItemsStartingWith(context, Constants.Documents.Prefix, GetStart(), GetPageSize());
 
-                    if (TryGetAllowedDbs(null, out var allowedDbs, requireAdmin: false) == false)
+                    var allowedDbs = await GetAllowedDbsAsync(null, requireAdmin: false);
+
+                    if (allowedDbs.HasAccess == false)
                         return;
 
-                    if (allowedDbs != null)
+                    if (allowedDbs.AuthorizedDatabases != null)
                     {
-                        items = items.Where(item => allowedDbs.ContainsKey(item.Item1.Substring(Constants.Documents.Prefix.Length)));
+                        items = items.Where(item => allowedDbs.AuthorizedDatabases.ContainsKey(item.Item1.Substring(Constants.Documents.Prefix.Length)));
                     }
 
                     await writer.WriteArrayAsync(context, nameof(DatabasesInfo.Databases), items, async (w, c, dbDoc) =>
@@ -94,7 +96,7 @@ namespace Raven.Server.Web.System
                 using (context.OpenReadTransaction())
                 using (var dbBlit = ServerStore.Cluster.Read(context, dbId, out long _))
                 {
-                    if (TryGetAllowedDbs(name, out var _, requireAdmin: false) == false)
+                    if (await CanAccessDatabaseAsync(name, requireAdmin: false) == false)
                         return;
 
                     if (dbBlit == null)
@@ -190,7 +192,7 @@ namespace Raven.Server.Web.System
 
             HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
-            if (TryGetAllowedDbs(name, out var _, requireAdmin: false) == false)
+            if (await CanAccessDatabaseAsync(name, requireAdmin: false) == false)
                 return;
 
             var isLoaded = ServerStore.DatabasesLandlord.IsDatabaseLoaded(name);

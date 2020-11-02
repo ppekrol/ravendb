@@ -48,10 +48,10 @@ namespace Raven.Server.Web.Operations
 
             if (operation.Database == null) // server level op
             {
-                if (IsOperator() == false)
+                if (await IsOperatorAsync() == false)
                     return;
             }
-            else if (TryGetAllowedDbs(operation.Database.Name, out var _, requireAdmin: false) == false)
+            else if (await CanAccessDatabaseAsync(operation.Database.Name, requireAdmin: false) == false)
             {
                 return;
             }

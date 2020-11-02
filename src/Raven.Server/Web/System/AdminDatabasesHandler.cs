@@ -1029,7 +1029,7 @@ namespace Raven.Server.Web.System
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
 
-            if (TryGetAllowedDbs(name, out var _, requireAdmin: true) == false)
+            if (await CanAccessDatabaseAsync(name, requireAdmin: true) == false)
                 return;
 
             await ServerStore.EnsureNotPassiveAsync();

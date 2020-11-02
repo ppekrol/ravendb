@@ -542,7 +542,7 @@ namespace Raven.Server.Web.System
         [RavenAction("/databases/*/admin/connection-strings", "DELETE", AuthorizationStatus.DatabaseAdmin)]
         public async Task RemoveConnectionString()
         {
-            if (TryGetAllowedDbs(Database.Name, out var _, requireAdmin: true) == false)
+            if (await CanAccessDatabaseAsync(Database.Name, requireAdmin: true) == false)
                 return;
 
             if (ResourceNameValidator.IsValidResourceName(Database.Name, ServerStore.Configuration.Core.DataDirectory.FullPath, out string errorMessage) == false)
@@ -576,7 +576,7 @@ namespace Raven.Server.Web.System
             if (ResourceNameValidator.IsValidResourceName(Database.Name, ServerStore.Configuration.Core.DataDirectory.FullPath, out string errorMessage) == false)
                 throw new BadRequestException(errorMessage);
 
-            if (TryGetAllowedDbs(Database.Name, out var allowedDbs, true) == false)
+            if (await CanAccessDatabaseAsync(Database.Name, true) == false)
                 return;
 
             var connectionStringName = GetStringQueryString("connectionStringName", false);

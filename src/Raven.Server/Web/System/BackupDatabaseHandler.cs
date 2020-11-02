@@ -14,7 +14,7 @@ namespace Raven.Server.Web.System
         public async Task GetPeriodicBackup()
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
-            if (TryGetAllowedDbs(name, out var _, requireAdmin: false) == false)
+            if (await CanAccessDatabaseAsync(name, requireAdmin: false) == false)
                 return;
 
             var taskId = GetLongQueryString("taskId", required: true).Value;
@@ -40,7 +40,7 @@ namespace Raven.Server.Web.System
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
 
-            if (TryGetAllowedDbs(name, out var _, requireAdmin: false) == false)
+            if (await CanAccessDatabaseAsync(name, requireAdmin: false) == false)
                 return;
 
             var taskId = GetLongQueryString("taskId", required: true);

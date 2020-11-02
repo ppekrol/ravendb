@@ -886,7 +886,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
             var file = GetStringQueryString("file", required: false);
             if (string.IsNullOrEmpty(file) == false)
             {
-                if (IsOperator() == false)
+                if (await IsOperatorAsync() == false)
                     throw new AuthorizationException("The use of the 'file' query string parameters is limited operators and above");
                 return File.OpenRead(file);
             }
@@ -894,7 +894,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
             var url = GetStringQueryString("url", required: false);
             if (string.IsNullOrEmpty(url) == false)
             {
-                if (IsOperator() == false)
+                if (await IsOperatorAsync() == false)
                     throw new AuthorizationException("The use of the 'url' query string parameters is limited operators and above");
 
                 if (HttpContext.Request.Method == "POST")
