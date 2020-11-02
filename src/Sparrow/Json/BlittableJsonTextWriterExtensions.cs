@@ -9,8 +9,8 @@ namespace Sparrow.Json
     public static class BlittableJsonTextWriterExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static async ValueTask WriteArrayAsync<T>(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, string name, IEnumerable<T> items,
-            Func<AbstractBlittableJsonTextWriter, JsonOperationContext, T, ValueTask> onWrite)
+        public static async ValueTask WriteArrayAsync<T>(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, string name, IEnumerable<T> items,
+            Func<AsyncBlittableJsonTextWriter, JsonOperationContext, T, ValueTask> onWrite)
         {
             await writer.WritePropertyNameAsync(name).ConfigureAwait(false);
 
@@ -30,7 +30,7 @@ namespace Sparrow.Json
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static async ValueTask WriteArrayAsync(this AbstractBlittableJsonTextWriter writer, string name, Memory<double> items)
+        public static async ValueTask WriteArrayAsync(this AsyncBlittableJsonTextWriter writer, string name, Memory<double> items)
         {
             await writer.WritePropertyNameAsync(name).ConfigureAwait(false);
 
@@ -45,7 +45,7 @@ namespace Sparrow.Json
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static async ValueTask WriteArrayAsync(this AbstractBlittableJsonTextWriter writer, string name, IEnumerable<LazyStringValue> items)
+        public static async ValueTask WriteArrayAsync(this AsyncBlittableJsonTextWriter writer, string name, IEnumerable<LazyStringValue> items)
         {
             await writer.WritePropertyNameAsync(name).ConfigureAwait(false);
 
@@ -63,7 +63,7 @@ namespace Sparrow.Json
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static async ValueTask WriteArrayAsync(this AbstractBlittableJsonTextWriter writer, string name, IEnumerable<string> items)
+        public static async ValueTask WriteArrayAsync(this AsyncBlittableJsonTextWriter writer, string name, IEnumerable<string> items)
         {
             await writer.WritePropertyNameAsync(name).ConfigureAwait(false);
 
@@ -87,7 +87,7 @@ namespace Sparrow.Json
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static async ValueTask WriteArrayAsync(this AbstractBlittableJsonTextWriter writer, string name, IEnumerable<DynamicJsonValue> items, JsonOperationContext context)
+        public static async ValueTask WriteArrayAsync(this AsyncBlittableJsonTextWriter writer, string name, IEnumerable<DynamicJsonValue> items, JsonOperationContext context)
         {
             await writer.WritePropertyNameAsync(name).ConfigureAwait(false);
 
@@ -105,7 +105,7 @@ namespace Sparrow.Json
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static async ValueTask WriteArrayAsync(this AbstractBlittableJsonTextWriter writer, string name, IEnumerable<BlittableJsonReaderObject> items)
+        public static async ValueTask WriteArrayAsync(this AsyncBlittableJsonTextWriter writer, string name, IEnumerable<BlittableJsonReaderObject> items)
         {
             await writer.WritePropertyNameAsync(name).ConfigureAwait(false);
 

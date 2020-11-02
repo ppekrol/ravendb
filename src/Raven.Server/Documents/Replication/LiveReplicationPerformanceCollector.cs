@@ -305,7 +305,7 @@ namespace Raven.Server.Documents.Replication
 
             public TPerformance[] Performance { get; }
 
-            public async ValueTask WriteAsync(JsonOperationContext context, AbstractBlittableJsonTextWriter writer)
+            public async ValueTask WriteAsync(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
             {
                 await writer.WriteStartObjectAsync();
 
@@ -341,7 +341,7 @@ namespace Raven.Server.Documents.Replication
 
         public interface IReplicationPerformanceStats
         {
-            ValueTask WriteAsync(JsonOperationContext context, AbstractBlittableJsonTextWriter writer);
+            ValueTask WriteAsync(JsonOperationContext context, AsyncBlittableJsonTextWriter writer);
         }
     }
 }

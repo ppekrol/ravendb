@@ -31,7 +31,7 @@ namespace Raven.Server.Json
 {
     internal static class BlittableJsonTextWriterExtensions
     {
-        public static async ValueTask WritePerformanceStatsAsync(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<IndexPerformanceStats> stats)
+        public static async ValueTask WritePerformanceStatsAsync(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<IndexPerformanceStats> stats)
         {
             await writer.WriteStartObjectAsync();
             await writer.WriteArrayAsync(context, "Results", stats, async (w, c, stat) =>
@@ -49,7 +49,7 @@ namespace Raven.Server.Json
             await writer.WriteEndObjectAsync();
         }
 
-        public static async ValueTask WriteEtlTaskPerformanceStats(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<EtlTaskPerformanceStats> stats)
+        public static async ValueTask WriteEtlTaskPerformanceStats(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<EtlTaskPerformanceStats> stats)
         {
             await writer.WriteStartObjectAsync();
             await writer.WriteArrayAsync(context, "Results", stats, async (w, c, taskStats) =>
@@ -86,7 +86,7 @@ namespace Raven.Server.Json
             await writer.WriteEndObjectAsync();
         }
 
-        public static async ValueTask WriteEtlTaskProgressAsync(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<EtlTaskProgress> progress)
+        public static async ValueTask WriteEtlTaskProgressAsync(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<EtlTaskProgress> progress)
         {
             await writer.WriteStartObjectAsync();
             await writer.WriteArrayAsync(context, "Results", progress, async (w, c, taskStats) =>
@@ -152,7 +152,7 @@ namespace Raven.Server.Json
             await writer.WriteEndObjectAsync();
         }
 
-        public static async ValueTask WriteExplanation(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, DynamicQueryToIndexMatcher.Explanation explanation)
+        public static async ValueTask WriteExplanation(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, DynamicQueryToIndexMatcher.Explanation explanation)
         {
             await writer.WriteStartObjectAsync();
 
@@ -218,7 +218,7 @@ namespace Raven.Server.Json
             return numberOfResults;
         }
 
-        public static async ValueTask WriteSuggestionResult(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, SuggestionResult result)
+        public static async ValueTask WriteSuggestionResult(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, SuggestionResult result)
         {
             await writer.WriteStartObjectAsync();
 
@@ -231,7 +231,7 @@ namespace Raven.Server.Json
             await writer.WriteEndObjectAsync();
         }
 
-        public static async ValueTask WriteFacetResult(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, FacetResult result)
+        public static async ValueTask WriteFacetResult(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, FacetResult result)
         {
             await writer.WriteStartObjectAsync();
 
@@ -472,7 +472,7 @@ namespace Raven.Server.Json
             return numberOfResults;
         }
 
-        public static async ValueTask WriteIncludedCounterNames(this AbstractBlittableJsonTextWriter writer, Dictionary<string, string[]> includedCounterNames)
+        public static async ValueTask WriteIncludedCounterNames(this AsyncBlittableJsonTextWriter writer, Dictionary<string, string[]> includedCounterNames)
         {
             await writer.WriteStartObjectAsync();
 
@@ -727,19 +727,19 @@ namespace Raven.Server.Json
             await writer.WriteEndObjectAsync();
         }
 
-        public static async ValueTask WriteIndexingPerformanceStats(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IndexingPerformanceStats stats)
+        public static async ValueTask WriteIndexingPerformanceStats(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IndexingPerformanceStats stats)
         {
             var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(stats);
             await writer.WriteObjectAsync(context.ReadObject(djv, "index/performance"));
         }
 
-        public static async ValueTask WriteEtlPerformanceStats(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, EtlPerformanceStats stats)
+        public static async ValueTask WriteEtlPerformanceStats(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, EtlPerformanceStats stats)
         {
             var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(stats);
             await writer.WriteObjectAsync(context.ReadObject(djv, "etl/performance"));
         }
 
-        public static async ValueTask WriteIndexQuery(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IIndexQuery query)
+        public static async ValueTask WriteIndexQuery(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IIndexQuery query)
         {
             var indexQuery = query as IndexQueryServerSide;
             if (indexQuery != null)
@@ -751,7 +751,7 @@ namespace Raven.Server.Json
             throw new NotSupportedException($"Not supported query type: {query.GetType()}");
         }
 
-        private static async ValueTask WriteIndexQuery(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IndexQueryServerSide query)
+        private static async ValueTask WriteIndexQuery(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IndexQueryServerSide query)
         {
             await writer.WriteStartObjectAsync();
 
@@ -981,7 +981,7 @@ namespace Raven.Server.Json
             await writer.WriteEndArrayAsync();
         }
 
-        public static async ValueTask WriteIndexDefinition(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IndexDefinition indexDefinition, bool removeAnalyzers = false)
+        public static async ValueTask WriteIndexDefinition(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IndexDefinition indexDefinition, bool removeAnalyzers = false)
         {
             await writer.WriteStartObjectAsync();
 
@@ -1190,13 +1190,13 @@ namespace Raven.Server.Json
             await writer.WriteEndObjectAsync();
         }
 
-        public static async ValueTask WriteIndexStats(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IndexStats stats)
+        public static async ValueTask WriteIndexStats(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IndexStats stats)
         {
             var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(stats);
             await writer.WriteObjectAsync(context.ReadObject(djv, "index/stats"));
         }
 
-        private static async ValueTask WriteIndexFieldOptions(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IndexFieldOptions options, bool removeAnalyzers)
+        private static async ValueTask WriteIndexFieldOptions(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IndexFieldOptions options, bool removeAnalyzers)
         {
             await writer.WriteStartObjectAsync();
 
@@ -1284,12 +1284,12 @@ namespace Raven.Server.Json
             await writer.WriteEndObjectAsync();
         }
 
-        public static ValueTask<long> WriteDocuments(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<Document> documents, bool metadataOnly)
+        public static ValueTask<long> WriteDocuments(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerable<Document> documents, bool metadataOnly)
         {
             return WriteDocuments(writer, context, documents.GetEnumerator(), metadataOnly);
         }
 
-        public static async ValueTask<long> WriteDocuments(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerator<Document> documents, bool metadataOnly)
+        public static async ValueTask<long> WriteDocuments(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, IEnumerator<Document> documents, bool metadataOnly)
         {
             var numberOfResults = 0L;
 
@@ -1336,7 +1336,7 @@ namespace Raven.Server.Json
             return numberOfResults;
         }
 
-        public static async ValueTask WriteDocument(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, Document document, bool metadataOnly, Func<LazyStringValue, bool> filterMetadataProperty = null)
+        public static async ValueTask WriteDocument(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, Document document, bool metadataOnly, Func<LazyStringValue, bool> filterMetadataProperty = null)
         {
             if (document == null)
             {
@@ -1414,7 +1414,7 @@ namespace Raven.Server.Json
             await writer.WriteEndObjectAsync();
         }
 
-        private static async ValueTask WriteConflict(AbstractBlittableJsonTextWriter writer, IncludeDocumentsCommand.ConflictDocument conflict)
+        private static async ValueTask WriteConflict(AsyncBlittableJsonTextWriter writer, IncludeDocumentsCommand.ConflictDocument conflict)
         {
             await writer.WriteStartObjectAsync();
 
@@ -1667,7 +1667,7 @@ namespace Raven.Server.Json
             await writer.WriteEndObjectAsync();
         }
 
-        public static async ValueTask WriteDocumentMetadata(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context,
+        public static async ValueTask WriteDocumentMetadata(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context,
             Document document, Func<LazyStringValue, bool> filterMetadataProperty = null)
         {
             await writer.WriteStartObjectAsync();
@@ -1677,7 +1677,7 @@ namespace Raven.Server.Json
             await writer.WriteEndObjectAsync();
         }
 
-        public static async ValueTask WriteMetadata(this AbstractBlittableJsonTextWriter writer, Document document, BlittableJsonReaderObject metadata, Func<LazyStringValue, bool> filterMetadataProperty = null)
+        public static async ValueTask WriteMetadata(this AsyncBlittableJsonTextWriter writer, Document document, BlittableJsonReaderObject metadata, Func<LazyStringValue, bool> filterMetadataProperty = null)
         {
             await writer.WritePropertyNameAsync(Constants.Documents.Metadata.Key);
             await writer.WriteStartObjectAsync();
@@ -1756,14 +1756,14 @@ namespace Raven.Server.Json
 
         private static readonly StringSegment MetadataKeySegment = new StringSegment(Constants.Documents.Metadata.Key);
 
-        private static async ValueTask WriteDocumentInternal(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, Document document, Func<LazyStringValue, bool> filterMetadataProperty = null)
+        private static async ValueTask WriteDocumentInternal(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, Document document, Func<LazyStringValue, bool> filterMetadataProperty = null)
         {
             await writer.WriteStartObjectAsync();
             WriteDocumentProperties(writer, context, document, filterMetadataProperty);
             await writer.WriteEndObjectAsync();
         }
 
-        private static async ValueTask WriteDocumentProperties(this AbstractBlittableJsonTextWriter writer, JsonOperationContext context, Document document, Func<LazyStringValue, bool> filterMetadataProperty = null)
+        private static async ValueTask WriteDocumentProperties(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, Document document, Func<LazyStringValue, bool> filterMetadataProperty = null)
         {
             var first = true;
             BlittableJsonReaderObject metadata = null;

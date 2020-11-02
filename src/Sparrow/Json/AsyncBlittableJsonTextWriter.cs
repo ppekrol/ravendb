@@ -9,15 +9,9 @@ using Sparrow.Extensions;
 
 namespace Sparrow.Json
 {
-    public class AsyncBlittableJsonTextWriter : AbstractBlittableJsonTextWriter
+    public class AsyncBlittableJsonTextWriter : IAsyncDisposable
     {
         private readonly Stream _outputStream;
-
-        public AsyncBlittableJsonTextWriter(JsonOperationContext context, Stream stream)
-            : base(context, context.CheckoutMemoryStream())
-        {
-            _outputStream = stream;
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public async ValueTask<int> MaybeOuterFlushAsync(CancellationToken token = default)
@@ -47,21 +41,11 @@ namespace Sparrow.Json
             return bytesCount;
         }
 
-        public override async ValueTask DisposeAsync()
-        {
-            await base.DisposeAsync().ConfigureAwait(false);
-            await OuterFlushAsync().ConfigureAwait(false);
-            _context.ReturnMemoryStream((MemoryStream)_stream);
-        }
-
         private void ThrowInvalidTypeException(Type typeOfStream)
         {
             throw new ArgumentException($"Expected stream to be MemoryStream, but got {(typeOfStream == null ? "null" : typeOfStream.ToString())}.");
         }
-    }
 
-    public abstract class AbstractBlittableJsonTextWriter : IAsyncDisposable
-    {
         protected readonly JsonOperationContext _context;
         protected readonly Stream _stream;
         private const byte StartObject = (byte)'{';
@@ -87,7 +71,7 @@ namespace Sparrow.Json
         public static readonly byte[] TrueBuffer = { (byte)'t', (byte)'r', (byte)'u', (byte)'e', };
         public static readonly byte[] FalseBuffer = { (byte)'f', (byte)'a', (byte)'l', (byte)'s', (byte)'e', };
 
-        private static readonly byte[] EscapeCharacters;
+        internal static readonly byte[] EscapeCharacters;
         public static readonly byte[][] ControlCodeEscapes;
 
         private readonly RavenMemory _buffer;
@@ -98,7 +82,7 @@ namespace Sparrow.Json
         private readonly JsonOperationContext.MemoryBuffer _pinnedBuffer;
         private readonly AllocatedMemoryData _returnAuxiliarBuffer;
 
-        static AbstractBlittableJsonTextWriter()
+        static AsyncBlittableJsonTextWriter()
         {
             ControlCodeEscapes = new byte[32][];
 
@@ -124,10 +108,11 @@ namespace Sparrow.Json
             EscapeCharacters[(byte)'"'] = (byte)'"';
         }
 
-        protected AbstractBlittableJsonTextWriter(JsonOperationContext context, Stream stream)
+        public AsyncBlittableJsonTextWriter(JsonOperationContext context, Stream stream)
         {
             _context = context;
-            _stream = stream;
+            _outputStream = stream;
+            _stream = context.CheckoutMemoryStream();
 
             _returnBuffer = context.GetMemoryBuffer(out _pinnedBuffer);
             _buffer = _pinnedBuffer.Memory;
@@ -763,6 +748,9 @@ namespace Sparrow.Json
                 _returnBuffer.Dispose();
                 _context.ReturnMemory(_returnAuxiliarBuffer);
             }
+
+            await OuterFlushAsync().ConfigureAwait(false);
+            _context.ReturnMemoryStream((MemoryStream)_stream);
         }
 
         public async ValueTask WriteNewLineAsync(CancellationToken token = default)

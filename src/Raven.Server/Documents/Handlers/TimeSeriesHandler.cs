@@ -452,7 +452,7 @@ namespace Raven.Server.Documents.Handlers
             await writer.WriteEndObjectAsync();
         }
 
-        private static async ValueTask WriteEntriesAsync(AbstractBlittableJsonTextWriter writer, TimeSeriesEntry[] entries)
+        private static async ValueTask WriteEntriesAsync(AsyncBlittableJsonTextWriter writer, TimeSeriesEntry[] entries)
         {
             await writer.WriteStartArrayAsync();
 

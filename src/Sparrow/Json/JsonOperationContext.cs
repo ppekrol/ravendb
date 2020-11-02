@@ -1030,13 +1030,13 @@ namespace Sparrow.Json
             }
         }
 
-        public ValueTask WriteAsync(AbstractBlittableJsonTextWriter writer, BlittableJsonReaderObject json, CancellationToken token = default)
+        public ValueTask WriteAsync(AsyncBlittableJsonTextWriter writer, BlittableJsonReaderObject json, CancellationToken token = default)
         {
             EnsureNotDisposed();
             return WriteInternalAsync(writer, json, token);
         }
 
-        private async ValueTask WriteInternalAsync(AbstractBlittableJsonTextWriter writer, object json, CancellationToken token)
+        private async ValueTask WriteInternalAsync(AsyncBlittableJsonTextWriter writer, object json, CancellationToken token)
         {
             _jsonParserState.Reset();
             _objectJsonParser.Reset(json);
@@ -1048,13 +1048,13 @@ namespace Sparrow.Json
             _objectJsonParser.Reset(null);
         }
 
-        public ValueTask WriteAsync(AbstractBlittableJsonTextWriter writer, DynamicJsonValue json, CancellationToken token = default)
+        public ValueTask WriteAsync(AsyncBlittableJsonTextWriter writer, DynamicJsonValue json, CancellationToken token = default)
         {
             EnsureNotDisposed();
             return WriteInternalAsync(writer, json, token);
         }
 
-        public async ValueTask WriteAsync(AbstractBlittableJsonTextWriter writer, DynamicJsonArray json, CancellationToken token = default)
+        public async ValueTask WriteAsync(AsyncBlittableJsonTextWriter writer, DynamicJsonArray json, CancellationToken token = default)
         {
             EnsureNotDisposed();
             _jsonParserState.Reset();
@@ -1067,7 +1067,7 @@ namespace Sparrow.Json
             _objectJsonParser.Reset(null);
         }
 
-        public async ValueTask WriteObjectAsync(AbstractBlittableJsonTextWriter writer, JsonParserState state, ObjectJsonParser parser, CancellationToken token = default)
+        public async ValueTask WriteObjectAsync(AsyncBlittableJsonTextWriter writer, JsonParserState state, ObjectJsonParser parser, CancellationToken token = default)
         {
             EnsureNotDisposed();
             if (state.CurrentTokenType != JsonParserToken.StartObject)
@@ -1100,7 +1100,7 @@ namespace Sparrow.Json
             await writer.WriteEndObjectAsync(token).ConfigureAwait(false);
         }
 
-        private async ValueTask WriteValueAsync(AbstractBlittableJsonTextWriter writer, JsonParserState state, ObjectJsonParser parser, CancellationToken token)
+        private async ValueTask WriteValueAsync(AsyncBlittableJsonTextWriter writer, JsonParserState state, ObjectJsonParser parser, CancellationToken token)
         {
             switch (state.CurrentTokenType)
             {
@@ -1150,7 +1150,7 @@ namespace Sparrow.Json
             }
         }
 
-        public async ValueTask WriteArrayAsync(AbstractBlittableJsonTextWriter writer, JsonParserState state, ObjectJsonParser parser, CancellationToken token)
+        public async ValueTask WriteArrayAsync(AsyncBlittableJsonTextWriter writer, JsonParserState state, ObjectJsonParser parser, CancellationToken token)
         {
             EnsureNotDisposed();
             if (state.CurrentTokenType != JsonParserToken.StartArray)

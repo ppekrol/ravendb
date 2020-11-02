@@ -294,7 +294,7 @@ namespace Raven.Server.Web.System
         }
 
         private async Task WriteDatabaseInfo(string databaseName, BlittableJsonReaderObject dbRecordBlittable,
-            TransactionOperationContext context, AbstractBlittableJsonTextWriter writer)
+            TransactionOperationContext context, AsyncBlittableJsonTextWriter writer)
         {
             try
             {
@@ -497,7 +497,7 @@ namespace Raven.Server.Web.System
             string databaseName,
             Exception exception,
             JsonOperationContext context,
-            AbstractBlittableJsonTextWriter writer)
+            AsyncBlittableJsonTextWriter writer)
         {
             var doc = new DynamicJsonValue
             {
