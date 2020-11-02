@@ -9,22 +9,20 @@ namespace Raven.Client.Json
 {
     internal class BlittableJsonContent : HttpContent
     {
-        private readonly Func<Stream, Task> _asyncWriter;
+        private readonly Func<Stream, Task> _asyncTaskWriter;
 
         private readonly Action<Stream> _writer;
 
         public BlittableJsonContent(Func<Stream, Task> writer)
             : this()
         {
-            _asyncWriter = writer ?? throw new ArgumentNullException(nameof(writer));
-            Headers.ContentEncoding.Add("gzip");
+            _asyncTaskWriter = writer ?? throw new ArgumentNullException(nameof(writer));
         }
 
         public BlittableJsonContent(Action<Stream> writer)
             : this()
         {
             _writer = writer ?? throw new ArgumentNullException(nameof(writer));
-            Headers.ContentEncoding.Add("gzip");
         }
 
         private BlittableJsonContent()
@@ -36,9 +34,9 @@ namespace Raven.Client.Json
         {
             using (var gzipStream = new GZipStream(stream, CompressionMode.Compress, leaveOpen: true))
             {
-                if (_asyncWriter != null)
+                if (_asyncTaskWriter != null)
                 {
-                    await _asyncWriter(gzipStream).ConfigureAwait(false);
+                    await _asyncTaskWriter(gzipStream).ConfigureAwait(false);
                     return;
                 }
 
