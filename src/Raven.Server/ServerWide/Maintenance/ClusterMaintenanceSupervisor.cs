@@ -401,7 +401,7 @@ namespace Raven.Server.ServerWide.Maintenance
                 using (_contextPool.AllocateOperationContext(out JsonOperationContext ctx))
                 await using (var writer = new AsyncBlittableJsonTextWriter(ctx, connection))
                 {
-                    var parameters = new TcpNegotiateParameters
+                    var parameters = new AsyncTcpNegotiateParameters
                     {
                         Database = null,
                         Operation = TcpConnectionHeaderMessage.OperationTypes.Heartbeats,

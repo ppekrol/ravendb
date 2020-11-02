@@ -224,7 +224,7 @@ namespace Raven.Client.Documents.Subscriptions
 
                 var databaseName = _dbName ?? _store.Database;
 
-                var parameters = new TcpNegotiateParameters
+                var parameters = new AsyncTcpNegotiateParameters
                 {
                     Database = databaseName,
                     Operation = TcpConnectionHeaderMessage.OperationTypes.Subscription,

@@ -3031,7 +3031,7 @@ namespace Raven.Server.ServerWide
                 (tcpClient, choosenUrl) = await TcpUtils.ConnectAsyncWithPriority(info, _parent.TcpConnectionTimeout).ConfigureAwait(false);
                 stream = await TcpUtils.WrapStreamWithSslAsync(tcpClient, info, _parent.ClusterCertificate, _parent.CipherSuitesPolicy, _parent.TcpConnectionTimeout);
 
-                var parameters = new TcpNegotiateParameters
+                var parameters = new AsyncTcpNegotiateParameters
                 {
                     Database = null,
                     Operation = TcpConnectionHeaderMessage.OperationTypes.Cluster,

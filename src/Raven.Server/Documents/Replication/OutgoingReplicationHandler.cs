@@ -25,6 +25,7 @@ using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.ServerWide.Commands;
 using Raven.Server.ServerWide.Context;
+using Raven.Server.ServerWide.Tcp.Sync;
 using Raven.Server.Utils;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
@@ -647,13 +648,13 @@ namespace Raven.Server.Documents.Replication
                     SourceNodeTag = _parent._server.NodeTag,
                     DestinationNodeTag = GetNode(),
                     DestinationUrl = Destination.Url,
-                    ReadResponseAndGetVersionCallbackAsync = ReadHeaderResponseAndThrowIfUnAuthorized,
+                    ReadResponseAndGetVersionCallback = ReadHeaderResponseAndThrowIfUnAuthorized,
                     Version = TcpConnectionHeaderMessage.ReplicationTcpVersion,
                     AuthorizeInfo = authorizationInfo
                 };
 
                 //This will either throw or return acceptable protocol version.
-                SupportedFeatures = TcpNegotiation.NegotiateProtocolVersion(documentsContext, _stream, parameters);
+                SupportedFeatures = TcpNegotiation.Sync.NegotiateProtocolVersion(documentsContext, _stream, parameters);
 
                 if (SupportedFeatures.ProtocolVersion <= 0)
                 {
