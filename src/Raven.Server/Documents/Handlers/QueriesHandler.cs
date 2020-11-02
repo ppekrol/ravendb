@@ -162,7 +162,6 @@ namespace Raven.Server.Documents.Handlers
             {
                 result.Timings = indexQuery.Timings?.ToTimings();
                 numberOfResults = await writer.WriteDocumentQueryResultAsync(queryContext.Documents, result, metadataOnly, WriteAdditionalData(indexQuery, shouldReturnServerSideQuery));
-                await writer.OuterFlushAsync();
             }
 
             Database.QueryMetadataCache.MaybeAddToCache(indexQuery.Metadata, result.IndexName);
@@ -317,7 +316,6 @@ namespace Raven.Server.Documents.Handlers
                 await writer.WriteArrayAsync(queryContext.Documents, "Results", explanations, (w, c, explanation) => w.WriteExplanation(queryContext.Documents, explanation));
 
                 await writer.WriteEndObjectAsync();
-                await writer.OuterFlushAsync();
             }
         }
 
@@ -331,7 +329,6 @@ namespace Raven.Server.Documents.Handlers
                 await writer.WriteStringAsync(indexQuery.ServerSideQuery);
 
                 await writer.WriteEndObjectAsync();
-                await writer.OuterFlushAsync();
             }
         }
 

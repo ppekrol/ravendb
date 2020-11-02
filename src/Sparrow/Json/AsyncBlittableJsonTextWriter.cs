@@ -11,41 +11,6 @@ namespace Sparrow.Json
 {
     public class AsyncBlittableJsonTextWriter : IAsyncDisposable
     {
-        private readonly Stream _outputStream;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public async ValueTask<int> MaybeOuterFlushAsync(CancellationToken token = default)
-        {
-            var innerStream = _stream as MemoryStream;
-            if (innerStream == null)
-                ThrowInvalidTypeException(_stream?.GetType());
-            if (innerStream.Length * 2 <= innerStream.Capacity)
-                return 0;
-
-            await FlushAsync(token).ConfigureAwait(false);
-            return await OuterFlushAsync(token).ConfigureAwait(false);
-        }
-
-        public async ValueTask<int> OuterFlushAsync(CancellationToken token = default)
-        {
-            var innerStream = _stream as MemoryStream;
-            if (innerStream == null)
-                ThrowInvalidTypeException(_stream?.GetType());
-            await FlushAsync(token).ConfigureAwait(false);
-            innerStream.TryGetBuffer(out var bytes);
-            var bytesCount = bytes.Count;
-            if (bytesCount == 0)
-                return 0;
-            await _outputStream.WriteAsync(bytes.Array, bytes.Offset, bytesCount, token).ConfigureAwait(false);
-            innerStream.SetLength(0);
-            return bytesCount;
-        }
-
-        private void ThrowInvalidTypeException(Type typeOfStream)
-        {
-            throw new ArgumentException($"Expected stream to be MemoryStream, but got {(typeOfStream == null ? "null" : typeOfStream.ToString())}.");
-        }
-
         protected readonly JsonOperationContext _context;
         protected readonly Stream _stream;
         private const byte StartObject = (byte)'{';
@@ -111,8 +76,7 @@ namespace Sparrow.Json
         public AsyncBlittableJsonTextWriter(JsonOperationContext context, Stream stream)
         {
             _context = context;
-            _outputStream = stream;
-            _stream = context.CheckoutMemoryStream();
+            _stream = stream;
 
             _returnBuffer = context.GetMemoryBuffer(out _pinnedBuffer);
             _buffer = _pinnedBuffer.Memory;
@@ -752,9 +716,6 @@ namespace Sparrow.Json
                 _returnBuffer.Dispose();
                 _context.ReturnMemory(_returnAuxiliarBuffer);
             }
-
-            await OuterFlushAsync().ConfigureAwait(false);
-            _context.ReturnMemoryStream((MemoryStream)_stream);
         }
 
         public async ValueTask WriteNewLineAsync(CancellationToken token = default)

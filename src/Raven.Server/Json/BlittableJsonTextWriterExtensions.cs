@@ -606,7 +606,7 @@ namespace Raven.Server.Json
 
                 await writer.WriteArrayAsync(context, nameof(result.Results), facets, (w, c, facet) => w.WriteFacetResult(c, facet));
                 await writer.WriteCommaAsync();
-                await writer.MaybeOuterFlushAsync();
+                await writer.FlushAsync();
             }
             else if (results is List<SuggestionResult> suggestions)
             {
@@ -614,7 +614,7 @@ namespace Raven.Server.Json
 
                 await writer.WriteArrayAsync(context, nameof(result.Results), suggestions, (w, c, suggestion) => w.WriteSuggestionResult(c, suggestion));
                 await writer.WriteCommaAsync();
-                await writer.MaybeOuterFlushAsync();
+                await writer.FlushAsync();
             }
             else
                 throw new NotSupportedException($"Cannot write query result of '{typeof(TResult)}' type in '{result.GetType()}'.");
@@ -1329,7 +1329,7 @@ namespace Raven.Server.Json
                 first = false;
 
                 await WriteDocument(writer, context, document, metadataOnly);
-                await writer.MaybeOuterFlushAsync();
+                await writer.FlushAsync();
             }
 
             await writer.WriteEndArrayAsync();
@@ -1402,13 +1402,13 @@ namespace Raven.Server.Json
                 {
                     await writer.WritePropertyNameAsync(conflict.Id);
                     await WriteConflict(writer, conflict);
-                    await writer.MaybeOuterFlushAsync();
+                    await writer.FlushAsync();
                     continue;
                 }
 
                 await writer.WritePropertyNameAsync(document.Id);
                 await WriteDocument(writer, context, metadataOnly: false, document: document);
-                await writer.MaybeOuterFlushAsync();
+                await writer.FlushAsync();
             }
 
             await writer.WriteEndObjectAsync();
@@ -1495,7 +1495,7 @@ namespace Raven.Server.Json
                     await writer.WriteObjectAsync(o);
                 }
 
-                await writer.MaybeOuterFlushAsync();
+                await writer.FlushAsync();
             }
 
             await writer.WriteEndArrayAsync();
@@ -1586,7 +1586,7 @@ namespace Raven.Server.Json
                 if (counter == null)
                 {
                     await writer.WriteNullAsync();
-                    await writer.MaybeOuterFlushAsync();
+                    await writer.FlushAsync();
                     continue;
                 }
 
@@ -1605,7 +1605,7 @@ namespace Raven.Server.Json
 
                 await writer.WriteEndObjectAsync();
 
-                await writer.MaybeOuterFlushAsync();
+                await writer.FlushAsync();
             }
 
             await writer.WriteEndArrayAsync();
@@ -1640,7 +1640,7 @@ namespace Raven.Server.Json
 
                 await writer.WriteEndObjectAsync();
 
-                await writer.MaybeOuterFlushAsync();
+                await writer.FlushAsync();
             }
 
             await writer.WriteEndObjectAsync();

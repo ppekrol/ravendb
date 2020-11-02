@@ -194,8 +194,6 @@ namespace Raven.Server.Documents.Handlers
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
                     await WriteRangeAsync(writer, rangeResult, totalCount);
-
-                    await writer.MaybeOuterFlushAsync();
                 }
             }
         }
@@ -362,9 +360,8 @@ namespace Raven.Server.Documents.Handlers
                     await writer.WritePropertyNameAsync(nameof(TimeSeriesDetails.Values));
                     await WriteTimeSeriesRangeResultsAsync(context, writer, documentId, ranges);
                 }
-                await writer.WriteEndObjectAsync();
 
-                await writer.OuterFlushAsync();
+                await writer.WriteEndObjectAsync();
             }
         }
 
@@ -411,7 +408,7 @@ namespace Raven.Server.Documents.Handlers
 
                             await WriteRangeAsync(writer, ranges[i], totalCount);
 
-                            await writer.MaybeOuterFlushAsync();
+                            await writer.FlushAsync();
                         }
                     }
                     await writer.WriteEndArrayAsync();

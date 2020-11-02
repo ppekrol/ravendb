@@ -197,7 +197,6 @@ namespace Raven.Server.Documents.Handlers
                 numberOfResults = await writer.WriteDocumentsAsync(context, documents, metadataOnly);
 
                 await writer.WriteEndObjectAsync();
-                await writer.OuterFlushAsync();
             }
 
             AddPagingPerformanceHint(PagingOperationType.Documents, isStartsWith ? nameof(DocumentsStorage.GetDocumentsStartingWith) : nameof(GetDocumentsAsync), HttpContext.Request.QueryString.Value, numberOfResults, pageSize, sw.ElapsedMilliseconds);
@@ -369,7 +368,6 @@ namespace Raven.Server.Documents.Handlers
                 }
 
                 await writer.WriteEndObjectAsync();
-                await writer.OuterFlushAsync();
             }
             return numberOfResults;
         }

@@ -82,8 +82,6 @@ namespace Raven.Server.Utils.Stats
             await using (var writer = new AsyncBlittableJsonTextWriter(context, ms))
             {
                 await WriteStatsAsync(tuple.Item2, writer, context, CancellationToken);
-
-                await writer.OuterFlushAsync(CancellationToken);
             }
 
             ms.TryGetBuffer(out ArraySegment<byte> bytes);
