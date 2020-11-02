@@ -203,6 +203,9 @@ namespace Sparrow.Json
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ReadVariableSizeInt(Span<byte> buffer, ref int pos)
         {
+            if (buffer.IsEmpty)
+                return 0;
+
             fixed (byte* bufferPtr = buffer)
                 return ReadVariableSizeInt(bufferPtr, ref pos);
         }
