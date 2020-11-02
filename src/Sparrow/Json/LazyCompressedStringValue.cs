@@ -127,7 +127,7 @@ namespace Sparrow.Json
 
             Memory.Copy(tempBuffer + uncompressedSize, Buffer + CompressedSize, sizeOfEscapePositions);
 
-            return new RavenMemory(tempBuffer, sizeOfEscapePositions);
+            return new RavenMemory(tempBuffer, uncompressedSize);
         }
 
         private int GetSizeOfEscapePositions()
