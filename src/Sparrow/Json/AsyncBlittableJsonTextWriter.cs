@@ -475,7 +475,7 @@ namespace Sparrow.Json
             if (size < JsonOperationContext.MemoryBuffer.Size)
             {
                 await EnsureBufferAsync(size, token).ConfigureAwait(false);
-                _buffer.Memory.Span.Slice(0, size).CopyTo(_buffer.Memory.Span.Slice(_pos));
+                buffer.Span.Slice(0, size).CopyTo(_buffer.Memory.Span.Slice(_pos));
                 _pos += size;
                 return;
             }

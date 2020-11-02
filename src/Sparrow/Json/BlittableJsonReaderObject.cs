@@ -37,7 +37,7 @@ namespace Sparrow.Json
 
             using (var memoryStream = new MemoryStream())
             {
-                WriteJsonToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
+                WriteJsonToAsync(memoryStream).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
                 memoryStream.Position = 0;
 
                 return new StreamReader(memoryStream).ReadToEnd();
