@@ -24,7 +24,7 @@ namespace Sparrow.Json
     /// <summary>
     /// Single threaded for contexts
     /// </summary>
-    public class JsonOperationContext : PooledItem
+    public partial class JsonOperationContext : PooledItem
     {
         private int _generation;
         internal long PoolGeneration;
