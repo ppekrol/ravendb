@@ -542,7 +542,11 @@ namespace Sparrow.Json
                 ThrowStreamClosed();
             if (_pos == 0)
                 return;
+#if NETSTANDARD2_0
+            _stream.Write(_buffer.Memory.Span.Slice(0, _pos)); // TODO [ppekrol]
+#else
             await _stream.WriteAsync(_buffer.Memory.Slice(0, _pos), token).ConfigureAwait(false);
+#endif
             _pos = 0;
         }
 
