@@ -5,6 +5,7 @@ using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Server.Extensions;
 using Sparrow.Json;
+using Sparrow.Server.Json.Sync;
 using Voron;
 
 namespace Raven.Server.Documents.Indexes.Auto
@@ -16,7 +17,7 @@ namespace Raven.Server.Documents.Indexes.Auto
         {
         }
 
-        protected override void PersistFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
+        protected override void PersistFields(JsonOperationContext context, BlittableJsonTextWriter writer)
         {
             PersistMapFields(context, writer);
         }

@@ -9,6 +9,7 @@ using Sparrow.Collections;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Logging;
+using Sparrow.Server.Json.Sync;
 using Sparrow.Server.Utils;
 using Sparrow.Threading;
 
@@ -93,7 +94,7 @@ namespace Raven.Server.Rachis.Remote
         private void Send(JsonOperationContext context, BlittableJsonReaderObject msg)
         {
             using (_disposerLock.EnsureNotDisposed())
-            using (var writer = new AsyncBlittableJsonTextWriter(context, _stream))
+            using (var writer = new BlittableJsonTextWriter(context, _stream))
             {
                 context.WriteAsync(writer, msg);
             }

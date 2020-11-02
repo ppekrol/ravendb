@@ -28,6 +28,7 @@ using Sparrow.Json.Parsing;
 using Sparrow.Logging;
 using Sparrow.Platform;
 using Sparrow.Server;
+using Sparrow.Server.Json.Sync;
 using Sparrow.Threading;
 using Sparrow.Utils;
 using Voron;
@@ -189,7 +190,7 @@ namespace Raven.Server.Documents.Replication
                                 {
                                     _parent.EnsureNotDeleted(_parent._server.NodeTag);
 
-                                    using (var writer = new AsyncBlittableJsonTextWriter(msg.Context, _stream))
+                                    using (var writer = new BlittableJsonTextWriter(msg.Context, _stream))
                                     {
                                         HandleSingleReplicationBatch(msg.Context,
                                             msg.Document,
@@ -200,7 +201,7 @@ namespace Raven.Server.Documents.Replication
                                 {
                                     using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(
                                             out DocumentsOperationContext documentsContext))
-                                    using (var writer = new AsyncBlittableJsonTextWriter(documentsContext, _stream))
+                                    using (var writer = new BlittableJsonTextWriter(documentsContext, _stream))
                                     {
                                         SendHeartbeatStatusToSource(
                                             documentsContext,
@@ -269,7 +270,7 @@ namespace Raven.Server.Documents.Replication
         private void HandleSingleReplicationBatch(
             DocumentsOperationContext documentsContext,
             BlittableJsonReaderObject message,
-            AsyncBlittableJsonTextWriter writer)
+            BlittableJsonTextWriter writer)
         {
             message.BlittableValidation();
             //note: at this point, the valid messages are heartbeat and replication batch.
@@ -358,6 +359,7 @@ namespace Raven.Server.Documents.Replication
                         }
 
                         break;
+
                     default:
                         throw new ArgumentOutOfRangeException("Unknown message type: " + messageType);
                 }
@@ -394,7 +396,7 @@ namespace Raven.Server.Documents.Replication
                     };
 
                     documentsContext.WriteAsync(writer, returnValue);
-                    writer.FlushAsync();
+                    writer.Flush();
 
                     return;
                 }
@@ -412,7 +414,7 @@ namespace Raven.Server.Documents.Replication
                 };
 
                 documentsContext.WriteAsync(writer, returnValue);
-                writer.FlushAsync();
+                writer.Flush();
 
                 throw;
             }
@@ -524,7 +526,7 @@ namespace Raven.Server.Documents.Replication
                         task = _database.TxMerger.Enqueue(replicationCommand);
                         //We need a new context here
                         using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext msgContext))
-                        using (var writer = new AsyncBlittableJsonTextWriter(msgContext, _connectionOptions.Stream))
+                        using (var writer = new BlittableJsonTextWriter(msgContext, _connectionOptions.Stream))
                         using (var msg = msgContext.ReadObject(new DynamicJsonValue
                         {
                             [nameof(ReplicationMessageReply.MessageType)] = "Processing"
@@ -535,7 +537,7 @@ namespace Raven.Server.Documents.Replication
                             {
                                 // send heartbeats while batch is processed in TxMerger. We wait until merger finishes with this command without timeouts
                                 msgContext.WriteAsync(writer, msg);
-                                writer.FlushAsync();
+                                writer.Flush();
                             }
 
                             task = null;
@@ -584,7 +586,7 @@ namespace Raven.Server.Documents.Replication
             }
         }
 
-        private void SendHeartbeatStatusToSource(DocumentsOperationContext documentsContext, AsyncBlittableJsonTextWriter writer, long lastDocumentEtag, string handledMessageType)
+        private void SendHeartbeatStatusToSource(DocumentsOperationContext documentsContext, BlittableJsonTextWriter writer, long lastDocumentEtag, string handledMessageType)
         {
             AddReplicationPulse(ReplicationPulseDirection.IncomingHeartbeatAcknowledge);
 
@@ -619,7 +621,7 @@ namespace Raven.Server.Documents.Replication
 
             documentsContext.WriteAsync(writer, heartbeat);
 
-            writer.FlushAsync();
+            writer.Flush();
             LastHeartbeatTicks = _database.Time.GetUtcNow().Ticks;
         }
 
@@ -985,7 +987,7 @@ namespace Raven.Server.Documents.Replication
                         {
                             case AttachmentReplicationItem attachment:
                                 AttachmentReplicationItem attachmentWithStream;
-                                if (AttachmentsStorage.GetAttachmentTypeByKey(attachment.Key) == AttachmentType.Revision 
+                                if (AttachmentsStorage.GetAttachmentTypeByKey(attachment.Key) == AttachmentType.Revision
                                     && database.DocumentsStorage.AttachmentsStorage.AttachmentMetadataExists(context, attachment.Key))
                                 {
                                     // the revision attachment was already created by previously added document, skipping this item and marking the attachment stream as handled
@@ -1017,6 +1019,7 @@ namespace Raven.Server.Documents.Replication
                                 }
 
                                 break;
+
                             case AttachmentTombstoneReplicationItem attachmentTombstone:
                                 database.DocumentsStorage.AttachmentsStorage.DeleteAttachmentDirect(context, attachmentTombstone.Key, false, "$fromReplication", null,
                                     rcvdChangeVector,
@@ -1029,6 +1032,7 @@ namespace Raven.Server.Documents.Replication
                                 database.DocumentsStorage.RevisionsStorage.DeleteRevision(context, id, revisionTombstone.Collection,
                                     rcvdChangeVector, revisionTombstone.LastModifiedTicks);
                                 break;
+
                             case CounterReplicationItem counter:
                                 var changed = database.DocumentsStorage.CountersStorage.PutCounters(context, counter.Id, counter.Collection, counter.ChangeVector,
                                     counter.Values);
@@ -1040,6 +1044,7 @@ namespace Raven.Server.Documents.Replication
                                 }
 
                                 break;
+
                             case TimeSeriesDeletedRangeItem deletedRange:
                                 tss = database.DocumentsStorage.TimeSeriesStorage;
 
@@ -1058,6 +1063,7 @@ namespace Raven.Server.Documents.Replication
                                     context.LastDatabaseChangeVector = ChangeVectorUtils.MergeVectors(removedChangeVector, rcvdChangeVector);
 
                                 break;
+
                             case TimeSeriesReplicationItem segment:
                                 tss = database.DocumentsStorage.TimeSeriesStorage;
                                 TimeSeriesValuesSegment.ParseTimeSeriesKey(segment.Key, context, out docId, out _, out var baseline);
@@ -1075,6 +1081,7 @@ namespace Raven.Server.Documents.Replication
                                 context.LastDatabaseChangeVector = ChangeVectorUtils.MergeVectors(changeVector, segment.ChangeVector);
 
                                 break;
+
                             case DocumentReplicationItem doc:
                                 Debug.Assert(doc.Flags.Contain(DocumentFlags.Artificial) == false);
 
@@ -1174,6 +1181,7 @@ namespace Raven.Server.Documents.Replication
                                         }
 
                                         break;
+
                                     case ConflictStatus.Conflict:
                                         if (_replicationInfo.Logger.IsInfoEnabled)
                                             _replicationInfo.Logger.Info(
@@ -1220,15 +1228,18 @@ namespace Raven.Server.Documents.Replication
                                         }
 
                                         break;
+
                                     case ConflictStatus.AlreadyMerged:
                                         // we have to do nothing here
                                         break;
+
                                     default:
                                         throw new ArgumentOutOfRangeException(nameof(conflictStatus),
                                             "Invalid ConflictStatus: " + conflictStatus);
                                 }
 
                                 break;
+
                             default:
                                 throw new ArgumentOutOfRangeException(item.GetType().ToString());
                         }

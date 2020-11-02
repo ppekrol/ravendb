@@ -10,6 +10,7 @@ using Raven.Server.ServerWide.Context;
 using Sparrow;
 using Sparrow.Json;
 using Sparrow.Server;
+using Sparrow.Server.Json.Sync;
 using Voron;
 using Voron.Impl;
 
@@ -39,7 +40,7 @@ namespace Raven.Server.Documents.Indexes
 
         public abstract void Persist(TransactionOperationContext context, StorageEnvironmentOptions options);
 
-        protected abstract void PersistMapFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer);
+        protected abstract void PersistMapFields(JsonOperationContext context, BlittableJsonTextWriter writer);
 
         public static readonly byte[] EncryptionContext = Encoding.UTF8.GetBytes("Indexes!");
 
@@ -58,44 +59,44 @@ namespace Raven.Server.Documents.Indexes
             return name.Substring(0, 64) + "." + Hashing.XXHash32.Calculate(name);
         }
 
-        public void Persist(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
+        public void Persist(JsonOperationContext context, BlittableJsonTextWriter writer)
         {
-            writer.WriteStartObjectAsync();
+            writer.WriteStartObject();
 
-            writer.WritePropertyNameAsync(nameof(Name));
-            writer.WriteStringAsync(Name);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(nameof(Name));
+            writer.WriteString(Name);
+            writer.WriteComma();
 
-            writer.WritePropertyNameAsync(nameof(Version));
-            writer.WriteIntegerAsync(Version);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(nameof(Version));
+            writer.WriteInteger(Version);
+            writer.WriteComma();
 
-            writer.WritePropertyNameAsync(nameof(Collections));
-            writer.WriteStartArrayAsync();
+            writer.WritePropertyName(nameof(Collections));
+            writer.WriteStartArray();
             var isFirst = true;
             foreach (var collection in Collections)
             {
                 if (isFirst == false)
-                    writer.WriteCommaAsync();
+                    writer.WriteComma();
 
                 isFirst = false;
-                writer.WriteStringAsync((collection));
+                writer.WriteString(collection);
             }
 
-            writer.WriteEndArrayAsync();
-            writer.WriteCommaAsync();
+            writer.WriteEndArray();
+            writer.WriteComma();
 
-            writer.WritePropertyNameAsync(nameof(LockMode));
-            writer.WriteIntegerAsync((int)LockMode);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(nameof(LockMode));
+            writer.WriteInteger((int)LockMode);
+            writer.WriteComma();
 
-            writer.WritePropertyNameAsync(nameof(Priority));
-            writer.WriteIntegerAsync((int)Priority);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(nameof(Priority));
+            writer.WriteInteger((int)Priority);
+            writer.WriteComma();
 
             PersistFields(context, writer);
 
-            writer.WriteEndObjectAsync();
+            writer.WriteEndObject();
         }
 
         public bool ContainsField(string name)
@@ -105,7 +106,7 @@ namespace Raven.Server.Documents.Indexes
 
         internal abstract void Reset();
 
-        protected abstract void PersistFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer);
+        protected abstract void PersistFields(JsonOperationContext context, BlittableJsonTextWriter writer);
 
         protected internal abstract IndexDefinition GetOrCreateIndexDefinitionInternal();
 
@@ -185,11 +186,11 @@ namespace Raven.Server.Documents.Indexes
         {
             var tree = context.Transaction.InnerTransaction.CreateTree("Definition");
             using (var stream = new MemoryStream())
-            using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
+            using (var writer = new BlittableJsonTextWriter(context, stream))
             {
                 Persist(context, writer);
 
-                writer.FlushAsync();
+                writer.Flush();
 
                 stream.Position = 0;
 

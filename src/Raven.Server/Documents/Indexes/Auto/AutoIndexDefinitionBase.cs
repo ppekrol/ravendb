@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Documents.Indexes;
-using Raven.Client.Documents.Session;
 using Sparrow.Json;
+using Sparrow.Server.Json.Sync;
 
 namespace Raven.Server.Documents.Indexes.Auto
 {
@@ -13,53 +12,53 @@ namespace Raven.Server.Documents.Indexes.Auto
         public IndexState State { get; set; }
 
         protected AutoIndexDefinitionBase(string indexName, string collection, AutoIndexField[] fields, long? indexVersion = null)
-            : base(indexName, new [] { collection }, IndexLockMode.Unlock, IndexPriority.Normal, fields, indexVersion ?? IndexVersion.CurrentVersion)
+            : base(indexName, new[] { collection }, IndexLockMode.Unlock, IndexPriority.Normal, fields, indexVersion ?? IndexVersion.CurrentVersion)
         {
             if (string.IsNullOrEmpty(collection))
                 throw new ArgumentNullException(nameof(collection));
         }
 
-        protected abstract override void PersistFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer);
+        protected abstract override void PersistFields(JsonOperationContext context, BlittableJsonTextWriter writer);
 
-        protected override void PersistMapFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
+        protected override void PersistMapFields(JsonOperationContext context, BlittableJsonTextWriter writer)
         {
-            writer.WritePropertyNameAsync(nameof(MapFields));
-            writer.WriteStartArrayAsync();
+            writer.WritePropertyName(nameof(MapFields));
+            writer.WriteStartArray();
             var first = true;
             foreach (var field in MapFields.Values.Select(x => x.As<AutoIndexField>()))
             {
                 if (first == false)
-                    writer.WriteCommaAsync();
+                    writer.WriteComma();
 
-                writer.WriteStartObjectAsync();
+                writer.WriteStartObject();
 
-                writer.WritePropertyNameAsync(nameof(field.Name));
-                writer.WriteStringAsync(field.Name);
-                writer.WriteCommaAsync();
+                writer.WritePropertyName(nameof(field.Name));
+                writer.WriteString(field.Name);
+                writer.WriteComma();
 
-                writer.WritePropertyNameAsync(nameof(field.Indexing));
-                writer.WriteStringAsync(field.Indexing.ToString());
-                writer.WriteCommaAsync();
+                writer.WritePropertyName(nameof(field.Indexing));
+                writer.WriteString(field.Indexing.ToString());
+                writer.WriteComma();
 
-                writer.WritePropertyNameAsync(nameof(field.Aggregation));
-                writer.WriteIntegerAsync((int)field.Aggregation);
-                writer.WriteCommaAsync();
+                writer.WritePropertyName(nameof(field.Aggregation));
+                writer.WriteInteger((int)field.Aggregation);
+                writer.WriteComma();
 
-                writer.WritePropertyNameAsync(nameof(field.Spatial));
+                writer.WritePropertyName(nameof(field.Spatial));
                 if (field.Spatial == null)
-                    writer.WriteNullAsync();
+                    writer.WriteNull();
                 else
-                    writer.WriteObjectAsync(DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(field.Spatial, context));
-                writer.WriteCommaAsync();
+                    writer.WriteObject(DocumentConventions.DefaultForServer.Serialization.DefaultConverter.ToBlittable(field.Spatial, context));
+                writer.WriteComma();
 
-                writer.WritePropertyNameAsync(nameof(field.HasSuggestions));
-                writer.WriteBoolAsync(field.HasSuggestions);
+                writer.WritePropertyName(nameof(field.HasSuggestions));
+                writer.WriteBool(field.HasSuggestions);
 
-                writer.WriteEndObjectAsync();
+                writer.WriteEndObject();
 
                 first = false;
             }
-            writer.WriteEndArrayAsync();
+            writer.WriteEndArray();
         }
 
         protected internal abstract override IndexDefinition GetOrCreateIndexDefinitionInternal();

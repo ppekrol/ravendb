@@ -46,6 +46,7 @@ using Sparrow.Json.Parsing;
 using Sparrow.Logging;
 using Sparrow.Platform;
 using Sparrow.Server;
+using Sparrow.Server.Json.Sync;
 using Sparrow.Server.Meters;
 using Sparrow.Server.Utils;
 using Sparrow.Threading;
@@ -1010,7 +1011,7 @@ namespace Raven.Server.Documents
             }
         }
 
-        public async Task<SmugglerResult> FullBackupToAsync(string backupPath, CompressionLevel compressionLevel = CompressionLevel.Optimal,
+        public SmugglerResult FullBackupToAsync(string backupPath, CompressionLevel compressionLevel = CompressionLevel.Optimal,
             Action<(string Message, int FilesCount)> infoNotify = null, CancellationToken cancellationToken = default)
         {
             SmugglerResult smugglerResult;
@@ -1049,14 +1050,14 @@ namespace Raven.Server.Documents
                     infoNotify?.Invoke(("Backed up Database Record", 1));
 
                     zipArchiveEntry = package.CreateEntry(RestoreSettings.SettingsFileName, compressionLevel);
-                    await using (var zipStream = zipArchiveEntry.Open())
-                    await using (var outputStream = GetOutputStream(zipStream))
-                    await using (var writer = new AsyncBlittableJsonTextWriter(serverContext, outputStream))
+                    using (var zipStream = zipArchiveEntry.Open())
+                    using (var outputStream = GetOutputStream(zipStream))
+                    using (var writer = new BlittableJsonTextWriter(serverContext, outputStream))
                     {
-                        await writer.WriteStartObjectAsync();
+                        writer.WriteStartObject();
 
                         // read and save the database record
-                        await writer.WritePropertyNameAsync(nameof(RestoreSettings.DatabaseRecord));
+                        writer.WritePropertyName(nameof(RestoreSettings.DatabaseRecord));
                         using (serverContext.OpenReadTransaction())
                         using (var databaseRecord = _serverStore.Cluster.ReadRawDatabaseRecord(serverContext, Name, out _))
                         {
@@ -1064,9 +1065,9 @@ namespace Raven.Server.Documents
                         }
 
                         // save the database values (subscriptions, periodic backups statuses, etl states...)
-                        await writer.WriteCommaAsync();
-                        await writer.WritePropertyNameAsync(nameof(RestoreSettings.DatabaseValues));
-                        await writer.WriteStartObjectAsync();
+                        writer.WriteComma();
+                        writer.WritePropertyName(nameof(RestoreSettings.DatabaseValues));
+                        writer.WriteStartObject();
 
                         var first = true;
                         var prefix = Helpers.ClusterStateMachineValuesPrefix(Name);
@@ -1078,22 +1079,22 @@ namespace Raven.Server.Documents
                                 cancellationToken.ThrowIfCancellationRequested();
 
                                 if (first == false)
-                                    await writer.WriteCommaAsync();
+                                    writer.WriteComma();
 
                                 first = false;
 
                                 var key = keyValue.Key.ToString().Substring(prefix.Length);
-                                await writer.WritePropertyNameAsync(key);
-                                await serverContext.WriteAsync(writer, keyValue.Value);
+                                writer.WritePropertyName(key);
+                                serverContext.WriteAsync(writer, keyValue.Value);
                             }
                         }
 
-                        await writer.WriteEndObjectAsync();
+                        writer.WriteEndObject();
                         // end of values
 
-                        await writer.WriteEndObjectAsync();
-                        await writer.FlushAsync();
-                        await outputStream.FlushAsync();
+                        writer.WriteEndObject();
+                        writer.Flush();
+                        outputStream.Flush();
                     }
                 }
 

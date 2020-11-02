@@ -27,6 +27,7 @@ using Sparrow.Json;
 using Sparrow.Logging;
 using Sparrow.LowMemory;
 using Sparrow.Platform;
+using Sparrow.Server.Json.Sync;
 using Sparrow.Server.Platform;
 using Sparrow.Utils;
 using Size = Sparrow.Size;
@@ -1018,40 +1019,40 @@ namespace Raven.Server.Utils.Cli
         {
             var ms = new MemoryStream();
             using (var ctx = JsonOperationContext.ShortTermSingleUse())
-            using (var writer = new AsyncBlittableJsonTextWriter(ctx, ms))
+            using (var writer = new BlittableJsonTextWriter(ctx, ms))
             {
-                writer.WriteStartObjectAsync();
+                writer.WriteStartObject();
 
-                writer.WritePropertyNameAsync("Result");
+                writer.WritePropertyName("Result");
 
                 if (result.IsNull)
                 {
-                    writer.WriteNullAsync();
+                    writer.WriteNull();
                 }
                 else if (result.RawJsValue.IsBoolean())
                 {
-                    writer.WriteBoolAsync(result.RawJsValue.AsBoolean());
+                    writer.WriteBool(result.RawJsValue.AsBoolean());
                 }
                 else if (result.RawJsValue.IsString())
                 {
-                    writer.WriteStringAsync(result.RawJsValue.AsString());
+                    writer.WriteString(result.RawJsValue.AsString());
                 }
                 else if (result.RawJsValue.IsDate())
                 {
                     var date = result.RawJsValue.AsDate();
-                    writer.WriteStringAsync(date.ToDateTime().ToString(DefaultFormat.DateTimeOffsetFormatsToWrite));
+                    writer.WriteString(date.ToDateTime().ToString(DefaultFormat.DateTimeOffsetFormatsToWrite));
                 }
                 else if (result.RawJsValue.IsNumber())
                 {
-                    writer.WriteDoubleAsync(result.RawJsValue.AsNumber());
+                    writer.WriteDouble(result.RawJsValue.AsNumber());
                 }
                 else
                 {
-                    writer.WriteObjectAsync(result.TranslateToObject(ctx));
+                    writer.WriteObject(result.TranslateToObject(ctx));
                 }
 
-                writer.WriteEndObjectAsync();
-                writer.FlushAsync();
+                writer.WriteEndObject();
+                writer.Flush();
             }
 
             var str = Encoding.UTF8.GetString(ms.ToArray());

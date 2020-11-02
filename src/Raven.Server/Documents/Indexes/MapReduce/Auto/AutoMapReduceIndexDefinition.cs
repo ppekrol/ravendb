@@ -5,6 +5,7 @@ using Raven.Client.Documents.Indexes;
 using Raven.Client.Extensions;
 using Raven.Server.Documents.Indexes.Auto;
 using Sparrow.Json;
+using Sparrow.Server.Json.Sync;
 using Voron;
 
 namespace Raven.Server.Documents.Indexes.MapReduce.Auto
@@ -50,11 +51,11 @@ namespace Raven.Server.Documents.Indexes.MapReduce.Auto
             return GroupByFields.TryGetValue(field, out value);
         }
 
-        protected override void PersistFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
+        protected override void PersistFields(JsonOperationContext context, BlittableJsonTextWriter writer)
         {
             PersistMapFields(context, writer);
 
-            writer.WriteCommaAsync();
+            writer.WriteComma();
 
             PersistGroupByFields(context, writer);
         }
@@ -80,36 +81,36 @@ namespace Raven.Server.Documents.Indexes.MapReduce.Auto
             return indexDefinition;
         }
 
-        protected void PersistGroupByFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
+        protected void PersistGroupByFields(JsonOperationContext context, BlittableJsonTextWriter writer)
         {
-            writer.WritePropertyNameAsync((nameof(GroupByFields)));
-            writer.WriteStartArrayAsync();
+            writer.WritePropertyName((nameof(GroupByFields)));
+            writer.WriteStartArray();
             var first = true;
             foreach (var field in GroupByFields.Values)
             {
                 if (first == false)
-                    writer.WriteCommaAsync();
+                    writer.WriteComma();
 
-                writer.WriteStartObjectAsync();
+                writer.WriteStartObject();
 
-                writer.WritePropertyNameAsync(nameof(field.Name));
-                writer.WriteStringAsync(field.Name);
+                writer.WritePropertyName(nameof(field.Name));
+                writer.WriteString(field.Name);
 
-                writer.WriteCommaAsync();
+                writer.WriteComma();
 
-                writer.WritePropertyNameAsync(nameof(field.Indexing));
-                writer.WriteStringAsync(field.Indexing.ToString());
+                writer.WritePropertyName(nameof(field.Indexing));
+                writer.WriteString(field.Indexing.ToString());
 
-                writer.WriteCommaAsync();
+                writer.WriteComma();
 
-                writer.WritePropertyNameAsync(nameof(field.GroupByArrayBehavior));
-                writer.WriteStringAsync(field.GroupByArrayBehavior.ToString());
+                writer.WritePropertyName(nameof(field.GroupByArrayBehavior));
+                writer.WriteString(field.GroupByArrayBehavior.ToString());
 
-                writer.WriteEndObjectAsync();
+                writer.WriteEndObject();
 
                 first = false;
             }
-            writer.WriteEndArrayAsync();
+            writer.WriteEndArray();
         }
 
         protected override int ComputeRestOfHash(int hashCode)

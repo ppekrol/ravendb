@@ -17,6 +17,7 @@ using Sparrow;
 using Sparrow.Json;
 using Sparrow.Logging;
 using Sparrow.LowMemory;
+using Sparrow.Server.Json.Sync;
 using Sparrow.Server.Meters;
 using Sparrow.Server.Utils;
 using Sparrow.Utils;
@@ -205,9 +206,9 @@ namespace Raven.Server.Documents
                 private void Record(RecordingDetails commandDetails, JsonOperationContext context)
                 {
                     using (var commandDetailsReader = SerializeRecordingCommandDetails(context, commandDetails))
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, _txOpMerger._recording.Stream))
+                    using (var writer = new BlittableJsonTextWriter(context, _txOpMerger._recording.Stream))
                     {
-                        writer.WriteCommaAsync();
+                        writer.WriteComma();
                         context.WriteAsync(writer, commandDetailsReader);
                     }
                 }
@@ -233,9 +234,9 @@ namespace Raven.Server.Documents
 
                     using (_txOpMerger._parent.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext ctx))
                     {
-                        using (var writer = new AsyncBlittableJsonTextWriter(ctx, _txOpMerger._recording.Stream))
+                        using (var writer = new BlittableJsonTextWriter(ctx, _txOpMerger._recording.Stream))
                         {
-                            writer.WriteEndArrayAsync();
+                            writer.WriteEndArray();
                         }
                     }
                 }
@@ -267,9 +268,9 @@ namespace Raven.Server.Documents
                     }
 
                     using (_txOpMerger._parent.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
-                    using (var writer = new AsyncBlittableJsonTextWriter(context, _txOpMerger._recording.Stream))
+                    using (var writer = new BlittableJsonTextWriter(context, _txOpMerger._recording.Stream))
                     {
-                        writer.WriteStartArrayAsync();
+                        writer.WriteStartArray();
 
                         var commandDetails = new StartRecordingDetails();
                         var commandDetailsReader = SerializeRecordingCommandDetails(context, commandDetails);

@@ -16,6 +16,7 @@ using Sparrow.Json.Parsing;
 using Sparrow.Logging;
 using Index = Raven.Server.Documents.Indexes.Index;
 using Sparrow.LowMemory;
+using Sparrow.Server.Json.Sync;
 using Sparrow.Server.LowMemory;
 
 namespace Raven.Server.ServerWide.Maintenance
@@ -132,7 +133,7 @@ namespace Raven.Server.ServerWide.Maintenance
 
         private void HeartbeatVersion41200(TransactionOperationContext ctx, Dictionary<string, DatabaseStatusReport> nodeReport)
         {
-            using (var writer = new AsyncBlittableJsonTextWriter(ctx, _tcp.Stream))
+            using (var writer = new BlittableJsonTextWriter(ctx, _tcp.Stream))
             {
                 ctx.WriteAsync(writer, DynamicJsonValue.Convert(nodeReport));
             }
@@ -147,7 +148,7 @@ namespace Raven.Server.ServerWide.Maintenance
                 HighDirtyMemory = LowMemoryNotification.Instance.DirtyMemoryState.IsHighDirty
             };
 
-            using (var writer = new AsyncBlittableJsonTextWriter(ctx, _tcp.Stream))
+            using (var writer = new BlittableJsonTextWriter(ctx, _tcp.Stream))
             {
                 ctx.WriteAsync(writer, report.ToJson());
             }

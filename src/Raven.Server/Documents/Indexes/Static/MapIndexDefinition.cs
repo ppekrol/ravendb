@@ -7,6 +7,7 @@ using Raven.Server.Extensions;
 using Raven.Server.Json;
 
 using Sparrow.Json;
+using Sparrow.Server.Json.Sync;
 using Voron;
 
 namespace Raven.Server.Documents.Indexes.Static
@@ -49,40 +50,40 @@ namespace Raven.Server.Documents.Indexes.Static
             return result.ToArray();
         }
 
-        protected override void PersistFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
+        protected override void PersistFields(JsonOperationContext context, BlittableJsonTextWriter writer)
         {
             var builder = IndexDefinition.ToJson();
             using (var json = context.ReadObject(builder, nameof(IndexDefinition), BlittableJsonDocumentBuilder.UsageMode.ToDisk))
             {
-                writer.WritePropertyNameAsync(nameof(IndexDefinition));
-                writer.WriteObjectAsync(json);
+                writer.WritePropertyName(nameof(IndexDefinition));
+                writer.WriteObject(json);
             }
         }
 
-        protected override void PersistMapFields(JsonOperationContext context, AsyncBlittableJsonTextWriter writer)
+        protected override void PersistMapFields(JsonOperationContext context, BlittableJsonTextWriter writer)
         {
-            writer.WritePropertyNameAsync(nameof(MapFields));
-            writer.WriteStartArrayAsync();
+            writer.WritePropertyName(nameof(MapFields));
+            writer.WriteStartArray();
             var first = true;
             foreach (var field in MapFields.Values.Select(x => x.As<IndexField>()))
             {
                 if (first == false)
-                    writer.WriteCommaAsync();
+                    writer.WriteComma();
 
-                writer.WriteStartObjectAsync();
+                writer.WriteStartObject();
 
-                writer.WritePropertyNameAsync(nameof(field.Name));
-                writer.WriteStringAsync(field.Name);
-                writer.WriteCommaAsync();
+                writer.WritePropertyName(nameof(field.Name));
+                writer.WriteString(field.Name);
+                writer.WriteComma();
 
-                writer.WritePropertyNameAsync(nameof(field.Indexing));
-                writer.WriteStringAsync(field.Indexing.ToString());
+                writer.WritePropertyName(nameof(field.Indexing));
+                writer.WriteString(field.Indexing.ToString());
 
-                writer.WriteEndObjectAsync();
+                writer.WriteEndObject();
 
                 first = false;
             }
-            writer.WriteEndArrayAsync();
+            writer.WriteEndArray();
         }
 
         protected internal override IndexDefinition GetOrCreateIndexDefinitionInternal()

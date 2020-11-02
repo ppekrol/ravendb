@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Sparrow.Server.Json.Sync
 {
-    public unsafe class BlittableJsonTextWriter
+    public unsafe class BlittableJsonTextWriter : IDisposable
     {
         private readonly JsonOperationContext _context;
         private readonly Stream _stream;
@@ -26,7 +26,7 @@ namespace Sparrow.Server.Json.Sync
         private readonly JsonOperationContext.MemoryBuffer _pinnedBuffer;
         private readonly AllocatedMemoryData _parserAuxiliarMemory;
 
-        protected BlittableJsonTextWriter(JsonOperationContext context, Stream stream)
+        public BlittableJsonTextWriter(JsonOperationContext context, Stream stream)
         {
             _context = context;
             _stream = stream;

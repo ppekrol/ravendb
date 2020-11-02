@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations.Attachments;
@@ -24,18 +23,14 @@ using Raven.Client.Util;
 using Raven.Server.Config;
 using Raven.Server.Documents;
 using Raven.Server.Documents.Indexes;
-using Raven.Server.Documents.TimeSeries;
 using Raven.Server.Json;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Smuggler.Documents.Data;
 using Raven.Server.Web.System;
-using Sparrow.Binary;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
-using Sparrow.Server.Utils;
-using Voron;
-using Voron.Data.BTrees;
+using Sparrow.Server.Json.Sync;
 
 namespace Raven.Server.Smuggler.Documents
 {
@@ -45,7 +40,7 @@ namespace Raven.Server.Smuggler.Documents
         private GZipStream _gzipStream;
         private readonly DocumentsOperationContext _context;
         private readonly DatabaseSource _source;
-        private AsyncBlittableJsonTextWriter _writer;
+        private BlittableJsonTextWriter _writer;
         private DatabaseSmugglerOptionsServerSide _options;
         private Func<LazyStringValue, bool> _filterMetadataProperty;
 
@@ -59,7 +54,7 @@ namespace Raven.Server.Smuggler.Documents
         public IDisposable Initialize(DatabaseSmugglerOptionsServerSide options, SmugglerResult result, long buildVersion)
         {
             _gzipStream = new GZipStream(_stream, CompressionMode.Compress, leaveOpen: true);
-            _writer = new AsyncBlittableJsonTextWriter(_context, _gzipStream);
+            _writer = new BlittableJsonTextWriter(_context, _gzipStream);
             _options = options;
 
             SetupMetadataFilterMethod(_context);
@@ -103,24 +98,31 @@ namespace Raven.Server.Smuggler.Documents
                 case 1: // counters
                     _filterMetadataProperty = metadataProperty => metadataProperty.Equals(counters);
                     break;
+
                 case 2: // attachments
                     _filterMetadataProperty = metadataProperty => metadataProperty.Equals(attachments);
                     break;
+
                 case 3: // counters, attachments
                     _filterMetadataProperty = metadataProperty => metadataProperty.Equals(counters) || metadataProperty.Equals(attachments);
                     break;
+
                 case 4: // timeseries
                     _filterMetadataProperty = metadataProperty => metadataProperty.Equals(timeSeries);
                     break;
+
                 case 5: // counters, timeseries
                     _filterMetadataProperty = metadataProperty => metadataProperty.Equals(counters) || metadataProperty.Equals(timeSeries);
                     break;
+
                 case 6: // attachments, timeseries
                     _filterMetadataProperty = metadataProperty => metadataProperty.Equals(attachments) || metadataProperty.Equals(timeSeries);
                     break;
+
                 case 7: // counters, attachments, timeseries
                     _filterMetadataProperty = metadataProperty => metadataProperty.Equals(counters) || metadataProperty.Equals(attachments) || metadataProperty.Equals(timeSeries);
                     break;
+
                 default:
                     throw new NotSupportedException($"Not supported value: {flags}");
             }
@@ -367,7 +369,6 @@ namespace Raven.Server.Smuggler.Documents
                     first = false;
 
                     _context.WriteAsync(_writer, pullReplication.ToJson());
-
                 }
                 _writer.WriteEndArrayAsync();
             }
@@ -703,7 +704,7 @@ namespace Raven.Server.Smuggler.Documents
 
             public void WriteLegacyCounter(CounterDetail counterDetail)
             {
-                // Used only in Database Destination 
+                // Used only in Database Destination
                 throw new NotSupportedException("WriteLegacyCounter is not supported when writing to a Stream destination, " +
                                                 "it is only supported when writing to Database destination. Shouldn't happen.");
             }
@@ -765,10 +766,10 @@ namespace Raven.Server.Smuggler.Documents
                         Writer.WriteCommaAsync();
 
                         Writer.WritePropertyNameAsync(nameof(TimeSeriesItem.Baseline));
-                        Writer.WriteDateTimeAsync(item.Baseline, true);    
+                        Writer.WriteDateTimeAsync(item.Baseline, true);
                     }
                     Writer.WriteEndObjectAsync();
-                    
+
                     Writer.WriteCommaAsync();
                     Writer.WritePropertyNameAsync(Constants.Documents.Blob.Size);
                     Writer.WriteIntegerAsync(item.SegmentSize);
@@ -963,7 +964,6 @@ namespace Raven.Server.Smuggler.Documents
 
                 Writer.WriteStreamAsync(stream);
             }
-
         }
 
         private class StreamKeyValueActions<T> : StreamActionsBase, IKeyValueActions<T>
