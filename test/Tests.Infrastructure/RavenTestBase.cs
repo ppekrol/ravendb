@@ -40,6 +40,7 @@ using Sparrow.Collections;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Platform;
+using Sparrow.Server.Json.Sync;
 using Tests.Infrastructure;
 using Voron;
 using Xunit;
@@ -579,12 +580,12 @@ namespace FastTests
             var file = Path.GetTempFileName() + ".json";
             using (var stream = File.Open(file, FileMode.OpenOrCreate))
             using (var context = JsonOperationContext.ShortTermSingleUse())
-            using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
+            using (var writer = new BlittableJsonTextWriter(context, stream))
             {
                 var djv = (DynamicJsonValue)TypeConverter.ToBlittableSupportedType(total);
                 var json = context.ReadObject(djv, "errors");
-                writer.WriteObjectAsync(json);
-                writer.FlushAsync();
+                writer.WriteObject(json);
+                writer.Flush();
             }
 
             var statistics = admin.Send(new GetStatisticsOperation("wait-for-indexing", nodeTag));

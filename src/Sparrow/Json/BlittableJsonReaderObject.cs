@@ -44,7 +44,7 @@ namespace Sparrow.Json
             }
         }
 
-        public ValueTask WriteJsonToAsync(Stream stream, CancellationToken token)
+        public ValueTask WriteJsonToAsync(Stream stream, CancellationToken token = default)
         {
             AssertContextNotDisposed();
 

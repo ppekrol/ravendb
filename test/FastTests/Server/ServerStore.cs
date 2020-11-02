@@ -83,7 +83,7 @@ namespace FastTests.Server
                 };
 
                 message.Headers.Add("ETag", "0");
-                message.Content = new BlittableJsonContent(stream => databaseDocument.WriteJsonTo(stream));
+                message.Content = new BlittableJsonContent(stream => databaseDocument.WriteJsonToAsync(stream));
 
                 return message;
             }
