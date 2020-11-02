@@ -407,7 +407,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
+                    await writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                 }
             }
         }
@@ -601,7 +601,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
 
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
+                    await writer.WriteOperationIdAndNodeTag(context, operationId, ServerStore.NodeTag);
                 }
             }
         }
@@ -645,7 +645,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest; // Bad request
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.WriteAsync(writer, new DynamicJsonValue
+                        await context.WriteAsync(writer, new DynamicJsonValue
                         {
                             ["Type"] = "Error",
                             ["Error"] = "This endpoint requires form content type"
@@ -739,7 +739,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                     {
-                        context.WriteAsync(writer, new DynamicJsonValue
+                        await context.WriteAsync(writer, new DynamicJsonValue
                         {
                             ["Type"] = "Error",
                             ["Error"] = "Import from csv requires form content type"

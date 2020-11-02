@@ -665,7 +665,7 @@ namespace Raven.Server.Documents.Replication
             }
         }
 
-        private int ReadHeaderResponseAndThrowIfUnAuthorized(JsonOperationContext context, AsyncBlittableJsonTextWriter writer, Stream stream, string url)
+        private int ReadHeaderResponseAndThrowIfUnAuthorized(JsonOperationContext context, BlittableJsonTextWriter writer, Stream stream, string url)
         {
             const int timeout = 2 * 60 * 1000;
 
@@ -706,9 +706,9 @@ namespace Raven.Server.Documents.Replication
             }
         }
 
-        private void SendDropMessage(JsonOperationContext context, AsyncBlittableJsonTextWriter writer, TcpConnectionHeaderResponse headerResponse)
+        private void SendDropMessage(JsonOperationContext context, BlittableJsonTextWriter writer, TcpConnectionHeaderResponse headerResponse)
         {
-            context.WriteAsync(writer, new DynamicJsonValue
+            context.Sync.Write(writer, new DynamicJsonValue
             {
                 [nameof(TcpConnectionHeaderMessage.DatabaseName)] = Destination.Database,
                 [nameof(TcpConnectionHeaderMessage.Operation)] = TcpConnectionHeaderMessage.OperationTypes.Drop.ToString(),
@@ -717,7 +717,7 @@ namespace Raven.Server.Documents.Replication
                 [nameof(TcpConnectionHeaderMessage.Info)] =
                     $"Couldn't agree on replication TCP version ours:{TcpConnectionHeaderMessage.ReplicationTcpVersion} theirs:{headerResponse.Version}"
             });
-            writer.FlushAsync();
+            writer.Flush();
         }
 
         private bool WaitForChanges(int timeout, CancellationToken token)

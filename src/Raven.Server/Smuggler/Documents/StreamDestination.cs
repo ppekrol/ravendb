@@ -24,6 +24,7 @@ using Raven.Server.Config;
 using Raven.Server.Documents;
 using Raven.Server.Documents.Indexes;
 using Raven.Server.Json;
+using Raven.Server.Json.Sync;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Smuggler.Documents.Data;
@@ -833,7 +834,7 @@ namespace Raven.Server.Smuggler.Documents
                         Writer.WriteComma();
                     First = false;
 
-                    Writer.WriteDocument(_context, document, metadataOnly: false, _filterMetadataProperty);
+                    Writer.WriteDocument(_context, document, _filterMetadataProperty);
                 }
             }
 

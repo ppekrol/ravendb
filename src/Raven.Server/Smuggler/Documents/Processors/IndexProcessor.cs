@@ -8,6 +8,7 @@ using Raven.Server.Documents;
 using Raven.Server.Documents.Indexes.Auto;
 using Raven.Server.Documents.Indexes.MapReduce.Auto;
 using Raven.Server.Json;
+using Raven.Server.Json.Sync;
 using Raven.Server.Smuggler.Documents.Data;
 using Sparrow.Json;
 using Sparrow.Server.Json.Sync;

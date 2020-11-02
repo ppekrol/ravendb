@@ -1754,12 +1754,12 @@ namespace Raven.Server.Json
             await writer.WriteEndObjectAsync();
         }
 
-        private static readonly StringSegment MetadataKeySegment = new StringSegment(Constants.Documents.Metadata.Key);
+        internal static readonly StringSegment MetadataKeySegment = new StringSegment(Constants.Documents.Metadata.Key);
 
         private static async ValueTask WriteDocumentInternal(this AsyncBlittableJsonTextWriter writer, JsonOperationContext context, Document document, Func<LazyStringValue, bool> filterMetadataProperty = null)
         {
             await writer.WriteStartObjectAsync();
-            WriteDocumentProperties(writer, context, document, filterMetadataProperty);
+            await WriteDocumentProperties(writer, context, document, filterMetadataProperty);
             await writer.WriteEndObjectAsync();
         }
 
@@ -1936,7 +1936,7 @@ namespace Raven.Server.Json
                 if (page.Children != null)
                 {
                     await writer.WriteStartArrayAsync();
-                    WriteTreePagesRecursively(writer, page.Children);
+                    await WriteTreePagesRecursively(writer, page.Children);
                     await writer.WriteEndArrayAsync();
                 }
                 else

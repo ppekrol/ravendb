@@ -252,8 +252,8 @@ namespace Raven.Server.Web.System
                     [nameof(BuildInfoWithResourceNames.IsLegacyOAuthToken)] = isLegacyOAuthToken.Value
                 };
 
-                context.WriteAsync(writer, json);
-                writer.FlushAsync();
+                await context.WriteAsync(writer, json);
+                await writer.FlushAsync();
             }
         }
 
