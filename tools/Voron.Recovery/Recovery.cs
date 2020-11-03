@@ -23,6 +23,7 @@ using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Logging;
 using Sparrow.Server;
+using Sparrow.Server.Json.Sync;
 using Sparrow.Server.Utils;
 using Sparrow.Threading;
 using Voron.Data;
@@ -206,11 +207,11 @@ namespace Voron.Recovery
                 using (var gZipStreamCounters = new GZipStream(destinationStreamCounters, CompressionMode.Compress, true))
                 using (var gZipStreamTimeSeries = new GZipStream(destinationStreamTimeSeries, CompressionMode.Compress, true))
                 using (var context = new JsonOperationContext(_initialContextSize, _initialContextLongLivedSize, 8 * 1024, SharedMultipleUseFlag.None))
-                using (var documentsWriter = new AsyncBlittableJsonTextWriter(context, gZipStreamDocuments))
-                using (var revisionsWriter = new AsyncBlittableJsonTextWriter(context, gZipStreamRevisions))
-                using (var conflictsWriter = new AsyncBlittableJsonTextWriter(context, gZipStreamConflicts))
-                using (var countersWriter = new AsyncBlittableJsonTextWriter(context, gZipStreamCounters))
-                using (var timeSeriesWriter = new AsyncBlittableJsonTextWriter(context, gZipStreamTimeSeries))
+                using (var documentsWriter = new BlittableJsonTextWriter(context, gZipStreamDocuments))
+                using (var revisionsWriter = new BlittableJsonTextWriter(context, gZipStreamRevisions))
+                using (var conflictsWriter = new BlittableJsonTextWriter(context, gZipStreamConflicts))
+                using (var countersWriter = new BlittableJsonTextWriter(context, gZipStreamCounters))
+                using (var timeSeriesWriter = new BlittableJsonTextWriter(context, gZipStreamTimeSeries))
                 {
                     WriteSmugglerHeader(documentsWriter, ServerVersion.Build, "Docs");
                     WriteSmugglerHeader(revisionsWriter, ServerVersion.Build, nameof(DatabaseItemType.RevisionDocuments));
@@ -543,16 +544,16 @@ namespace Voron.Recovery
                     ReportOrphanCountersAndMissingCounters(writer, documentsWriter, ct);
                     ReportOrphanTimeSeriesAndMissingTimeSeries(writer, documentsWriter, ct);
 
-                    documentsWriter.WriteEndArrayAsync();
-                    conflictsWriter.WriteEndArrayAsync();
-                    revisionsWriter.WriteEndArrayAsync();
-                    countersWriter.WriteEndArrayAsync();
-                    timeSeriesWriter.WriteEndArrayAsync();
-                    documentsWriter.WriteEndObjectAsync();
-                    conflictsWriter.WriteEndObjectAsync();
-                    revisionsWriter.WriteEndObjectAsync();
-                    countersWriter.WriteEndObjectAsync();
-                    timeSeriesWriter.WriteEndObjectAsync();
+                    documentsWriter.WriteEndArray();
+                    conflictsWriter.WriteEndArray();
+                    revisionsWriter.WriteEndArray();
+                    countersWriter.WriteEndArray();
+                    timeSeriesWriter.WriteEndArray();
+                    documentsWriter.WriteEndObject();
+                    conflictsWriter.WriteEndObject();
+                    revisionsWriter.WriteEndObject();
+                    countersWriter.WriteEndObject();
+                    timeSeriesWriter.WriteEndObject();
 
                     if (_logger.IsOperationsEnabled)
                     {
@@ -742,7 +743,7 @@ namespace Voron.Recovery
         }
 
         private Size _maxTransactionSize = new Size(64, SizeUnit.Megabytes);
-        
+
         private byte* DecryptPageIfNeeded(byte* mem, long start, ref TempPagerTransaction tx, bool maybePulseTransaction = false)
         {
             if (IsEncrypted == false)
@@ -779,36 +780,36 @@ namespace Voron.Recovery
         private const string EmptyCollection = "@empty";
         private static readonly char[] TagSeparator = { (char)SpecialChars.RecordSeparator };
 
-        private void WriteDummyDocumentForAttachment(AsyncBlittableJsonTextWriter writer, string hash, long size, string tag)
+        private void WriteDummyDocumentForAttachment(BlittableJsonTextWriter writer, string hash, long size, string tag)
         {
             if (_documentWritten)
-                writer.WriteCommaAsync();
+                writer.WriteComma();
             //start metadata
-            writer.WriteStartObjectAsync();
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Key);
-            writer.WriteStartObjectAsync();
+            writer.WriteStartObject();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Key);
+            writer.WriteStartObject();
             //collection name
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Collection);
-            writer.WriteStringAsync(EmptyCollection);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Collection);
+            writer.WriteString(EmptyCollection);
+            writer.WriteComma();
             //id
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Id);
-            writer.WriteStringAsync($"DummyDoc{_dummyDocNumber++}");
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Id);
+            writer.WriteString($"DummyDoc{_dummyDocNumber++}");
+            writer.WriteComma();
             //change vector
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.ChangeVector);
-            writer.WriteStringAsync(Empty);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.ChangeVector);
+            writer.WriteString(Empty);
+            writer.WriteComma();
             //flags
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Flags);
-            writer.WriteStringAsync(DocumentFlags.HasAttachments.ToString());
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Flags);
+            writer.WriteString(DocumentFlags.HasAttachments.ToString());
+            writer.WriteComma();
             //start attachment
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Attachments);
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Attachments);
             //start attachment array
-            writer.WriteStartArrayAsync();
+            writer.WriteStartArray();
             //start attachment object
-            writer.WriteStartObjectAsync();
+            writer.WriteStartObject();
             if (tag != null)
             {
                 //doc id | type 'd' or 'r' | name | hash | content type
@@ -827,36 +828,36 @@ namespace Voron.Recovery
                 WriteAttachmentMetadata(writer, hash, size, $"DummyAttachmentName{_dummyAttachmentNumber++}", Empty);
             }
             //end attachment object
-            writer.WriteEndObjectAsync();
+            writer.WriteEndObject();
             // end attachment array
-            writer.WriteEndArrayAsync();
+            writer.WriteEndArray();
             //end attachment
-            writer.WriteEndObjectAsync();
+            writer.WriteEndObject();
             //end metadata
-            writer.WriteEndObjectAsync();
+            writer.WriteEndObject();
             _lastWriteIsDocument = true;
         }
 
-        private static void WriteAttachmentMetadata(AsyncBlittableJsonTextWriter writer, string hash, long size, string name, string contentType)
+        private static void WriteAttachmentMetadata(BlittableJsonTextWriter writer, string hash, long size, string name, string contentType)
         {
             //name
-            writer.WritePropertyNameAsync("Name");
-            writer.WriteStringAsync(name);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName("Name");
+            writer.WriteString(name);
+            writer.WriteComma();
             //hash
-            writer.WritePropertyNameAsync("Hash");
-            writer.WriteStringAsync(hash);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName("Hash");
+            writer.WriteString(hash);
+            writer.WriteComma();
             //content type
-            writer.WritePropertyNameAsync("ContentType");
-            writer.WriteStringAsync(contentType);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName("ContentType");
+            writer.WriteString(contentType);
+            writer.WriteComma();
             //size
-            writer.WritePropertyNameAsync("size");
-            writer.WriteIntegerAsync(size);
+            writer.WritePropertyName("size");
+            writer.WriteInteger(size);
         }
 
-        private void ReportOrphanAttachmentsAndMissingAttachments(TextWriter writer, AsyncBlittableJsonTextWriter documentsWriter, CancellationToken ct)
+        private void ReportOrphanAttachmentsAndMissingAttachments(TextWriter writer, BlittableJsonTextWriter documentsWriter, CancellationToken ct)
         {
             //No need to scare the user if there are no attachments in the dump
             if (_attachmentsHashs.Count == 0 && _documentsAttachments.Count == 0)
@@ -922,7 +923,7 @@ namespace Voron.Recovery
             }
         }
 
-        private void ReportOrphanAttachmentDocumentId(string hash, long size, string tag, AsyncBlittableJsonTextWriter writer)
+        private void ReportOrphanAttachmentDocumentId(string hash, long size, string tag, BlittableJsonTextWriter writer)
         {
             var msg = new StringBuilder($"Found orphan attachment with hash {hash}");
             if (tag != null)
@@ -934,7 +935,7 @@ namespace Voron.Recovery
             WriteDummyDocumentForAttachment(writer, hash, size, tag);
         }
 
-        private void ReportOrphanTimeSeriesAndMissingTimeSeries(TextWriter writer, AsyncBlittableJsonTextWriter documentWriter, in CancellationToken ct)
+        private void ReportOrphanTimeSeriesAndMissingTimeSeries(TextWriter writer, BlittableJsonTextWriter documentWriter, in CancellationToken ct)
         {
             //No need to scare the user if there are no time-series in the dump
             if (_uniqueTimeSeriesDiscovered.Count == 0 && _documentsTimeSeries.Count == 0)
@@ -962,7 +963,7 @@ namespace Voron.Recovery
             writer.WriteLine("Starting to compute orphan and missing time-series. this may take a while.");
             if (ct.IsCancellationRequested)
                 return;
-            
+
             _documentsTimeSeries.Sort((x, y) => Compare(x.DocId + SpecialChars.RecordSeparator + x.Name,
                 y.DocId + SpecialChars.RecordSeparator + y.Name, StringComparison.OrdinalIgnoreCase));
             //We rely on the fact that the time-series id+name is unique in the _uniqueTimeSeriesDiscovered list (no duplicated values).
@@ -981,7 +982,7 @@ namespace Voron.Recovery
                     var discoveredKey = docId + SpecialChars.RecordSeparator + name;
                     if (ct.IsCancellationRequested)
                         return;
-                    
+
                     while (_documentsTimeSeries.Count > index)
                     {
                         var timeSeriesKey = _documentsTimeSeries[index].DocId + SpecialChars.RecordSeparator + _documentsTimeSeries[index].Name;
@@ -1002,7 +1003,7 @@ namespace Voron.Recovery
             }
         }
 
-        private void ReportOrphanCountersAndMissingCounters(TextWriter writer, AsyncBlittableJsonTextWriter documentWriter, CancellationToken ct)
+        private void ReportOrphanCountersAndMissingCounters(TextWriter writer, BlittableJsonTextWriter documentWriter, CancellationToken ct)
         {
             //No need to scare the user if there are no counters in the dump
             if (_uniqueCountersDiscovered.Count == 0 && _documentsCounters.Count == 0)
@@ -1030,7 +1031,7 @@ namespace Voron.Recovery
             writer.WriteLine("Starting to compute orphan and missing counters. this may take a while.");
             if (ct.IsCancellationRequested)
                 return;
-            
+
             _documentsCounters.Sort((x, y) => Compare(x.DocId + SpecialChars.RecordSeparator + x.Name,
                 y.DocId + SpecialChars.RecordSeparator + y.Name, StringComparison.OrdinalIgnoreCase));
             //We rely on the fact that the counter id+name is unique in the _discoveredCounters list (no duplicated values).
@@ -1049,7 +1050,7 @@ namespace Voron.Recovery
                     var discoveredKey = docId + SpecialChars.RecordSeparator + name;
                     if (ct.IsCancellationRequested)
                         return;
-                    
+
                     while (_documentsCounters.Count > index)
                     {
                         var documentsCountersKey = _documentsCounters[index].DocId + SpecialChars.RecordSeparator + _documentsCounters[index].Name;
@@ -1070,109 +1071,109 @@ namespace Voron.Recovery
             }
         }
 
-        private void WriteDummyDocumentForTimeSeries(AsyncBlittableJsonTextWriter writer, string docId, IEnumerable<string> timeSeries)
+        private void WriteDummyDocumentForTimeSeries(BlittableJsonTextWriter writer, string docId, IEnumerable<string> timeSeries)
         {
             if (_logger.IsOperationsEnabled)
                 _logger.Operations($"Found orphan time series with document-Id '{docId}'");
 
             if (_documentWritten)
-                writer.WriteCommaAsync();
+                writer.WriteComma();
             //start metadata
-            writer.WriteStartObjectAsync();
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Key);
-            writer.WriteStartObjectAsync();
+            writer.WriteStartObject();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Key);
+            writer.WriteStartObject();
             //collection name
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Collection);
-            writer.WriteStringAsync(EmptyCollection);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Collection);
+            writer.WriteString(EmptyCollection);
+            writer.WriteComma();
             //id
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Id);
-            writer.WriteStringAsync(docId);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Id);
+            writer.WriteString(docId);
+            writer.WriteComma();
             //change vector
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.ChangeVector);
-            writer.WriteStringAsync(Empty);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.ChangeVector);
+            writer.WriteString(Empty);
+            writer.WriteComma();
             //flags
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Flags);
-            writer.WriteStringAsync(DocumentFlags.HasTimeSeries.ToString());
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Flags);
+            writer.WriteString(DocumentFlags.HasTimeSeries.ToString());
+            writer.WriteComma();
             //start time-series
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.TimeSeries);
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.TimeSeries);
             //start counters array
-            writer.WriteStartArrayAsync();
+            writer.WriteStartArray();
             var first = true;
             foreach (var ts in timeSeries)
             {
                 if (first == false)
-                    writer.WriteCommaAsync();
+                    writer.WriteComma();
                 first = false;
 
                 if (_logger.IsOperationsEnabled)
                     _logger.Operations($"Found orphan time-series with docId= {docId} and name={ts}.");
 
-                writer.WriteStringAsync(ts);
+                writer.WriteString(ts);
             }
 
             // end time-series array
-            writer.WriteEndArrayAsync();
+            writer.WriteEndArray();
             //end metadata
-            writer.WriteEndObjectAsync();
-            writer.WriteEndObjectAsync();
+            writer.WriteEndObject();
+            writer.WriteEndObject();
 
             _lastWriteIsDocument = true;
             _documentWritten = true;
         }
 
-        private void WriteDummyDocumentForCounters(AsyncBlittableJsonTextWriter writer, string docId, List<string> counters)
+        private void WriteDummyDocumentForCounters(BlittableJsonTextWriter writer, string docId, List<string> counters)
         {
             if (_logger.IsOperationsEnabled)
                 _logger.Operations($"Found orphan counter with document-Id '{docId}'");
 
             if (_documentWritten)
-                writer.WriteCommaAsync();
+                writer.WriteComma();
             //start metadata
-            writer.WriteStartObjectAsync();
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Key);
-            writer.WriteStartObjectAsync();
+            writer.WriteStartObject();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Key);
+            writer.WriteStartObject();
             //collection name
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Collection);
-            writer.WriteStringAsync(EmptyCollection);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Collection);
+            writer.WriteString(EmptyCollection);
+            writer.WriteComma();
             //id
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Id);
-            writer.WriteStringAsync(docId);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Id);
+            writer.WriteString(docId);
+            writer.WriteComma();
             //change vector
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.ChangeVector);
-            writer.WriteStringAsync(Empty);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.ChangeVector);
+            writer.WriteString(Empty);
+            writer.WriteComma();
             //flags
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Flags);
-            writer.WriteStringAsync(DocumentFlags.HasCounters.ToString());
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Flags);
+            writer.WriteString(DocumentFlags.HasCounters.ToString());
+            writer.WriteComma();
             //start counters
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Counters);
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Counters);
             //start counters array
-            writer.WriteStartArrayAsync();
+            writer.WriteStartArray();
             var first = true;
             foreach (var counter in counters)
             {
                 if (first == false)
-                    writer.WriteCommaAsync();
+                    writer.WriteComma();
                 first = false;
 
                 if (_logger.IsOperationsEnabled)
                     _logger.Operations($"Found orphan counter with docId= {docId} and name={counter}.");
 
-                writer.WriteStringAsync(counter);
+                writer.WriteString(counter);
             }
 
             // end counters array
-            writer.WriteEndArrayAsync();
+            writer.WriteEndArray();
             //end metadata
-            writer.WriteEndObjectAsync();
-            writer.WriteEndObjectAsync();
+            writer.WriteEndObject();
+            writer.WriteEndObject();
 
             _lastWriteIsDocument = true;
             _documentWritten = true;
@@ -1182,39 +1183,39 @@ namespace Voron.Recovery
         private readonly List<(string hash, string tag, long size)> _attachmentsHashs = new List<(string, string, long)>();
         private const string TagPrefix = "Recovered attachment #";
 
-        private void WriteAttachment(AsyncBlittableJsonTextWriter writer, long totalSize, string hash, string tag = null)
+        private void WriteAttachment(BlittableJsonTextWriter writer, long totalSize, string hash, string tag = null)
         {
             if (_documentWritten)
             {
-                writer.WriteCommaAsync();
+                writer.WriteComma();
             }
 
-            writer.WriteStartObjectAsync();
+            writer.WriteStartObject();
 
-            writer.WritePropertyNameAsync(Raven.Client.Constants.Documents.Metadata.Key);
-            writer.WriteStartObjectAsync();
+            writer.WritePropertyName(Raven.Client.Constants.Documents.Metadata.Key);
+            writer.WriteStartObject();
 
-            writer.WritePropertyNameAsync(DocumentItem.ExportDocumentType.Key);
-            writer.WriteStringAsync(DocumentItem.ExportDocumentType.Attachment);
+            writer.WritePropertyName(DocumentItem.ExportDocumentType.Key);
+            writer.WriteString(DocumentItem.ExportDocumentType.Attachment);
 
-            writer.WriteEndObjectAsync();
-            writer.WriteCommaAsync();
+            writer.WriteEndObject();
+            writer.WriteComma();
 
-            writer.WritePropertyNameAsync(nameof(AttachmentName.Hash));
-            writer.WriteStringAsync(hash);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(nameof(AttachmentName.Hash));
+            writer.WriteString(hash);
+            writer.WriteComma();
 
-            writer.WritePropertyNameAsync(nameof(AttachmentName.Size));
-            writer.WriteIntegerAsync(totalSize);
-            writer.WriteCommaAsync();
+            writer.WritePropertyName(nameof(AttachmentName.Size));
+            writer.WriteInteger(totalSize);
+            writer.WriteComma();
 
-            writer.WritePropertyNameAsync(nameof(DocumentItem.AttachmentStream.Tag));
-            writer.WriteStringAsync(tag ?? $"{TagPrefix}{++_attachmentNumber}");
+            writer.WritePropertyName(nameof(DocumentItem.AttachmentStream.Tag));
+            writer.WriteString(tag ?? $"{TagPrefix}{++_attachmentNumber}");
 
-            writer.WriteEndObjectAsync();
+            writer.WriteEndObject();
             foreach (var chunk in _attachmentChunks)
             {
-                writer.WriteMemoryChunkAsync(chunk.Ptr, chunk.Size);
+                writer.WriteMemoryChunk(chunk.Ptr, chunk.Size);
             }
             _attachmentsHashs.Add((hash, tag, totalSize));
             _lastWriteIsDocument = false;
@@ -1268,46 +1269,52 @@ namespace Voron.Recovery
             return true;
         }
 
-        private static void WriteSmugglerHeader(AsyncBlittableJsonTextWriter writer, int version, string docType)
+        private static void WriteSmugglerHeader(BlittableJsonTextWriter writer, int version, string docType)
         {
-            writer.WriteStartObjectAsync();
-            writer.WritePropertyNameAsync("BuildVersion");
-            writer.WriteIntegerAsync(version);
-            writer.WriteCommaAsync();
-            writer.WritePropertyNameAsync(docType);
-            writer.WriteStartArrayAsync();
+            writer.WriteStartObject();
+            writer.WritePropertyName("BuildVersion");
+            writer.WriteInteger(version);
+            writer.WriteComma();
+            writer.WritePropertyName(docType);
+            writer.WriteStartArray();
         }
 
-        private bool Write(byte* mem, int sizeInBytes, AsyncBlittableJsonTextWriter documentsWriter, AsyncBlittableJsonTextWriter revisionsWriter,
-            AsyncBlittableJsonTextWriter conflictsWriter, AsyncBlittableJsonTextWriter countersWriter, AsyncBlittableJsonTextWriter timeSeries, JsonOperationContext context, long startOffset, byte tableType)
+        private bool Write(byte* mem, int sizeInBytes, BlittableJsonTextWriter documentsWriter, BlittableJsonTextWriter revisionsWriter,
+            BlittableJsonTextWriter conflictsWriter, BlittableJsonTextWriter countersWriter, BlittableJsonTextWriter timeSeries, JsonOperationContext context, long startOffset, byte tableType)
         {
             switch ((TableType)tableType)
             {
                 case TableType.None:
                     return false;
+
                 case TableType.Documents:
                     return WriteDocument(mem, sizeInBytes, documentsWriter, context, startOffset);
+
                 case TableType.Revisions:
                     return WriteRevision(mem, sizeInBytes, revisionsWriter, context, startOffset);
+
                 case TableType.Conflicts:
                     return WriteConflict(mem, sizeInBytes, conflictsWriter, context, startOffset);
+
                 case TableType.Counters:
                     return WriteCounter(mem, sizeInBytes, countersWriter, context, startOffset);
+
                 case TableType.TimeSeries:
                     return WriteTimeSeries(mem, sizeInBytes, timeSeries, context, startOffset);
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(tableType), tableType, null);
             }
         }
 
-        private bool WriteTimeSeries(byte* mem, in int sizeInBytes, AsyncBlittableJsonTextWriter timeSeriesWriter, JsonOperationContext context, in long startOffset)
+        private bool WriteTimeSeries(byte* mem, in int sizeInBytes, BlittableJsonTextWriter timeSeriesWriter, JsonOperationContext context, in long startOffset)
         {
             try
             {
                 var tvr = new TableValueReader(mem, sizeInBytes);
 
                 if (_timeSeriesWritten)
-                    timeSeriesWriter.WriteCommaAsync();
+                    timeSeriesWriter.WriteComma();
 
                 _timeSeriesWritten = false;
 
@@ -1330,40 +1337,40 @@ namespace Voron.Recovery
                     return false;
                 }
 
-                timeSeriesWriter.WriteStartObjectAsync();
+                timeSeriesWriter.WriteStartObject();
                 {
-                    timeSeriesWriter.WritePropertyNameAsync(Raven.Client.Constants.Documents.Blob.Document);
+                    timeSeriesWriter.WritePropertyName(Raven.Client.Constants.Documents.Blob.Document);
 
-                    timeSeriesWriter.WriteStartObjectAsync();
+                    timeSeriesWriter.WriteStartObject();
                     {
-                        timeSeriesWriter.WritePropertyNameAsync(nameof(TimeSeriesItem.DocId));
-                        timeSeriesWriter.WriteStringAsync(item.DocId);
-                        timeSeriesWriter.WriteCommaAsync();
+                        timeSeriesWriter.WritePropertyName(nameof(TimeSeriesItem.DocId));
+                        timeSeriesWriter.WriteString(item.DocId);
+                        timeSeriesWriter.WriteComma();
 
-                        timeSeriesWriter.WritePropertyNameAsync(nameof(TimeSeriesItem.Name));
-                        timeSeriesWriter.WriteStringAsync(item.Name);
-                        timeSeriesWriter.WriteCommaAsync();
+                        timeSeriesWriter.WritePropertyName(nameof(TimeSeriesItem.Name));
+                        timeSeriesWriter.WriteString(item.Name);
+                        timeSeriesWriter.WriteComma();
 
-                        timeSeriesWriter.WritePropertyNameAsync(nameof(TimeSeriesItem.ChangeVector));
-                        timeSeriesWriter.WriteStringAsync(item.ChangeVector);
-                        timeSeriesWriter.WriteCommaAsync();
+                        timeSeriesWriter.WritePropertyName(nameof(TimeSeriesItem.ChangeVector));
+                        timeSeriesWriter.WriteString(item.ChangeVector);
+                        timeSeriesWriter.WriteComma();
 
-                        timeSeriesWriter.WritePropertyNameAsync(nameof(TimeSeriesItem.Collection));
-                        timeSeriesWriter.WriteStringAsync(item.Collection);
-                        timeSeriesWriter.WriteCommaAsync();
+                        timeSeriesWriter.WritePropertyName(nameof(TimeSeriesItem.Collection));
+                        timeSeriesWriter.WriteString(item.Collection);
+                        timeSeriesWriter.WriteComma();
 
-                        timeSeriesWriter.WritePropertyNameAsync(nameof(TimeSeriesItem.Baseline));
-                        timeSeriesWriter.WriteDateTimeAsync(item.Start, true);
+                        timeSeriesWriter.WritePropertyName(nameof(TimeSeriesItem.Baseline));
+                        timeSeriesWriter.WriteDateTime(item.Start, true);
                     }
-                    timeSeriesWriter.WriteEndObjectAsync();
+                    timeSeriesWriter.WriteEndObject();
 
-                    timeSeriesWriter.WriteCommaAsync();
-                    timeSeriesWriter.WritePropertyNameAsync(Raven.Client.Constants.Documents.Blob.Size);
-                    timeSeriesWriter.WriteIntegerAsync(item.SegmentSize);
+                    timeSeriesWriter.WriteComma();
+                    timeSeriesWriter.WritePropertyName(Raven.Client.Constants.Documents.Blob.Size);
+                    timeSeriesWriter.WriteInteger(item.SegmentSize);
                 }
-                timeSeriesWriter.WriteEndObjectAsync();
+                timeSeriesWriter.WriteEndObject();
 
-                timeSeriesWriter.WriteMemoryChunkAsync(item.Segment.Ptr, item.Segment.NumberOfBytes);
+                timeSeriesWriter.WriteMemoryChunk(item.Segment.Ptr, item.Segment.NumberOfBytes);
 
                 _timeSeriesWritten = true;
                 if (_logger.IsInfoEnabled)
@@ -1390,14 +1397,14 @@ namespace Voron.Recovery
             }
         }
 
-        private bool WriteCounter(byte* mem, int sizeInBytes, AsyncBlittableJsonTextWriter countersWriter, JsonOperationContext context, long startOffset)
+        private bool WriteCounter(byte* mem, int sizeInBytes, BlittableJsonTextWriter countersWriter, JsonOperationContext context, long startOffset)
         {
             try
             {
                 var tvr = new TableValueReader(mem, sizeInBytes);
 
                 if (_counterWritten)
-                    countersWriter.WriteCommaAsync();
+                    countersWriter.WriteComma();
 
                 _counterWritten = false;
 
@@ -1421,7 +1428,7 @@ namespace Voron.Recovery
                     return false;
                 }
 
-                context.WriteAsync(countersWriter, new DynamicJsonValue
+                context.Sync.Write(countersWriter, new DynamicJsonValue
                 {
                     [nameof(CounterItem.DocId)] = counterGroup.DocumentId.ToString(),
                     [nameof(CounterItem.ChangeVector)] = counterGroup.ChangeVector.ToString(),
@@ -1468,14 +1475,14 @@ namespace Voron.Recovery
             }
         }
 
-        private bool WriteDocument(byte* mem, int sizeInBytes, AsyncBlittableJsonTextWriter writer, JsonOperationContext context, long startOffset)
+        private bool WriteDocument(byte* mem, int sizeInBytes, BlittableJsonTextWriter writer, JsonOperationContext context, long startOffset)
         {
             try
             {
                 var tvr = new TableValueReader(mem, sizeInBytes);
 
                 if (_documentWritten)
-                    writer.WriteCommaAsync();
+                    writer.WriteComma();
 
                 _documentWritten = false;
 
@@ -1510,7 +1517,7 @@ namespace Voron.Recovery
                     return false;
                 }
 
-                context.WriteAsync(writer, document.Data);
+                context.Sync.Write(writer, document.Data);
 
                 _documentWritten = true;
                 _numberOfDocumentsRetrieved++;
@@ -1594,14 +1601,14 @@ namespace Voron.Recovery
             }
         }
 
-        private bool WriteRevision(byte* mem, int sizeInBytes, AsyncBlittableJsonTextWriter writer, JsonOperationContext context, long startOffset)
+        private bool WriteRevision(byte* mem, int sizeInBytes, BlittableJsonTextWriter writer, JsonOperationContext context, long startOffset)
         {
             try
             {
                 var tvr = new TableValueReader(mem, sizeInBytes);
 
                 if (_revisionWritten)
-                    writer.WriteCommaAsync();
+                    writer.WriteComma();
 
                 _revisionWritten = false;
 
@@ -1625,7 +1632,7 @@ namespace Voron.Recovery
                     return false;
                 }
 
-                context.WriteAsync(writer, revision.Data);
+                context.Sync.Write(writer, revision.Data);
 
                 _revisionWritten = true;
                 _numberOfDocumentsRetrieved++;
@@ -1642,14 +1649,14 @@ namespace Voron.Recovery
             }
         }
 
-        private bool WriteConflict(byte* mem, int sizeInBytes, AsyncBlittableJsonTextWriter writer, JsonOperationContext context, long startOffset)
+        private bool WriteConflict(byte* mem, int sizeInBytes, BlittableJsonTextWriter writer, JsonOperationContext context, long startOffset)
         {
             try
             {
                 var tvr = new TableValueReader(mem, sizeInBytes);
 
                 if (_conflictWritten)
-                    writer.WriteCommaAsync();
+                    writer.WriteComma();
 
                 _conflictWritten = false;
 
@@ -1672,7 +1679,7 @@ namespace Voron.Recovery
                     return false;
                 }
 
-                context.WriteAsync(writer, conflict.Doc);
+                context.Sync.Write(writer, conflict.Doc);
 
                 _conflictWritten = true;
                 _numberOfDocumentsRetrieved++;
