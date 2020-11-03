@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using System.Reflection;
+using System.Threading.Tasks;
 using FastTests;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
@@ -15,13 +15,13 @@ namespace SlowTests.Issues
         }
 
         [Fact]
-        public void Can_write_large_string()
+        public async Task Can_write_large_string()
         {
             using (var context = JsonOperationContext.ShortTermSingleUse())
-            using (var stream = typeof(RavenDB_10958).Assembly.GetManifestResourceStream("SlowTests.Data.RavenDB_10958.txt"))
+            await using (var stream = typeof(RavenDB_10958).Assembly.GetManifestResourceStream("SlowTests.Data.RavenDB_10958.txt"))
             using (var reader = new StreamReader(stream))
             {
-                var content = reader.ReadToEnd();
+                var content = await reader.ReadToEndAsync();
 
                 var djv = new DynamicJsonValue
                 {
@@ -34,7 +34,7 @@ namespace SlowTests.Issues
 
                 var ms = new MemoryStream();
 
-                json.WriteJsonTo(ms);
+                await json.WriteJsonToAsync(ms);
 
                 ms.Position = 0;
                 var result = context.Read(ms, "test");
@@ -44,10 +44,10 @@ namespace SlowTests.Issues
         }
 
         [Fact]
-        public void Can_write_large_compressed_stream()
+        public async Task Can_write_large_compressed_stream()
         {
             using (var context = JsonOperationContext.ShortTermSingleUse())
-            using (var stream = typeof(RavenDB_10958).Assembly.GetManifestResourceStream("SlowTests.Data.RavenDB_10958.json"))
+            await using (var stream = typeof(RavenDB_10958).Assembly.GetManifestResourceStream("SlowTests.Data.RavenDB_10958.json"))
             {
                 var json = context.Read(stream, "test");
 
@@ -57,7 +57,7 @@ namespace SlowTests.Issues
 
                 var ms = new MemoryStream();
 
-                json.WriteJsonTo(ms);
+                await json.WriteJsonToAsync(ms);
 
                 ms.Position = 0;
                 var result = context.Read(ms, "test");

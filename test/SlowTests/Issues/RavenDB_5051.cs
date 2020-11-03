@@ -25,7 +25,6 @@ namespace SlowTests.Issues
                 var result = store.Maintenance.Send(new FormatOperation(@"from c in docs.Companies
                 select new
                 {
-
                     Name = c.Name
                 }"));
 
@@ -70,7 +69,6 @@ namespace SlowTests.Issues
                 }
 
                 public override bool IsReadRequest => false;
-                
 
                 public override HttpRequestMessage CreateRequest(JsonOperationContext ctx, ServerNode node, out string url)
                 {
@@ -79,15 +77,16 @@ namespace SlowTests.Issues
                     return new HttpRequestMessage
                     {
                         Method = HttpMethod.Post,
-                        Content = new BlittableJsonContent(stream =>
+                        Content = new BlittableJsonContent(async stream =>
                         {
-                            using (var writer = new AsyncBlittableJsonTextWriter(_context, stream))
+                            await using (var writer = new AsyncBlittableJsonTextWriter(_context, stream))
                             {
-                                writer.WriteStartObjectAsync();
-                                writer.WritePropertyNameAsync(nameof(FormatOperation.Result.Expression));
-                                writer.WriteStringAsync(_expression);
+                                await writer.WriteStartObjectAsync();
 
-                                writer.WriteEndObjectAsync();
+                                await writer.WritePropertyNameAsync(nameof(FormatOperation.Result.Expression));
+                                await writer.WriteStringAsync(_expression);
+
+                                await writer.WriteEndObjectAsync();
                             }
                         })
                     };

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using Sparrow;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
@@ -7,16 +8,16 @@ namespace SlowTests.Blittable
 {
     public class SerializeTestHelper
     {
-        public static BlittableJsonReaderObject SimulateSavingToFileAndLoading(JsonOperationContext context, BlittableJsonReaderObject toStream)
+        public static async Task<BlittableJsonReaderObject> SimulateSavingToFileAndLoadingAsync(JsonOperationContext context, BlittableJsonReaderObject toStream)
         {
             //Simulates saving to file and loading
             BlittableJsonReaderObject fromStream;
-            using (Stream stream = new MemoryStream())
+            await using (Stream stream = new MemoryStream())
             {
                 //Pass to stream
-                using (var textWriter = new AsyncBlittableJsonTextWriter(context, stream))
+                await using (var textWriter = new AsyncBlittableJsonTextWriter(context, stream))
                 {
-                    context.WriteAsync(textWriter, toStream);
+                    await context.WriteAsync(textWriter, toStream);
                 }
 
                 //Get from stream
@@ -30,8 +31,8 @@ namespace SlowTests.Blittable
                 using (var builder =
                     new BlittableJsonDocumentBuilder(context, BlittableJsonDocumentBuilder.UsageMode.None, "some tag", parser, state))
                 {
-                    UnmanagedJsonParserHelper.Read(peepingTomStream, parser, state, buffer);
-                    UnmanagedJsonParserHelper.ReadObject(builder, peepingTomStream, parser, buffer);
+                    await UnmanagedJsonParserHelper.ReadAsync(peepingTomStream, parser, state, buffer);
+                    await UnmanagedJsonParserHelper.ReadObjectAsync(builder, peepingTomStream, parser, buffer);
 
                     fromStream = builder.CreateReader();
                 }
