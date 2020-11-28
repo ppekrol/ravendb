@@ -394,9 +394,11 @@ namespace Sparrow.Server.LowMemory
                 if (swaps.Length == 0) // on error return as if no swap problem
                     return null;
 
+                const string sysBlockDirectoryPath = "/sys/block/";
+
                 var blocks = Directory
-                    .GetDirectories("/sys/block")
-                    .Select(x => x.Substring("/sys/block".Length))
+                    .GetDirectories(sysBlockDirectoryPath)
+                    .Select(x => x.Substring(sysBlockDirectoryPath.Length))
                     .Where(x => x.StartsWith("loop") == false)
                     .ToHashSet();
 
