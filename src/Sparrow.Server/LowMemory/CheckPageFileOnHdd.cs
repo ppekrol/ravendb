@@ -399,6 +399,10 @@ namespace Sparrow.Server.LowMemory
                     .Where(x => x.StartsWith("loop") == false)
                     .ToHashSet();
 
+                Console.WriteLine("Blocks:");
+                foreach (var block in blocks)
+                    Console.WriteLine($"Block: {block}");
+
                 if (blocks.Count == 0)
                     return null;
 
@@ -411,11 +415,15 @@ namespace Sparrow.Server.LowMemory
                     if (TryFindDisk(swaps[i].DeviceName, out var disk) == false)
                         continue;
 
+                    Console.WriteLine($"Found a disk for {swaps[i].DeviceName} : {disk}");
+
                     var filename = $"/sys/block/{disk}/queue/rotational";
                     if (File.Exists(filename) == false)
                         continue;
 
                     var isHdd = KernelVirtualFileSystemUtils.ReadNumberFromFile(filename);
+
+                    Console.WriteLine($"{filename} is HDD: {isHdd}");
 
                     if (isHdd == -1)
                         return null;
@@ -435,6 +443,8 @@ namespace Sparrow.Server.LowMemory
                     // search if ssd drive is available
                     foreach (var partitionDisk in KernelVirtualFileSystemUtils.GetAllDisksFromPartitionsFile())
                     {
+                        Console.WriteLine($"Checking partition disk: {partitionDisk}");
+
                         //ignore ramdisks (ram0..ram15 etc)
                         if (partitionDisk.Equals("ram", StringComparison.OrdinalIgnoreCase))
                             continue;
@@ -442,12 +452,17 @@ namespace Sparrow.Server.LowMemory
                         if (TryFindDisk(partitionDisk, out var disk) == false)
                             continue;
 
+                        Console.WriteLine($"Found a disk for 'swaps[i].DeviceName' : 'disk'");
+
                         var filename = $"/sys/block/{disk}/queue/rotational";
 
                         if (File.Exists(filename) == false)
                             continue;
 
                         var isHdd = KernelVirtualFileSystemUtils.ReadNumberFromFile(filename);
+
+                        Console.WriteLine($"{filename} is HDD: {isHdd}");
+
                         if (isHdd == 0)
                         {
                             hddSwapsInsteadOfSsd = partitionDisk;
@@ -460,6 +475,8 @@ namespace Sparrow.Server.LowMemory
 
                 bool TryFindDisk(string deviceName, out string disk)
                 {
+                    Console.WriteLine($"Trying to find a disk for: {deviceName}");
+
                     disk = null;
 
                     if (string.IsNullOrWhiteSpace(deviceName))

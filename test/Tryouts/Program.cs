@@ -1,14 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using FastTests.Client;
-using SlowTests.Bugs;
-using SlowTests.Client.Counters;
 using SlowTests.Cluster;
-using SlowTests.Issues;
-using SlowTests.Voron;
+using Sparrow.Server.LowMemory;
 using Tests.Infrastructure;
-using Xunit.Sdk;
 
 namespace Tryouts
 {
@@ -18,9 +13,14 @@ namespace Tryouts
         {
             XunitLogging.RedirectStreams = false;
         }
-        
+
         public static async Task Main(string[] args)
         {
+            var result = CheckPageFileOnHdd.PosixIsSwappingOnHddInsteadOfSsd();
+
+            Console.WriteLine($"Result: {result}");
+
+            return;
             Console.WriteLine(Process.GetCurrentProcess().Id);
             for (int i = 0; i < 1230; i++)
             {
