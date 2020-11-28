@@ -396,6 +396,7 @@ namespace Sparrow.Server.LowMemory
 
                 var blocks = Directory
                     .GetDirectories("/sys/block")
+                    .Select(x => Path.GetDirectoryName(x))
                     .Where(x => x.StartsWith("loop") == false)
                     .ToHashSet();
 
