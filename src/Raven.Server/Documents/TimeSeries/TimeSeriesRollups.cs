@@ -394,16 +394,18 @@ namespace Raven.Server.Documents.TimeSeries
             private readonly DateTime _now;
             private readonly List<RollupState> _states;
             private readonly bool _isFirstInTopology;
+            private readonly List<string> _explanations;
             private readonly Logger _logger;
 
             public long RolledUp;
 
-            internal RollupTimeSeriesCommand(TimeSeriesConfiguration configuration, DateTime now, List<RollupState> states, bool isFirstInTopology)
+            internal RollupTimeSeriesCommand(TimeSeriesConfiguration configuration, DateTime now, List<RollupState> states, bool isFirstInTopology, List<string> explanations = null)
             {
                 _configuration = configuration;
                 _now = now;
                 _states = states;
                 _isFirstInTopology = isFirstInTopology;
+                _explanations = explanations;
                 _logger = LoggingSource.Instance.GetLogger<TimeSeriesRollups>(nameof(RollupTimeSeriesCommand));
             }
 
@@ -412,29 +414,48 @@ namespace Raven.Server.Documents.TimeSeries
                 var storage = context.DocumentDatabase.DocumentsStorage;
                 RollupSchema.Create(context.Transaction.InnerTransaction, TimeSeriesRollupTable, 16);
                 var table = context.Transaction.InnerTransaction.OpenTable(RollupSchema, TimeSeriesRollupTable);
+
+                if (_configuration == null)
+                {
+                    _explanations?.Add("We cannot apply rollups because there is no configuration.");
+                    return RolledUp;
+                }
+
                 foreach (var item in _states)
                 {
-                    if (_configuration == null)
-                        return RolledUp;
-
                     if (_configuration.Collections.TryGetValue(item.Collection, out var config) == false)
+                    {
+                        _explanations?.Add($"We cannot apply rollups for collection '{item.Collection}' because there is no rollup configuration.");
                         continue;
+                    }
 
                     if (config.Disabled)
+                    {
+                        _explanations?.Add($"We cannot apply rollups for collection '{item.Collection}' because rollup configuration is disabled.");
                         continue;
+                    }
                         
                     if (table.ReadByKey(item.Key, out var current) == false)
+                    {
+                        _explanations?.Add($"We cannot apply rollups for item '{item}' because there we could find any rollup with key '{item.Key}'.");
                         continue;
+                    }
 
                     var policy = config.GetPolicyByName(item.RollupPolicy, out _);
                     if (policy == null)
                     {
                         table.DeleteByKey(item.Key);
+
+                        _explanations?.Add($"We cannot apply rollups for item '{item}' because there is no rollup policy.");
                         continue;
                     }
 
-                    if (item.Etag != DocumentsStorage.TableValueToLong((int)RollupColumns.Etag, ref current))
+                    var currentEtag = DocumentsStorage.TableValueToLong((int)RollupColumns.Etag, ref current);
+                    if (item.Etag != currentEtag)
+                    {
+                        _explanations?.Add($"We cannot apply rollups for item '{item}' because item etag '{item.Etag}' is different than current one '{currentEtag}'.");
                         continue; // concurrency check
+                    }
 
                     try
                     {
@@ -442,8 +463,11 @@ namespace Raven.Server.Documents.TimeSeries
                     }
                     catch (NanValueException e)
                     {
+                        var msg = $"{item} failed";
                         if (_logger.IsInfoEnabled)
-                            _logger.Info($"{item} failed", e);
+                            _logger.Info(msg, e);
+
+                        _explanations?.Add(msg);
 
                         if (table.VerifyKeyExists(item.Key) == false)
                         {
@@ -482,6 +506,8 @@ namespace Raven.Server.Documents.TimeSeries
                         var msg = $"Rollup '{item.RollupPolicy}' for time-series '{name}' in document '{docId}' failed.";
                         if (_logger.IsInfoEnabled)
                             _logger.Info(msg, e);
+
+                        _explanations?.Add(msg);
 
                         var alert = AlertRaised.Create(context.DocumentDatabase.Name, "Failed to perform rollup because the time-series has more than 5 values", msg,
                             AlertType.RollupExceedNumberOfValues, NotificationSeverity.Warning, $"{item.Collection}/{item.Name}", new ExceptionDetails(e));
@@ -591,6 +617,8 @@ namespace Raven.Server.Documents.TimeSeries
                 var after = tss.AppendTimestamp(context, item.DocId, item.Collection, intoTimeSeries, values, verifyName: false);
                 if (before != after)
                     RolledUp++;
+
+                _explanations?.Add($"Timestamp appended for '{item}' with CV before '{before}' and after '{after}' with rollup count '{RolledUp}'.");
 
                 table.DeleteByKey(item.Key);
 

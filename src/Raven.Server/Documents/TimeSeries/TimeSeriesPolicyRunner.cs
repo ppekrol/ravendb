@@ -112,7 +112,7 @@ namespace Raven.Server.Documents.TimeSeries
             }
         }
 
-        public void MarkSegmentForPolicy(DocumentsOperationContext context, TimeSeriesSliceHolder slicerHolder, DateTime timestamp, 
+        public void MarkSegmentForPolicy(DocumentsOperationContext context, TimeSeriesSliceHolder slicerHolder, DateTime timestamp,
             string changeVector,
             int numberOfEntries)
         {
@@ -122,7 +122,7 @@ namespace Raven.Server.Documents.TimeSeries
             var currentIndex = config.GetPolicyIndexByTimeSeries(slicerHolder.Name);
             if (currentIndex == -1) // policy not found
                 return;
-            
+
             var nextPolicy = config.GetNextPolicy(currentIndex);
             if (nextPolicy == null)
                 return;
@@ -139,7 +139,7 @@ namespace Raven.Server.Documents.TimeSeries
                 if (now - startRollup > currentPolicy.RetentionTime)
                     return; // ignore this segment since it is outside our retention frame
             }
-            
+
             _database.DocumentsStorage.TimeSeriesStorage.Rollups.MarkSegmentForPolicy(context, slicerHolder, nextPolicy, timestamp, changeVector);
         }
 
@@ -154,7 +154,7 @@ namespace Raven.Server.Documents.TimeSeries
             var currentIndex = config.GetPolicyIndexByTimeSeries(slicerHolder.Name);
             if (currentIndex == -1) // policy not found
                 return;
-            
+
             var nextPolicy = config.GetNextPolicy(currentIndex);
             if (nextPolicy == null)
                 return;
@@ -305,9 +305,9 @@ namespace Raven.Server.Documents.TimeSeries
 
                         explanations?.Add($"RollupTimeSeriesCommand({now.GetDefaultRavenFormat()}, {isFirstInTopology})");
 
-                        var command = new TimeSeriesRollups.RollupTimeSeriesCommand(Configuration, now, states, isFirstInTopology);
+                        var command = new TimeSeriesRollups.RollupTimeSeriesCommand(Configuration, now, states, isFirstInTopology, explanations);
                         await _database.TxMerger.Enqueue(command);
-                        
+
                         if (command.RolledUp > 0)
                         {
                             explanations?.Add($"RollupTimeSeriesCommand({now.GetDefaultRavenFormat()}, {isFirstInTopology}) = {command.RolledUp}");
@@ -358,13 +358,13 @@ namespace Raven.Server.Documents.TimeSeries
                     var config = collectionConfig.Value;
                     if (config.Disabled)
                         continue;
-                
+
                     using (_database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext context))
                     {
                         var collectionName = _database.DocumentsStorage.GetCollection(collection, throwIfDoesNotExist: false);
                         if (collectionName == null)
                             continue;
-                        
+
                         await ApplyRetention(context, config, collectionName, config.RawPolicy, now);
 
                         foreach (var policy in config.Policies)
@@ -390,10 +390,10 @@ namespace Raven.Server.Documents.TimeSeries
         }
 
         private async Task ApplyRetention(
-            DocumentsOperationContext context, 
+            DocumentsOperationContext context,
             TimeSeriesCollectionConfiguration config,
-            CollectionName collectionName, 
-            TimeSeriesPolicy policy, 
+            CollectionName collectionName,
+            TimeSeriesPolicy policy,
             DateTime now)
         {
             var tss = context.DocumentDatabase.DocumentsStorage.TimeSeriesStorage;
@@ -415,7 +415,7 @@ namespace Raven.Server.Documents.TimeSeries
                 {
                     foreach (var item in tss.Stats.GetTimeSeriesByPolicyFromStartDate(context, collectionName, policy.Name, to, TimeSeriesRollups.TimeSeriesRetentionCommand.BatchSize))
                     {
-                        if (RequiredForNextPolicy(context, config, policy, item, to)) 
+                        if (RequiredForNextPolicy(context, config, policy, item, to))
                             continue;
 
                         if (tss.Rollups.HasPendingRollupFrom(context, item, to) == false)
@@ -454,7 +454,7 @@ namespace Raven.Server.Documents.TimeSeries
                 var nextStats = tss.Stats.GetStats(context, docId, next.GetTimeSeriesName(raw));
 
                 var nextEnd = nextStats.End.Add(next.AggregationTime).AddMilliseconds(-1);
-                
+
                 if (nextEnd > currentStats.End)
                     return false;
 
