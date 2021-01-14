@@ -1357,6 +1357,8 @@ namespace Raven.Server.Commercial
 
         public void AssertCanCreateEncryptedDatabase()
         {
+            return;
+
             if (IsValid(out var licenseLimit) == false)
                 throw licenseLimit;
 

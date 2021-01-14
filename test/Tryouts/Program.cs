@@ -1,11 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using FastTests.Blittable;
-using FastTests.Client;
 using SlowTests.Issues;
-using SlowTests.MailingList;
-using SlowTests.Server.Documents.ETL.Raven;
 using Tests.Infrastructure;
 
 namespace Tryouts
@@ -22,13 +18,13 @@ namespace Tryouts
             Console.WriteLine(Process.GetCurrentProcess().Id);
             for (int i = 0; i < 10_000; i++)
             {
-                 Console.WriteLine($"Starting to run {i}");
+                Console.WriteLine($"Starting to run {i}");
                 try
                 {
                     using (var testOutputHelper = new ConsoleTestOutputHelper())
-                    using (var test = new FirstClassPatch(testOutputHelper))
+                    using (var test = new RavenDB_16105(testOutputHelper))
                     {
-                         test.PatchNullField_ExpectFieldSetToNull();
+                        await test.T1();
                     }
                 }
                 catch (Exception e)
