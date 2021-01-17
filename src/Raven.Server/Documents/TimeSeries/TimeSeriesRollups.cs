@@ -139,6 +139,11 @@ namespace Raven.Server.Documents.TimeSeries
             using (table.Allocate(out var tvb))
             using (Slice.From(context.Allocator, nextPolicy.Name, ByteStringType.Immutable, out var policyToApply))
             {
+                if (explanations == null)
+                    Console.WriteLine($"In MarkSegmentForPolicy (null) ");
+                else
+                    explanations?.Add($"In MarkSegmentForPolicy");
+
                 if (table.ReadByKey(slicerHolder.StatsKey, out var tvr))
                 {
                     // check if we need to update this
@@ -163,6 +168,10 @@ namespace Raven.Server.Documents.TimeSeries
 
                     table.Set(tvb);
                 }
+                if (explanations == null)
+                    Console.WriteLine($"In MarkSegmentForPolicy (null). start key {slicerHolder.StatsKey}. Etag {etag}  ");
+                else
+                    explanations?.Add($"In MarkSegmentForPolicy. start key {slicerHolder.StatsKey}. Etag {etag}  ");
             }
         }
 
@@ -351,6 +360,8 @@ namespace Raven.Server.Documents.TimeSeries
 
                         table.Set(tvb);
                     }
+
+                    Console.WriteLine($"In AddedNewRollupPoliciesCommand. start key {key}. Etag 0  ");
 
                     Marked++;
                 }
