@@ -197,6 +197,7 @@ namespace Raven.Server.Documents.TimeSeries
             var table = context.Transaction.InnerTransaction.OpenTable(RollupSchema, TimeSeriesRollupTable);
             if (table == null)
                 return;
+            explanations?.Add($"PrepareRollups. namber of table entries { table.NumberOfEntries}");
 
             var currentTicks = currentTime.Ticks;
 
@@ -361,7 +362,7 @@ namespace Raven.Server.Documents.TimeSeries
                         table.Set(tvb);
                     }
 
-                    Console.WriteLine($"In AddedNewRollupPoliciesCommand. start key {key}. Etag 0  ");
+                    Console.WriteLine($"In AddedNewRollupPoliciesCommand. start key {key}. Etag 0 .number of table entries {table.NumberOfEntries} ");
 
                     Marked++;
                 }
