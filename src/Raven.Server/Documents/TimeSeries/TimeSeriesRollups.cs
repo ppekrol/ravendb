@@ -89,7 +89,7 @@ namespace Raven.Server.Documents.TimeSeries
             _logger = LoggingSource.Instance.GetLogger<TimeSeriesPolicyRunner>(database.Name);
         }
 
-        public unsafe void MarkForPolicy(DocumentsOperationContext context, TimeSeriesSliceHolder slicerHolder, TimeSeriesPolicy nextPolicy, DateTime timestamp)
+        public unsafe void MarkForPolicy(DocumentsOperationContext context, TimeSeriesSliceHolder slicerHolder, TimeSeriesPolicy nextPolicy, DateTime timestamp, List<string> explanations = null)
         {
             var nextRollup = NextRollup(timestamp, nextPolicy);
 
@@ -124,10 +124,12 @@ namespace Raven.Server.Documents.TimeSeries
 
                     table.Set(tvb);
                 }
+                explanations?.Add($"MarkSegmentForPolicy. startKey: {slicerHolder.StatsKey}. Etag:{etag})");
+
             }
         }
 
-        public unsafe void MarkSegmentForPolicy(DocumentsOperationContext context, TimeSeriesSliceHolder slicerHolder, TimeSeriesPolicy nextPolicy, DateTime timestamp, string changeVector)
+        public unsafe void MarkSegmentForPolicy(DocumentsOperationContext context, TimeSeriesSliceHolder slicerHolder, TimeSeriesPolicy nextPolicy, DateTime timestamp, string changeVector, List<string> explanations = null)
         {
             var nextRollup = NextRollup(timestamp, nextPolicy);
            
@@ -179,7 +181,7 @@ namespace Raven.Server.Documents.TimeSeries
             return existingRollup <= t.Ticks;
         }
 
-        internal void PrepareRollups(DocumentsOperationContext context, DateTime currentTime, long take, long start, List<RollupState> states, out Stopwatch duration)
+        internal void PrepareRollups(DocumentsOperationContext context, DateTime currentTime, long take, long start, List<RollupState> states, out Stopwatch duration, List<string> explanations = null)
         {
             duration = Stopwatch.StartNew();
 
@@ -215,6 +217,8 @@ namespace Raven.Server.Documents.TimeSeries
                         Etag = DocumentsStorage.TableValueToLong((int)RollupColumns.Etag, ref item.Result.Reader),
                         ChangeVector = DocumentsStorage.TableValueToChangeVector(context, (int)RollupColumns.ChangeVector, ref item.Result.Reader)
                     };
+
+                    explanations?.Add($"State. DocId:{state.DocId}, Name:{state.Name}, Etag: {state.Etag}, Next: {state.NextRollup}");
 
                     if (_logger.IsInfoEnabled)
                         _logger.Info($"{state} is prepared.");

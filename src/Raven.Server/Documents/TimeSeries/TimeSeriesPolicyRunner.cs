@@ -20,7 +20,7 @@ namespace Raven.Server.Documents.TimeSeries
     public class TimeSeriesPolicyRunner : BackgroundWorkBase
     {
         private readonly DocumentDatabase _database;
-
+        public List<string> explanations;
         public TimeSeriesConfiguration Configuration { get; }
 
         private readonly TimeSpan _checkFrequency;
@@ -174,7 +174,7 @@ namespace Raven.Server.Documents.TimeSeries
                 }
             }
 
-            _database.DocumentsStorage.TimeSeriesStorage.Rollups.MarkForPolicy(context, slicerHolder, nextPolicy, timestamp);
+            _database.DocumentsStorage.TimeSeriesStorage.Rollups.MarkForPolicy(context, slicerHolder, nextPolicy, timestamp, explanations);
         }
 
         internal async Task HandleChanges()
@@ -268,7 +268,7 @@ namespace Raven.Server.Documents.TimeSeries
             }
         }
 
-        internal async Task<long> RunRollups(bool propagateException = true, List<string> explanations = null)
+        internal async Task<long> RunRollups(bool propagateException = true)
         {
             var now = _database.Time.GetUtcNow();
             var total = 0L;
@@ -290,7 +290,7 @@ namespace Raven.Server.Documents.TimeSeries
                         {
                             explanations?.Add($"Preparing rollups at '{now.GetDefaultRavenFormat()}' with '{0}' start.");
 
-                            _database.DocumentsStorage.TimeSeriesStorage.Rollups.PrepareRollups(context, now, 1024, start, states, out duration);
+                            _database.DocumentsStorage.TimeSeriesStorage.Rollups.PrepareRollups(context, now, 1024, start, states, out duration, explanations);
                             if (states.Count == 0)
                             {
                                 explanations?.Add($"Cannot run rollups at '{now.GetDefaultRavenFormat()}' because there are no rollup states.");

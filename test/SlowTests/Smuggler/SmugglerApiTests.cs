@@ -898,7 +898,9 @@ namespace SlowTests.Smuggler
                         await session.StoreAsync(new User { Name = "Name1" }, "users/1");
                         await session.SaveChangesAsync();
                     }
-
+                    var explanations = new List<string>();
+                    var db = await GetDocumentDatabaseInstanceFor(store1);
+                    db.TimeSeriesPolicyRunner.explanations = explanations;
                     using (var session = store1.OpenAsyncSession())
                     {
                         for (int i = 0; i < 10; i++)
@@ -908,10 +910,7 @@ namespace SlowTests.Smuggler
 
                         await session.SaveChangesAsync();
                     }
-
-                    var explanations = new List<string>();
-                    var db = await GetDocumentDatabaseInstanceFor(store1);
-                    var total = await db.TimeSeriesPolicyRunner.RunRollups(explanations: explanations);
+                    var total = await db.TimeSeriesPolicyRunner.RunRollups();
 
                     foreach (var explanation in explanations)
                     {
