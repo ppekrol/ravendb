@@ -197,7 +197,7 @@ namespace Raven.Server.Documents.TimeSeries
             var table = context.Transaction.InnerTransaction.OpenTable(RollupSchema, TimeSeriesRollupTable);
             if (table == null)
                 return;
-            explanations?.Add($"PrepareRollups. namber of table entries { table.NumberOfEntries}");
+            explanations?.Add($"PrepareRollups. number of table entries { table.NumberOfEntries}, Name:{table.Name},{table.GetReport(true)}");
 
             var currentTicks = currentTime.Ticks;
 
@@ -430,7 +430,7 @@ namespace Raven.Server.Documents.TimeSeries
                 var storage = context.DocumentDatabase.DocumentsStorage;
                 RollupSchema.Create(context.Transaction.InnerTransaction, TimeSeriesRollupTable, 16);
                 var table = context.Transaction.InnerTransaction.OpenTable(RollupSchema, TimeSeriesRollupTable);
-
+                _explanations?.Add($"ExecuteCmd. number of table entries { table.NumberOfEntries}, Name:{table.Name},{table.GetReport(true)}");
                 if (_configuration == null)
                 {
                     _explanations?.Add("We cannot apply rollups because there is no configuration.");
