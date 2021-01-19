@@ -254,7 +254,7 @@ namespace Raven.Server.Documents.TimeSeries
             while (true)
             {
                 Cts.Token.ThrowIfCancellationRequested();
-
+                Console.WriteLine($"AddedNewRollupPoliciesCommand");
                 var cmd = new TimeSeriesRollups.AddedNewRollupPoliciesCommand(collectionName, prev, policy, skip);
                 await _database.TxMerger.Enqueue(cmd);
 

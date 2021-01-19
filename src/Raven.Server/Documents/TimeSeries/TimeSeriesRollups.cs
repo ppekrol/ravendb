@@ -123,9 +123,10 @@ namespace Raven.Server.Documents.TimeSeries
                     tvb.Add(changeVectorSlice);
 
                     table.Set(tvb);
+                    explanations?.Add($"MarkSegmentForPolicy. startKey: {slicerHolder.StatsKey}. Etag:{etag}. CV: { changeVectorSlice.ToString()})");
+                    Console.WriteLine($"MarkSegmentForPolicy. startKey: {slicerHolder.StatsKey}. Etag:{etag}. CV: { changeVectorSlice.ToString()})");
                 }
-                explanations?.Add($"MarkSegmentForPolicy. startKey: {slicerHolder.StatsKey}. Etag:{etag})");
-
+                
             }
         }
 
@@ -139,11 +140,6 @@ namespace Raven.Server.Documents.TimeSeries
             using (table.Allocate(out var tvb))
             using (Slice.From(context.Allocator, nextPolicy.Name, ByteStringType.Immutable, out var policyToApply))
             {
-                if (explanations == null)
-                    Console.WriteLine($"In MarkSegmentForPolicy (null) ");
-                else
-                    explanations?.Add($"In MarkSegmentForPolicy");
-
                 if (table.ReadByKey(slicerHolder.StatsKey, out var tvr))
                 {
                     // check if we need to update this
@@ -168,10 +164,6 @@ namespace Raven.Server.Documents.TimeSeries
 
                     table.Set(tvb);
                 }
-                if (explanations == null)
-                    Console.WriteLine($"In MarkSegmentForPolicy (null). start key {slicerHolder.StatsKey}. Etag {etag}  ");
-                else
-                    explanations?.Add($"In MarkSegmentForPolicy. start key {slicerHolder.StatsKey}. Etag {etag}  ");
             }
         }
 
@@ -197,7 +189,7 @@ namespace Raven.Server.Documents.TimeSeries
             var table = context.Transaction.InnerTransaction.OpenTable(RollupSchema, TimeSeriesRollupTable);
             if (table == null)
                 return;
-            explanations?.Add($"PrepareRollups. number of table entries { table.NumberOfEntries}, Name:{table.Name},{table.GetReport(true)}");
+            explanations?.Add($"PrepareRollups. number of table entries { table.NumberOfEntries}");
 
             var currentTicks = currentTime.Ticks;
 
@@ -228,7 +220,7 @@ namespace Raven.Server.Documents.TimeSeries
                         ChangeVector = DocumentsStorage.TableValueToChangeVector(context, (int)RollupColumns.ChangeVector, ref item.Result.Reader)
                     };
 
-                    explanations?.Add($"State. DocId:{state.DocId}, Name:{state.Name}, Etag: {state.Etag}, Next: {state.NextRollup}");
+                    explanations?.Add($"State. DocId:{state.DocId}, Name:{state.Name}, Etag: {state.Etag}, Next: {state.NextRollup}, CV: {state.ChangeVector}");
 
                     if (_logger.IsInfoEnabled)
                         _logger.Info($"{state} is prepared.");
@@ -360,9 +352,10 @@ namespace Raven.Server.Documents.TimeSeries
                         tvb.Add(changeVectorSlice);
 
                         table.Set(tvb);
+                        Console.WriteLine($"In AddedNewRollupPoliciesCommand. start key {key}. Etag 0 .number of table entries {changeVectorSlice.ToString()} ");
                     }
 
-                    Console.WriteLine($"In AddedNewRollupPoliciesCommand. start key {key}. Etag 0 .number of table entries {table.NumberOfEntries} ");
+                    
 
                     Marked++;
                 }
@@ -430,7 +423,7 @@ namespace Raven.Server.Documents.TimeSeries
                 var storage = context.DocumentDatabase.DocumentsStorage;
                 RollupSchema.Create(context.Transaction.InnerTransaction, TimeSeriesRollupTable, 16);
                 var table = context.Transaction.InnerTransaction.OpenTable(RollupSchema, TimeSeriesRollupTable);
-                _explanations?.Add($"ExecuteCmd. number of table entries { table.NumberOfEntries}, Name:{table.Name},{table.GetReport(true)}");
+                _explanations?.Add($"ExecuteCmd. number of table entries { table.NumberOfEntries}, ");
                 if (_configuration == null)
                 {
                     _explanations?.Add("We cannot apply rollups because there is no configuration.");
