@@ -180,11 +180,12 @@ namespace Raven.Server.Documents.TimeSeries
         internal async Task HandleChanges()
         {
             var policies = new List<(TimeSeriesPolicy Policy, int Index)>();
-
+            Console.WriteLine($"In handle changes 1. number of collection { Configuration.Collections.Count}");
             foreach (var config in Configuration.Collections)
             {
                 var collection = config.Key;
                 var collectionName = _database.DocumentsStorage.GetCollection(collection, throwIfDoesNotExist: false);
+                Console.WriteLine($"In handle changes 2. collection name { collectionName}");
                 if (collectionName == null)
                     continue;
 
@@ -214,19 +215,20 @@ namespace Raven.Server.Documents.TimeSeries
 
                     if (Logger.IsInfoEnabled)
                         Logger.Info($"Found {currentPolicies.Count} policies in collection '{collection}': ({string.Join(',', currentPolicies)})");
-
+                    Console.WriteLine($"Found {currentPolicies.Count} policies in collection '{collection}': ({string.Join(',', currentPolicies)})");
                     foreach (var policy in policies)
                     {
+                        Console.WriteLine($"In handle changes 3. Policy: { policy.Policy.Name}");
                         if (SkipExisting(policy.Policy.Name))
                             continue;
-
+                        Console.WriteLine($"In handle changes 4.");
                         var prev = config.Value.GetPreviousPolicy(policy.Index);
                         if (prev == null || ReferenceEquals(prev, TimeSeriesPolicy.BeforeAllPolices))
                             continue;
-
+                        
                         if (Logger.IsInfoEnabled)
                             Logger.Info($"Adding new policy '{policy.Policy.Name}' for collection '{collection}'");
-
+                        Console.WriteLine($"In handle changes 5. Adding new policy '{policy.Policy.Name}' for collection '{collection}'");
                         await AddNewPolicy(collectionName, prev, policy.Policy);
                     }
 

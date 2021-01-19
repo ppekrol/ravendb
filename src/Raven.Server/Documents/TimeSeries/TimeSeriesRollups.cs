@@ -352,7 +352,7 @@ namespace Raven.Server.Documents.TimeSeries
                         tvb.Add(changeVectorSlice);
 
                         table.Set(tvb);
-                        Console.WriteLine($"In AddedNewRollupPoliciesCommand. start key {key}. Etag 0 .number of table entries {changeVectorSlice.ToString()} ");
+                        Console.WriteLine($"In AddedNewRollupPoliciesCommand. start key {key}. Etag 0 .CV {changeVectorSlice.ToString()} ");
                     }
 
                     
@@ -462,7 +462,7 @@ namespace Raven.Server.Documents.TimeSeries
                     var currentEtag = DocumentsStorage.TableValueToLong((int)RollupColumns.Etag, ref current);
                     if (item.Etag != currentEtag)
                     {
-                        _explanations?.Add($"We cannot apply rollups for item '{item}' because item etag '{item.Etag}' is different than current one '{currentEtag}'.");
+                        _explanations?.Add($"We cannot apply rollups for item '{item}' because item etag '{item.Etag}'- cv:{item.ChangeVector} is different than current one '{currentEtag}'-cv {DocumentsStorage.TableValueToLong((int)RollupColumns.ChangeVector, ref current)}.");
                         continue; // concurrency check
                     }
 
