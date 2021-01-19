@@ -2261,6 +2261,7 @@ namespace Raven.Server.Documents
 
         public CollectionName GetCollection(string collection, bool throwIfDoesNotExist)
         {
+            Console.WriteLine($"In GetCollection. _collectionsCache count :{_collectionsCache.Count}");
             if (_collectionsCache.TryGetValue(collection, out CollectionName collectionName) == false && throwIfDoesNotExist)
                 throw new InvalidOperationException($"There is no collection for '{collection}'.");
 
@@ -2320,6 +2321,7 @@ namespace Raven.Server.Documents
                     };
                     _collectionsCache = collectionNames;
                 };
+                Console.WriteLine($"In ExtractCollectionName. _collectionsCache count : {_collectionsCache.Count}");
             }
             return name;
         }
