@@ -910,12 +910,11 @@ namespace SlowTests.Smuggler
 
                         await session.SaveChangesAsync();
                     }
-
-                    await store1.Maintenance.SendAsync(new ConfigureTimeSeriesOperation(config));
-                    var explanations = new List<string>();
                     var db = await GetDocumentDatabaseInstanceFor(store1);
-                    db.TimeSeriesPolicyRunner.explanations = explanations;
+                    await store1.Maintenance.SendAsync(new ConfigureTimeSeriesOperation(config));
                     
+                    var explanations = new List<string>();
+                    db.TimeSeriesPolicyRunner.explanations = explanations;
 
                     using (var session = store1.OpenAsyncSession())
                     {
@@ -927,16 +926,16 @@ namespace SlowTests.Smuggler
                         await session.SaveChangesAsync();
                     }
 
-                    var total = await db.TimeSeriesPolicyRunner.RunRollups();
-
                      foreach (var explanation in explanations)
                      {
                          Output.WriteLine(explanation);
                          Console.WriteLine(explanation);
                      }
 
+                     await Task.Delay(2000);
+                    var total = await db.TimeSeriesPolicyRunner.RunRollups();
                     Assert.True(1 == total, $"actual {total}, baseline:{baseline} ({baseline.Ticks}, {baseline.Kind}), now:{db.Time.GetUtcNow()} ({db.Time.GetUtcNow().Ticks})");
-
+                   
                     var operation = await store1.Smuggler.ExportAsync(new DatabaseSmugglerExportOptions(), file);
                     var exportResult = await operation.WaitForCompletionAsync(TimeSpan.FromMinutes(1)) as SmugglerResult;
                     Assert.NotNull(exportResult);
@@ -957,7 +956,7 @@ namespace SlowTests.Smuggler
                         Assert.Equal("Name1", user1.Name);
 
                         var values = await session.TimeSeriesFor("users/1", "Heartrate").GetAsync();
-
+                        
                         var count = 0;
                         foreach (var val in values)
                         {
