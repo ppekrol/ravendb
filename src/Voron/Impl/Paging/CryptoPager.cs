@@ -26,6 +26,9 @@ namespace Voron.Impl.Paging
             var total = 0L;
             foreach (var buffer in loadedBuffers.Values)
             {
+                if (buffer.FromPool)
+                    continue;
+
                 total += buffer.Size;
             }
 
@@ -46,6 +49,10 @@ namespace Voron.Impl.Paging
             set
             {
                 _loadedBuffers[index] = value;
+
+                if (value.FromPool)
+                    return;
+
                 _totalCryptoBufferSize += value.Size;
             }
         }
@@ -77,6 +84,7 @@ namespace Voron.Impl.Paging
         public NativeMemory.ThreadStats AllocatingThread;
         public long Generation;
         public bool SkipOnTxCommit;
+        public bool FromPool;
     }
 
     public sealed unsafe class CryptoPager : AbstractPager
@@ -242,7 +250,8 @@ namespace Voron.Impl.Paging
                     Pointer = encBuffer.Pointer + i * Constants.Storage.PageSize,
                     Size = Constants.Storage.PageSize,
                     OriginalSize = 0,
-                    AllocatingThread = encBuffer.AllocatingThread
+                    AllocatingThread = encBuffer.AllocatingThread,
+                    FromPool = encBuffer.FromPool
                 };
 
                 // when we commit
@@ -262,13 +271,14 @@ namespace Voron.Impl.Paging
 
         private EncryptionBuffer GetBufferAndAddToTxState(long pageNumber, CryptoTransactionState state, int numberOfPages)
         {
-            var ptr = EncryptionBuffersPool.Instance.Get(numberOfPages, out var size, out var thread);
+            var ptr = EncryptionBuffersPool.Instance.Get(numberOfPages, out var size, out var pooled, out var thread);
 
             var buffer = new EncryptionBuffer
             {
                 Size = size,
                 Pointer = ptr,
-                AllocatingThread = thread
+                AllocatingThread = thread,
+                FromPool = pooled
             };
 
             state[pageNumber] = buffer;

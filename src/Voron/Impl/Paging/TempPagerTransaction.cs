@@ -48,7 +48,6 @@ namespace Voron.Impl.Paging
                 }
 
                 return new Size(total, SizeUnit.Bytes);
-                ;
             }
         }
 

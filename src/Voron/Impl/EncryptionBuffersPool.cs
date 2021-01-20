@@ -72,7 +72,7 @@ namespace Voron.Impl
             _cleanupTimer = new Timer(Cleanup, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         }
 
-        public byte* Get(int numberOfPages, out long size, out NativeMemory.ThreadStats thread)
+        public byte* Get(int numberOfPages, out long size, out bool pooled, out NativeMemory.ThreadStats thread)
         {
             var numberOfPagesPowerOfTwo = Bits.PowerOf2(numberOfPages);
 
@@ -82,6 +82,7 @@ namespace Voron.Impl
             {
                 // We don't want to pool large buffers
                 size = numberOfPages * Constants.Storage.PageSize;
+                pooled = false;
                 return PlatformSpecific.NativeMemory.Allocate4KbAlignedMemory(size, out thread);
             }
 
@@ -97,6 +98,7 @@ namespace Voron.Impl
 
                 Debug.Assert(size == allocation.Size, $"size ({size}) == allocation.Size ({allocation.Size})");
 
+                pooled = true;
                 return allocation.Ptr;
             }
 
@@ -112,9 +114,11 @@ namespace Voron.Impl
                 thread = NativeMemory.ThreadAllocations.Value;
                 thread.Allocations += size;
 
+                pooled = true;
                 return allocation.Ptr;
             }
 
+            pooled = false;
             return PlatformSpecific.NativeMemory.Allocate4KbAlignedMemory(size, out thread);
         }
 
