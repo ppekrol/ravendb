@@ -414,8 +414,7 @@ namespace Voron.Data.Tables
 
 
             var tableTree = tx.CreateTree(name, RootObjectType.Table);
-            if (name.ToString() == "TimeSeriesRollupTable")
-                Console.WriteLine($"_primaryKey {_primaryKey}. tableTree.State.NumberOfEntries {tableTree.State.NumberOfEntries}");
+            
             if (tableTree.State.NumberOfEntries > 0)
                 return; // this was already created
 

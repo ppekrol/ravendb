@@ -125,8 +125,6 @@ namespace Raven.Server.Documents.TimeSeries
                     tvb.Add(changeVectorSlice);
 
                     table.Set(tvb);
-                    explanations?.Add($"MarkSegmentForPolicy. startKey: {slicerHolder.StatsKey}. Etag:{etag}. CV: { changeVectorSlice.ToString()})");
-                    Console.WriteLine($"MarkSegmentForPolicy. startKey: {slicerHolder.StatsKey}. Etag:{etag}. CV: { changeVectorSlice.ToString()})");
                 }
                 
             }
@@ -354,7 +352,6 @@ namespace Raven.Server.Documents.TimeSeries
                         tvb.Add(changeVectorSlice);
 
                         table.Set(tvb);
-                        Console.WriteLine($"In AddedNewRollupPoliciesCommand. start key {key}. Etag 0 .CV {changeVectorSlice.Content.ToString()} ");
                     }
 
                     
@@ -451,7 +448,7 @@ namespace Raven.Server.Documents.TimeSeries
                         _explanations?.Add($"We cannot apply rollups for item '{item}' because there we could find any rollup with key '{item.Key}'.");
                         continue;
                     }
-
+                    
                     var policy = config.GetPolicyByName(item.RollupPolicy, out _);
                     if (policy == null)
                     {
@@ -464,8 +461,8 @@ namespace Raven.Server.Documents.TimeSeries
                     var currentEtag = DocumentsStorage.TableValueToLong((int)RollupColumns.Etag, ref current);
                     if (item.Etag != currentEtag)
                     {
-                        _explanations?.Add($"We cannot apply rollups for item '{item}' because item etag '{item.Etag}'- cv:{item.ChangeVector} is different than current one '{currentEtag}'-cv {DocumentsStorage.TableValueToLong((int)RollupColumns.ChangeVector, ref current)}.");
-                        continue; // concurrency check
+                        _explanations?.Add($"We cannot apply rollups for item '{item}' because item etag '{item.Etag}'- cv:{item.ChangeVector} is different than current one '{currentEtag}'-cv {(DocumentsStorage.TableValueToLong((int)RollupColumns.ChangeVector, ref current)).ToString()}.");
+                         continue; // concurrency check
                     }
 
                     try

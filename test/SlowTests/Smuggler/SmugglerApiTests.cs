@@ -891,16 +891,32 @@ namespace SlowTests.Smuggler
                         }
                     };
 
-                    await store1.Maintenance.SendAsync(new ConfigureTimeSeriesOperation(config));
+                   
 
                     using (var session = store1.OpenAsyncSession())
                     {
                         await session.StoreAsync(new User { Name = "Name1" }, "users/1");
                         await session.SaveChangesAsync();
                     }
+
+                   
+                   
+                    using (var session = store1.OpenAsyncSession())
+                    {
+                        for (int i = 0; i < 10; i++)
+                        {
+                            session.TimeSeriesFor("users/1", "Heartrate").Append(baseline.AddSeconds(i * 10), new[] { i % 60d }, "watches/1");
+                        }
+
+                        await session.SaveChangesAsync();
+                    }
+
+                    await store1.Maintenance.SendAsync(new ConfigureTimeSeriesOperation(config));
                     var explanations = new List<string>();
                     var db = await GetDocumentDatabaseInstanceFor(store1);
                     db.TimeSeriesPolicyRunner.explanations = explanations;
+                    
+
                     using (var session = store1.OpenAsyncSession())
                     {
                         for (int i = 0; i < 10; i++)
@@ -910,25 +926,16 @@ namespace SlowTests.Smuggler
 
                         await session.SaveChangesAsync();
                     }
+
                     var total = await db.TimeSeriesPolicyRunner.RunRollups();
 
-                    foreach (var explanation in explanations)
-                    {
-                        Output.WriteLine(explanation);
-                        Console.WriteLine(explanation);
-                    }
+                     foreach (var explanation in explanations)
+                     {
+                         Output.WriteLine(explanation);
+                         Console.WriteLine(explanation);
+                     }
 
                     Assert.True(1 == total, $"actual {total}, baseline:{baseline} ({baseline.Ticks}, {baseline.Kind}), now:{db.Time.GetUtcNow()} ({db.Time.GetUtcNow().Ticks})");
-
-                    using (var session = store1.OpenAsyncSession())
-                    {
-                        for (int i = 0; i < 10; i++)
-                        {
-                            session.TimeSeriesFor("users/1", "Heartrate").Append(baseline.AddSeconds(i * 10), new[] { i % 60d }, "watches/1");
-                        }
-
-                        await session.SaveChangesAsync();
-                    }
 
                     var operation = await store1.Smuggler.ExportAsync(new DatabaseSmugglerExportOptions(), file);
                     var exportResult = await operation.WaitForCompletionAsync(TimeSpan.FromMinutes(1)) as SmugglerResult;

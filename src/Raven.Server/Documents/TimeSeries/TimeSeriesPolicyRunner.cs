@@ -215,20 +215,20 @@ namespace Raven.Server.Documents.TimeSeries
 
                     if (Logger.IsInfoEnabled)
                         Logger.Info($"Found {currentPolicies.Count} policies in collection '{collection}': ({string.Join(',', currentPolicies)})");
-                    Console.WriteLine($"Found {currentPolicies.Count} policies in collection '{collection}': ({string.Join(',', currentPolicies)})");
+                   
                     foreach (var policy in policies)
                     {
-                        Console.WriteLine($"In handle changes 3. Policy: { policy.Policy.Name}");
+                        
                         if (SkipExisting(policy.Policy.Name))
                             continue;
-                        Console.WriteLine($"In handle changes 4.");
+                        
                         var prev = config.Value.GetPreviousPolicy(policy.Index);
                         if (prev == null || ReferenceEquals(prev, TimeSeriesPolicy.BeforeAllPolices))
                             continue;
                         
                         if (Logger.IsInfoEnabled)
                             Logger.Info($"Adding new policy '{policy.Policy.Name}' for collection '{collection}'");
-                        Console.WriteLine($"In handle changes 5. Adding new policy '{policy.Policy.Name}' for collection '{collection}'");
+                        
                         await AddNewPolicy(collectionName, prev, policy.Policy);
                     }
 
@@ -256,7 +256,7 @@ namespace Raven.Server.Documents.TimeSeries
             while (true)
             {
                 Cts.Token.ThrowIfCancellationRequested();
-                Console.WriteLine($"AddedNewRollupPoliciesCommand");
+               
                 var cmd = new TimeSeriesRollups.AddedNewRollupPoliciesCommand(collectionName, prev, policy, skip);
                 await _database.TxMerger.Enqueue(cmd);
 
