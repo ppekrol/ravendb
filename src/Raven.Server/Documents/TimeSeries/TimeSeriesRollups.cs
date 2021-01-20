@@ -95,8 +95,10 @@ namespace Raven.Server.Documents.TimeSeries
 
             // mark for rollup
             RollupSchema.Create(context.Transaction.InnerTransaction, TimeSeriesRollupTable, 16);
+            
             var table = context.Transaction.InnerTransaction.OpenTable(RollupSchema, TimeSeriesRollupTable);
             using (table.Allocate(out var tvb))
+            
             using (Slice.From(context.Allocator, nextPolicy.Name, ByteStringType.Immutable, out var policyToApply))
             {
                 if (table.ReadByKey(slicerHolder.StatsKey, out var tvr))
@@ -352,7 +354,7 @@ namespace Raven.Server.Documents.TimeSeries
                         tvb.Add(changeVectorSlice);
 
                         table.Set(tvb);
-                        Console.WriteLine($"In AddedNewRollupPoliciesCommand. start key {key}. Etag 0 .CV {changeVectorSlice.ToString()} ");
+                        Console.WriteLine($"In AddedNewRollupPoliciesCommand. start key {key}. Etag 0 .CV {changeVectorSlice.Content.ToString()} ");
                     }
 
                     
