@@ -290,12 +290,9 @@ namespace Raven.Server.Documents.TimeSeries
                         Stopwatch duration;
                         using (context.OpenReadTransaction())
                         {
-                            explanations?.Add($"Preparing rollups at '{now.GetDefaultRavenFormat()}' with '{0}' start.");
-
                             _database.DocumentsStorage.TimeSeriesStorage.Rollups.PrepareRollups(context, now, 1024, start, states, out duration, explanations);
                             if (states.Count == 0)
                             {
-                                explanations?.Add($"Cannot run rollups at '{now.GetDefaultRavenFormat()}' because there are no rollup states.");
                                 return total;
                             }
                         }
@@ -305,15 +302,11 @@ namespace Raven.Server.Documents.TimeSeries
                         var topology = _database.ServerStore.LoadDatabaseTopology(_database.Name);
                         var isFirstInTopology = string.Equals(topology.Members.FirstOrDefault(), _database.ServerStore.NodeTag, StringComparison.OrdinalIgnoreCase);
 
-                        explanations?.Add($"RollupTimeSeriesCommand({now.GetDefaultRavenFormat()}, {isFirstInTopology})");
-
                         var command = new TimeSeriesRollups.RollupTimeSeriesCommand(Configuration, now, states, isFirstInTopology, explanations);
                         await _database.TxMerger.Enqueue(command);
 
                         if (command.RolledUp > 0)
                         {
-                            explanations?.Add($"RollupTimeSeriesCommand({now.GetDefaultRavenFormat()}, {isFirstInTopology}) = {command.RolledUp}");
-
                             total += command.RolledUp;
 
                             if (Logger.IsInfoEnabled)

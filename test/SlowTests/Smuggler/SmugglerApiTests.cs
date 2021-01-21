@@ -911,10 +911,8 @@ namespace SlowTests.Smuggler
                         await session.SaveChangesAsync();
                     }
                     var db = await GetDocumentDatabaseInstanceFor(store1);
-                    store1.Maintenance.Send(new ConfigureTimeSeriesOperation(config));
-                    //var t = Task.Run(() => store1.Maintenance.Send(new ConfigureTimeSeriesOperation(config)));
-                    //var t =;
-                    //Task.WaitAll(t);
+                    await store1.Maintenance.SendAsync(new ConfigureTimeSeriesOperation(config));
+
                     var explanations = new List<string>();
                     db.TimeSeriesPolicyRunner.explanations = explanations;
 
@@ -934,7 +932,7 @@ namespace SlowTests.Smuggler
                          Console.WriteLine(explanation);
                     }
 
-                    
+                    await db.TimeSeriesPolicyRunner.HandleChanges();
                     var total = await db.TimeSeriesPolicyRunner.RunRollups();
                     Assert.True(1 == total, $"actual {total}, baseline:{baseline} ({baseline.Ticks}, {baseline.Kind}), now:{db.Time.GetUtcNow()} ({db.Time.GetUtcNow().Ticks})");
                    
