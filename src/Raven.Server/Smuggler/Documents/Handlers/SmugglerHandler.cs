@@ -558,7 +558,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                 var token = CreateOperationToken();
                 var transformScript = migrationConfiguration.TransformScript;
 
-                var t = Database.Operations.AddOperation(Database, $"Migration from: {migrationConfiguration.DatabaseTypeName}",
+                _ = Database.Operations.AddOperation(Database, $"Migration from: {migrationConfiguration.DatabaseTypeName}",
                     Operations.OperationType.DatabaseMigration,
                     onProgress =>
                     {
@@ -749,7 +749,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
                     }
                 }
 
-                var token = new OperationCancelToken(Database.DatabaseShutdown);
+                var token = CreateOperationToken();
                 var result = new SmugglerResult();
                 var operationId = GetLongQueryString("operationId", false) ?? Database.Operations.GetNextOperationId();
                 var collection = GetStringQueryString("collection", false);

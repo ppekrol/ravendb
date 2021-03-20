@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -14,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Primitives;
 using Raven.Client;
 using Raven.Client.Exceptions;
 using Raven.Client.Exceptions.Cluster;
@@ -24,7 +22,6 @@ using Raven.Client.ServerWide;
 using Raven.Client.ServerWide.Commands;
 using Raven.Client.ServerWide.Operations.Certificates;
 using Raven.Client.Util;
-using Raven.Server.Documents.PeriodicBackup;
 using Raven.Server.Extensions;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide;
@@ -630,7 +627,7 @@ namespace Raven.Server.Web
                 case RavenServer.AuthenticationStatus.Expired:
                 case RavenServer.AuthenticationStatus.NotYetValid:
                     if (Server.Configuration.Security.AuthenticationEnabled == false)
-                        return new AllowedDbs { HasAccess = true};
+                        return new AllowedDbs { HasAccess = true };
 
                     await RequestRouter.UnlikelyFailAuthorizationAsync(HttpContext, dbName, null, requireAdmin ? AuthorizationStatus.DatabaseAdmin : AuthorizationStatus.ValidUser);
                     return new AllowedDbs { HasAccess = false };
@@ -725,11 +722,6 @@ namespace Raven.Server.Web
             return false;
         }
 
-        protected void SetupCORSHeaders(CorsMode mode)
-        {
-            SetupCORSHeaders(HttpContext, ServerStore, mode);
-        }
-
         protected void RedirectToLeader()
         {
             if (ServerStore.LeaderTag == null)
@@ -755,6 +747,14 @@ namespace Raven.Server.Web
             HttpContext.Response.Headers.Add("Location", leaderLocation);
         }
 
+        protected virtual OperationCancelToken CreateOperationToken()
+        {
+            return new OperationCancelToken(ServerStore.ServerShutdown, HttpContext.RequestAborted);
+        }
 
+        protected virtual OperationCancelToken CreateOperationToken(TimeSpan cancelAfter)
+        {
+            return new OperationCancelToken(cancelAfter, ServerStore.ServerShutdown, HttpContext.RequestAborted);
+        }
     }
 }

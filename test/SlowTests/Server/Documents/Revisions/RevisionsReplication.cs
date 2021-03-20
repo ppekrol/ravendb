@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FastTests;
 using FastTests.Server.Documents.Revisions;
@@ -276,7 +277,7 @@ namespace SlowTests.Server.Documents.Revisions
 
                 var db = await GetDocumentDatabaseInstanceFor(store1);
 
-                using (var token = new OperationCancelToken(db.Configuration.Databases.OperationTimeout.AsTimeSpan, db.DatabaseShutdown))
+                using (var token = new OperationCancelToken(db.Configuration.Databases.OperationTimeout.AsTimeSpan, db.DatabaseShutdown, CancellationToken.None))
                     await db.DocumentsStorage.RevisionsStorage.EnforceConfiguration(_ => { }, token);
 
                 WaitForMarker(store1, store2);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FastTests;
 using FastTests.Server.Replication;
@@ -1212,7 +1213,7 @@ namespace SlowTests.Issues
             Assert.True(WaitForDocument<Propagation>(sinkStore2, "bar", x => x.Completed == true));
             Assert.True(WaitForDocument<Propagation>(sinkStore1, "foo", x => x.Completed == true));
 
-            using (var token = new OperationCancelToken(hubDb.Configuration.Databases.OperationTimeout.AsTimeSpan, hubDb.DatabaseShutdown))
+            using (var token = new OperationCancelToken(hubDb.Configuration.Databases.OperationTimeout.AsTimeSpan, hubDb.DatabaseShutdown, CancellationToken.None))
                 await hubDb.DocumentsStorage.RevisionsStorage.EnforceConfiguration(_ => { }, token);
 
             using (var s = hubStore.OpenAsyncSession())

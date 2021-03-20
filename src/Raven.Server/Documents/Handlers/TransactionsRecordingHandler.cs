@@ -41,7 +41,7 @@ namespace Raven.Server.Documents.Handlers
 
                 var operationId = GetLongQueryString("operationId", false) ?? Database.Operations.GetNextOperationId();
 
-                using (var operationCancelToken = CreateOperationToken())
+                using (var token = CreateOperationToken())
                 {
                     var result = await Database.Operations.AddOperation(
                         database: Database,
@@ -66,17 +66,17 @@ namespace Raven.Server.Documents.Handlers
                                     {
                                         await using (var gzipStream = new GZipStream(section.Body, CompressionMode.Decompress))
                                         {
-                                            return await DoReplayAsync(progress, gzipStream, operationCancelToken.Token);
+                                            return await DoReplayAsync(progress, gzipStream, token.Token);
                                         }
                                     }
-                                    return await DoReplayAsync(progress, section.Body, operationCancelToken.Token);
+                                    return await DoReplayAsync(progress, section.Body, token.Token);
                                 }
                             }
 
                             throw new BadRequestException("Please upload source file using FormData");
                         }),
                         id: operationId,
-                        token: operationCancelToken
+                        token: token
                     );
 
                     await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
