@@ -93,7 +93,7 @@ namespace Raven.Server.Documents.Queries.LuceneIntegration
 
                 var scorers = ArrayPool<Scorer>.Shared.Rent(_parent.Matches.Count);
                 int index = 0;
-                byte[] norms = reader.Norms(_parent.Field, state);
+                Memory<byte> norms = reader.Norms(_parent.Field, state);
                 foreach (var match in _parent.Matches)
                 {
                     var termDocs = reader.TermDocs(new Term(_parent.Field, match),state);
@@ -151,6 +151,10 @@ namespace Raven.Server.Documents.Queries.LuceneIntegration
                 return InitIfNeeded().Advance(target, state);
             }
 
+            public override void Dispose()
+            {
+            }
+
             public override float Score(IState state)
             {
                 return InitIfNeeded().Score(state);
@@ -200,6 +204,10 @@ namespace Raven.Server.Documents.Queries.LuceneIntegration
                 _enum?.Dispose();
                 _enum = _docs.Iterate(target).GetEnumerator();
                 return NextDoc(state);
+            }
+
+            public override void Dispose()
+            {
             }
 
             public override float Score(IState state)

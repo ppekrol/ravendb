@@ -249,6 +249,17 @@ namespace Sparrow.Json
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Write(Span<byte> buffer)
+        {
+            Debug.Assert(buffer.Length >= 0); // count is a size
+
+            fixed (byte* bufferPtr = buffer)
+            {
+                Write(bufferPtr, buffer.Length);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ThrowOnDisposed()
         {
 #if DEBUG

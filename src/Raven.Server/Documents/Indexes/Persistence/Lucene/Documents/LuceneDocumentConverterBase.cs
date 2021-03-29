@@ -675,12 +675,12 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
 
         protected AbstractField GetReduceResultValueField(BlittableJsonReaderObject reduceResult, IWriteOperationBuffer writeBuffer)
         {
-            _reduceValueField.SetValue(GetReduceResult(reduceResult, writeBuffer), 0, reduceResult.Size);
+            _reduceValueField.SetValue(GetReduceResult(reduceResult, writeBuffer));
 
             return _reduceValueField;
         }
 
-        private byte[] GetReduceResult(BlittableJsonReaderObject reduceResult, IWriteOperationBuffer writeBuffer)
+        private Memory<byte> GetReduceResult(BlittableJsonReaderObject reduceResult, IWriteOperationBuffer writeBuffer)
         {
             var necessarySize = Bits.PowerOf2(reduceResult.Size);
 
@@ -688,11 +688,11 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
 
             unsafe
             {
-                fixed (byte* v = reduceValueBuffer)
+                fixed (byte* v = reduceValueBuffer.Span)
                     reduceResult.CopyTo(v);
             }
 
-            return reduceValueBuffer;
+            return reduceValueBuffer.Slice(0, reduceResult.Size);
         }
 
         public void Dispose()

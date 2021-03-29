@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using FastTests;
 using Lucene.Net.Analysis;
 using Lucene.Net.Index;

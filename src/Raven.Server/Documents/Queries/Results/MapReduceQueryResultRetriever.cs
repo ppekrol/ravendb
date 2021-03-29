@@ -59,7 +59,7 @@ namespace Raven.Server.Documents.Queries.Results
             var allocation = _context.GetMemory(reduceValue.Length);
 
             UnmanagedWriteBuffer buffer = new UnmanagedWriteBuffer(_context, allocation);
-            buffer.Write(reduceValue, 0, reduceValue.Length);
+            buffer.Write(reduceValue.Span);
 
             var result = new BlittableJsonReaderObject(allocation.Address, reduceValue.Length, _context, buffer);
 

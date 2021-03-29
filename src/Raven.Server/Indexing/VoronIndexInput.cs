@@ -106,7 +106,7 @@ namespace Raven.Server.Indexing
             return (byte)readByte;
         }
 
-        public override void ReadBytes(byte[] buffer, int offset, int len, IState s)
+        public override void ReadBytes(Span<byte> buffer, IState s)
         {
             var state = s as VoronState;
             if (state == null)
@@ -118,7 +118,7 @@ namespace Raven.Server.Indexing
             ThrowIfDisposed(state);
 
             _stream.UpdateCurrentTransaction(state.Transaction);
-            _stream.ReadEntireBlock(buffer, offset, len);
+            _stream.ReadEntireBlock(buffer);
         }
 
         public override void Seek(long pos, IState s)

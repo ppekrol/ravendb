@@ -112,5 +112,21 @@ namespace Raven.Client.Extensions.Streams
                 totalRead += read;
             }
         }
+
+#if !NETSTANDARD2_0
+        public static void ReadEntireBlock(this Stream stream, Span<byte> buffer)
+        {
+            var start = 0;
+            var count = buffer.Length;
+            int totalRead = 0;
+            while (totalRead < count)
+            {
+                int read = stream.Read(buffer.Slice(start + totalRead, count - totalRead));
+                if (read == 0)
+                    throw new EndOfStreamException();
+                totalRead += read;
+            }
+        }
+#endif
     }
 }

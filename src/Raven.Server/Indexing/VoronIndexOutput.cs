@@ -64,12 +64,12 @@ namespace Raven.Server.Indexing
             }
         }
 
-        public override void FlushBuffer(byte[] b, int offset, int len)
+        public override void FlushBuffer(Span<byte> b)
         {
             try
             {
-                _file.Write(b, offset, len);
-                _indexOutputFilesSummary.Increment(len);
+                _file.Write(b);
+                _indexOutputFilesSummary.Increment(b.Length);
             }
             catch (IOException ioe) when (ioe.IsOutOfDiskSpaceException())
             {

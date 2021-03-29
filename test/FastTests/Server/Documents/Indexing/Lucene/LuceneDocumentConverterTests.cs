@@ -1,4 +1,5 @@
-﻿using Lucene.Net.Documents;
+﻿using System;
+using Lucene.Net.Documents;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Server.Documents.Indexes;
@@ -26,7 +27,7 @@ namespace FastTests.Server.Documents.Indexing.Lucene
             {
             }
 
-            public byte[] GetBuffer(int necessarySize)
+            public Memory<byte> GetBuffer(int necessarySize)
             {
                 return new byte[necessarySize];
             }

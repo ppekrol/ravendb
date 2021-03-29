@@ -38,7 +38,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
         private readonly IState _state;
         private readonly LuceneVoronDirectory _directory;
 
-        private byte[] _buffer;
+        private IMemoryOwner<byte> _buffer;
 
         public IndexWriteOperation(Index index, LuceneVoronDirectory directory, LuceneDocumentConverterBase converter, Transaction writeTransaction, LuceneIndexPersistence persistence)
             : base(index, LoggingSource.Instance.GetLogger<IndexWriteOperation>(index._indexStorage.DocumentDatabase.Name))
@@ -99,7 +99,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 
                 if (_buffer != null)
                 {
-                    ArrayPool<byte>.Shared.Return(_buffer);
+                    _buffer.Dispose();
                     _buffer = null;
                 }
             }
@@ -232,23 +232,23 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             public IndexingStatsScope SuggestionStats;
         }
 
-        public byte[] GetBuffer(int necessarySize)
+        public Memory<byte> GetBuffer(int necessarySize)
         {
             if (_buffer == null)
-                return _buffer = ArrayPool<byte>.Shared.Rent(necessarySize);
+                return (_buffer = MemoryPool<byte>.Shared.Rent(necessarySize)).Memory;
 
-            if (_buffer.Length < necessarySize)
+            if (_buffer.Memory.Length < necessarySize)
             {
-                ArrayPool<byte>.Shared.Return(_buffer);
-                return _buffer = ArrayPool<byte>.Shared.Rent(necessarySize);
+                _buffer.Dispose();
+                _buffer = MemoryPool<byte>.Shared.Rent(necessarySize);
             }
 
-            return _buffer;
+            return _buffer.Memory;
         }
     }
 
     public interface IWriteOperationBuffer
     {
-        byte[] GetBuffer(int necessarySize);
+        Memory<byte> GetBuffer(int necessarySize);
     }
 }

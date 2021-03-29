@@ -20,11 +20,13 @@ namespace SlowTests.Issues
 
                 var state = new VoronState(tx);
 
-                dir.CreateOutput("file", state);
-                Assert.True(dir.FileExists("file", state));
+                using (dir.CreateOutput("file", state))
+                {
+                    Assert.True(dir.FileExists("file", state));
 
-                dir.DeleteFile("file", state);
-                Assert.False(dir.FileExists("file", state));
+                    dir.DeleteFile("file", state);
+                    Assert.False(dir.FileExists("file", state));
+                }
             }
         }
     }
