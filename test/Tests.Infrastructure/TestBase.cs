@@ -92,7 +92,7 @@ namespace FastTests
             Lucene.Net.Util.UnmanagedStringArray.Segment.FreeMemory = NativeMemory.Free;
 
             var packagesPath = new PathSetting(RavenTestHelper.NewDataPath("NuGetPackages", 0, forceCreateDir: true));
-            GlobalPathsToDelete.Add(packagesPath.FullPath);
+            //GlobalPathsToDelete.Add(packagesPath.FullPath);
             MultiSourceNuGetFetcher.Instance.Initialize(packagesPath, "https://api.nuget.org/v3/index.json");
 
 #if DEBUG2

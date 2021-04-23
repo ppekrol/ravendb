@@ -300,7 +300,8 @@ public static class ImageClassifier
             }
         }
 
-        [Fact(Skip = "Uses ML.NET and downloads 350MB of packages")]
+        //[Fact(Skip = "Uses ML.NET and downloads 350MB of packages")]
+        [Fact]
         public void CanUseMLNET_Omnx()
         {
             using (var store = GetDocumentStore())
