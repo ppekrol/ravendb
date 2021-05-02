@@ -3153,7 +3153,7 @@ namespace Raven.Server.ServerWide
             using (context.OpenReadTransaction())
             using (var databaseRecord = ReadRawDatabaseRecord(context, database))
             {
-                return databaseRecord.TimeSeriesConfiguration;
+                return databaseRecord.TimeSeries;
             }
         }
 

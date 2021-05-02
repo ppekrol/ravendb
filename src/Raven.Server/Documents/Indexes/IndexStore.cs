@@ -99,7 +99,7 @@ namespace Raven.Server.Documents.Indexes
             StoppedConcurrentIndexBatches = new SemaphoreSlim(stoppedConcurrentIndexBatches);
         }
 
-        public int HandleDatabaseRecordChange(DatabaseRecord record, long raftIndex)
+        public int HandleDatabaseRecordChange(RawDatabaseRecord record, long raftIndex)
         {
             try
             {
@@ -135,7 +135,7 @@ namespace Raven.Server.Documents.Indexes
                     catch (OperationCanceledException e)
                     {
                         // if we haven't start the index we must dispose it here
-                        index.Dispose(); 
+                        index.Dispose();
                         _documentDatabase.RachisLogIndexNotifications.NotifyListenersAbout(raftIndex, e);
                         return;
                     }
@@ -186,8 +186,11 @@ namespace Raven.Server.Documents.Indexes
                 : ProcessorInfo.ProcessorCount;
         }
 
-        private void HandleSorters(DatabaseRecord record, long index)
+        private void HandleSorters(RawDatabaseRecord record, long index)
         {
+            if (record.ClusterState.ShouldProcessSorters(index) == false)
+                return;
+
             try
             {
                 SorterCompilationCache.Instance.AddItems(record);
@@ -200,7 +203,7 @@ namespace Raven.Server.Documents.Indexes
             }
         }
 
-        private void HandleAnalyzers(DatabaseRecord record, long index)
+        private void HandleAnalyzers(RawDatabaseRecord record, long index)
         {
             try
             {
@@ -226,7 +229,7 @@ namespace Raven.Server.Documents.Indexes
                 try
                 {
                     var definition = CreateAutoDefinition(kvp.Value, mode);
-                    
+
                     var indexToStart = HandleAutoIndexChange(name, definition);
                     if (indexToStart != null)
                     {
@@ -364,7 +367,7 @@ namespace Raven.Server.Documents.Indexes
             }
         }
 
-        private void HandleChangesForStaticIndexes(DatabaseRecord record, long index, List<Index> indexesToStart)
+        private void HandleChangesForStaticIndexes(RawDatabaseRecord record, long index, List<Index> indexesToStart)
         {
             foreach (var kvp in record.Indexes)
             {
@@ -720,7 +723,7 @@ namespace Raven.Server.Documents.Indexes
             }
         }
 
-        private void HandleDeletes(DatabaseRecord record, long raftLogIndex)
+        private void HandleDeletes(RawDatabaseRecord record, long raftLogIndex)
         {
             foreach (var index in _indexes)
             {
@@ -747,7 +750,7 @@ namespace Raven.Server.Documents.Indexes
             }
         }
 
-        public Task InitializeAsync(DatabaseRecord record, long raftIndex, Action<string> addToInitLog)
+        public Task InitializeAsync(RawDatabaseRecord record, long raftIndex, Action<string> addToInitLog)
         {
             if (_initialized)
                 throw new InvalidOperationException($"{nameof(IndexStore)} was already initialized.");
@@ -812,7 +815,7 @@ namespace Raven.Server.Documents.Indexes
         {
             using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
-            using (var record = _serverStore.Cluster.ReadRawDatabaseRecord(context, _documentDatabase.Name, out _ ))
+            using (var record = _serverStore.Cluster.ReadRawDatabaseRecord(context, _documentDatabase.Name, out _))
             {
                 if (record == null)
                     return null;
@@ -835,12 +838,12 @@ namespace Raven.Server.Documents.Indexes
             ValidateStaticIndex(definition);
 
             var command = new PutIndexCommand(
-                definition, 
-                _documentDatabase.Name, 
-                source, 
-                _documentDatabase.Time.GetUtcNow(), 
-                raftRequestId, 
-                _documentDatabase.Configuration.Indexing.HistoryRevisionsNumber, 
+                definition,
+                _documentDatabase.Name,
+                source,
+                _documentDatabase.Time.GetUtcNow(),
+                raftRequestId,
+                _documentDatabase.Configuration.Indexing.HistoryRevisionsNumber,
                 _documentDatabase.Configuration.Indexing.StaticIndexDeploymentMode
                 );
 
@@ -1189,7 +1192,7 @@ namespace Raven.Server.Documents.Indexes
 
             if ((differences & IndexDefinitionCompareDifferences.State) == IndexDefinitionCompareDifferences.State)
                 return IndexCreationOptions.UpdateWithoutUpdatingCompiledIndex;
-            
+
             if ((differences & IndexDefinitionCompareDifferences.DeploymentMode) == IndexDefinitionCompareDifferences.DeploymentMode)
                 return IndexCreationOptions.UpdateWithoutUpdatingCompiledIndex;
 
