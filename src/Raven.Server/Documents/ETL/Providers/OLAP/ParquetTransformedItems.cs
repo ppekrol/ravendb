@@ -33,7 +33,7 @@ namespace Raven.Server.Documents.ETL.Providers.OLAP
         private readonly Dictionary<string, DataType> _dataTypes;
         private Dictionary<string, DataField> _fields;
         private readonly string _tableName, _key, _tmpFilePath, _fileNameSuffix;
-        private string _documentIdColumn, _remoteFolderName, _localFolderName;
+        private string _documentIdColumn, _localFolderName;
         private int _count;
         private readonly OlapEtlConfiguration _configuration;
         private bool[] _boolArr;
@@ -81,7 +81,6 @@ namespace Raven.Server.Documents.ETL.Providers.OLAP
         {
             if (partitions == null)
             {
-                _remoteFolderName = name;
                 if (_configuration.Connection.LocalSettings != null)
                     _localFolderName = name;
 
@@ -107,7 +106,6 @@ namespace Raven.Server.Documents.ETL.Providers.OLAP
                 localFolderBuilder?.Append(GetSafeNameForFileSystem(partition));
             }
 
-            _remoteFolderName = remoteFolderBuilder.ToString();
             _localFolderName = localFolderBuilder?.ToString();
         }
 
@@ -128,13 +126,12 @@ namespace Raven.Server.Documents.ETL.Providers.OLAP
             _documentIdColumn ??= DefaultIdColumn;
         }
 
-        public override string GenerateFile(out string folderName, out string safeFolderName, out string fileName)
+        public override string GenerateFile(out string folderName, out string fileName)
         {
             var nowAsString = DateTime.UtcNow.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
 
             fileName = $"{nowAsString}-{_fileNameSuffix}.{Extension}";
             folderName = _key;
-            safeFolderName = _remoteFolderName;
 
             var localPath = Path.Combine(_tmpFilePath, _localFolderName ?? string.Empty, fileName);
             if (_localFolderName != null)
