@@ -8,6 +8,7 @@ using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Operations.Backups;
 using Raven.Client.Extensions;
 using Raven.Client.Util;
+using Raven.Server.Config.Categories;
 using Raven.Server.Documents.PeriodicBackup.Aws;
 using Raven.Server.Documents.PeriodicBackup.Azure;
 using Raven.Server.Documents.PeriodicBackup.GoogleCloud;
@@ -45,9 +46,9 @@ namespace Raven.Server.Documents.PeriodicBackup
         private const string GoogleCloudName = "Google Cloud";
         private const string FtpName = "FTP";
 
-        public BackupUploader(UploaderSettings uploaderSettings, RetentionPolicyBaseParameters retentionPolicyParameters, Logger logger, BackupResult backupResult, Action<IOperationProgress> onProgress, OperationCancelToken taskCancelToken)
+        public BackupUploader(BackupUploaderSettings settings, RetentionPolicyBaseParameters retentionPolicyParameters, Logger logger, BackupResult backupResult, Action<IOperationProgress> onProgress, OperationCancelToken taskCancelToken)
         {
-            _uploaderSettings = uploaderSettings;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _threads = new List<PoolOfThreads.LongRunningWork>();
             _exceptions = new ConcurrentSet<Exception>();
 
@@ -106,7 +107,7 @@ namespace Raven.Server.Documents.PeriodicBackup
 
         private void UploadToS3(S3Settings settings, Stream stream, Progress progress)
         {
-            using (var client = new RavenAwsS3Client(settings, progress, TaskCancelToken.Token))
+            using (var client = new RavenAwsS3Client(settings, _settings.Configuration, progress, TaskCancelToken.Token))
             {
                 var key = CombinePathAndKey(settings.RemoteFolderName);
                 client.PutObject(key, stream, new Dictionary<string, string>
@@ -127,7 +128,7 @@ namespace Raven.Server.Documents.PeriodicBackup
 
         private void UploadToGlacier(GlacierSettings settings, Stream stream, Progress progress)
         {
-            using (var client = new RavenAwsGlacierClient(settings, progress, TaskCancelToken.Token))
+            using (var client = new RavenAwsGlacierClient(settings, _settings.Configuration, progress, TaskCancelToken.Token))
             {
                 var key = CombinePathAndKey(settings.RemoteFolderName ?? _uploaderSettings.DatabaseName);
                 var archiveId = client.UploadArchive(stream, key);
@@ -161,7 +162,7 @@ namespace Raven.Server.Documents.PeriodicBackup
 
         private void UploadToAzure(AzureSettings settings, Stream stream, Progress progress)
         {
-            using (var client = new RavenAzureClient(settings, progress, TaskCancelToken.Token))
+            using (var client = new RavenAzureClient(settings, _settings.Configuration, progress, TaskCancelToken.Token))
             {
                 var key = CombinePathAndKey(settings.RemoteFolderName);
                 client.PutBlob(key, stream, new Dictionary<string, string>
@@ -182,7 +183,7 @@ namespace Raven.Server.Documents.PeriodicBackup
 
         private void UploadToGoogleCloud(GoogleCloudSettings settings, Stream stream, Progress progress)
         {
-            using (var client = new RavenGoogleCloudClient(settings, progress, TaskCancelToken.Token))
+            using (var client = new RavenGoogleCloudClient(settings, _settings.Configuration, progress, TaskCancelToken.Token))
             {
                 var key = CombinePathAndKey(settings.RemoteFolderName);
                 client.UploadObject(key, stream, new Dictionary<string, string>
@@ -446,6 +447,13 @@ namespace Raven.Server.Documents.PeriodicBackup
 
     public class UploaderSettings
     {
+        public readonly BackupConfiguration Configuration;
+
+        public BackupUploaderSettings(BackupConfiguration configuration)
+        {
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        }
+
         public S3Settings S3Settings;
         public GlacierSettings GlacierSettings;
         public AzureSettings AzureSettings;
