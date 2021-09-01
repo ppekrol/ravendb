@@ -52,11 +52,11 @@ namespace Raven.Server.Config.Categories
         [ConfigurationEntry("Backup.LowMemoryBackupDelayInMin", ConfigurationEntryScope.ServerWideOnly)]
         public TimeSetting LowMemoryBackupDelay { get; set; }
 
-        [Description("Number of minutes after which the backup upload operation will timeout (in minutes).")]
+        [Description("Number of minutes after which the backup upload operation will timeout when cloud storage is used (in minutes).")]
         [DefaultValue(720)]
         [TimeUnit(TimeUnit.Minutes)]
-        [ConfigurationEntry("Backup.UploadTimeoutInMin", ConfigurationEntryScope.ServerWideOrPerDatabase)]
-        public TimeSetting UploadTimeout { get; set; }
+        [ConfigurationEntry("Backup.CloudStorageOperationTimeoutInMin", ConfigurationEntryScope.ServerWideOrPerDatabase)]
+        public TimeSetting CloudStorageOperationTimeout { get; set; }
 
         public override void Initialize(IConfigurationRoot settings, HashSet<string> settingsNames, IConfigurationRoot serverWideSettings, HashSet<string> serverWideSettingsNames, ResourceType type, string resourceName)
         {
