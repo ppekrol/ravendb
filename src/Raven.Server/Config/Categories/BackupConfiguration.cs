@@ -55,7 +55,7 @@ namespace Raven.Server.Config.Categories
         [Description("Number of minutes after which the backup upload operation will timeout (in minutes).")]
         [DefaultValue(720)]
         [TimeUnit(TimeUnit.Minutes)]
-        [ConfigurationEntry("Backup.UploadTimeoutInMin", ConfigurationEntryScope.ServerWideOnly)]
+        [ConfigurationEntry("Backup.UploadTimeoutInMin", ConfigurationEntryScope.ServerWideOrPerDatabase)]
         public TimeSetting UploadTimeout { get; set; }
 
         public override void Initialize(IConfigurationRoot settings, HashSet<string> settingsNames, IConfigurationRoot serverWideSettings, HashSet<string> serverWideSettingsNames, ResourceType type, string resourceName)
