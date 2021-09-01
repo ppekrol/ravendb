@@ -13,6 +13,7 @@ using Raven.Client.Documents.Operations.Backups;
 using Raven.Server.Config.Categories;
 using Raven.Server.Documents.PeriodicBackup.Restore;
 using Sparrow;
+using BackupConfiguration = Raven.Server.Config.Categories.BackupConfiguration;
 
 namespace Raven.Server.Documents.PeriodicBackup.Azure
 {

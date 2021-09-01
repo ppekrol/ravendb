@@ -43,13 +43,13 @@ namespace Raven.Server.Documents.ETL.Providers.OLAP
         {
             Metrics = OlapMetrics;
             _operationCancelToken = new OperationCancelToken(Database.DatabaseShutdown, CancellationToken);
-            
-            _uploaderSettings = GenerateUploaderSetting();
+
+            _uploaderSettings = GenerateUploaderSetting(Database.Configuration.Backup);
 
             UpdateTimer(LastProcessState.LastBatchTime);
         }
 
-        private UploaderSettings GenerateUploaderSetting()
+        private UploaderSettings GenerateUploaderSetting(Config.Categories.BackupConfiguration configuration)
         {
             var s3Settings = BackupTask.GetBackupConfigurationFromScript(Configuration.Connection.S3Settings, x => JsonDeserializationServer.S3Settings(x),
                 Database, updateServerWideSettingsFunc: null, serverWide: false);
@@ -66,14 +66,14 @@ namespace Raven.Server.Documents.ETL.Providers.OLAP
             var ftpSettings = BackupTask.GetBackupConfigurationFromScript(Configuration.Connection.FtpSettings, x => JsonDeserializationServer.FtpSettings(x),
                 Database, updateServerWideSettingsFunc: null, serverWide: false);
 
-            return new UploaderSettings
+            return new UploaderSettings(configuration)
             {
-                S3Settings = s3Settings, 
-                AzureSettings = azureSettings, 
+                S3Settings = s3Settings,
+                AzureSettings = azureSettings,
                 GlacierSettings = glacierSettings,
                 GoogleCloudSettings = googleCloudSettings,
                 FtpSettings = ftpSettings,
-                DatabaseName = Database.Name, 
+                DatabaseName = Database.Name,
                 TaskName = Name
             };
         }
@@ -164,7 +164,7 @@ namespace Raven.Server.Documents.ETL.Providers.OLAP
 
                         count += transformed.Count;
 
-                        if (AnyRemoteDestinations == false) 
+                        if (AnyRemoteDestinations == false)
                             continue;
 
                         UploadToRemoteDestinations(localPath, uploadInfo, scope);
@@ -327,11 +327,11 @@ namespace Raven.Server.Documents.ETL.Providers.OLAP
         private void UploadToRemoteDestinations(string localPath, UploadInfo uploadInfo, OlapEtlStatsScope scope)
         {
             CancellationToken.ThrowIfCancellationRequested();
-            
+
             _uploaderSettings.FilePath = localPath;
             _uploaderSettings.FileName = uploadInfo.FileName;
             _uploaderSettings.FolderName = uploadInfo.FolderName;
-            
+
             var backupUploader = new BackupUploader(_uploaderSettings, retentionPolicyParameters: null, Logger, GenerateUploadResult(), onProgress: ProgressNotification, _operationCancelToken);
 
             try
@@ -403,10 +403,10 @@ namespace Raven.Server.Documents.ETL.Providers.OLAP
         }
 
         private bool AnyRemoteDestinations =>
-            BackupConfiguration.CanBackupUsing(_uploaderSettings.S3Settings) || 
-            BackupConfiguration.CanBackupUsing(_uploaderSettings.GlacierSettings) || 
-            BackupConfiguration.CanBackupUsing(_uploaderSettings.AzureSettings) || 
-            BackupConfiguration.CanBackupUsing(_uploaderSettings.GoogleCloudSettings) || 
+            BackupConfiguration.CanBackupUsing(_uploaderSettings.S3Settings) ||
+            BackupConfiguration.CanBackupUsing(_uploaderSettings.GlacierSettings) ||
+            BackupConfiguration.CanBackupUsing(_uploaderSettings.AzureSettings) ||
+            BackupConfiguration.CanBackupUsing(_uploaderSettings.GoogleCloudSettings) ||
             BackupConfiguration.CanBackupUsing(_uploaderSettings.FtpSettings);
     }
 }

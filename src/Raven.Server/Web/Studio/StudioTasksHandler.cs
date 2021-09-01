@@ -139,7 +139,7 @@ namespace Raven.Server.Web.Studio
                             string.IsNullOrWhiteSpace(s3Settings.AwsRegionName))
                             break;
 
-                        using (var client = new RavenAwsS3Client(s3Settings, ServerStore.Configuration.Backup))
+                        using (var client = new RavenAwsS3Client(s3Settings, serverStore.Configuration.Backup))
                         {
                             // fetching only the first 64 results for the auto complete
                             var folders = await client.ListObjectsAsync(s3Settings.RemoteFolderName, "/", true, take: 64);
@@ -173,7 +173,7 @@ namespace Raven.Server.Web.Studio
                             string.IsNullOrWhiteSpace(azureSettings.StorageContainer))
                             break;
 
-                        using (var client = new RavenAzureClient(azureSettings, ServerStore.Configuration.Backup))
+                        using (var client = new RavenAzureClient(azureSettings, serverStore.Configuration.Backup))
                         {
                             var folders = (await client.ListBlobsAsync(azureSettings.RemoteFolderName, "/", true));
 
@@ -203,7 +203,7 @@ namespace Raven.Server.Web.Studio
                             string.IsNullOrWhiteSpace(googleCloudSettings.GoogleCredentialsJson))
                             break;
 
-                        using (var client = new RavenGoogleCloudClient(googleCloudSettings, ServerStore.Configuration.Backup))
+                        using (var client = new RavenGoogleCloudClient(googleCloudSettings, serverStore.Configuration.Backup))
                         {
                             var folders = (await client.ListObjectsAsync(googleCloudSettings.RemoteFolderName));
                             var requestedPathLength = googleCloudSettings.RemoteFolderName.Split('/').Length;

@@ -13,6 +13,7 @@ using Raven.Client.Documents.Operations.Backups;
 using Raven.Server.Config.Categories;
 using Sparrow;
 using Sparrow.Server.Utils;
+using BackupConfiguration = Raven.Server.Config.Categories.BackupConfiguration;
 using Object = Google.Apis.Storage.v1.Data.Object;
 
 namespace Raven.Server.Documents.PeriodicBackup.GoogleCloud
