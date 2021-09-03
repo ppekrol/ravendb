@@ -1,14 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using FastTests.Blittable;
-using FastTests.Client;
-using SlowTests.Issues;
-using SlowTests.MailingList;
-using SlowTests.Rolling;
-using SlowTests.Server.Documents.ETL.Raven;
-using StressTests.Issues;
 using Tests.Infrastructure;
+using Azure = SlowTests.Server.Documents.PeriodicBackup.Azure;
 
 namespace Tryouts
 {
@@ -28,9 +22,9 @@ namespace Tryouts
                 try
                 {
                     using (var testOutputHelper = new ConsoleTestOutputHelper())
-                    using (var test = new RollingIndexesClusterTests(testOutputHelper))
+                    using (var test = new SlowTests.Server.Documents.PeriodicBackup.Azure(testOutputHelper))
                     {
-                         await test.RemoveNodeFromDatabaseGroupWhileRollingDeployment();
+                         await test.put_blob();
                     }
                 }
                 catch (Exception e)

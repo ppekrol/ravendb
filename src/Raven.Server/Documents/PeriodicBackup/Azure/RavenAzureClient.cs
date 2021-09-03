@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
+using Azure.Core.Pipeline;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -109,7 +111,6 @@ namespace Raven.Server.Documents.PeriodicBackup.Azure
                     _progress?.UploadProgress.ChangeType(UploadType.Chunked);
 
                     var blockBlob = _client.GetBlockBlobClient(blobName);
-                    blockBlob = blockBlob.WithVersion("2019-02-02");
 
                     var blockNumber = 0;
                     var blockIds = new List<string>();
@@ -120,13 +121,16 @@ namespace Raven.Server.Documents.PeriodicBackup.Azure
                         var blockIdString = Convert.ToBase64String(blockNumberInBytes);
                         blockIds.Add(blockIdString);
 
+                        Console.WriteLine($"STAGE: {blockIdString}");
                         blockBlob.StageBlock(blockIdString, stream, progressHandler: this, cancellationToken: _cancellationToken);
                     }
 
+                    Console.WriteLine($"COMMITING: {blobName}");
                     blockBlob.CommitBlockList(blockIds, metadata: metadata, cancellationToken: _cancellationToken);
                     return;
                 }
 
+                throw new NotSupportedException();
                 var blob = _client.GetBlobClient(blobName);
                 blob.Upload(stream, metadata: metadata, progressHandler: this, cancellationToken: _cancellationToken);
             }

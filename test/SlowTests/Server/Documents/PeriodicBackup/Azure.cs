@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -10,6 +11,7 @@ using FastTests;
 using Raven.Client.Documents.Operations.Backups;
 using Raven.Server.Documents.PeriodicBackup;
 using Raven.Server.Documents.PeriodicBackup.Azure;
+using Sparrow;
 using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
@@ -97,11 +99,41 @@ namespace SlowTests.Server.Documents.PeriodicBackup
         [AzureFact]
         public async Task put_blob()
         {
-            using (var holder = new AzureClientHolder(AzureFactAttribute.AzureSettings))
+            var progress = new Progress(new UploadProgress());
+            var sw = Stopwatch.StartNew();
+            progress.OnUploadProgress = () =>
+            {
+                var uploaded = new Size(progress.UploadProgress.UploadedInBytes, SizeUnit.Bytes);
+                var total = new Size(progress.UploadProgress.TotalInBytes, SizeUnit.Bytes);
+                Console.WriteLine($"[{sw.Elapsed}] {uploaded.GetDoubleValue(SizeUnit.Megabytes)} / {total.GetDoubleValue(SizeUnit.Megabytes)}");
+            };
+
+            using (var holder = new AzureClientHolder(AzureFactAttribute.AzureSettings, progress))
             {
                 var blobKey = GenerateBlobNames(holder.Settings, 1, out _).First();
 
-                holder.Client.PutBlob(blobKey, new MemoryStream(Encoding.UTF8.GetBytes("123")), new Dictionary<string, string>
+                const string fileName = "D:\\temp\\blob.txt";
+                FileStream fs;
+                if (File.Exists(fileName))
+                    fs = File.OpenRead(fileName);
+                else
+                {
+                    fs = File.Create(fileName);
+                    using (var w = new StreamWriter(fs, leaveOpen: true))
+                    {
+                        var size = new Size(1, SizeUnit.Gigabytes).GetValue(SizeUnit.Bytes);
+                        for (var i = 0; i < size; i++)
+                        {
+                            w.Write(i);
+                        }
+                    }
+
+                    fs.Flush();
+                    fs.Position = 0;
+                }
+
+
+                holder.Client.PutBlob(blobKey, fs, new Dictionary<string, string>
                     {
                         {"property1", "value1"},
                         {"property2", "value2"}
