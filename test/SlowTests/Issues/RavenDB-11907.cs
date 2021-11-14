@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FastTests;
@@ -14,19 +15,19 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void CanProjectFromCollectionNotInJson()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanProjectFromCollectionNotInJson(Options options)
         {
-            using (var store = GetDocumentStore(new Options
+            options.ModifyDocumentStore = s =>
             {
-                ModifyDocumentStore = s =>
+                s.Conventions.Serialization = new NewtonsoftJsonSerializationConventions
                 {
-                    s.Conventions.Serialization = new NewtonsoftJsonSerializationConventions
-                    {
-                        CustomizeJsonDeserializer = des => des.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore
-                    };
-                }
-            }))
+                    CustomizeJsonDeserializer = des => des.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore
+                };
+            };
+
+            using (var store = GetDocumentStore(options))
             {
                 using (var s = store.OpenSession())
                 {
@@ -93,10 +94,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void ChainPropagationOnMissingCollection()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ChainPropagationOnMissingCollection(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var s = store.OpenSession())
                 {
@@ -113,7 +115,8 @@ namespace SlowTests.Issues
                         })
                         .SingleOrDefault();
 
-                    Assert.False(doc?.HasTags);
+                    Assert.NotNull(doc);
+                    Assert.False(doc.HasTags);
                 }
             }
         }

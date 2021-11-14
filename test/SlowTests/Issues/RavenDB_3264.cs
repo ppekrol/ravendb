@@ -9,6 +9,7 @@ using Raven.Server.Documents;
 using Raven.Server.Documents.Patch;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Json.Parsing;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,11 +20,12 @@ namespace SlowTests.Issues
         public RavenDB_3264(ITestOutputHelper output) : base(output)
         {
         }
-
-        [Fact]
-        public void PatcherCanOutputObjectsCorrectly()
+        //TODO: egor
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void PatcherCanOutputObjectsCorrectly(RavenTestBase.Options options)
         {
-            using (var database = CreateDocumentDatabase())
+            using (var database = CreateDocumentDatabase(/*modifyConfiguration: options*/))
             {
                 const string script = @"output(undefined);
                                 output(true);
@@ -45,7 +47,7 @@ namespace SlowTests.Issues
                         Data = context.ReadObject(new DynamicJsonValue(), "keys/1")
                     };
 
-                    database.Scripts.GetScriptRunner(req, true, out var run);
+                    database.Scripts.GetScriptRunner( req, true, out ISingleRun run);
                     run.DebugMode = true;
                     run.Run(context, context, "execute", new object[] { document });
                     var array = run.DebugOutput;

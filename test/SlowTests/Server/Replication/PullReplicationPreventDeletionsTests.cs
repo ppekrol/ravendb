@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using FastTests.Utils;
 using Raven.Client;
 using Raven.Client.Documents;
@@ -29,8 +30,9 @@ namespace SlowTests.Server.Replication
         {
         }
 
-        [RavenFact(RavenTestCategory.Replication)]
-        public async Task PreventDeletionOnHubSinkCompromised()
+        [RavenTheory(RavenTestCategory.Replication)]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task PreventDeletionOnHubSinkCompromised(Options options)
         {
             var certificates = Certificates.SetupServerAuthentication();
             var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificate.Value, certificates
@@ -64,7 +66,7 @@ namespace SlowTests.Server.Replication
             }));
 
             await hubStore.Maintenance.SendAsync(new RegisterReplicationHubAccessOperation("pullRepHub",
-                new ReplicationHubAccess { Name = "hubAccess1", CertificateBase64 = Convert.ToBase64String(pullCert.Export(X509ContentType.Cert)) }));
+                new ReplicationHubAccess {Name = "hubAccess1", CertificateBase64 = Convert.ToBase64String(pullCert.Export(X509ContentType.Cert))}));
 
             await sinkStore.Maintenance.SendAsync(new PutConnectionStringOperation<RavenConnectionString>(new RavenConnectionString
             {
@@ -84,18 +86,18 @@ namespace SlowTests.Server.Replication
             using (var s = sinkStore.OpenAsyncSession())
             {
 
-                dynamic user1 = new { Source = "Sink" };
+                dynamic user1 = new {Source = "Sink"};
                 await s.StoreAsync(user1, "users/insink/1");
-
-                dynamic user2 = new { Source = "Sink" };
+                
+                dynamic user2 = new {Source = "Sink"};
                 await s.StoreAsync(user2, "users/insink/2");
-
+                
                 await s.SaveChangesAsync();
             }
 
             using (var s = hubStore.OpenAsyncSession())
             {
-                await s.StoreAsync(new { Source = "Hub" }, "users/inhub/1");
+                await s.StoreAsync(new {Source = "Hub"}, "users/inhub/1");
                 await s.SaveChangesAsync();
             }
 
@@ -153,8 +155,9 @@ namespace SlowTests.Server.Replication
             Assert.True(result, lastError);
         }
 
-        [RavenFact(RavenTestCategory.Replication)]
-        public async Task DeleteWhenAcceptSinkDeletionsFlagOff()
+        [RavenTheory(RavenTestCategory.Replication)]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task DeleteWhenAcceptSinkDeletionsFlagOff(Options options)
         {
             var certificates = Certificates.SetupServerAuthentication();
             var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificate.Value, certificates
@@ -190,7 +193,7 @@ namespace SlowTests.Server.Replication
             }));
 
             await hubStore.Maintenance.SendAsync(new RegisterReplicationHubAccessOperation("pullRepHub",
-                new ReplicationHubAccess { Name = "hubAccess", CertificateBase64 = Convert.ToBase64String(pullCert.Export(X509ContentType.Cert)) }));
+                new ReplicationHubAccess {Name = "hubAccess", CertificateBase64 = Convert.ToBase64String(pullCert.Export(X509ContentType.Cert))}));
 
             await sinkStore.Maintenance.SendAsync(new PutConnectionStringOperation<RavenConnectionString>(new RavenConnectionString
             {
@@ -209,11 +212,11 @@ namespace SlowTests.Server.Replication
 
             using (var s = sinkStore.OpenAsyncSession())
             {
-                dynamic user1 = new { Source = "Sink" };
+                dynamic user1 = new {Source = "Sink"};
                 await s.StoreAsync(user1, "users/insink/1");
                 s.Advanced.GetMetadataFor(user1)[Constants.Documents.Metadata.Expires] = DateTime.UtcNow.AddMinutes(10);
 
-                dynamic user2 = new { Source = "Sink" };
+                dynamic user2 = new {Source = "Sink"};
                 await s.StoreAsync(user2, "users/insink/2");
                 s.Advanced.GetMetadataFor(user2)[Constants.Documents.Metadata.Expires] = DateTime.UtcNow.AddMinutes(10);
 
@@ -222,7 +225,7 @@ namespace SlowTests.Server.Replication
 
             using (var s = hubStore.OpenAsyncSession())
             {
-                await s.StoreAsync(new { Source = "Hub" }, "users/inhub/1");
+                await s.StoreAsync(new {Source = "Hub"}, "users/inhub/1");
                 await s.SaveChangesAsync();
             }
 
@@ -302,7 +305,7 @@ namespace SlowTests.Server.Replication
             }));
 
             await hubStore.Maintenance.SendAsync(new RegisterReplicationHubAccessOperation("pullRepHub",
-                new ReplicationHubAccess { Name = "hubAccess", CertificateBase64 = Convert.ToBase64String(pullCert.Export(X509ContentType.Cert)) }));
+                new ReplicationHubAccess {Name = "hubAccess", CertificateBase64 = Convert.ToBase64String(pullCert.Export(X509ContentType.Cert))}));
 
             await sinkStore.Maintenance.SendAsync(new PutConnectionStringOperation<RavenConnectionString>(new RavenConnectionString
             {
@@ -321,11 +324,11 @@ namespace SlowTests.Server.Replication
 
             using (var s = sinkStore.OpenAsyncSession())
             {
-                dynamic user1 = new { Source = "Sink" };
+                dynamic user1 = new {Source = "Sink"};
                 await s.StoreAsync(user1, "users/insink/1");
                 s.Advanced.GetMetadataFor(user1)[Constants.Documents.Metadata.Expires] = DateTime.UtcNow.AddMinutes(10);
 
-                dynamic user2 = new { Source = "Sink" };
+                dynamic user2 = new {Source = "Sink"};
                 await s.StoreAsync(user2, "users/insink/2");
                 s.Advanced.GetMetadataFor(user2)[Constants.Documents.Metadata.Expires] = DateTime.UtcNow.AddMinutes(10);
 
@@ -334,7 +337,7 @@ namespace SlowTests.Server.Replication
 
             using (var s = hubStore.OpenAsyncSession())
             {
-                await s.StoreAsync(new { Source = "Hub" }, "users/inhub/1");
+                await s.StoreAsync(new {Source = "Hub"}, "users/inhub/1");
                 await s.SaveChangesAsync();
             }
 
@@ -422,17 +425,17 @@ namespace SlowTests.Server.Replication
 
             //create artificial doc in sink
             var artificialId = "";
-
+            
             await new Users_ByName_Count().ExecuteAsync(sinkStore);
-
+            
             using (var s = sinkStore.OpenAsyncSession())
             {
                 User user1 = new() { Name = "stav", Source = "Sink" };
                 await s.StoreAsync(user1, "users/insink/1");
-
+                
                 User user2 = new() { Name = "stav", Source = "Sink" };
                 await s.StoreAsync(user2, "users/insink/2");
-
+                
                 await s.SaveChangesAsync();
             }
 
@@ -566,13 +569,13 @@ namespace SlowTests.Server.Replication
             //create doc in sink
             using (var s = sinkStore.OpenAsyncSession())
             {
-                dynamic user1 = new User { Source = "Sink" };
+                dynamic user1 = new User {Source = "Sink"};
                 await s.StoreAsync(user1, "users/insink/1");
                 s.Advanced.GetMetadataFor(user1)[Constants.Documents.Metadata.Expires] = DateTime.UtcNow.AddMinutes(10);
-
+                
                 await s.SaveChangesAsync();
             }
-
+            
             //create revision
             using (var s = sinkStore.OpenAsyncSession())
             {
@@ -587,7 +590,7 @@ namespace SlowTests.Server.Replication
                 await s.StoreAsync(new { Source = "Hub" }, "users/inhub/1");
                 await s.SaveChangesAsync();
             }
-
+            
             Assert.True(WaitForDocument(sinkStore, "users/inhub/1"));
 
             //make sure hub got both docs and expires gets deleted
@@ -596,7 +599,7 @@ namespace SlowTests.Server.Replication
                 //check hub got both docs
                 var doc1 = await h.LoadAsync<dynamic>("users/insink/1");
                 Assert.NotNull(doc1);
-
+                
                 //check expired does not exist in users/insink/1
                 IMetadataDictionary metadata = h.Advanced.GetMetadataFor(doc1);
                 Assert.False(metadata?.ContainsKey(Constants.Documents.Metadata.Expires));

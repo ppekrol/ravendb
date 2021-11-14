@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Linq;
 using FastTests;
 using Raven.Client.Documents;
@@ -15,10 +16,11 @@ namespace SlowTests.Verifications
         {
         }
 
-        [Fact]
-        public void TaskLiveProjection()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void TaskLiveProjection(Options options)
         {
-            using (var documentStore = GetDocumentStore())
+            using (var documentStore = GetDocumentStore(options))
             {
                 new TaskSummaryIndex().Execute((IDocumentStore)documentStore);
 
@@ -53,26 +55,28 @@ namespace SlowTests.Verifications
 
                 using (var session = documentStore.OpenSession())
                 {
+                    var optChaining = options.JavascriptEngineMode.ToString() == "Jint" ? "" : "?";
+                    
                     var results = session.Advanced
-                        .RawQuery<dynamic>(@"
-declare function fetch(r){
+                        .RawQuery<dynamic>(@$"
+declare function fetch(r){{
     var g = load('users/'  + r.GiverId);
     var t = load('users/'  + r.TakerId);
     var p = load('places/' + r.PlaceId)
                                          
-    return {
+    return {{
         Id: id(r),
         Description: r.Description,
         Start: r.Start,
         End: r.End,
         GiverId: r.GiverId,
-        GiverName: g.Name,
+        GiverName: g{optChaining}.Name,
         TakerId: r.TakerId,
         TakerName: r.Name,
         PlaceId: r.PlaceId,
-        PlaceName: p.Name
-    };
-}
+        PlaceName: p{optChaining}.Name
+    }};
+}}
 from index TaskSummaryIndex as r
 select fetch(r)
 ")

@@ -1,5 +1,6 @@
 ﻿using FastTests;
 using System.Linq;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,10 +24,11 @@ namespace SlowTests.Issues
             public string DocId;
         }
 
-        [Fact]
-        public void TestProjectingNullProperty1()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void TestProjectingNullProperty1(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var s = store.OpenSession())
                 {

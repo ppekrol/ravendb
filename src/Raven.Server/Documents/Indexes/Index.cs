@@ -37,6 +37,8 @@ using Raven.Server.Documents.Indexes.Static.Counters;
 using Raven.Server.Documents.Indexes.Static.Spatial;
 using Raven.Server.Documents.Indexes.Static.TimeSeries;
 using Raven.Server.Documents.Indexes.Workers;
+using Raven.Server.Documents.Patch.Jint;
+using Raven.Server.Documents.Patch.V8;
 using Raven.Server.Documents.Queries;
 using Raven.Server.Documents.Queries.AST;
 using Raven.Server.Documents.Queries.Facets;
@@ -81,14 +83,16 @@ namespace Raven.Server.Documents.Indexes
     {
         public new TIndexDefinition Definition => (TIndexDefinition)base.Definition;
 
-        protected Index(IndexType type, IndexSourceType sourceType, TIndexDefinition definition)
-            : base(type, sourceType, definition)
+        protected Index(IndexType type, IndexSourceType sourceType, TIndexDefinition definition, AbstractStaticIndexBase compiled)
+            : base(type, sourceType, definition, compiled)
         {
         }
     }
 
     public abstract class Index : ITombstoneAware, IDisposable, ILowMemoryHandler
     {
+        protected internal AbstractStaticIndexBase _compiled;
+
         private int _writeErrors;
 
         private int _unexpectedErrors;
@@ -122,8 +126,7 @@ namespace Raven.Server.Documents.Indexes
         private readonly SemaphoreSlim _doingIndexingWork = new SemaphoreSlim(1, 1);
 
         private readonly SemaphoreSlim _executingIndexing = new SemaphoreSlim(1, 1);
-
-
+        
         private long _allocatedAfterPreviousCleanup = 0;
 
         /// <summary>
@@ -259,7 +262,7 @@ namespace Raven.Server.Documents.Indexes
 
         private readonly string _itemType;
 
-        protected Index(IndexType type, IndexSourceType sourceType, IndexDefinitionBaseServerSide definition)
+        protected Index(IndexType type, IndexSourceType sourceType, IndexDefinitionBaseServerSide definition, AbstractStaticIndexBase compiled)
         {
             Type = type;
             SourceType = sourceType;
@@ -269,6 +272,7 @@ namespace Raven.Server.Documents.Indexes
             if (Collections.Contains(Constants.Documents.Collections.AllDocumentsCollection))
                 HandleAllDocs = true;
 
+            _compiled = compiled;
             _queryBuilderFactories = new QueryBuilderFactories
             {
                 GetSpatialFieldFactory = GetOrAddSpatialField,
@@ -358,9 +362,20 @@ namespace Raven.Server.Documents.Indexes
 
             exceptionAggregator.Execute(() => { _mre?.Dispose(); });
 
+            if (Type.IsJavaScript())
+            {
+                exceptionAggregator.Execute(() =>
+                {
+                    if (_compiled is AbstractJavaScriptIndexV8 jsIndex)
+                    {
+                        V8EngineEx.ReturnEngine(jsIndex.EngineEx);
+                    }
+                });
+            }
+
             exceptionAggregator.ThrowIfNeeded();
         }
-
+        
         public static Index Open(string path, DocumentDatabase documentDatabase, bool generateNewDatabaseId)
         {
             var logger = LoggingSource.Instance.GetLogger<Index>(documentDatabase.Name);

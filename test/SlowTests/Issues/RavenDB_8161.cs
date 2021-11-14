@@ -15,14 +15,13 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void Can_delete_all_entries_from_compressed_tree_in_map_reduce_index()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_delete_all_entries_from_compressed_tree_in_map_reduce_index(Options options)
         {
             var path = NewDataPath();
-            using (var store = GetDocumentStore(new Options
-            {
-                Path = path
-            }))
+            options.Path = path;
+            using (var store = GetDocumentStore(options))
             {
                 store.Maintenance.Send(new CreateSampleDataOperation());
 

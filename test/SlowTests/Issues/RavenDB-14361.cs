@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -41,10 +42,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanProjectFromDictionaryByKeyWhereKeyHasDot_SessionQuery()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanProjectFromDictionaryByKeyWhereKeyHasDot_SessionQuery(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

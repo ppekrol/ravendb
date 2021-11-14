@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.IO;
 using FastTests.Voron.Util;
 using Raven.Client;
 using Raven.Client.Documents;
-using Raven.Tests.Core.Utils.Entities;
 using Xunit;
 using Xunit.Abstractions;
+using Raven.Tests.Core.Utils.Entities;
 
 namespace SlowTests.Server.Documents.ETL.Raven
 {
@@ -15,15 +16,16 @@ namespace SlowTests.Server.Documents.ETL.Raven
         {
         }
 
-        [Fact]
-        public void Should_handle_attachments()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_handle_attachments(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script:
                     @"
-var attachments = this['@metadata']['@attachments'];
+var attachments = this['@metadata']?.['@attachments'];
 
 this.Name = 'James';
 
@@ -31,7 +33,7 @@ this.Name = 'James';
 
 var doc = loadToUsers(this);
 
-for (var i = 0; i < attachments.length; i++) {
+for (var i = 0; i < attachments?.length ?? 0; i++) {
     doc.addAttachment(attachments[i].Name + '-etl', loadAttachment(attachments[i].Name));
 }
 
@@ -163,11 +165,12 @@ person.addAttachment('photo2.jpg-etl', loadAttachment('photo2.jpg'));
             }
         }
 
-        [Fact]
-        public void Can_use_get_attachments()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_use_get_attachments(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script:
                     @"
@@ -217,11 +220,12 @@ for (var i = 0; i < attachments.length; i++) {
             }
         }
 
-        [Fact]
-        public void Can_use_has_attachment()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_use_has_attachment(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script:
                     @"

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Generic;
 using Raven.Client;
 using Raven.Client.Documents;
@@ -6,10 +7,10 @@ using Raven.Client.Documents.Commands.Batches;
 using Raven.Client.Documents.Operations.Counters;
 using Raven.Client.Documents.Operations.ETL;
 using Raven.Server.Config;
-using Raven.Tests.Core.Utils.Entities;
 using Sparrow.Json.Parsing;
 using Xunit;
 using Xunit.Abstractions;
+using Raven.Tests.Core.Utils.Entities;
 
 namespace SlowTests.Server.Documents.ETL.Raven
 {
@@ -20,21 +21,19 @@ namespace SlowTests.Server.Documents.ETL.Raven
         }
 
         [Theory]
-        [InlineData("Users", null)]
-        [InlineData(null, null)]
-        [InlineData("Users", @"
+        [RavenData("Users", null, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(null, null, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData("Users", @"
     loadToUsers(this);
-
 function loadCountersOfUsersBehavior(doc, counter)
 {
     return true;
 }
-")]
-
-        public void Should_load_all_counters_when_no_script_is_defined_or_load_counter_behavior_sends_everyting(string collection, string script)
+", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_load_all_counters_when_no_script_is_defined_or_load_counter_behavior_sends_everyting(Options options, string collection, string script)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 if (collection == null)
                     AddEtl(src, dest, new string[0], script: null, applyToAllDocuments: true);
@@ -113,11 +112,12 @@ function loadCountersOfUsersBehavior(doc, counter)
             }
         }
 
-        [Fact]
-        public void Should_not_send_counters_metadata_when_using_script()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_not_send_counters_metadata_when_using_script(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script: @"this.Name = 'James Doe';
                                        loadToUsers(this);");
@@ -153,11 +153,12 @@ function loadCountersOfUsersBehavior(doc, counter)
         }
 
 
-        [Fact]
-        public void Should_handle_counters()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_handle_counters(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script:
                     @"
@@ -287,11 +288,12 @@ person.addCounter(loadCounter('down'));
             }
         }
 
-        [Fact]
-        public void Can_use_get_counters()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_use_get_counters(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script:
                     @"
@@ -341,11 +343,12 @@ for (var i = 0; i < counters.length; i++) {
             }
         }
 
-        [Fact]
-        public void Should_remove_counter_if_add_counter_gets_null_argument()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_remove_counter_if_add_counter_gets_null_argument(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script:
                     @"
@@ -412,11 +415,12 @@ doc.addCounter(loadCounter('likes'));
             }
         }
 
-        [Fact]
-        public void Can_use_has_counter()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_use_has_counter(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script:
                     @"
@@ -750,11 +754,12 @@ if (hasCounter('down')) {
             }
         }
 
-        [Fact]
-        public void Should_handle_counters_according_to_behavior_defined_in_script()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_handle_counters_according_to_behavior_defined_in_script(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script:
                     @"
@@ -838,11 +843,12 @@ function loadCountersOfUsersBehavior(docId, counter)
             }
         }
 
-        [Fact]
-        public void Should_not_send_counters_if_load_counters_behavior_isnt_defined()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_not_send_counters_if_load_counters_behavior_isnt_defined(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script:
                     @"
@@ -886,14 +892,14 @@ loadToUsers(this);");
             }
         }
 
-        [Fact]
-        public void Should_send_all_counters_on_doc_update_if_load_counters_behavior_set()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_send_all_counters_on_doc_update_if_load_counters_behavior_set(Options options)
         {
-            using (var src = GetDocumentStore(new Options()
-            {
-                ModifyDatabaseRecord = x => x.Settings[RavenConfiguration.GetKey(c => c.Etl.MaxNumberOfExtractedDocuments)] = "2"
-            }))
-            using (var dest = GetDocumentStore())
+            var op = options.Clone();
+            options.ModifyDatabaseRecord += x => x.Settings[RavenConfiguration.GetKey(c => c.Etl.MaxNumberOfExtractedDocuments)] = "2";
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(op))
             {
                 using (var session = src.OpenSession())
                 {
@@ -978,11 +984,12 @@ function loadCountersOfCustomersBehavior(docId, counter) // it's ok
                          "are loaded to the same collection on a destination side", errors[0]);
         }
 
-        [Fact]
-        public void Load_counters_behavior_function_can_use_other_function_defined_in_script()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Load_counters_behavior_function_can_use_other_function_defined_in_script(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script: @"
 loadToUsers(this);
@@ -1068,11 +1075,12 @@ function loadCountersOfUsersBehavior(docId, counter)
             }
         }
 
-        [Fact]
-        public void Can_define_multiple_load_counter_behavior_functions()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_define_multiple_load_counter_behavior_functions(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, collections: new[] { "Users", "Employees" }, script:
                     @"

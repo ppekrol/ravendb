@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Operations;
 using Xunit;
 using Xunit.Abstractions;
@@ -18,10 +19,11 @@ namespace SlowTests.Issues
             public string Path;
         }
 
-        [Fact]
-        public async Task CanEscapeLastCharInString()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanEscapeLastCharInString(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var s = store.OpenAsyncSession())
                 {

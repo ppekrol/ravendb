@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 using FastTests;
+using Tests.Infrastructure;
 using Orders;
 using Raven.Client.Documents.Commands.Batches;
 using Raven.Client.Documents.Operations;
@@ -15,10 +16,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void PatchWillUpdateTrackedDocumentAfterSaveChanges()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void PatchWillUpdateTrackedDocumentAfterSaveChanges(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -100,8 +102,9 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void PatchWillWork()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void PatchWillWork(Options options)
         {
             using (var store = GetDocumentStore())
             {

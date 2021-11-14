@@ -1,43 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Jint.Native;
 using Raven.Client.Documents.Commands.Batches;
 using Raven.Client.Documents.Operations.Counters;
 using Raven.Client.Documents.Operations.TimeSeries;
 using Raven.Server.Documents.ETL.Stats;
+using Raven.Server.Documents.Patch;
+using Raven.Server.Documents.Patch.Jint;
+using Raven.Server.Documents.Patch.V8;
 using Raven.Server.Documents.TimeSeries;
 using Sparrow.Json;
 
 namespace Raven.Server.Documents.ETL.Providers.Raven
 {
-    public class RavenEtlScriptRun
+    public abstract class RavenEtlScriptRun<T>
+    where T : struct, IJsHandle<T>
     {
+        private readonly IJsEngineHandle<T> _jsEngineHandle;
         private readonly EtlStatsScope _stats;
         private readonly List<ICommandData> _deletes = new List<ICommandData>();
 
-        private Dictionary<JsValue, (string Id, BlittableJsonReaderObject Document)> _putsByJsReference;
+        private Dictionary<T, (string Id, BlittableJsonReaderObject Document)> _putsByJsReference;
         
-        private Dictionary<JsValue, List<(string Name, Attachment Attachment)>> _addAttachments;
+        private Dictionary<T, List<(string Name, Attachment Attachment)>> _addAttachments;
 
-        private Dictionary<JsValue, Attachment> _loadedAttachments;
+        private Dictionary<T, Attachment> _loadedAttachments;
 
-        private Dictionary<JsValue, List<CounterOperation>> _countersByJsReference;
+        private Dictionary<T, List<CounterOperation>> _countersByJsReference;
 
         private Dictionary<LazyStringValue, List<CounterOperation>> _countersByDocumentId;
         
-        private Dictionary<JsValue, Dictionary<JsValue, TimeSeriesOperation>> _timeSeriesByJsReference;
+        private Dictionary<T, Dictionary<T, TimeSeriesOperation>> _timeSeriesByJsReference;
 
         private Dictionary<LazyStringValue, Dictionary<string, TimeSeriesBatchCommandData>> _timeSeriesByDocumentId;
 
-        private Dictionary<JsValue, (string Name, long Value)> _loadedCountersByJsReference;
+        private Dictionary<T, (string Name, long Value)> _loadedCountersByJsReference;
         
-        private Dictionary<JsValue, (string Name, IEnumerable<SingleResult> Value)> _loadedTimeSeriesByJsReference;
+        private Dictionary<T, (string Name, IEnumerable<SingleResult> Value)> _loadedTimeSeriesByJsReference;
 
         private Dictionary<string, List<ICommandData>> _fullDocuments;
 
-        public RavenEtlScriptRun(EtlStatsScope stats)
+        protected RavenEtlScriptRun(IJsEngineHandle<T> jsEngineHandle, EtlStatsScope stats)
         {
+            _jsEngineHandle = jsEngineHandle;
             _stats = stats;
         }
 
@@ -96,39 +101,40 @@ namespace Raven.Server.Documents.ETL.Providers.Raven
             }
         }
 
-        public void Put(string id, JsValue instance, BlittableJsonReaderObject doc)
+        public void Put(string id, T instance, BlittableJsonReaderObject doc)
         {
-            Debug.Assert(instance != null);
+            //TODO: egor Currently we cannot implement operator in interface
+             Debug.Assert(instance.IsNull == false);
 
-            _putsByJsReference ??= new Dictionary<JsValue, (string Id, BlittableJsonReaderObject)>();
+            _putsByJsReference ??= new Dictionary<T, (string Id, BlittableJsonReaderObject)>();
 
             _putsByJsReference.Add(instance, (id, doc));
             _stats.IncrementBatchSize(doc.Size);
         }
 
-        public void LoadAttachment(JsValue attachmentReference, Attachment attachment)
+        public void LoadAttachment(T attachmentReference, Attachment attachment)
         {
-            _loadedAttachments ??= new Dictionary<JsValue, Attachment>();
+            _loadedAttachments ??= new Dictionary<T, Attachment>();
             _loadedAttachments.Add(attachmentReference, attachment);
         }
 
-        public void LoadCounter(JsValue counterReference, string name, long value)
+        public void LoadCounter(T counterReference, string name, long value)
         {
-            _loadedCountersByJsReference ??= new Dictionary<JsValue, (string, long)>();
+            _loadedCountersByJsReference ??= new Dictionary<T, (string, long)>();
             _loadedCountersByJsReference.TryAdd(counterReference, (name, value));
         }
         
-        public void LoadTimeSeries(JsValue reference, string name, IEnumerable<SingleResult> value)
+        public void LoadTimeSeries(T reference, string name, IEnumerable<SingleResult> value)
         {
-            (_loadedTimeSeriesByJsReference ??= new Dictionary<JsValue, (string, IEnumerable<SingleResult>)>())
+            (_loadedTimeSeriesByJsReference ??= new Dictionary<T, (string, IEnumerable<SingleResult>)>())
                 .TryAdd(reference, (name, value));
         }
 
-        public void AddAttachment(JsValue instance, string name, JsValue attachmentReference)
+        public void AddAttachment(T instance, string name, T attachmentReference)
         {
             var attachment = _loadedAttachments[attachmentReference];
 
-            _addAttachments ??= new Dictionary<JsValue, List<(string, Attachment)>>();
+            _addAttachments ??= new Dictionary<T, List<(string, Attachment)>>();
 
             if (_addAttachments.TryGetValue(instance, out var attachments) == false)
             {
@@ -145,12 +151,12 @@ namespace Raven.Server.Documents.ETL.Providers.Raven
             _deletes.Add(new DeleteAttachmentCommandData(documentId, name, null));
         }
 
-        public void AddCounter(JsValue instance, JsValue counterReference)
+        public void AddCounter(T instance, T counterReference)
         {
             var counter = _loadedCountersByJsReference[counterReference];
 
             if (_countersByJsReference == null)
-                _countersByJsReference = new Dictionary<JsValue, List<CounterOperation>>();
+                _countersByJsReference = new Dictionary<T, List<CounterOperation>>();
 
             if (_countersByJsReference.TryGetValue(instance, out var operations) == false)
             {
@@ -203,21 +209,22 @@ namespace Raven.Server.Documents.ETL.Providers.Raven
             });
         }
 
-        public void AddTimeSeries(JsValue instance, JsValue timeSeriesReference)
+        public void AddTimeSeries(T instance, T timeSeriesReference)
         {
             var (name, entries) = _loadedTimeSeriesByJsReference[timeSeriesReference];
 
-            _timeSeriesByJsReference ??= new Dictionary<JsValue, Dictionary<JsValue, TimeSeriesOperation>>();
+            _timeSeriesByJsReference ??= new Dictionary<T, Dictionary<T, TimeSeriesOperation>>();
             if (_timeSeriesByJsReference.TryGetValue(instance, out var timeSeriesOperations) == false)
             {
-                timeSeriesOperations = new Dictionary<JsValue, TimeSeriesOperation>();
+                timeSeriesOperations = new Dictionary<T, TimeSeriesOperation>();
                 _timeSeriesByJsReference.Add(instance, timeSeriesOperations);
             }
 
-            if (timeSeriesOperations.TryGetValue(name, out var timeSeriesOperation) == false)
+            var jsName = _jsEngineHandle.CreateValue(name);
+            if (timeSeriesOperations.TryGetValue(jsName, out var timeSeriesOperation) == false)
             {
                 timeSeriesOperation = new TimeSeriesOperation {Name = name};
-                timeSeriesOperations.Add(name, timeSeriesOperation);
+                timeSeriesOperations.Add(jsName, timeSeriesOperation);
             }
 
             foreach (var entry in entries)
@@ -351,6 +358,20 @@ namespace Raven.Server.Documents.ETL.Providers.Raven
             }
 
             return false;
+        }
+    }
+
+    public class RavenEtlScriptRunV8 : RavenEtlScriptRun<JsHandleV8> 
+    {
+        public RavenEtlScriptRunV8(IJsEngineHandle<JsHandleV8> engine, EtlStatsScope stats) : base(engine, stats)
+        {
+        }
+    }
+
+    public class RavenEtlScriptRunJint : RavenEtlScriptRun<JsHandleJint>
+    {
+        public RavenEtlScriptRunJint(IJsEngineHandle<JsHandleJint> engine, EtlStatsScope stats) : base(engine, stats)
+        {
         }
     }
 }

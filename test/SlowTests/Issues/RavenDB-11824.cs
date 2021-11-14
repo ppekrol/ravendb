@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Queries;
@@ -16,10 +17,11 @@ namespace SlowTests.Issues
         }
 
 
-        [Fact]
-        public void AfterIncrementingMultipleCountersByScriptMetadataShouldHaveAllCountersNames()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void AfterIncrementingMultipleCountersByScriptMetadataShouldHaveAllCountersNames(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var testDoc = new TestDoc
                 {
@@ -87,10 +89,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanModifyDocAndIncrementCounterInSameScript()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanModifyDocAndIncrementCounterInSameScript(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var testDoc = new TestDoc
                 {
@@ -141,10 +144,11 @@ namespace SlowTests.Issues
         }
 
 
-        [Fact]
-        public void DeletingCountersViaScriptShouldRemoveDeletedCountersNamesFromMetadata()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void DeletingCountersViaScriptShouldRemoveDeletedCountersNamesFromMetadata(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var testDoc = new TestDoc
                 {

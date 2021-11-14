@@ -281,7 +281,6 @@ namespace SlowTests.Client.Attachments
                 }
             }
         }
-
         [Fact]
         public async Task DeleteAttachments()
         {
@@ -473,10 +472,11 @@ namespace SlowTests.Client.Attachments
             }
         }
 
-        [Fact]
-        public async Task CanPatchWithoutConflictsOnAttachments()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanPatchWithoutConflictsOnAttachments(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Queries;
 using Tests.Infrastructure;
@@ -15,7 +16,7 @@ namespace SlowTests.Issues
         }
 
         [Theory]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Corax)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Corax, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void LoadingDocumentInProjectionUsingStoredIndexIdInMapReduceIndex(Options options)
         {
             using (var store = GetDocumentStore(options))
@@ -47,7 +48,7 @@ namespace SlowTests.Issues
                                     doc.ExtraProperty
                                 };
 
-                    Assert.Equal("from index 'DocumentIndex' as x load x.DocumentId as doc select { Id : id(doc), Name : doc.Name, ExtraProperty : doc.ExtraProperty }",
+                    Assert.Equal("from index 'DocumentIndex' as x load x?.DocumentId as doc select { Id : id(doc), Name : doc?.Name, ExtraProperty : doc?.ExtraProperty }",
                         query.ToString());
 
                     var result = query.SingleOrDefault();

@@ -1,4 +1,5 @@
-﻿// -----------------------------------------------------------------------
+﻿using Tests.Infrastructure;
+// -----------------------------------------------------------------------
 //  <copyright file="AsyncSetBasedOps.cs" company="Hibernating Rhinos LTD">
 //      Copyright (c) Hibernating Rhinos LTD. All rights reserved.
 //  </copyright>
@@ -32,13 +33,12 @@ namespace SlowTests.SlowTests.Bugs
 #pragma warning restore 414,649
         }
 
-        [Fact]
-        public async Task AwaitAsyncPatchByIndexShouldWork()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task AwaitAsyncPatchByIndexShouldWork(Options options)
         {
-            using (var store = GetDocumentStore(new Options
-            {
-                ModifyDatabaseRecord = record => record.Settings[RavenConfiguration.GetKey(x => x.Core.RunInMemory)] = "false"
-            }))
+            options.ModifyDatabaseRecord += record => record.Settings[RavenConfiguration.GetKey(x => x.Core.RunInMemory)] = "false";
+            using (var store = GetDocumentStore(options))
             {
                 string lastUserId = null;
 
@@ -70,7 +70,7 @@ namespace SlowTests.SlowTests.Bugs
                 await (await store.Operations.SendAsync(new PatchByQueryOperation(
                     new IndexQuery { Query = $"FROM INDEX '{stats.IndexName}' UPDATE {{ this.FullName = this.FirstName + ' ' + this.LastName; }}" }
                 )))
-                .WaitForCompletionAsync(TimeSpan.FromSeconds(60));
+                .WaitForCompletionAsync(TimeSpan.FromSeconds(60 * 5)); //TODO: EGOR it takes more than 1min on v8
 
                 using (var db = store.OpenAsyncSession())
                 {

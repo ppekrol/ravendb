@@ -1,5 +1,6 @@
 ﻿using System;
 using FastTests;
+using Tests.Infrastructure;
 using Orders;
 using Raven.Client;
 using Raven.Client.Documents.Commands.Batches;
@@ -16,10 +17,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void Can_Use_Refresh_In_Patch()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_Use_Refresh_In_Patch(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 const string orderId = "users/1";
                 using (var session = store.OpenSession())

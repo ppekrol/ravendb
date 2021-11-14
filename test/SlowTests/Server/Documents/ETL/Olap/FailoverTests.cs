@@ -28,13 +28,14 @@ namespace SlowTests.Server.Documents.ETL.Olap
         {
         }
 
-        [Fact]
-        public async Task OlapTaskShouldBeHighlyAvailable()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task OlapTaskShouldBeHighlyAvailable(Options options)
         {
             var cluster = await CreateRaftCluster(3);
             var leader = cluster.Leader;
             var dbName = GetDatabaseName();
-            var db = await CreateDatabaseInCluster(dbName, 3, leader.WebUrl);
+            var db = await CreateDatabaseInCluster(dbName, 3, leader.WebUrl, options:options);
 
             var stores = db.Servers.Select(s => new DocumentStore
                 {

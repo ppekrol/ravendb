@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Tests.Infrastructure;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,7 @@ using Raven.Client.Documents.Operations.Indexes;
 using Tests.Infrastructure.Operations;
 using Xunit;
 using Xunit.Abstractions;
+using IndexingFields = Raven.Client.Constants.Documents.Indexing.Fields;
 
 namespace SlowTests.Issues
 {
@@ -59,21 +61,23 @@ namespace SlowTests.Issues
 
         private class Companies_With_Attachments_JavaScript : AbstractJavaScriptIndexCreationTask
         {
-            public Companies_With_Attachments_JavaScript()
+            public Companies_With_Attachments_JavaScript(Options options)
             {
+                var optChaining = options.JavascriptEngineMode.ToString() == "Jint" ? "" : "?";
+            
                 Maps = new HashSet<string>
                 {
-                    @"map('Companies', function (company) {
+                    @$"map('Companies', function (company) {{
 var attachment = loadAttachment(company, company.ExternalId);
-return {
+return {{
     CompanyName: company.Name,
-    AttachmentName: attachment.Name,
-    AttachmentContentType: attachment.ContentType,
-    AttachmentHash: attachment.Hash,
-    AttachmentSize: attachment.Size,
-    AttachmentContent: attachment.getContentAsString('utf8')
-};
-})"
+    AttachmentName: attachment{optChaining}.Name,
+    AttachmentContentType: attachment{optChaining}.ContentType,
+    AttachmentHash: attachment{optChaining}.Hash,
+    AttachmentSize: attachment{optChaining}.Size,
+    AttachmentContent: attachment{optChaining}.getContentAsString('utf8')
+}};
+}})"
                 };
             }
         }
@@ -506,12 +510,13 @@ return attachments.map(attachment => ({
             }
         }
 
-        [Fact]
-        public void Can_Index_Attachments_JavaScript()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_Index_Attachments_JavaScript(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
-                var index = new Companies_With_Attachments_JavaScript();
+                var index = new Companies_With_Attachments_JavaScript(options);
                 index.Execute(store);
 
                 store.Maintenance.Send(new StopIndexingOperation());
@@ -559,7 +564,7 @@ return attachments.map(attachment => ({
                 Assert.Equal(0, terms.Length);
 
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, nameof(Companies_With_Attachments.Result.AttachmentContentStream), fromValue: null));
-                Assert.Equal(0, terms.Length);
+                Assert.Equal(0, terms.Length); // as there is no this field at all
 
                 store.Maintenance.Send(new StopIndexingOperation());
 
@@ -693,10 +698,11 @@ return attachments.map(attachment => ({
             }
         }
 
-        [Fact]
-        public void Can_Index_Multiple_Attachments_JavaScript()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_Index_Multiple_Attachments_JavaScript(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var index = new Companies_With_Multiple_Attachments_JavaScript();
                 index.Execute(store);

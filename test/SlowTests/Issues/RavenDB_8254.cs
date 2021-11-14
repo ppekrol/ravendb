@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Queries;
 using Sparrow.Json;
@@ -14,10 +15,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void CanUseTransformWithSpatial()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanUseTransformWithSpatial(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 new Index_Spatial().Execute(store);
 

@@ -15,6 +15,8 @@ using Raven.Server.SqlMigration.Schema;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using DbProviderFactories = Raven.Server.Documents.ETL.Providers.SQL.RelationalWriters.DbProviderFactories;
+using JintException = Jint.Runtime.JavaScriptException;
+using V8.Net;
 
 namespace Raven.Server.SqlMigration
 {
@@ -39,7 +41,7 @@ namespace Raven.Server.SqlMigration
                 var specialColumns = dbSchema.FindSpecialColumns(collectionToImport.SourceTableSchema, collectionToImport.SourceTableName);
 
                 string CollectionNameProvider(string schema, string name) => settings.CollectionsMapping.Single(x => x.TableSchema == schema && x.TableName == name).CollectionName;
-                
+
                 using (var patcher = new JsPatcher(collectionToImport, context))
                 {
                     var references = ResolveReferences(collectionToImport, dbSchema, CollectionNameProvider);
@@ -68,7 +70,11 @@ namespace Raven.Server.SqlMigration
                     } 
                     catch (JavaScriptException e)
                     {
-                        if (e.InnerException is Jint.Runtime.JavaScriptException innerException && string.Equals(innerException.Message, "skip", StringComparison.OrdinalIgnoreCase))
+                        if (e.InnerException is JintException innerExceptionJint && string.Equals(innerExceptionJint.Message, "skip", StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new InvalidOperationException("Document was skipped", e);
+                        } 
+                        else if (e.InnerException is V8Exception innerExceptionV8 && string.Equals(innerExceptionV8.Message, "skip", StringComparison.OrdinalIgnoreCase))
                         {
                             throw new InvalidOperationException("Document was skipped", e);
                         } 
@@ -147,7 +153,11 @@ namespace Raven.Server.SqlMigration
                                 }
                                 catch (JavaScriptException e)
                                 {
-                                    if (e.InnerException is Jint.Runtime.JavaScriptException innerException && string.Equals(innerException.Message, "skip", StringComparison.OrdinalIgnoreCase))
+                                    if (e.InnerException is JintException innerExceptionJint && string.Equals(innerExceptionJint.Message, "skip", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        collectionCount.SkippedCount++;
+                                    } 
+                                    else if (e.InnerException is V8Exception innerExceptionV8 && string.Equals(innerExceptionV8.Message, "skip", StringComparison.OrdinalIgnoreCase))
                                     {
                                         collectionCount.SkippedCount++;
                                     } 

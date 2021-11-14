@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -1922,53 +1923,55 @@ namespace SlowTests.Client.Attachments
             }
         }
 
-        [Fact]
-        public async Task ScriptResolver_ShouldNotRenameAttachment_ShouldRenameAllMissingAttachmentsAndMergeWithOtherAttachmentsOnResolvedDocument()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task ScriptResolver_ShouldNotRenameAttachment_ShouldRenameAllMissingAttachmentsAndMergeWithOtherAttachmentsOnResolvedDocument(Options options)
         {
-            using (var store1 = GetDocumentStore(options: new Options
+            Action<DatabaseRecord> modifyDatabaseRecord1 = record =>
             {
-                ModifyDatabaseRecord = record =>
+                record.ConflictSolverConfig = new ConflictSolver
                 {
-                    record.ConflictSolverConfig = new ConflictSolver
+                    ResolveToLatest = false,
+                    ResolveByCollection = new Dictionary<string, ScriptResolver>()
                     {
-                        ResolveToLatest = false,
-                        ResolveByCollection = new Dictionary<string, ScriptResolver>()
                         {
+                            "Users", new ScriptResolver()
                             {
-                                "Users", new ScriptResolver()
-                                {
-                                    Script = @"docs[0]['@metadata']['@attachments'][0]['Name'] = 'newName';
+                                Script = @"docs[0]['@metadata']['@attachments'][0]['Name'] = 'newName';
                                                docs[0].Name = docs[0].Name + '_RESOLVED';
                                                return docs[0];
                                                "
-                                }
                             }
                         }
-                    };
-                }
-            }))
-            using (var store2 = GetDocumentStore(options: new Options
+                    }
+                };
+            };
+
+            Action<DatabaseRecord> modifyDatabaseRecord2 = record =>
             {
-                ModifyDatabaseRecord = record =>
+                record.ConflictSolverConfig = new ConflictSolver
                 {
-                    record.ConflictSolverConfig = new ConflictSolver
+                    ResolveToLatest = false,
+                    ResolveByCollection = new Dictionary<string, ScriptResolver>()
                     {
-                        ResolveToLatest = false,
-                        ResolveByCollection = new Dictionary<string, ScriptResolver>()
                         {
+                            "Users", new ScriptResolver()
                             {
-                                "Users", new ScriptResolver()
-                                {
-                                    Script = @"docs[0]['@metadata']['@attachments'][0]['Name'] = 'newName';
+                                Script = @"docs[0]['@metadata']['@attachments'][0]['Name'] = 'newName';
                                                docs[0].Name = docs[0].Name + '_RESOLVED';
                                                return docs[0];
                                                "
-                                }
                             }
                         }
-                    };
-                }
-            }))
+                    }
+                };
+            };
+
+            var op2 = options.Clone();
+            options.ModifyDatabaseRecord += modifyDatabaseRecord1;
+            op2.ModifyDatabaseRecord += modifyDatabaseRecord2;
+            using (var store1 = GetDocumentStore(options))
+            using (var store2 = GetDocumentStore(op2))
             {
                 var cvs = new List<(string, string)>();
                 using (var session = store1.OpenAsyncSession())
@@ -2051,53 +2054,54 @@ namespace SlowTests.Client.Attachments
             }
         }
 
-        [Fact]
-        public async Task ScriptResolver_ShouldNotRenameAttachment_ShouldRenameAndMergeAllMissingAttachmentsOnResolvedDocument()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task ScriptResolver_ShouldNotRenameAttachment_ShouldRenameAndMergeAllMissingAttachmentsOnResolvedDocument(Options options)
         {
-            using (var store1 = GetDocumentStore(options: new Options
+            Action<DatabaseRecord> modifyDatabaseRecord1 = record =>
             {
-                ModifyDatabaseRecord = record =>
+                record.ConflictSolverConfig = new ConflictSolver
                 {
-                    record.ConflictSolverConfig = new ConflictSolver
+                    ResolveToLatest = false,
+                    ResolveByCollection = new Dictionary<string, ScriptResolver>()
                     {
-                        ResolveToLatest = false,
-                        ResolveByCollection = new Dictionary<string, ScriptResolver>()
                         {
+                            "Users", new ScriptResolver()
                             {
-                                "Users", new ScriptResolver()
-                                {
-                                    Script = @"docs[0]['@metadata']['@attachments'][0]['Name'] = 'newName';
+                                Script = @"docs[0]['@metadata']['@attachments'][0]['Name'] = 'newName';
                                                docs[0].Name = docs[0].Name + '_RESOLVED';
                                                return docs[0];
                                                "
-                                }
                             }
                         }
-                    };
-                }
-            }))
-            using (var store2 = GetDocumentStore(options: new Options
+                    }
+                };
+            };
+
+            Action<DatabaseRecord> ModifyDatabaseRecord2 = record =>
             {
-                ModifyDatabaseRecord = record =>
+                record.ConflictSolverConfig = new ConflictSolver
                 {
-                    record.ConflictSolverConfig = new ConflictSolver
+                    ResolveToLatest = false,
+                    ResolveByCollection = new Dictionary<string, ScriptResolver>()
                     {
-                        ResolveToLatest = false,
-                        ResolveByCollection = new Dictionary<string, ScriptResolver>()
                         {
+                            "Users", new ScriptResolver()
                             {
-                                "Users", new ScriptResolver()
-                                {
-                                    Script = @"docs[0]['@metadata']['@attachments'][0]['Name'] = 'newName';
+                                Script = @"docs[0]['@metadata']['@attachments'][0]['Name'] = 'newName';
                                                docs[0].Name = docs[0].Name + '_RESOLVED';
                                                return docs[0];
                                                "
-                                }
                             }
                         }
-                    };
-                }
-            }))
+                    }
+                };
+            };
+            var op2 = options.Clone();
+            options.ModifyDatabaseRecord += modifyDatabaseRecord1;
+            op2.ModifyDatabaseRecord += ModifyDatabaseRecord2;
+            using (var store1 = GetDocumentStore(options))
+            using (var store2 = GetDocumentStore(op2))
             {
                 var cvs = new List<(string, string)>();
                 using (var session = store1.OpenAsyncSession())
@@ -2192,53 +2196,56 @@ namespace SlowTests.Client.Attachments
             }
         }
 
-        [Fact]
-        public async Task ScriptResolver_ShouldNotRemoveAttachment_ShouldRenameAndMergeAllMissingAttachmentsOnResolvedDocument()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task ScriptResolver_ShouldNotRemoveAttachment_ShouldRenameAndMergeAllMissingAttachmentsOnResolvedDocument(Options options)
         {
-            using (var store1 = GetDocumentStore(options: new Options
+            Action<DatabaseRecord> modifyDatabaseRecord1 = record =>
             {
-                ModifyDatabaseRecord = record =>
+                record.ConflictSolverConfig = new ConflictSolver
                 {
-                    record.ConflictSolverConfig = new ConflictSolver
+                    ResolveToLatest = false,
+                    ResolveByCollection = new Dictionary<string, ScriptResolver>()
                     {
-                        ResolveToLatest = false,
-                        ResolveByCollection = new Dictionary<string, ScriptResolver>()
                         {
+                            "Users", new ScriptResolver()
                             {
-                                "Users", new ScriptResolver()
-                                {
-                                    Script = @"docs[0]['@metadata']['@attachments'].pop();
+                                Script = @"docs[0]['@metadata']['@attachments'].pop();
                                                docs[0].Name = docs[0].Name + '_RESOLVED';
                                                return docs[0];
                                                "
-                                }
                             }
                         }
-                    };
-                }
-            }))
-            using (var store2 = GetDocumentStore(options: new Options
+                    }
+                };
+            };
+
+            Action<DatabaseRecord> modifyDatabaseRecord2 = record =>
             {
-                ModifyDatabaseRecord = record =>
+                record.ConflictSolverConfig = new ConflictSolver
                 {
-                    record.ConflictSolverConfig = new ConflictSolver
+                    ResolveToLatest = false,
+                    ResolveByCollection = new Dictionary<string, ScriptResolver>()
                     {
-                        ResolveToLatest = false,
-                        ResolveByCollection = new Dictionary<string, ScriptResolver>()
                         {
+                            "Users", new ScriptResolver()
                             {
-                                "Users", new ScriptResolver()
-                                {
-                                    Script = @"docs[0]['@metadata']['@attachments'].pop();
+                                Script = @"docs[0]['@metadata']['@attachments'].pop();
                                                docs[0].Name = docs[0].Name + '_RESOLVED';
                                                return docs[0];
                                                "
-                                }
                             }
                         }
-                    };
-                }
-            }))
+                    }
+                };
+            };
+
+
+            var op2 = options.Clone();
+            options.ModifyDatabaseRecord += modifyDatabaseRecord1;
+            op2.ModifyDatabaseRecord += modifyDatabaseRecord2;
+            using (var store1 = GetDocumentStore(options))
+            using (var store2 = GetDocumentStore(op2))
             {
                 var cvs = new List<(string, string, string)>();
                 using (var session = store1.OpenAsyncSession())
@@ -2372,55 +2379,56 @@ namespace SlowTests.Client.Attachments
             }
         }
 
-        [Fact]
-        public async Task ScriptResolver_ShouldNotAddAttachment_ShouldRenameAndMergeDuplicateAttachments()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task ScriptResolver_ShouldNotAddAttachment_ShouldRenameAndMergeDuplicateAttachments(Options options)
         {
-            using (var store1 = GetDocumentStore(options: new Options
+            Action<DatabaseRecord> modifyDatabaseRecord1 = record =>
             {
-                ModifyDatabaseRecord = record =>
+                record.ConflictSolverConfig = new ConflictSolver
                 {
-                    record.ConflictSolverConfig = new ConflictSolver
+                    ResolveToLatest = false,
+                    ResolveByCollection = new Dictionary<string, ScriptResolver>()
                     {
-                        ResolveToLatest = false,
-                        ResolveByCollection = new Dictionary<string, ScriptResolver>()
                         {
+                            "Users", new ScriptResolver()
                             {
-                                "Users", new ScriptResolver()
-                                {
-                                    Script = @"var attachment = {Name:'newnewnew', Hash:'322+228skHmEGRg7A3J8p3Q8IaOIBnJCnM/FvRXqX3I=', Size:50, ContentType:'image/gif'};
+                                Script = @"var attachment = {Name:'newnewnew', Hash:'322+228skHmEGRg7A3J8p3Q8IaOIBnJCnM/FvRXqX3I=', Size:50, ContentType:'image/gif'};
                                                docs[0]['@metadata']['@attachments'].push(attachment);
                                                docs[0].Name = docs[0].Name + '_RESOLVED';
                                                return docs[0];
                                                "
-                                }
                             }
                         }
-                    };
-                }
-            }))
-            using (var store2 = GetDocumentStore(options: new Options
+                    }
+                };
+            };
+
+            Action<DatabaseRecord> modifyDatabaseRecord2 = record =>
             {
-                ModifyDatabaseRecord = record =>
+                record.ConflictSolverConfig = new ConflictSolver
                 {
-                    record.ConflictSolverConfig = new ConflictSolver
+                    ResolveToLatest = false,
+                    ResolveByCollection = new Dictionary<string, ScriptResolver>()
                     {
-                        ResolveToLatest = false,
-                        ResolveByCollection = new Dictionary<string, ScriptResolver>()
                         {
+                            "Users", new ScriptResolver()
                             {
-                                "Users", new ScriptResolver()
-                                {
-                                    Script = @"var attachment = {Name:'newnewnew', Hash:'322+228skHmEGRg7A3J8p3Q8IaOIBnJCnM/FvRXqX3I=', Size:50, ContentType:'image/gif'};
+                                Script = @"var attachment = {Name:'newnewnew', Hash:'322+228skHmEGRg7A3J8p3Q8IaOIBnJCnM/FvRXqX3I=', Size:50, ContentType:'image/gif'};
                                                docs[0]['@metadata']['@attachments'].push(attachment);
                                                docs[0].Name = docs[0].Name + '_RESOLVED';
                                                return docs[0];
                                                "
-                                }
                             }
                         }
-                    };
-                }
-            }))
+                    }
+                };
+            };
+            var op2 = options.Clone();
+            options.ModifyDatabaseRecord += modifyDatabaseRecord1;
+            op2.ModifyDatabaseRecord += modifyDatabaseRecord2;
+            using (var store1 = GetDocumentStore(options))
+            using (var store2 = GetDocumentStore(op2))
             {
                 var cvs = new List<(string, string, string)>();
                 using (var session = store1.OpenAsyncSession())

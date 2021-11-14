@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -20,10 +21,11 @@ namespace SlowTests.Issues
             public Dictionary<string, int> Dict { get; set; }
         }
 
-        [Fact]
-        public void ShouldUseHasOwnProperty()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ShouldUseHasOwnProperty(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -63,10 +65,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void ShouldUseHasOwnProperty2()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ShouldUseHasOwnProperty2(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

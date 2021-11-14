@@ -163,6 +163,8 @@ namespace Raven.Server.Documents.Indexes.MapReduce.OutputToCollection
                                 stats.AddReduceError($"Failed to build document ID based on provided pattern for output to collection references. {e}");
                         }
                     }
+                    //TODO: egor redundant?
+                    //V8EngineEx.DisposeJsObjectsIfNeeded(value);
                 }
 
                 if (referenceDocIdBuilder != null && patternPropertiesAddedSuccessfully)

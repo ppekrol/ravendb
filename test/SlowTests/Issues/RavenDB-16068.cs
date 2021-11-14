@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -231,11 +232,11 @@ namespace SlowTests.Issues
         }
 
         [Theory]
-        [InlineData("from Users")]
-        [InlineData("from @all_docs")]
-        public async Task PatchByStartsWithQuery(string baseQuery)
+        [RavenData("from Users", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData("from @all_docs", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task PatchByStartsWithQuery(Options options, string baseQuery)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 const int totalDocs = 1024 * 2;
                 using (var bulkInsert = store.BulkInsert())
@@ -260,11 +261,11 @@ namespace SlowTests.Issues
         }
 
         [Theory]
-        [InlineData("from Users")]
-        [InlineData("from @all_docs")]
-        public async Task PatchByStartsWithQueryWithNewDocument(string baseQuery)
+        [RavenData("from Users", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData("from @all_docs", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task PatchByStartsWithQueryWithNewDocument(Options options, string baseQuery)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 const int totalDocs = 1024 * 2;
                 using (var bulkInsert = store.BulkInsert())

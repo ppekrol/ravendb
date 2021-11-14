@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Orders;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
@@ -19,7 +20,7 @@ namespace SlowTests.Issues
         }
 
         [RavenTheory(RavenTestCategory.Patching)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.Single)]
+        [RavenData(DatabaseMode = RavenDatabaseMode.Single, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void CanUsePagingWhilePatchingOrDeleting(Options options)
         {
             using (var store = GetDocumentStore(options))

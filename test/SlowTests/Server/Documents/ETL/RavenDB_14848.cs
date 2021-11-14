@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using Raven.Client.Documents.Operations.ConnectionStrings;
 using Raven.Client.Documents.Operations.ETL;
 using Raven.Client.Exceptions;
@@ -58,11 +59,12 @@ namespace SlowTests.Server.Documents.ETL
             }
         }
 
-        [Fact]
-        public void ShouldResetEtl()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ShouldResetEtl(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 using (var session = src.OpenSession())
                 {

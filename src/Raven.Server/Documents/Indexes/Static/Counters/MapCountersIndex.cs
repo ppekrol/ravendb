@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Raven.Client;
 using Raven.Client.Documents.Changes;
 using Raven.Client.Documents.Indexes;
@@ -22,27 +23,14 @@ namespace Raven.Server.Documents.Indexes.Static.Counters
 {
     public class MapCountersIndex : MapIndexBase<MapIndexDefinition, IndexField>
     {
-        private readonly HashSet<string> _referencedCollections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        protected internal readonly AbstractStaticIndexBase _compiled;
         private bool? _isSideBySide;
 
         private HandleCountersReferences _handleReferences;
         private HandleCompareExchangeCountersReferences _handleCompareExchangeReferences;
 
         protected MapCountersIndex(MapIndexDefinition definition, AbstractStaticIndexBase compiled)
-            : base(definition.IndexDefinition.Type, definition.IndexDefinition.SourceType, definition)
+            : base(definition.IndexDefinition.Type, definition.IndexDefinition.SourceType, definition, compiled)
         {
-            _compiled = compiled;
-
-            if (_compiled.ReferencedCollections == null)
-                return;
-
-            foreach (var collection in _compiled.ReferencedCollections)
-            {
-                foreach (var referencedCollection in collection.Value)
-                    _referencedCollections.Add(referencedCollection.Name);
-            }
         }
 
         public override bool HasBoostedFields => _compiled.HasBoostedFields;
@@ -204,7 +192,7 @@ namespace Raven.Server.Documents.Indexes.Static.Counters
 
         public static Index CreateNew(IndexDefinition definition, DocumentDatabase documentDatabase)
         {
-            var instance = CreateIndexInstance(definition, documentDatabase.Configuration, IndexDefinitionBaseServerSide.IndexVersion.CurrentVersion);
+            var instance = CreateIndexInstance(definition, documentDatabase.Configuration, IndexDefinitionBaseServerSide.IndexVersion.CurrentVersion, documentDatabase.DatabaseShutdown);
             instance.Initialize(documentDatabase,
                 new SingleIndexConfiguration(definition.Configuration, documentDatabase.Configuration),
                 documentDatabase.Configuration.PerformanceHints);
@@ -215,7 +203,7 @@ namespace Raven.Server.Documents.Indexes.Static.Counters
         public static Index Open(StorageEnvironment environment, DocumentDatabase documentDatabase)
         {
             var definition = MapIndexDefinition.Load(environment, out var version);
-            var instance = CreateIndexInstance(definition, documentDatabase.Configuration, version);
+            var instance = CreateIndexInstance(definition, documentDatabase.Configuration, version, documentDatabase.DatabaseShutdown);
 
             instance.Initialize(environment, documentDatabase,
                 new SingleIndexConfiguration(definition.Configuration, documentDatabase.Configuration),
@@ -224,9 +212,9 @@ namespace Raven.Server.Documents.Indexes.Static.Counters
             return instance;
         }
 
-        private static MapCountersIndex CreateIndexInstance(IndexDefinition definition, RavenConfiguration configuration, long indexVersion)
+        private static MapCountersIndex CreateIndexInstance(IndexDefinition definition, RavenConfiguration configuration, long indexVersion, CancellationToken token)
         {
-            var staticIndex = IndexCompilationCache.GetIndexInstance(definition, configuration, indexVersion);
+            var staticIndex = IndexCompilationCache.GetIndexInstance(definition, configuration, indexVersion, token);
 
             var staticMapIndexDefinition = new MapIndexDefinition(definition, staticIndex.Maps.Keys, staticIndex.OutputFields, staticIndex.HasDynamicFields, staticIndex.CollectionsWithCompareExchangeReferences.Count > 0, indexVersion);
             var instance = new MapCountersIndex(staticMapIndexDefinition, staticIndex);

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Operations.Indexes;
 using Raven.Client.Documents.Smuggler;
 using Xunit;
@@ -15,10 +16,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public async Task CanUseOutputCollectionOnMapReduceJsIndex()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanUseOutputCollectionOnMapReduceJsIndex(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var stream = GetDump("RavenDB-12785.ravendbdump"))
                 {

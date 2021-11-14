@@ -1,9 +1,10 @@
-﻿using System;
-using Orders;
+﻿using Tests.Infrastructure;
+using System;
 using Raven.Client.Documents.Operations;
 using Raven.Server.Config;
 using Xunit;
 using Xunit.Abstractions;
+using Orders;
 
 namespace SlowTests.Server.Documents.ETL
 {
@@ -14,27 +15,26 @@ namespace SlowTests.Server.Documents.ETL
         }
 
         [Theory]
-        [InlineData("Orders", null)]
-        [InlineData(null, null)]
-        [InlineData("Orders", @"
+        [RavenData("Orders", null, JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        [RavenData(null, null, JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        [RavenData("Orders", @"
     loadToOrders(this);
-
 function loadCountersOfOrdersBehavior(doc, counter)
 {
     return true;
 }
-")]
-        public void MustNotIterateCountersTooFar(string collection, string script)
+", JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        public void MustNotIterateCountersTooFar(Options options, string collection, string script)
         {
-            using (var src = GetDocumentStore(new Options()
+            var op = options.Clone();
+            options.ModifyDatabaseRecord += x =>
             {
-                ModifyDatabaseRecord = x =>
-                {
-                    x.Settings[RavenConfiguration.GetKey(c => c.Etl.MaxNumberOfExtractedDocuments)] = "20";
-                    x.Settings[RavenConfiguration.GetKey(c => c.Etl.MaxNumberOfExtractedItems)] = "20";
-                }
-            }))
-            using (var dest = GetDocumentStore())
+                x.Settings[RavenConfiguration.GetKey(c => c.Etl.MaxNumberOfExtractedDocuments)] = "20";
+                x.Settings[RavenConfiguration.GetKey(c => c.Etl.MaxNumberOfExtractedItems)] = "20";
+            };
+
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(op))
             {
                 const int numberOfDocs = 50;
 

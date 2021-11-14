@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using FastTests;
+using Tests.Infrastructure;
 using FastTests.Utils;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
@@ -36,10 +37,11 @@ namespace SlowTests.MailingList
             }
         }
 
-        [Fact]
-        public void CanSetPropertyOnArrayItem()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanSetPropertyOnArrayItem(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var commands = store.Commands())
                 {

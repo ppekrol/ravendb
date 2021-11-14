@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FastTests;
@@ -49,22 +50,22 @@ namespace SlowTests.Issues
         }
 
 
-        [Fact]
-        public async Task SubscriptionTypedCreationOptionsShouldSupportConstantValuesWithIndirectPath()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task SubscriptionTypedCreationOptionsShouldSupportConstantValuesWithIndirectPath(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 await TestWrappedValues(store);
             }
         }
 
-        [Fact]
-        public async Task SubscriptionTypedCreationOptionsShouldSupportConstantValuesWithIndirectPathAndSaveEnumsAsIntegers()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task SubscriptionTypedCreationOptionsShouldSupportConstantValuesWithIndirectPathAndSaveEnumsAsIntegers(Options options)
         {
-            using (var store = GetDocumentStore(new Options
-            {
-                ModifyDocumentStore = x => x.Conventions.SaveEnumsAsIntegers = true
-            }))
+            options.ModifyDocumentStore = x => x.Conventions.SaveEnumsAsIntegers = true;
+            using (var store = GetDocumentStore(options))
             {
                 await TestWrappedValues(store);
             }

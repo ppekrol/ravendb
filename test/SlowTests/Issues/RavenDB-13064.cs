@@ -1,5 +1,6 @@
 ﻿using System;
 using FastTests;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -11,10 +12,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void CanPatchNestedSubclass()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchNestedSubclass(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var cat = new Pet { Id = Guid.NewGuid().ToString(), Name = "Cat" };
                 var john = new Person { Id = Guid.NewGuid().ToString(), Name = "John", Pet = cat };

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -85,7 +86,7 @@ return ts.Entries.map(entry => ({
         HeartBeat: entry.Value,
         Date: new Date(entry.Timestamp.getFullYear(), entry.Timestamp.getMonth(), entry.Timestamp.getDate()),
         User: ts.DocumentId,
-        Employee: load(entry.Tag, 'Employees').FirstName
+        Employee: load(entry.Tag, 'Employees')?.FirstName
     }));
 })"
                 };
@@ -123,7 +124,7 @@ return ts.Entries.map(entry => ({
                              .aggregate(g => ({
                                  HeartBeat: g.values.reduce((total, val) => val.HeartBeat + total, 0) / g.values.reduce((total, val) => val.Count + total, 0),
                                  Date: g.key.Date,
-                                 User: g.key.User
+                                 User: g.key.User,
                                  Count: g.values.reduce((total, val) => val.Count + total, 0)
                              }))";
             }
@@ -150,7 +151,7 @@ return ts.Entries.map(entry => ({
 return ts.Entries.map(entry => ({
         HeartBeat: entry.Value,
         Date: new Date(entry.Timestamp.getFullYear(), entry.Timestamp.getMonth(), entry.Timestamp.getDate()),
-        City: load(entry.Tag, 'Addresses').City,
+        City: load(entry.Tag, 'Addresses')?.City,
         Count: 1
     }));
 })"
@@ -160,7 +161,7 @@ return ts.Entries.map(entry => ({
                              .aggregate(g => ({
                                  HeartBeat: g.values.reduce((total, val) => val.HeartBeat + total, 0) / g.values.reduce((total, val) => val.Count + total, 0),
                                  Date: g.key.Date,
-                                 City: g.key.City
+                                 City: g.key.City,
                                  Count: g.values.reduce((total, val) => val.Count + total, 0)
                              }))";
             }
@@ -222,7 +223,7 @@ return ({
         }
 
         [Theory]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void BasicMapIndex(Options options)
         {
             using (var store = GetDocumentStore(options))
@@ -380,7 +381,7 @@ return ({
         }
 
         [Theory]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public async Task BasicMapIndexWithLoad(Options options)
         {
             using (var store = GetDocumentStore(options))
@@ -484,7 +485,7 @@ return ({
                 Assert.Equal(2, WaitForValue(() => store.Maintenance.Send(new GetIndexStatisticsOperation(indexName)).EntriesCount, 2));
 
                 terms = store.Maintenance.Send(new GetTermsOperation(indexName, "Employee", null));
-                Assert.Equal(0, terms.Length);
+                Assert.Equal(1, terms.Length);
 
                 // delete source document
 
@@ -541,7 +542,7 @@ return ({
         }
 
         [Theory]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void BasicMapReduceIndex(Options options)
         {
             using (var store = GetDocumentStore(options))
@@ -721,7 +722,7 @@ return ({
         }
 
         [Theory]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public async Task BasicMapReduceIndexWithLoad(Options options)
         {
             {
@@ -869,7 +870,7 @@ return ({
         }
 
         [Theory]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void CanMapAllTimeSeriesFromCollection(Options options)
         {
             using (var store = GetDocumentStore(options))
@@ -1016,7 +1017,7 @@ return ({
         }
 
         [Theory]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void CanMapAllTimeSeries(Options options)
         {
             using (var store = GetDocumentStore(options))
@@ -1208,7 +1209,7 @@ return ({
         }
 
         [Theory]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public async Task BasicMultiMapIndex(Options options)
         {
             var now = DateTime.UtcNow.Date;
@@ -1270,7 +1271,7 @@ return ({
         }
 
         [Theory]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void TimeSeriesNamesFor(Options options)
         {
             var now = DateTime.UtcNow.Date;

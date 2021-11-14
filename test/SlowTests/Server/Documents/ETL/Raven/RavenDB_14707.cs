@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Tests.Infrastructure;
+using System;
 using Xunit;
 using Xunit.Abstractions;
 using Raven.Tests.Core.Utils.Entities;
-using System.IO;
 
 namespace SlowTests.Server.Documents.ETL.Raven
 {
@@ -14,11 +12,12 @@ namespace SlowTests.Server.Documents.ETL.Raven
         {
         }
 
-        [Fact]
-        public void Should_delete_existing_document_when_filtered_by_script()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_delete_existing_document_when_filtered_by_script(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script: @"if (this.Name == 'Joe Doe') loadToUsers(this);");
 

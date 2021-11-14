@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.IO;
-using Raven.Tests.Core.Utils.Entities;
+using SlowTests.Core.Utils.Entities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,7 +14,227 @@ namespace SlowTests.Server.Documents.ETL
         }
 
         [Fact]
-        public void Should_filter_out_deletions_using_generic_delete_behavior()
+        public void Should_filter_out_deletions_using_delete_behavior_function_simple()
+        {
+            using (var src = GetDocumentStore())
+            using (var dest = GetDocumentStore())
+            {
+                AddEtl(src, dest, collections: new[] { "Users" }, script:
+                    @"
+    function deleteDocumentsOfUsersBehavior(docId) {
+        return false;
+    }
+");
+
+                var etlDone = WaitForEtl(src, (n, s) => s.LoadSuccesses > 0);
+                
+                using (var session = src.OpenSession())
+                {
+                    var entity = new User()
+                    {
+                        Name = "Joe"
+                    };
+                    session.Store(entity, "users/1");
+
+                    session.SaveChanges();
+                }
+
+                Assert.True(etlDone.Wait(TimeSpan.FromMinutes(1)));
+
+                using (var session = dest.OpenSession())
+                {
+                    Assert.NotNull(session.Load<User>("users/1"));
+                }
+
+                etlDone.Reset();
+
+                
+                using (var session = src.OpenSession())
+                {
+                    session.Delete("users/1");
+                    session.SaveChanges();
+                }
+
+                Assert.True(etlDone.Wait(TimeSpan.FromSeconds(30)));
+
+                using (var session = dest.OpenSession())
+                {
+                    Assert.NotNull(session.Load<User>("users/1"));
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_filter_out_deletions_using_generic_delete_behavior__simple()
+        {
+            using (var src = GetDocumentStore())
+            using (var dest = GetDocumentStore())
+            {
+                AddEtl(src, dest, collections: Array.Empty<string>(), script:
+                    @"
+    function deleteDocumentsBehavior(docId, collection) {
+        return false;
+    }
+", applyToAllDocuments: true);
+
+                var etlDone = WaitForEtl(src, (n, s) => s.LoadSuccesses > 0);
+                
+                using (var session = src.OpenSession())
+                {
+                    var entity = new User()
+                    {
+                        Name = "Joe"
+                    };
+                    session.Store(entity, "users/1");
+
+                    session.SaveChanges();
+                }
+
+                Assert.True(etlDone.Wait(TimeSpan.FromMinutes(1)));
+
+                using (var session = dest.OpenSession())
+                {
+                    Assert.NotNull(session.Load<User>("users/1"));
+                }
+
+                etlDone.Reset();
+
+                
+                using (var session = src.OpenSession())
+                {
+                    session.Delete("users/1");
+                    session.SaveChanges();
+                }
+
+                Assert.True(etlDone.Wait(TimeSpan.FromSeconds(30)));
+
+                using (var session = dest.OpenSession())
+                {
+                    Assert.NotNull(session.Load<User>("users/1"));
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_filter_out_deletions_using_delete_behavior_function_and_marker_document__simple()
+        {
+            using (var src = GetDocumentStore())
+            using (var dest = GetDocumentStore())
+            {
+                AddEtl(src, dest, collections: new[] { "Employees" }, script:
+                    @"
+function deleteDocumentsOfEmployeesBehavior(docId) {    
+    return false;
+}
+
+");
+                var last = 0;
+                var etlDone = WaitForEtl(src, (n, s) =>
+                {
+                    var check = s.LoadSuccesses > last;
+                    last = s.LoadSuccesses;
+                    return check;
+                });
+
+                using (var session = src.OpenSession())
+                {
+                    session.Store(new Employee()
+                    {
+                        FirstName = "Doe"
+                    }, "employees/1");
+
+                    session.SaveChanges();
+                }
+
+                Assert.True(etlDone.Wait(TimeSpan.FromMinutes(1)));
+
+                using (var session = dest.OpenSession())
+                {
+                    Assert.NotNull(session.Load<Employee>("employees/1"));
+                }
+
+                etlDone.Reset();
+
+                using (var session = src.OpenSession())
+                {
+                    session.Delete("employees/1");
+                    session.SaveChanges();
+                }
+
+                Assert.False(etlDone.Wait(TimeSpan.FromSeconds(3)));
+
+                using (var session = dest.OpenSession())
+                {
+                    Assert.NotNull(session.Load<Employee>("employees/1"));
+                }
+            }
+        }
+
+        
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_filter_out_deletions_using_generic_delete_behavior(Options options)
+        {
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
+            {
+                AddEtl(src, dest, collections: new string[0], script:
+                    @"
+    
+    function deleteDocumentsBehavior(docId, collection) {
+        return 'Users' != collection;
+    }
+", applyToAllDocuments: true);
+
+                var etlDone = WaitForEtl(src, (n, s) => s.LoadSuccesses > 0);
+
+                using (var session = src.OpenSession())
+                {
+                    var entity = new User()
+                    {
+                        Name = "Joe"
+                    };
+                    session.Store(entity, "users/1");
+
+                    session.Store(new Employee()
+                    {
+                        LastName = "Joe"
+                    }, "employees/1");
+
+
+                    session.SaveChanges();
+                }
+
+                Assert.True(etlDone.Wait(TimeSpan.FromMinutes(1)));
+
+                using (var session = dest.OpenSession())
+                {
+                    Assert.NotNull(session.Load<User>("users/1"));
+                    Assert.NotNull(session.Load<Employee>("employees/1"));
+                }
+
+                etlDone.Reset();
+
+                using (var session = src.OpenSession())
+                {
+                    session.Delete("users/1");
+                    session.Delete("employees/1");
+
+                    session.SaveChanges();
+                }
+
+                Assert.True(etlDone.Wait(TimeSpan.FromSeconds(30)));
+
+                using (var session = dest.OpenSession())
+                {
+                    Assert.NotNull(session.Load<User>("users/1"));
+                    Assert.Null(session.Load<Employee>("employees/1"));
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_filter_out_deletions_using_generic_delete_behavior__doc_with_extensions()
         {
             using (var src = GetDocumentStore())
             using (var dest = GetDocumentStore())
@@ -107,18 +328,18 @@ namespace SlowTests.Server.Documents.ETL
                     Assert.NotNull(session.Load<User>("users/1"));
                     Assert.True(session.Advanced.Attachments.Exists("users/1", "photo"));
 
-                    Assert.Null(session.Load<User>("employees/1"));
+                    Assert.Null(session.Load<Employee>("employees/1"));
                 }
             }
         }
 
         [Theory]
-        [InlineData(new string[0], true)]
-        [InlineData(new[] { "Users", "Employees" }, false)]
-        public void Should_filter_out_deletions_using_generic_delete_behavior_function_and_marker_document(string[] collections, bool applyToAllDocuments)
+        [RavenData(new string[0], true, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(new[] { "Users", "Employees" }, false, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_filter_out_deletions_using_generic_delete_behavior_function_and_marker_document(Options options, string[] collections, bool applyToAllDocuments)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, collections: collections, script:
                     @"
@@ -173,7 +394,7 @@ function deleteDocumentsBehavior(docId, collection) {
                 using (var session = dest.OpenSession())
                 {
                     Assert.Null(session.Load<User>("users/1"));
-                    Assert.NotNull(session.Load<User>("employees/1"));
+                    Assert.NotNull(session.Load<Employee>("employees/1"));
                 }
             }
         }
@@ -235,45 +456,40 @@ function deleteDocumentsOfEmployeesBehavior(docId) {
 
                 using (var session = dest.OpenSession())
                 {
-                    Assert.NotNull(session.Load<User>("employees/1"));
+                    Assert.NotNull(session.Load<Employee>("employees/1"));
                 }
             }
         }
 
         [Theory]
-        [InlineData(@"
+        [RavenData(@"
     loadToUsers(this);
-
     function deleteDocumentsBehavior(docId, collection) {
         
         return false;
     }
-
     function deleteDocumentsOfEmployeesBehavior(docId) {
         return true;
     }
-")]
-        [InlineData(@"
+", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(@"
     loadToUsers(this);
-
     function deleteDocumentsBehavior(docId, collection) {
         
        if (true)
        {   
           return false;
        }
-
        return true;
     }
-
     function deleteDocumentsOfEmployeesBehavior(docId) {
         return true;
     }
-")]
-        public void Should_choose_more_specific_delete_behavior_function(string script)
+", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_choose_more_specific_delete_behavior_function(Options options, string script)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, collections: new[] { "Users", "Employees" }, script: script);
 

@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Orders;
 using Raven.Client;
 using Raven.Client.Documents.Subscriptions;
@@ -16,10 +17,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public async Task ProjectionsShouldHaveProperMetadataSetInSubscriptions()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task ProjectionsShouldHaveProperMetadataSetInSubscriptions(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {

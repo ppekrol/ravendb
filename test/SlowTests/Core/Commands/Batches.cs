@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Commands.Batches;
 using Raven.Client.Documents.Operations;
 using Sparrow.Json.Parsing;
@@ -18,10 +19,11 @@ namespace SlowTests.Core.Commands
         {
         }
 
-        [Fact]
-        public async Task CanDoBatchOperations()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanDoBatchOperations(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {

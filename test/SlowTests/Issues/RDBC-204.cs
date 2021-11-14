@@ -1,5 +1,6 @@
 ﻿using System;
 using FastTests;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -29,10 +30,11 @@ namespace SlowTests.Issues
             public string String { get; set; }
         }
 
-        [Fact]
-        public void CanPatchWithByteProperty()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchWithByteProperty(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -68,10 +70,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanPatchWithShortProperty()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchWithShortProperty(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -107,10 +110,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanPatchWithIntProperty()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchWithIntProperty(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -146,10 +150,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanPatchWithUIntProperty()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchWithUIntProperty(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -184,10 +189,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanPatchWithLongProperty()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchWithLongProperty(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -223,10 +229,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanPatchWithULongProperty()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchWithULongProperty(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -262,13 +269,14 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanPatchWithGuidProperty()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchWithGuidProperty(Options options)
         {
             byte[] bytes = {0, 1, 2, 3, 4, 5, 6, 7,8, 9, 10, 11, 12, 13, 14, 15};
             Guid guid = new Guid(bytes);
 
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -308,10 +316,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanPatchWithDecimalProperty()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchWithDecimalProperty(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -347,10 +356,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanPatchWithFloatProperty()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchWithFloatProperty(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -386,10 +396,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanPatchWithDoubleProperty()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchWithDoubleProperty(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -425,10 +436,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanPatchWithBoolProperty()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchWithBoolProperty(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -464,10 +476,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanPatchWithStringProperty()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchWithStringProperty(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

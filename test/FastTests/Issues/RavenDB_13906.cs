@@ -13,7 +13,7 @@ namespace FastTests.Issues
         }
 
         [RavenTheory(RavenTestCategory.ClientApi | RavenTestCategory.Patching)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(DatabaseMode = RavenDatabaseMode.All, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void OnAfterSaveChangesOnPatchShouldWork(Options options)
         {
             using (var store = GetDocumentStore(options))

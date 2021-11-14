@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Tests.Infrastructure;
+using System.Collections.Generic;
 using System.Linq;
 using FastTests;
 using Raven.Client;
@@ -16,14 +17,15 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void ShouldWork()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ShouldWork(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 new MapReduceWithOutputToCollection().Execute(store);
                 new JavaIndex().Execute(store);
-                new JavaWithAdditionalSourcesIndex().Execute(store);
+                new JavaWithAdditionalSourcesIndex(options).Execute(store);
                 string entityId;
                 using (var session = store.OpenSession())
                 {
@@ -72,10 +74,11 @@ namespace SlowTests.Issues
         }
 
         // RavenDB-14884
-        [Fact]
-        public void CanCompileScriptWithSwitch()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanCompileScriptWithSwitch(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 new Index_Rows().Execute(store);
                 var id = "row/1";
@@ -209,7 +212,7 @@ namespace SlowTests.Issues
         private class JavaWithAdditionalSourcesIndex : AbstractJavaScriptIndexCreationTask
         {
             public override string IndexName => "JavaWithAdditionalSourcesIndex";
-            public JavaWithAdditionalSourcesIndex()
+            public JavaWithAdditionalSourcesIndex(Options options)
             {
                 Maps = new HashSet<string>
                 {
@@ -232,23 +235,26 @@ namespace SlowTests.Issues
 
                 OutputReduceToCollection = @"ThirdOutput";
 
+                var optChaining = options.JavascriptEngineMode.ToString() == "Jint" ? "" : "?.";
+                var optEmptyArray = options.JavascriptEngineMode.ToString() == "Jint" ? "" : "?? []";
+                
                 AdditionalSources = new Dictionary<string, string>
                 {
-                    ["The Script"] = @" function includeCommunications(doc, communicationNames) {
-                                        var communications = {};
-                                        for (var idx = 0; idx < communicationNames.length; idx++) {
+                    ["The Script"] = @$" function includeCommunications(doc, communicationNames) {{
+                                        var communications = {{}};
+                                        for (var idx = 0; idx < communicationNames.length; idx++) {{
                                             var related = 'SecondOutput/References/' + communicationNames[idx];
-                                            var references = load(related, 'SecondOutput/References')['ReduceOutputs'];
+                                            var references = load(related, 'SecondOutput/References'){optChaining}['ReduceOutputs']{optEmptyArray};
 
-                                            for (var i = 0; i < references.length; i++) {
+                                            for (var i = 0; i < references.length; i++) {{
                                                 var match = load(references[i], 'SecondOutput');
-                                                if (match != null) {
+                                                if (match != null) {{
                                                     communications[match.TypeName] = match;
-                                                }
-                                            }
-                                        }
+                                                }}
+                                            }}
+                                        }}
                                         return communications;
-                                    }"
+                                    }}"
                 };
             }
         }

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations.Indexes;
 using Raven.Client.Documents.Queries;
@@ -16,10 +17,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void DocumentQuerySelectFields()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void DocumentQuerySelectFields(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {                
                 var definition = new IndexDefinitionBuilder<Order>("OrderByCompanyCountryIndex")
                 {

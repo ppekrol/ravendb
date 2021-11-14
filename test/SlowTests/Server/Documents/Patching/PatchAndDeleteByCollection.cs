@@ -43,11 +43,16 @@ namespace SlowTests.Server.Documents.Patching
         }
 
         [Theory]
-        [InlineData(100)]
-        [InlineData(1300)]
-        public void CanPatchCollection(int count)
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchCollection_100(Options options) => CanPatchCollectionInternal(count: 100, options);
+
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanPatchCollection_1300(Options options) => CanPatchCollectionInternal(count: 1300, options);
+
+        private void CanPatchCollectionInternal(int count, Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var x = store.OpenSession())
                 {

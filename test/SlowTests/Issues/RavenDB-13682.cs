@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Newtonsoft.Json.Linq;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
@@ -170,7 +171,7 @@ limit 1")
         }
 
         [RavenTheory(RavenTestCategory.Spatial)]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void CanProjectDistanceComputation(Options options)
         {
             using (var store = GetDocumentStore(options))

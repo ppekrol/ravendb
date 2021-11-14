@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Indexes;
 using Xunit;
 using Xunit.Abstractions;
@@ -13,10 +14,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void ToStringOnNonStoredMissingFieldShouldNotThrow()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ToStringOnNonStoredMissingFieldShouldNotThrow(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 // Arrange  
                 store.ExecuteIndex(new BookingIndexFullNameIsFullNameMapStartToBegin());

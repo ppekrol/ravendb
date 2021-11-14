@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations;
@@ -69,10 +70,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void can_get_in_progress_operation_when_patching_by_script()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void can_get_in_progress_operation_when_patching_by_script(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 new Company_ByName().Execute(store);
                 put_1500_companies(store);

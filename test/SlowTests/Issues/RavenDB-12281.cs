@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -24,10 +25,11 @@ namespace SlowTests.Issues
             Success
         }
 
-        [Fact]
-        public void EnumComparisonWithLet()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void EnumComparisonWithLet(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 string id = "docs/1";
 
@@ -54,10 +56,10 @@ namespace SlowTests.Issues
                         };
 
                     Assert.Equal("from 'Documents' as doc select { " +
-                                 "False : doc.Status!==\"Success\", " +
-                                 "SecondFalse : !(doc.Status===\"Success\"), " +
-                                 "True : doc.Status===\"Success\", " +
-                                 "SecondTrue : !(doc.Status!==\"Success\") }" , query.ToString());
+                                 "False : doc?.Status!=='Success', " +
+                                 "SecondFalse : !(doc?.Status==='Success'), " +
+                                 "True : doc?.Status==='Success', " +
+                                 "SecondTrue : !(doc?.Status!=='Success') }" , query.ToString());
 
                     var item = query.Single();
                     Assert.NotNull(item);

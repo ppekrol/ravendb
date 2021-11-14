@@ -5,13 +5,22 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Lucene.Net.Documents;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
+using Raven.Client.Exceptions.Documents.Indexes;
+using Raven.Server.Config.Categories;
 using Raven.Server.Documents.Indexes.Persistence.Lucene.Documents;
 using Raven.Server.Documents.Indexes.Static.Spatial;
 using Sparrow.Json;
 using Spatial4n.Shapes;
+using Raven.Server.Config;
+using Raven.Server.Documents.Indexes.Configuration;
+using Esprima;
+using Raven.Client.ServerWide.JavaScript;
+using Raven.Server.Documents.Indexes.Static.Counters;
+using Raven.Server.Documents.Indexes.Static.TimeSeries;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
@@ -618,7 +627,7 @@ namespace Raven.Server.Documents.Indexes.Static
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Add(AbstractField field)
             {
-                _fields.Add(field);
+                _fields.Add(field); 
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -628,4 +637,127 @@ namespace Raven.Server.Documents.Indexes.Static
             }
         }
     }
+    
+    public abstract class AbstractJavaScriptIndexBase : AbstractStaticIndexBase
+    {
+        public const string Load = "load";
+        public const string NoTracking = "noTracking";
+        public const string CmpXchg = "cmpxchg";
+        protected const string GlobalDefinitions = "globalDefinition";
+        protected const string CollectionProperty = "collection";
+        protected const string MethodProperty = "method";
+        protected const string MoreArgsProperty = "moreArgs";
+
+        protected const string MapsProperty = "maps";
+
+        protected const string ReduceProperty = "reduce";
+        protected const string AggregateByProperty = "aggregateBy";
+        protected const string KeyProperty = "key";
+
+        protected readonly IndexDefinition Definition;
+
+        public static AbstractStaticIndexBase Create(IndexDefinition definition, RavenConfiguration configuration, long indexVersion, CancellationToken token)
+        {
+            switch (definition.SourceType)
+            {
+                case IndexSourceType.Documents:
+                    switch (configuration.JavaScript.EngineType)
+                    {
+                        case JavaScriptEngineType.Jint:
+                            return new JavaScriptIndexJint(definition, configuration, indexVersion);
+                        case JavaScriptEngineType.V8:
+                            return new JavaScriptIndexV8(definition, configuration, indexVersion, token);
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(configuration.JavaScript.EngineType));
+                    }
+                case IndexSourceType.TimeSeries:
+                    switch (configuration.JavaScript.EngineType)
+                    {
+                        case JavaScriptEngineType.Jint:
+                            return new TimeSeriesJavaScriptIndexJint(definition, configuration, indexVersion);
+                        case JavaScriptEngineType.V8:
+                            return new TimeSeriesJavaScriptIndexV8(definition, configuration, indexVersion, token);
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(configuration.JavaScript.EngineType));
+                    }
+                case IndexSourceType.Counters:
+                    switch (configuration.JavaScript.EngineType)
+                    {
+                        case JavaScriptEngineType.Jint:
+                            return new CountersJavaScriptIndexJint(definition, configuration, indexVersion);
+                        case JavaScriptEngineType.V8:
+                            return new CountersJavaScriptIndexV8(definition, configuration, indexVersion, token);
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(configuration.JavaScript.EngineType));
+                    }
+                default:
+                    throw new NotSupportedException($"Not supported source type '{definition.SourceType}'.");
+            }
+        }
+
+        protected AbstractJavaScriptIndexBase(IndexDefinition definition)
+        {
+            Definition = definition;
+        }
+
+        protected List<string> GetMappingFunctions(Action<List<string>> modifyMappingFunctions)
+        {
+            if (Definition.Maps == null || Definition.Maps.Count == 0)
+                ThrowIndexCreationException("does not contain any mapping functions to process.");
+
+            var mappingFunctions = Definition.Maps.ToList(); 
+            modifyMappingFunctions?.Invoke(mappingFunctions);
+
+            return mappingFunctions;
+        }
+        
+
+
+        protected static readonly ParserOptions DefaultParserOptions = new ParserOptions();
+        
+        protected void ThrowIndexCreationException(string message)
+        {
+            throw new IndexCreationException($"JavaScript index {Definition.Name} {message}");
+        }
+
+        protected const string Code = @"
+var globalDefinition =
+{
+    maps: [],
+    reduce: null
+}
+
+function groupBy(lambda) {
+    var reduce = globalDefinition.reduce = { };
+    reduce.key = lambda;
+
+    reduce.aggregate = function(reduceFunction){
+        reduce.aggregateBy = reduceFunction;
+    }
+    return reduce;
+}
+
+// createSpatialField(wkt: string)
+// createSpatialField(lat: number, lng: number)
+
+function createSpatialField() {
+    if(arguments.length == 1) {
+        return { $spatial: arguments[0] }
+}
+
+    return { $spatial: {Lng: arguments[1], Lat: arguments[0]} }
+}
+
+function createField(name, value, options) {
+    return { $name: name, $value: value, $options: options }
+}
+
+function boost(value, boost) {
+    return { $value: value, $boost: boost }
+}
+";
+
+
+    }
+
 }

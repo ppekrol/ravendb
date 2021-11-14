@@ -7,6 +7,7 @@ using Raven.Client.Documents;
 using Raven.Client.Documents.Commands.Batches;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,10 +19,11 @@ namespace SlowTests.Bugs
         {
         }
 
-        [Fact]
-        public void GetReturnsFilteredResults()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void GetReturnsFilteredResults(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var users = new[]
                 {

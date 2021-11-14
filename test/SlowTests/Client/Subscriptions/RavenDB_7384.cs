@@ -10,6 +10,7 @@ using Raven.Server.Documents;
 using Raven.Server.ServerWide.Context;
 using Raven.Tests.Core.Utils.Entities;
 using Sparrow.Server;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -76,10 +77,11 @@ namespace SlowTests.Client.Subscriptions
             }
         }
 
-        [Fact]
-        public async Task UpdatingSubscriptionScriptShouldNotChangeVector()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task UpdatingSubscriptionScriptShouldNotChangeVector(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var subscriptionName = store.Subscriptions.Create<User>(options: new SubscriptionCreationOptions()
                 {

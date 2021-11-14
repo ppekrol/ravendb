@@ -11,11 +11,14 @@ using Raven.Client.Util;
 using Raven.Server.Documents.ETL.Metrics;
 using Raven.Server.Documents.ETL.Providers.Raven.Enumerators;
 using Raven.Server.Documents.ETL.Stats;
-using Raven.Server.Documents.Handlers.Processors.TimeSeries;
+using Raven.Server.Documents.Handlers;
+using Raven.Server.Documents.Patch.Jint;
+using Raven.Server.Documents.Patch.V8;
 using Raven.Server.Documents.Replication.ReplicationItems;
 using Raven.Server.Documents.TimeSeries;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
+using Raven.Server.Documents.Handlers.Processors.TimeSeries;
 
 namespace Raven.Server.Documents.ETL.Providers.Raven
 {
@@ -30,7 +33,7 @@ namespace Raven.Server.Documents.ETL.Providers.Raven
         private string _recentUrl;
         public string Url => _recentUrl;
 
-        private readonly RavenEtlDocumentTransformer.ScriptInput _script;
+        private readonly ScriptInput _script;
 
         public RavenEtl(Transformation transformation, RavenEtlConfiguration configuration, DocumentDatabase database, ServerStore serverStore) : base(transformation, configuration, database, serverStore, RavenEtlTag)
         {
@@ -46,7 +49,7 @@ namespace Raven.Server.Documents.ETL.Providers.Raven
                 _serverStore.Server.ServerCertificateChanged += OnServerCertificateChanged;
             }
 
-            _script = new RavenEtlDocumentTransformer.ScriptInput(transformation);
+            _script = new ScriptInput(transformation);
         }
 
         public override EtlType EtlType => EtlType.Raven;
@@ -139,9 +142,14 @@ namespace Raven.Server.Documents.ETL.Providers.Raven
             return Transformation.IsEmptyScript || Transformation.TimeSeries.CollectionToLoadBehaviorFunction != null;
         }
 
-        protected override EtlTransformer<RavenEtlItem, ICommandData, EtlStatsScope, EtlPerformanceOperation> GetTransformer(DocumentsOperationContext context)
+        protected override EtlTransformer<RavenEtlItem, ICommandData, EtlStatsScope, EtlPerformanceOperation, JsHandleV8> GetTransformerV8(DocumentsOperationContext context)
         {
-            return new RavenEtlDocumentTransformer(Transformation, Database, context, _script);
+            return new RavenEtlTransformerV8(Transformation, Database, context, _script);
+        }
+
+        protected override EtlTransformer<RavenEtlItem, ICommandData, EtlStatsScope, EtlPerformanceOperation, JsHandleJint> GetTransformerJint(DocumentsOperationContext context)
+        {
+            return new RavenEtlTransformerJint(Transformation, Database, context, _script);
         }
 
         protected override int LoadInternal(IEnumerable<ICommandData> items, DocumentsOperationContext context, EtlStatsScope scope)
@@ -219,14 +227,14 @@ namespace Raven.Server.Documents.ETL.Providers.Raven
 
         public override void Dispose()
         {
-            base.Dispose();
-
             if (_configuration.TestMode == false)
             {
                 _serverStore.Server.ServerCertificateChanged -= OnServerCertificateChanged;
 
                 _requestExecutor?.Dispose();
             }
+
+            base.Dispose();
         }
     }
 }

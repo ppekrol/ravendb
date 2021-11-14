@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,11 +17,12 @@ namespace SlowTests.Issues
             public string Value { get; set; }
         }
 
-        [Fact]
-        public async Task CanIncrementOnNull()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanIncrementOnNull(Options options)
         {
             var id = "data";
-            using (var ds = GetDocumentStore())
+            using (var ds = GetDocumentStore(options))
             {
                 using (var session = ds.OpenAsyncSession())
                 {

@@ -6,6 +6,7 @@
 
 using System;
 using FastTests;
+using Tests.Infrastructure;
 using Microsoft.CSharp.RuntimeBinder;
 using Raven.Client.Documents.Operations;
 using Raven.Server.Documents.Indexes.Static;
@@ -20,10 +21,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void CaseOne()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CaseOne(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var commands = store.Commands())
                 {
@@ -49,10 +51,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CaseTwo()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CaseTwo(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var commands = store.Commands())
                 {
@@ -84,10 +87,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CaseThree()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CaseThree(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var commands = store.Commands())
                 {

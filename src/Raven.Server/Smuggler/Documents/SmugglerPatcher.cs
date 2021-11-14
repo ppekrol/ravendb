@@ -1,11 +1,12 @@
 ﻿using System;
-
+using Jint.Runtime;
 using Raven.Client.Documents.Smuggler;
 using Raven.Server.Documents;
 using Raven.Server.Documents.Patch;
-using Raven.Server.Extensions;
 using Raven.Server.ServerWide;
 using Sparrow.Json;
+using V8.Net;
+
 
 namespace Raven.Server.Smuggler.Documents
 {
@@ -27,7 +28,7 @@ namespace Raven.Server.Smuggler.Documents
     {
         private readonly DatabaseSmugglerOptions _options;
         private readonly ScriptRunnerCache _cache;
-        private ScriptRunner.SingleRun _run;
+        private ISingleRun _run;
 
         protected SmugglerPatcher(DatabaseSmugglerOptions options, ScriptRunnerCache cache)
         {
@@ -36,25 +37,28 @@ namespace Raven.Server.Smuggler.Documents
             _options = options;
             _cache = cache;
         }
-
+        
         public Document Transform(Document document)
         {
             var ctx = document.Data._context;
             object translatedResult;
             using (document)
             {
-                using (_run.ScriptEngine.ChangeMaxStatements(_options.MaxStepsForTransformScript))
+                using (_run.ScriptEngineHandle.ChangeMaxStatements(_options.OptionsForTransformScript.MaxSteps))
+                using (_run.ScriptEngineHandle.ChangeMaxDuration(_options.OptionsForTransformScript.MaxDuration))
                 {
                     try
                     {
-                        using (ScriptRunnerResult result = _run.Run(ctx, null, "execute", new object[] { document }))
+                        using (var result = _run.Run(ctx, null, "execute", new object[] { document }))
                         {
                             translatedResult = _run.Translate(result, ctx, usageMode: BlittableJsonDocumentBuilder.UsageMode.ToDisk);
                         }
                     }
                     catch (Client.Exceptions.Documents.Patching.JavaScriptException e)
                     {
-                        if (e.InnerException is Jint.Runtime.JavaScriptException innerException && string.Equals(innerException.Message, "skip", StringComparison.OrdinalIgnoreCase))
+                        if (e.InnerException is JintException innerExceptionJint && string.Equals(innerExceptionJint.Message, "skip", StringComparison.OrdinalIgnoreCase))
+                            return null;
+                        if (e.InnerException is V8Exception innerExceptionV8 && string.Equals(innerExceptionV8.Message, "skip", StringComparison.OrdinalIgnoreCase))
                             return null;
 
                         throw;
@@ -77,7 +81,7 @@ namespace Raven.Server.Smuggler.Documents
         public IDisposable Initialize()
         {
             var key = new PatchRequest(_options.TransformScript, PatchRequestType.Smuggler);
-            return _cache.GetScriptRunner(key, true, out _run);
+            return _cache.GetScriptRunner(key, readOnly: true, out _run);
         }
     }
 }

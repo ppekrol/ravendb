@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using Tests.Infrastructure;
+using System.Collections.Generic;
 using FastTests;
 using Orders;
 using Raven.Client.Documents;
@@ -14,9 +14,9 @@ namespace SlowTests.Queries
         {
         }
 
-        protected DocumentStore GetLoadedStore()
+        protected DocumentStore GetLoadedStore(Options options)
         {
-            var store = GetDocumentStore();
+            var store = GetDocumentStore(options);
             using (var session = store.OpenSession())
             {
                 session.Store(new Category());
@@ -75,9 +75,9 @@ namespace SlowTests.Queries
             return store;
         }
 
-        public List<T> Query<T>(string q, T type, Dictionary<string, object> parameters = null)
+        public List<T> Query<T>(Options options, string q, T type, Dictionary<string, object> parameters = null)
         {
-            using (var store = GetLoadedStore())
+            using (var store = GetLoadedStore(options))
             {
                 //WaitForUserToContinueTheTest(store);
                 using (var s = store.OpenSession())
@@ -95,10 +95,11 @@ namespace SlowTests.Queries
                 }
             }
         }
-        [Fact]
-        public void QueriesUsingArrowFunc()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void QueriesUsingArrowFunc(Options options)
         {
-            var actual = Query(@"
+            var actual = Query(options, @"
 from Employees as e
 select {
     Notes: e.Notes.map(x=>x.toUpperCase())
@@ -110,14 +111,21 @@ select {
             Assert.Equal(new[] { "PALE", "DOG", "BIG" }, actual[1].Notes);
 
         }
+
+
+        const string SimpleFieldProjectionScript1 = "from Companies select Address.City as City";
+        const string SimpleFieldProjectionScript2 = "from Companies c select c.Address.City as City";
+        const string SimpleFieldProjectionScript3 = "from Companies as c select c.Address.City as City";
+        const string SimpleFieldProjectionScript4 = "from Companies as c select { City: c.Address.City }";
+
         [Theory]
-        [InlineData("from Companies select Address.City as City")]
-        [InlineData("from Companies c select c.Address.City as City")]
-        [InlineData("from Companies as c select c.Address.City as City")]
-        [InlineData("from Companies as c select { City: c.Address.City }")]
-        public void SimpleFieldProjection(string q)
+        [RavenData(SimpleFieldProjectionScript1, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(SimpleFieldProjectionScript2, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(SimpleFieldProjectionScript3, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(SimpleFieldProjectionScript4, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void SimpleFieldProjection(Options options, string q)
         {
-            var actual = Query(q, new { City = "" });
+            var actual = Query(options, q, new { City = "" });
             Assert.Equal(new[]
             {
                 new {City = "Hadera" },
@@ -127,17 +135,23 @@ select {
                 actual);
         }
 
+        const string TestProjectionsOfConstAndVariablesScript1 = "from Categories select 1 as V";
+        const string TestProjectionsOfConstAndVariablesScript2 = "from Categories select 1.2 as V";
+        const string TestProjectionsOfConstAndVariablesScript3 = "from Categories select $t as V";
+        const string TestProjectionsOfConstAndVariablesScript4 = "from Categories select 'hello there' as V";
+        const string TestProjectionsOfConstAndVariablesScript5 = "from Categories select \"hello there\" as V";
+        const string TestProjectionsOfConstAndVariablesScript6 = "from Categories as c select {V: c['@metadata']['@collection'] }";
 
         [Theory]
-        [InlineData("from Categories select 1 as V", "1")]
-        [InlineData("from Categories select 1.2 as V", "1.2")]
-        [InlineData("from Categories select $t as V", "1234")]
-        [InlineData("from Categories select 'hello there' as V", "hello there")]
-        [InlineData("from Categories select \"hello there\" as V", "hello there")]
-        [InlineData("from Categories as c select {V: c['@metadata']['@collection'] }", "Categories")]
-        public void TestProjectionsOfConstAndVariables(string q, string v)
+        [RavenData(TestProjectionsOfConstAndVariablesScript1, "1", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(TestProjectionsOfConstAndVariablesScript2, "1.2", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(TestProjectionsOfConstAndVariablesScript3, "1234", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(TestProjectionsOfConstAndVariablesScript4, "hello there", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(TestProjectionsOfConstAndVariablesScript5, "hello there", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(TestProjectionsOfConstAndVariablesScript6, "Categories", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void TestProjectionsOfConstAndVariables(Options options, string q, string v)
         {
-            var actual = Query(q, new { V = "" }, new Dictionary<string, object>
+            var actual = Query(options, q, new { V = "" }, new Dictionary<string, object>
             {
                 ["t"] = 1234
             });
@@ -149,21 +163,27 @@ select {
 
         }
 
-        [Theory]
-        [InlineData("from Employees where FirstName = 'Phoebe' include ReportsTo")]
-        [InlineData("from Employees as e where e.FirstName = 'Phoebe' include e.ReportsTo")]
-        [InlineData("from Employees where FirstName = 'Oscar' include ReportsTo")]
-        [InlineData(@"
+        private const string includesScript1 = "from Employees where FirstName = 'Phoebe' include ReportsTo";
+        private const string includesScript2 = "from Employees as e where e.FirstName = 'Phoebe' include e.ReportsTo";
+        private const string includesScript3 = "from Employees where FirstName = 'Oscar' include ReportsTo";
+
+        private const string includesScript4 = @"
 declare function project(e){
     include(e.ReportsTo)
     return e;
 }
 from Employees as e 
 where e.FirstName = 'Oscar'
-select project(e)")]
-        public void Includes(string q)
+select project(e)";
+
+        [Theory]
+        [RavenData(includesScript1, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(includesScript2, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(includesScript3, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(includesScript4, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Includes(Options options, string q)
         {
-            using (var store = GetLoadedStore())
+            using (var store = GetLoadedStore(options))
             {
                 using (var s = store.OpenSession())
                 {
@@ -185,14 +205,20 @@ select project(e)")]
 
         }
 
+
+        const string FilterByPropertyScript1 = "from Companies where Address.City = 'Hadera'";
+        const string FilterByPropertyScript2 = "from Companies c where c.Address.City = 'Hadera'";
+        const string FilterByPropertyScript3 = "from Companies c where c.Address.City != 'Toruń' and c.Address.City != 'Buenos Aires'";
+        const string FilterByPropertyScript4 = "from Companies where Address.City = $city ";
+
         [Theory]
-        [InlineData("from Companies where Address.City = 'Hadera'")]
-        [InlineData("from Companies c where c.Address.City = 'Hadera'")]
-        [InlineData("from Companies c where c.Address.City != 'Toruń' and c.Address.City != 'Buenos Aires'")]
-        [InlineData("from Companies where Address.City = $city ")]
-        public void FilterByProperty(string q)
+        [RavenData(FilterByPropertyScript1, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(FilterByPropertyScript2, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(FilterByPropertyScript3, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(FilterByPropertyScript4, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void FilterByProperty(Options options, string q)
         {
-            var actual = Query(q, new Company { }, new Dictionary<string, object>
+            var actual = Query(options, q, new Company { }, new Dictionary<string, object>
             {
                 ["city"] = "Hadera"
             });
@@ -200,26 +226,28 @@ select project(e)")]
             Assert.Equal("Hadera", actual[0].Address.City);
         }
 
-        [Theory]
-        [InlineData(@"
+        const string projectingRelatedScript1 = @"
 from Employees e 
 where e.FirstName = 'Phoebe' 
 load e.ReportsTo r 
-select e.FirstName as A, r.FirstName as B", "Phoebe", "Oscar")]
-        [InlineData(@"
+select e.FirstName as A, r.FirstName as B";
+
+        const string projectingRelatedScript2 = @"
 from Employees e 
 where e.FirstName = 'Oscar' 
 load e.ReportsTo r 
-select e.FirstName as A, r.FirstName as B", "Oscar", null)]
-        [InlineData(@"
+select e.FirstName as A, r.FirstName as B";
+
+        const string projectingRelatedScript3 = @"
 from Employees e 
 where e.FirstName = 'Oscar' 
 load e.ReportsTo r 
 select {     
     A: e.FirstName +' '+e.LastName, 
-    B: r.FirstName +' ' + r.LastName 
-} ", "Oscar Aharon-Eini", "null null")]
-        [InlineData(@"
+    B: r?.FirstName +' ' + r?.LastName 
+} ";
+
+        const string projectingRelatedScript4 = @"
 declare function name(e) {
     if( e == null)
         return null;
@@ -231,18 +259,26 @@ load e.ReportsTo r
 select { 
     A: name(e), 
     B: name(r)
-} ", "Oscar Aharon-Eini", null)]
-        [InlineData(@"
+} ";
+
+        const string projectingRelatedScript5 = @"
 from Employees e 
 where e.FirstName = 'Phoebe' 
 load e.ReportsTo r 
 select { 
     A: e.FirstName +' '+e.LastName, 
     B: r.FirstName +' ' + r.LastName 
-} ", "Phoebe Eini", "Oscar Aharon-Eini")]
-        public void ProjectingRelated(string q, string nameA, string nameB)
+}";
+
+        [Theory]
+        [RavenData(projectingRelatedScript1, "Phoebe", "Oscar", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(projectingRelatedScript2, "Oscar", null, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(projectingRelatedScript3, "Oscar Aharon-Eini", "undefined undefined", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(projectingRelatedScript4, "Oscar Aharon-Eini", null, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(projectingRelatedScript5, "Phoebe Eini", "Oscar Aharon-Eini", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ProjectingRelated(Options options, string q, string nameA, string nameB)
         {
-            var actual = Query(q, new { A = "", B = "" });
+            var actual = Query(options, q, new { A = "", B = "" });
             Assert.Equal(1, actual.Count);
             Assert.Equal(new { A = nameA, B = nameB }, actual[0]);
         }

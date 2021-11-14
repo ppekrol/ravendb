@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.IO;
 using System.Linq;
 using Raven.Server.Config;
@@ -15,8 +16,7 @@ namespace SlowTests.Server.Documents.ETL.Raven
         {
         }
 
-        [Theory]
-        [InlineData(@"
+        private const string scriptShould_stop_batch_if_size_limit_exceeded = @"
             var doc = loadToUsers(this);
 
             var attachments = getAttachments();
@@ -24,15 +24,23 @@ namespace SlowTests.Server.Documents.ETL.Raven
             for (var i = 0; i < attachments.length; i++) {
                 doc.addAttachment(loadAttachment(attachments[i].Name));
             }
-        ")]
-        [InlineData(null)]
-        public void Should_stop_batch_if_size_limit_exceeded(string script)
+        ";
+
+        [Theory]
+        [RavenData(@"
+            var doc = loadToUsers(this);
+            var attachments = getAttachments();
+            for (var i = 0; i < attachments.length; i++) {
+                doc.addAttachment(loadAttachment(attachments[i].Name));
+            }
+        ", JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(null, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_stop_batch_if_size_limit_exceeded(Options options, string script)
         {
-            using (var src = GetDocumentStore(new Options
-            {
-                ModifyDatabaseRecord = x => x.Settings[RavenConfiguration.GetKey(c => c.Etl.MaxBatchSize)] = "5"
-            }))
-            using (var dest = GetDocumentStore())
+            var op = options.Clone();
+            options.ModifyDatabaseRecord = x => x.Settings[RavenConfiguration.GetKey(c => c.Etl.MaxBatchSize)] = "5";
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(op))
             {
                 using (var session = src.OpenSession())
                 {

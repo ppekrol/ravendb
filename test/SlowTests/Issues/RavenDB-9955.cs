@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -12,10 +13,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void JsConvertorShouldIgnoreValueProperyOfNullable()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void JsConvertorShouldIgnoreValueProperyOfNullable(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {                
                 using (var session = store.OpenSession())
                 {
@@ -43,7 +45,7 @@ namespace SlowTests.Issues
                         };
                     
                     Assert.Equal("from 'Users' as u where u.Active != $p0 " +
-                                 "select { Name : u.FirstName+\" \"+u.LastName, Active : u.Active }", query.ToString());
+                                 "select { Name : u?.FirstName+\" \"+u?.LastName, Active : u?.Active }", query.ToString());
                     
                     var result = query.ToList();
                     
@@ -54,10 +56,11 @@ namespace SlowTests.Issues
             }
         }
         
-        [Fact]
-        public void ToDictionaryWithNullableValue()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ToDictionaryWithNullableValue(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var debtor = new Debtor()
                 {

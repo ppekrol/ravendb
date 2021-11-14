@@ -1,25 +1,308 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Jint;
 using Jint.Native.Function;
-using Jint.Native.Object;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Server.Config;
-using Raven.Server.Documents.Patch;
+using Raven.Server.Documents.Patch.Jint;
+using Raven.Server.Documents.Patch.V8;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public abstract class AbstractCountersAndTimeSeriesJavaScriptIndex : AbstractJavaScriptIndex
+    public abstract class AbstractCountersAndTimeSeriesJavaScriptIndexJint : AbstractJavaScriptIndexJint
     {
-        private const string NameProperty = "name";
+        protected AbstractCountersAndTimeSeriesJavaScriptIndexJint(IndexDefinition definition, RavenConfiguration configuration, string mapPrefix, string allItems, long indexVersion)
+            : base(definition, configuration, mappingFunctions => CountersAndTimeSeriesJavascriptIndexHelper.ModifyMappingFunctions(mappingFunctions, mapPrefix), CountersAndTimeSeriesJavascriptIndexHelper.GetMapCode(allItems), indexVersion)
+        {
+        }
+        //TODO: egor this should be splited in 2 methods? or make internal and use it in both methods
+        protected override void ProcessMaps(List<string> mapList, List<MapMetadata> mapReferencedCollections, out Dictionary<string, Dictionary<string, List<JavaScriptMapOperation<JsHandleJint>>>> collectionFunctions)
+        {
+            var mapsArrayForParsingJint = _definitionsForParsing.GetProperty(MapsProperty).Value;
+            if (mapsArrayForParsingJint.IsNull() || mapsArrayForParsingJint.IsUndefined() || mapsArrayForParsingJint.IsArray() == false)
+                ThrowIndexCreationException($"JavaScript: doesn't contain any map function or '{GlobalDefinitions}.{Maps}' was modified in the script");
 
-        protected AbstractCountersAndTimeSeriesJavaScriptIndex(IndexDefinition definition, RavenConfiguration configuration, string mapPrefix, string allItems, long indexVersion)
-            : base(definition, configuration, mappingFunctions => ModifyMappingFunctions(mappingFunctions, mapPrefix), GetMapCode(allItems), indexVersion)
+            var mapsForParsingJint = mapsArrayForParsingJint.AsArray();
+            if (mapsForParsingJint.Length == 0)
+                ThrowIndexCreationException($"JavaScript: doesn't contain any map functions or '{GlobalDefinitions}.{Maps}' was modified in the script");
+
+
+            using (var maps = _definitions.GetProperty(MapsProperty))
+            {
+                if (maps.IsNull || maps.IsUndefined || maps.IsArray == false)
+                    ThrowIndexCreationException($"doesn't contain any map function or '{GlobalDefinitions}.{Maps}' was modified in the script");
+
+                if (maps.ArrayLength == 0)
+                    ThrowIndexCreationException($"doesn't contain any map functions or '{GlobalDefinitions}.{Maps}' was modified in the script");
+
+                collectionFunctions = new Dictionary<string, Dictionary<string, List<JavaScriptMapOperation<JsHandleJint>>>>();
+                for (int i = 0; i < maps.ArrayLength; i++)
+                {
+                    var mapObjForParsingJint = mapsForParsingJint.Get(i.ToString());
+                    if (mapObjForParsingJint.IsNull() || mapObjForParsingJint.IsUndefined() || mapObjForParsingJint.IsObject() == false)
+                        ThrowIndexCreationException($"JavaScript: map function #{i} is not a valid object");
+                    var mapForParsingJint = mapObjForParsingJint.AsObject();
+                    if (mapForParsingJint.HasProperty(MethodProperty) == false)
+                        ThrowIndexCreationException($"JavaScript: map function #{i} is missing its {MethodProperty} property");
+                    var funcForParsingJint = mapForParsingJint.Get(MethodProperty).As<FunctionInstance>();
+                    if (funcForParsingJint == null)
+                        ThrowIndexCreationException($"JavaScript: map function #{i} {MethodProperty} property isn't a 'FunctionInstance'");
+
+                    using (var map = maps.GetProperty(i))
+                    {
+                        if (map.IsNull || map.IsUndefined || map.IsObject == false)
+                            ThrowIndexCreationException($"map function #{i} is not a valid object");
+                        if (map.HasProperty(CollectionProperty) == false)
+                            ThrowIndexCreationException($"map function #{i} is missing a collection name");
+                        using (var mapCollectionStr = map.GetProperty(CollectionProperty))
+                        {
+                            if (mapCollectionStr.IsStringEx == false)
+                                ThrowIndexCreationException($"map function #{i} collection name isn't a string");
+                            var mapCollection = mapCollectionStr.AsString;
+
+                            if (collectionFunctions.TryGetValue(mapCollection, out var subCollectionFunctions) == false)
+                                collectionFunctions[mapCollection] = subCollectionFunctions = new Dictionary<string, List<JavaScriptMapOperation<JsHandleJint>>>();
+
+                            if (map.HasProperty(CountersAndTimeSeriesJavascriptIndexHelper.NameProperty) == false)
+                                ThrowIndexCreationException($"map function #{i} is missing its {CountersAndTimeSeriesJavascriptIndexHelper.NameProperty} property");
+                            using (var mapNameStr = map.GetProperty(CountersAndTimeSeriesJavascriptIndexHelper.NameProperty))
+                            {
+                                if (mapNameStr.IsStringEx == false)
+                                    ThrowIndexCreationException($"map function #{i} TimeSeries name isn't a string");
+                                var mapName = mapNameStr.AsString;
+
+                                if (subCollectionFunctions.TryGetValue(mapName, out var list) == false)
+                                    subCollectionFunctions[mapName] = list = new List<JavaScriptMapOperation<JsHandleJint>>();
+
+                                if (map.HasOwnProperty(MethodProperty) == false)
+                                    ThrowIndexCreationException($"map function #{i} is missing its {MethodProperty} property");
+
+                                using (var func = map.GetProperty(MethodProperty))
+                                {
+                                    if (func.IsFunction == false)
+                                        ThrowIndexCreationException($"map function #{i} {MethodProperty} property isn't a 'FunctionInstance'");
+
+                                    var operation = new JavaScriptMapOperationJint(this, JsIndexUtils, funcForParsingJint, func, Definition.Name, mapList[i]);
+                                    if (mapForParsingJint.HasOwnProperty(MoreArgsProperty))
+                                    {
+                                        var moreArgsObjJint = mapForParsingJint.Get(MoreArgsProperty);
+                                        if (moreArgsObjJint.IsArray())
+                                        {
+                                            var arrayJint = moreArgsObjJint.AsArray();  
+                                            if (arrayJint.Length > 0)
+                                            {
+                                                operation.MoreArguments = arrayJint;
+                                            }
+                                        }
+                                    }
+
+                                    operation.Analyze(_engineForParsing.Engine);
+                                    if (ReferencedCollections.TryGetValue(mapCollection, out var collectionNames) == false)
+                                    {
+                                        collectionNames = new HashSet<CollectionName>();
+                                        ReferencedCollections.Add(mapCollection, collectionNames);
+                                    }
+
+                                    collectionNames.UnionWith(mapReferencedCollections[i].ReferencedCollections);
+
+                                    if (mapReferencedCollections[i].HasCompareExchangeReferences)
+                                        CollectionsWithCompareExchangeReferences.Add(mapCollection);
+
+                                    list.Add(operation);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        protected override JsHandleJint MetadataFor(JsHandleJint self, JsHandleJint[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override JsHandleJint AttachmentsFor(JsHandleJint self, JsHandleJint[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override JsHandleJint TimeSeriesNamesFor(JsHandleJint self, JsHandleJint[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override JsHandleJint CounterNamesFor(JsHandleJint self, JsHandleJint[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override JsHandleJint LoadAttachment(JsHandleJint self, JsHandleJint[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override JsHandleJint LoadAttachments(JsHandleJint self, JsHandleJint[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override JsHandleJint GetDocumentId(JsHandleJint self, JsHandleJint[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    public abstract class AbstractCountersAndTimeSeriesJavaScriptIndexV8 : AbstractJavaScriptIndexV8
+    {
+        protected AbstractCountersAndTimeSeriesJavaScriptIndexV8(IndexDefinition definition, RavenConfiguration configuration, string mapPrefix, string allItems, long indexVersion, CancellationToken token)
+            : base(definition, configuration, mappingFunctions => CountersAndTimeSeriesJavascriptIndexHelper.ModifyMappingFunctions(mappingFunctions, mapPrefix), CountersAndTimeSeriesJavascriptIndexHelper.GetMapCode(allItems), indexVersion, token)
         {
         }
 
-        private static string GetMapCode(string allItems)
+        protected override void ProcessMaps(List<string> mapList, List<MapMetadata> mapReferencedCollections, out Dictionary<string, Dictionary<string, List<JavaScriptMapOperation<JsHandleV8>>>> collectionFunctions)
+        {
+            var mapsArrayForParsingJint = _definitionsForParsing.GetProperty(MapsProperty).Value;
+            if (mapsArrayForParsingJint.IsNull() || mapsArrayForParsingJint.IsUndefined() || mapsArrayForParsingJint.IsArray() == false)
+                ThrowIndexCreationException($"JavaScript: doesn't contain any map function or '{GlobalDefinitions}.{Maps}' was modified in the script");
+
+            var mapsForParsingJint = mapsArrayForParsingJint.AsArray();
+            if (mapsForParsingJint.Length == 0)
+                ThrowIndexCreationException($"JavaScript: doesn't contain any map functions or '{GlobalDefinitions}.{Maps}' was modified in the script");
+
+
+            using (var maps = _definitions.GetProperty(MapsProperty))
+            {
+                if (maps.IsNull || maps.IsUndefined || maps.IsArray == false)
+                    ThrowIndexCreationException($"doesn't contain any map function or '{GlobalDefinitions}.{Maps}' was modified in the script");
+
+                if (maps.ArrayLength == 0)
+                    ThrowIndexCreationException($"doesn't contain any map functions or '{GlobalDefinitions}.{Maps}' was modified in the script");
+
+                collectionFunctions = new Dictionary<string, Dictionary<string, List<JavaScriptMapOperation<JsHandleV8>>>>();
+                for (int i = 0; i < maps.ArrayLength; i++)
+                {
+                    var mapObjForParsingJint = mapsForParsingJint.Get(i.ToString());
+                    if (mapObjForParsingJint.IsNull() || mapObjForParsingJint.IsUndefined() || mapObjForParsingJint.IsObject() == false)
+                        ThrowIndexCreationException($"JavaScript: map function #{i} is not a valid object");
+                    var mapForParsingJint = mapObjForParsingJint.AsObject();
+                    if (mapForParsingJint.HasProperty(MethodProperty) == false)
+                        ThrowIndexCreationException($"JavaScript: map function #{i} is missing its {MethodProperty} property");
+                    var funcForParsingJint = mapForParsingJint.Get(MethodProperty).As<FunctionInstance>();
+                    if (funcForParsingJint == null)
+                        ThrowIndexCreationException($"JavaScript: map function #{i} {MethodProperty} property isn't a 'FunctionInstance'");
+
+                    using (var map = maps.GetProperty(i))
+                    {
+                        if (map.IsNull || map.IsUndefined || map.IsObject == false)
+                            ThrowIndexCreationException($"map function #{i} is not a valid object");
+                        if (map.HasProperty(CollectionProperty) == false)
+                            ThrowIndexCreationException($"map function #{i} is missing a collection name");
+                        using (var mapCollectionStr = map.GetProperty(CollectionProperty))
+                        {
+                            if (mapCollectionStr.IsStringEx == false)
+                                ThrowIndexCreationException($"map function #{i} collection name isn't a string");
+                            var mapCollection = mapCollectionStr.AsString;
+
+                            if (collectionFunctions.TryGetValue(mapCollection, out var subCollectionFunctions) == false)
+                                collectionFunctions[mapCollection] = subCollectionFunctions = new Dictionary<string, List<JavaScriptMapOperation<JsHandleV8>>>();
+
+                            if (map.HasProperty(CountersAndTimeSeriesJavascriptIndexHelper.NameProperty) == false)
+                                ThrowIndexCreationException($"map function #{i} is missing its {CountersAndTimeSeriesJavascriptIndexHelper.NameProperty} property");
+                            using (var mapNameStr = map.GetProperty(CountersAndTimeSeriesJavascriptIndexHelper.NameProperty))
+                            {
+                                if (mapNameStr.IsStringEx == false)
+                                    ThrowIndexCreationException($"map function #{i} TimeSeries name isn't a string");
+                                var mapName = mapNameStr.AsString;
+
+                                if (subCollectionFunctions.TryGetValue(mapName, out var list) == false)
+                                    subCollectionFunctions[mapName] = list = new List<JavaScriptMapOperation<JsHandleV8>>();
+
+                                if (map.HasOwnProperty(MethodProperty) == false)
+                                    ThrowIndexCreationException($"map function #{i} is missing its {MethodProperty} property");
+
+                                var func = map.GetProperty(MethodProperty);
+
+                                if (func.IsFunction == false)
+                                    ThrowIndexCreationException($"map function #{i} {MethodProperty} property isn't a 'FunctionInstance'");
+
+                                var operation = new JavaScriptMapOperationV8(this, JsIndexUtils, funcForParsingJint, func, Definition.Name, mapList[i]);
+                                if (mapForParsingJint.HasOwnProperty(MoreArgsProperty))
+                                {
+                                    var moreArgsObjJint = mapForParsingJint.Get(MoreArgsProperty);
+                                    if (moreArgsObjJint.IsArray())
+                                    {
+                                        var arrayJint = moreArgsObjJint.AsArray();
+                                        if (arrayJint.Length > 0)
+                                        {
+                                            operation.MoreArguments = arrayJint;
+                                        }
+                                    }
+                                }
+
+                                operation.Analyze(_engineForParsing.Engine);
+                                if (ReferencedCollections.TryGetValue(mapCollection, out var collectionNames) == false)
+                                {
+                                    collectionNames = new HashSet<CollectionName>();
+                                    ReferencedCollections.Add(mapCollection, collectionNames);
+                                }
+
+                                collectionNames.UnionWith(mapReferencedCollections[i].ReferencedCollections);
+
+                                if (mapReferencedCollections[i].HasCompareExchangeReferences)
+                                    CollectionsWithCompareExchangeReferences.Add(mapCollection);
+
+                                list.Add(operation);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        protected override JsHandleV8 MetadataFor(JsHandleV8 self, JsHandleV8[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override JsHandleV8 AttachmentsFor(JsHandleV8 self, JsHandleV8[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override JsHandleV8 TimeSeriesNamesFor(JsHandleV8 self, JsHandleV8[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override JsHandleV8 CounterNamesFor(JsHandleV8 self, JsHandleV8[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override JsHandleV8 LoadAttachment(JsHandleV8 self, JsHandleV8[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override JsHandleV8 LoadAttachments(JsHandleV8 self, JsHandleV8[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override JsHandleV8 GetDocumentId(JsHandleV8 self, JsHandleV8[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    internal static class CountersAndTimeSeriesJavascriptIndexHelper
+    {
+        public static string NameProperty = "name";
+
+        public static string GetMapCode(string allItems)
         {
             if (allItems is null)
                 throw new ArgumentNullException(nameof(allItems));
@@ -55,7 +338,7 @@ function map() {{
 }}";
         }
 
-        private static void ModifyMappingFunctions(List<string> mappingFunctions, string mapPrefix)
+        public static void ModifyMappingFunctions(List<string> mappingFunctions, string mapPrefix)
         {
             if (mapPrefix is null)
                 throw new ArgumentNullException(nameof(mapPrefix));
@@ -66,87 +349,6 @@ function map() {{
                     continue;
 
                 mappingFunctions[i] = mappingFunctions[i].Substring(mapPrefix.Length);
-            }
-        }
-
-        protected override void OnInitializeEngine(Engine engine)
-        {
-        }
-
-        protected override void ProcessMaps(ObjectInstance definitions, JintPreventResolvingTasksReferenceResolver resolver, List<string> mapList, List<MapMetadata> mapReferencedCollections, out Dictionary<string, Dictionary<string, List<JavaScriptMapOperation>>> collectionFunctions)
-        {
-            var mapsArray = definitions.GetProperty(MapsProperty).Value;
-            if (mapsArray.IsNull() || mapsArray.IsUndefined() || mapsArray.IsArray() == false)
-                ThrowIndexCreationException($"doesn't contain any map function or '{GlobalDefinitions}.{Maps}' was modified in the script");
-
-            var maps = mapsArray.AsArray();
-            if (maps.Length == 0)
-                ThrowIndexCreationException($"doesn't contain any map functions or '{GlobalDefinitions}.{Maps}' was modified in the script");
-
-            collectionFunctions = new Dictionary<string, Dictionary<string, List<JavaScriptMapOperation>>>();
-            for (int i = 0; i < maps.Length; i++)
-            {
-                var mapObj = maps.Get(i.ToString());
-                if (mapObj.IsNull() || mapObj.IsUndefined() || mapObj.IsObject() == false)
-                    ThrowIndexCreationException($"map function #{i} is not a valid object");
-                var map = mapObj.AsObject();
-                if (map.HasProperty(CollectionProperty) == false)
-                    ThrowIndexCreationException($"map function #{i} is missing a collection name");
-                var mapCollectionStr = map.Get(CollectionProperty);
-                if (mapCollectionStr.IsString() == false)
-                    ThrowIndexCreationException($"map function #{i} collection name isn't a string");
-                var mapCollection = mapCollectionStr.AsString();
-
-                if (collectionFunctions.TryGetValue(mapCollection, out var subCollectionFunctions) == false)
-                    collectionFunctions[mapCollection] = subCollectionFunctions = new Dictionary<string, List<JavaScriptMapOperation>>();
-
-                if (map.HasProperty(NameProperty) == false)
-                    ThrowIndexCreationException($"map function #{i} is missing its {NameProperty} property");
-                var mapNameStr = map.Get(NameProperty);
-                if (mapNameStr.IsString() == false)
-                    ThrowIndexCreationException($"map function #{i} TimeSeries name isn't a string");
-                var mapName = mapNameStr.AsString();
-
-                if (subCollectionFunctions.TryGetValue(mapName, out var list) == false)
-                    subCollectionFunctions[mapName] = list = new List<JavaScriptMapOperation>();
-
-                if (map.HasProperty(MethodProperty) == false)
-                    ThrowIndexCreationException($"map function #{i} is missing its {MethodProperty} property");
-                var funcInstance = map.Get(MethodProperty).As<FunctionInstance>();
-                if (funcInstance == null)
-                    ThrowIndexCreationException($"map function #{i} {MethodProperty} property isn't a 'FunctionInstance'");
-                var operation = new JavaScriptMapOperation(_engine, resolver)
-                {
-                    MapFunc = funcInstance,
-                    IndexName = Definition.Name,
-                    MapString = mapList[i]
-                };
-                if (map.HasOwnProperty(MoreArgsProperty))
-                {
-                    var moreArgsObj = map.Get(MoreArgsProperty);
-                    if (moreArgsObj.IsArray())
-                    {
-                        var array = moreArgsObj.AsArray();
-                        if (array.Length > 0)
-                        {
-                            operation.MoreArguments = array;
-                        }
-                    }
-                }
-
-                operation.Analyze(_engine);
-                if (ReferencedCollections.TryGetValue(mapCollection, out var collectionNames) == false)
-                {
-                    collectionNames = new HashSet<CollectionName>();
-                    ReferencedCollections.Add(mapCollection, collectionNames);
-                }
-
-                collectionNames.UnionWith(mapReferencedCollections[i].ReferencedCollections);
-
-                if (mapReferencedCollections[i].HasCompareExchangeReferences)
-                    CollectionsWithCompareExchangeReferences.Add(mapCollection);
-
-                list.Add(operation);
             }
         }
     }

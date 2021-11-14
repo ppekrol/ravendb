@@ -1,13 +1,14 @@
-﻿// -----------------------------------------------------------------------
+﻿using Tests.Infrastructure;
+// -----------------------------------------------------------------------
 //  <copyright file="RavenDB_3760.cs" company="Hibernating Rhinos LTD">
 //      Copyright (c) Hibernating Rhinos LTD. All rights reserved.
 //  </copyright>
 // -----------------------------------------------------------------------
 
 using System;
-using Raven.Tests.Core.Utils.Entities;
 using Xunit;
 using Xunit.Abstractions;
+using Raven.Tests.Core.Utils.Entities;
 
 namespace SlowTests.Server.Documents.ETL.Raven
 {
@@ -17,11 +18,12 @@ namespace SlowTests.Server.Documents.ETL.Raven
         {
         }
 
-        [Fact]
-        public void Can_use_metadata_in_transform_script()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_use_metadata_in_transform_script(Options options)
         {
-            using (var master = GetDocumentStore())
-            using (var slave = GetDocumentStore())
+            using (var master = GetDocumentStore(options))
+            using (var slave = GetDocumentStore(options))
             {
                 var etlDone = WaitForEtl(master, (n, statistics) => statistics.LoadSuccesses != 0);
 
@@ -53,11 +55,12 @@ namespace SlowTests.Server.Documents.ETL.Raven
             }
         }
 
-        [Fact]
-        public void Null_returned_from_script_means_that_document_is_filtered_out()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Null_returned_from_script_means_that_document_is_filtered_out(Options options)
         {
-            using (var master = GetDocumentStore())
-            using (var slave = GetDocumentStore())
+            using (var master = GetDocumentStore(options))
+            using (var slave = GetDocumentStore(options))
             {
                 var etlDone = WaitForEtl(master, (n, statistics) => statistics.LoadSuccesses != 0);
 

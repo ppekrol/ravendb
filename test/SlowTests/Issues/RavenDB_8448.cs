@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Subscriptions;
 using Raven.Tests.Core.Utils.Entities;
 using Xunit;
@@ -15,10 +16,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void ShouldBeAbleToUseIdMethod()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ShouldBeAbleToUseIdMethod(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

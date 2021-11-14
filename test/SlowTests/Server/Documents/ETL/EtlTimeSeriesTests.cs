@@ -40,6 +40,18 @@ namespace SlowTests.Server.Documents.ETL
         private readonly Options _options = Debugger.IsAttached
             ? new Options { ModifyDatabaseRecord = record => record.Settings[RavenConfiguration.GetKey(x => x.Etl.ExtractAndTransformTimeout)] = "300" }
             : null;
+        //TODO: egor make this class use JavascriptEngineMode
+        private Options InitOptions(Options op)
+        {
+            if (Debugger.IsAttached)
+            {
+                var cloned = op.Clone();
+                cloned.ModifyDatabaseRecord = record => record.Settings[RavenConfiguration.GetKey(x => x.Etl.ExtractAndTransformTimeout)] = "300";
+                return cloned;
+            }
+
+            return op;
+        }
 
         private class TestDataType { }
 
@@ -304,7 +316,7 @@ function loadTimeSeriesOfUsersBehavior(doc, ts)
             const string tsName = Constants.Headers.IncrementalTimeSeriesPrefix + "HeartRate";
             var baseline = DateTime.UtcNow;
 
-            var (src, dest, _) = CreateSrcDestAndAddEtl(collections: new []{ "Users" }, script : null);
+            var (src, dest, _) = CreateSrcDestAndAddEtl(collections: new[] { "Users" }, script: null);
 
             var etlDone = WaitForEtl(src, (s, statistics) => statistics.LastProcessedEtag > 21);
 
@@ -326,7 +338,7 @@ function loadTimeSeriesOfUsersBehavior(doc, ts)
                     await session.SaveChangesAsync();
                 }
             }
-            
+
 
             Assert.True(etlDone.Wait(TimeSpan.FromSeconds(30)));
 
@@ -344,7 +356,7 @@ function loadTimeSeriesOfUsersBehavior(doc, ts)
             const string tsName = Constants.Headers.IncrementalTimeSeriesPrefix + "HeartRate";
             var baseline = DateTime.UtcNow;
 
-            var (src, dest, _) = CreateSrcDestAndAddEtl(collections: new []{ "Users" }, script : null);
+            var (src, dest, _) = CreateSrcDestAndAddEtl(collections: new[] { "Users" }, script: null);
 
             using (var session = src.OpenAsyncSession())
             {
@@ -605,8 +617,8 @@ function loadTimeSeriesOfUsersBehavior(docId, timeSeries)
         }
 
         [RavenTheory(RavenTestCategory.Etl | RavenTestCategory.TimeSeries)]
-        [RavenExplicitData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
-        public async Task RavenEtlWithTimeSeries_WhenChangeDocAndThenItsTimeSeries_ShouldNotSendTimeSeriesTwice(RavenTestParameters config)
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task RavenEtlWithTimeSeries_WhenChangeDocAndThenItsTimeSeries_ShouldNotSendTimeSeriesTwice(Options options)
         {
             const int batchSize = 3;
             string[] collections = { "Users" };
@@ -622,15 +634,12 @@ function loadTimeSeriesOfUsersBehavior(docId, timeSeries)
 }
 "; // the month is 0-indexed
 
-            var options = new Options
+            options.ModifyDatabaseRecord = record =>
             {
-                ModifyDatabaseRecord = record =>
-                {
-                    _options?.ModifyDatabaseRecord(record);
-                    record.Settings[RavenConfiguration.GetKey(x => x.Etl.MaxNumberOfExtractedItems)] = $"{batchSize}";
-                    record.Settings[RavenConfiguration.GetKey(x => x.Indexing.AutoIndexingEngineType)] = config.SearchEngine.ToString();
-                    record.Settings[RavenConfiguration.GetKey(x => x.Indexing.StaticIndexingEngineType)] = config.SearchEngine.ToString();
-                }
+                _options?.ModifyDatabaseRecord(record);
+                record.Settings[RavenConfiguration.GetKey(x => x.Etl.MaxNumberOfExtractedItems)] = $"{batchSize}";
+                record.Settings[RavenConfiguration.GetKey(x => x.Indexing.AutoIndexingEngineType)] = options.SearchEngineMode.ToString();
+                record.Settings[RavenConfiguration.GetKey(x => x.Indexing.StaticIndexingEngineType)] = options.SearchEngineMode.ToString();
             };
             var times = Enumerable.Range(0, 2)
                 .Select(i => new DateTime(2020, 04, 27) + TimeSpan.FromSeconds(i))

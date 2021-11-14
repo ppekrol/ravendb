@@ -1,5 +1,6 @@
 ﻿using System;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Operations;
 using Xunit;
 using Xunit.Abstractions;
@@ -41,8 +42,10 @@ namespace SlowTests.Issues
         {
             public string MyNestedObjectText { get; set; }
         }
-        [Fact]
-        public void Nested_Documents_Get_Patched()
+        
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Nested_Documents_Get_Patched(Options options)
         {
             var now = DateTime.Now;
 
@@ -66,7 +69,7 @@ namespace SlowTests.Issues
                 StamInteger = 322
             };
 
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

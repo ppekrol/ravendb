@@ -40,7 +40,7 @@ namespace FastTests.Client
          */
         
         [RavenTheory(RavenTestCategory.Querying)]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.All)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.All, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void RawQuery_with_transformation_function_should_work(Options options)
         {
             using (var store = GetDocumentStore(options))
@@ -123,7 +123,7 @@ namespace FastTests.Client
         }
         
         [RavenTheory(RavenTestCategory.Querying)]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.All)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.All, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void LinqQuery_with_transformation_function_should_work(Options options)
         {
             using (var store = GetDocumentStore(options))

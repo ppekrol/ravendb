@@ -16,6 +16,7 @@ using Raven.Client.Exceptions;
 using Raven.Client.Exceptions.Cluster;
 using Raven.Client.Exceptions.Database;
 using Raven.Client.ServerWide;
+using Raven.Client.ServerWide.JavaScript;
 using Raven.Client.ServerWide.Operations;
 using Raven.Client.ServerWide.Sharding;
 using Raven.Client.Util;
@@ -711,7 +712,38 @@ namespace FastTests
                 _frozen = frozen;
             }
 
-            public static Options ForMode(RavenDatabaseMode mode)
+            private static Options ForJavascriptMode(Options options, RavenJavascriptEngineMode? mode)
+            {
+                if (mode == null)
+                    return options;
+
+                switch (mode)
+                {
+                    case RavenJavascriptEngineMode.Jint:
+                        options.ModifyDatabaseRecord += record =>
+                        {
+                            record.Settings[RavenConfiguration.GetKey(x => x.JavaScript.EngineType)] = JavaScriptEngineType.Jint.ToString();
+                        };
+                        options.AddToDescription($"{nameof(RavenDataAttribute.JavascriptEngineMode)} = {nameof(JavaScriptEngineType.Jint)}");
+                        options.JavascriptEngineMode = RavenJavascriptEngineMode.Jint;
+                        return options;
+
+                    case RavenJavascriptEngineMode.V8:
+
+                        options.ModifyDatabaseRecord += record =>
+                        {
+                            record.Settings[RavenConfiguration.GetKey(x => x.JavaScript.EngineType)] = JavaScriptEngineType.V8.ToString();
+                        };
+                        options.AddToDescription($"{nameof(RavenDataAttribute.JavascriptEngineMode)} = {nameof(JavaScriptEngineType.V8)}");
+                        options.JavascriptEngineMode = RavenJavascriptEngineMode.V8;
+                        return options;
+                    case RavenJavascriptEngineMode.All:
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+                }
+            }
+
+            public static Options ForMode(RavenDatabaseMode mode, RavenJavascriptEngineMode? javascriptMode = null, RavenSearchEngineMode? searchEngineMode = null)
             {
                 var options = new Options();
                 switch (mode)
@@ -719,7 +751,8 @@ namespace FastTests
                     case RavenDatabaseMode.Single:
                         options.DatabaseMode = RavenDatabaseMode.Single;
                         options.AddToDescription($"{nameof(RavenDataAttribute.DatabaseMode)} = {nameof(RavenDatabaseMode.Single)}");
-
+                        options = ForJavascriptMode(options, javascriptMode);
+                        options = ForSearchEngineMode(options, searchEngineMode);
                         return options;
                     case RavenDatabaseMode.Sharded:
 
@@ -746,14 +779,44 @@ namespace FastTests
 
                         options.DatabaseMode = RavenDatabaseMode.Sharded;
                         options.AddToDescription($"{nameof(RavenDataAttribute.DatabaseMode)} = {nameof(RavenDatabaseMode.Sharded)}");
-
+                        options = ForJavascriptMode(options, javascriptMode);
+                        options = ForSearchEngineMode(options, searchEngineMode);
                         return options;
                     case RavenDatabaseMode.All:
                     default:
                         throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
                 }
             }
+            private static Options ForSearchEngineMode(Options options, RavenSearchEngineMode? mode)
+            {
+                if (mode == null)
+                    return options;
 
+                switch (mode)
+                {
+                    case RavenSearchEngineMode.Lucene:
+                        options.SearchEngineMode = RavenSearchEngineMode.Lucene;
+                        options.ModifyDatabaseRecord += record =>
+                        {
+                            record.Settings[RavenConfiguration.GetKey(x => x.Indexing.AutoIndexingEngineType)] = RavenSearchEngineMode.Lucene.ToString();
+                            record.Settings[RavenConfiguration.GetKey(x => x.Indexing.StaticIndexingEngineType)] = RavenSearchEngineMode.Lucene.ToString();
+                        };
+                        options.AddToDescription($"{nameof(RavenDataAttribute.SearchEngineMode)} = {nameof(RavenSearchEngineMode.Lucene)}");
+                        return options;
+                    case RavenSearchEngineMode.Corax:
+                        options.SearchEngineMode = RavenSearchEngineMode.Corax;
+                        options.ModifyDatabaseRecord += record =>
+                        {
+                            record.Settings[RavenConfiguration.GetKey(x => x.Indexing.AutoIndexingEngineType)] = RavenSearchEngineMode.Corax.ToString();
+                            record.Settings[RavenConfiguration.GetKey(x => x.Indexing.StaticIndexingEngineType)] = RavenSearchEngineMode.Corax.ToString();
+                        };
+                        options.AddToDescription($"{nameof(RavenDataAttribute.SearchEngineMode)} = {nameof(RavenSearchEngineMode.Corax)}");
+                        return options;
+                    case RavenSearchEngineMode.All:
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+                }
+            }
             public void AddToDescription(string descriptionToAdd)
             {
                 _descriptionBuilder ??= new StringBuilder();
@@ -910,6 +973,7 @@ namespace FastTests
             public RavenDatabaseMode DatabaseMode { get; private set; }
 
             public RavenSearchEngineMode SearchEngineMode { get; internal set; }
+            public RavenJavascriptEngineMode JavascriptEngineMode { get; internal set; }
 
             private void AssertNotFrozen()
             {
@@ -922,7 +986,7 @@ namespace FastTests
                 return _descriptionBuilder == null
                     ? base.ToString()
                     : _descriptionBuilder.ToString();
-            }
+        }
 
             public Options Clone()
             {
@@ -943,6 +1007,8 @@ namespace FastTests
                     RunInMemory = RunInMemory,
                     Server = Server,
                     DatabaseMode = DatabaseMode,
+                    SearchEngineMode = SearchEngineMode,
+                    JavascriptEngineMode = JavascriptEngineMode,
                     _descriptionBuilder = new StringBuilder(_descriptionBuilder.ToString())
                 };
             }

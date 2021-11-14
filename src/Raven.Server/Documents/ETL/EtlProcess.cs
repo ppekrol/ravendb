@@ -17,7 +17,9 @@ using Raven.Client.Documents.Operations.OngoingTasks;
 using Raven.Client.Exceptions.Documents.Patching;
 using Raven.Client.Json.Serialization;
 using Raven.Client.ServerWide;
+using Raven.Client.ServerWide.JavaScript;
 using Raven.Client.Util;
+using Raven.Server.Config.Categories;
 using Raven.Server.Documents.ETL.Metrics;
 using Raven.Server.Documents.ETL.Providers.ElasticSearch;
 using Raven.Server.Documents.ETL.Providers.OLAP;
@@ -31,6 +33,8 @@ using Raven.Server.Documents.ETL.Providers.SQL;
 using Raven.Server.Documents.ETL.Providers.SQL.RelationalWriters;
 using Raven.Server.Documents.ETL.Stats;
 using Raven.Server.Documents.ETL.Test;
+using Raven.Server.Documents.Patch.Jint;
+using Raven.Server.Documents.Patch.V8;
 using Raven.Server.Documents.Replication.ReplicationItems;
 using Raven.Server.Documents.TimeSeries;
 using Raven.Server.NotificationCenter.Notifications;
@@ -123,6 +127,7 @@ namespace Raven.Server.Documents.ETL
         where TStatsScope : AbstractEtlStatsScope<TStatsScope, TEtlPerformanceOperation>
         where TEtlPerformanceOperation : EtlPerformanceOperation
     {
+        protected readonly IJavaScriptOptions _jsOptions;
         private static readonly Size DefaultMaximumMemoryAllocation = new Size(32, SizeUnit.Megabytes);
         internal const int MinBatchSize = 64;
 
@@ -148,11 +153,13 @@ namespace Raven.Server.Documents.ETL
         protected EtlProcessState LastProcessState;
 
         private readonly ServerStore _serverStore;
+        private readonly JavaScriptEngineType _engineType;
 
         public readonly TConfiguration Configuration;
 
         protected EtlProcess(Transformation transformation, TConfiguration configuration, DocumentDatabase database, ServerStore serverStore, string tag)
         {
+            _engineType=database.Configuration.JavaScript.EngineType;
             Transformation = transformation;
             Configuration = configuration;
             _cts = CancellationTokenSource.CreateLinkedTokenSource(database.DatabaseShutdown);
@@ -310,11 +317,25 @@ namespace Raven.Server.Documents.ETL
             }
         }
 
-        protected abstract EtlTransformer<TExtracted, TTransformed, TStatsScope, TEtlPerformanceOperation> GetTransformer(DocumentsOperationContext context);
+        protected abstract EtlTransformer<TExtracted, TTransformed, TStatsScope, TEtlPerformanceOperation, JsHandleV8> GetTransformerV8(DocumentsOperationContext context);
+        protected abstract EtlTransformer<TExtracted, TTransformed, TStatsScope, TEtlPerformanceOperation, JsHandleJint> GetTransformerJint(DocumentsOperationContext context);
 
         public IEnumerable<TTransformed> Transform(IEnumerable<TExtracted> items, DocumentsOperationContext context, TStatsScope stats, EtlProcessState state)
         {
-            using (var transformer = GetTransformer(context))
+            IEtlTransformer<TExtracted, TTransformed, TStatsScope> transformer;
+            switch (_engineType)
+            {
+                case JavaScriptEngineType.Jint:
+                    transformer = GetTransformerJint(context);
+                    break;
+                case JavaScriptEngineType.V8:
+                    transformer = GetTransformerV8(context);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(_engineType));
+            }
+
+            using (transformer)
             {
                 transformer.Initialize(debugMode: _testMode != null);
 
@@ -1201,8 +1222,8 @@ namespace Raven.Server.Documents.ETL
 
                                             partitionItems.Columns.Add(new OlapEtlTestScriptResult.PartitionColumn
                                             {
-                                                Name = field.Name,
-                                                Type = field.DataType.ToString(),
+                                                Name = field.Name, 
+                                                Type = field.DataType.ToString(), 
                                                 Values = columnData.Value
                                             });
                                         }

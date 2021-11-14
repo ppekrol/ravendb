@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,10 +18,11 @@ namespace SlowTests.Issues
             public List<string> Properties;
         }
                         
-        [Fact]
-        public void CanHaveArrayInMetadata()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanHaveArrayInMetadata(Options options)
         {             
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {             
                 using (var session = store.OpenSession())
                 {
@@ -43,7 +45,7 @@ namespace SlowTests.Issues
                                     HasProperties = x.Properties.Any()
                                 }; 
                     
-                    Assert.Equal("from 'Articles' as x select { HasProperties : x.Properties.length > 0 }", query.ToString());
+                    Assert.Equal("from 'Articles' as x select { HasProperties : (x?.Properties?.length??0) > 0 }", query.ToString());
 
                     var result = query.ToList();
                     

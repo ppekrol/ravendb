@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
-using Raven.Tests.Core.Utils.Entities;
+using SlowTests.Core.Utils.Entities;
 using Sparrow.Json.Parsing;
 using Sparrow.Server.Collections;
 using Xunit;
@@ -18,11 +19,12 @@ namespace SlowTests.Server.Documents.ETL
         {
         }
 
-        [Fact]
-        public async Task AggregatesTransformationErrorsInSingleAlert()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task AggregatesTransformationErrorsInSingleAlert(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script: @"throw 'super exception';
                                        loadToUsers(this);");

@@ -1,4 +1,5 @@
-﻿// -----------------------------------------------------------------------
+﻿using Tests.Infrastructure;
+// -----------------------------------------------------------------------
 //  <copyright file="DoesPreserveDocumentIdCaseWhenPatchingFullCollectionTest.cs" company="Hibernating Rhinos LTD">
 //      Copyright (c) Hibernating Rhinos LTD. All rights reserved.
 //  </copyright>
@@ -28,7 +29,7 @@ namespace SlowTests.Bugs
         }
 
         [RavenTheory(RavenTestCategory.ClientApi | RavenTestCategory.Patching)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(DatabaseMode = RavenDatabaseMode.All, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void DoesPreserveDocumentIdCaseWhenPatchingFullCollection(Options options)
         {
             using (var store = GetDocumentStore(options))

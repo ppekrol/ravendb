@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,6 @@ using Raven.Client.Documents.Session.TimeSeries;
 using Raven.Client.Exceptions;
 using SlowTests.Core.Utils.Entities;
 using Sparrow;
-using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 using PatchRequest = Raven.Client.Documents.Operations.PatchRequest;
@@ -28,9 +28,9 @@ namespace SlowTests.Client.TimeSeries.Patch
             {
                 new object[] {"watches/fitbit", "Heartrate", new double[] {11d}, true},
                 new object[] {"watches/fitbit", "Heartrate", new double[] {}},
-                new object[] {"watches/fitbit", "Heartrate", new []{"some text"}},
+                new object[] { "watches/fitbit", "Heartrate", new []{"some text"}},
                 new object[] {"watches/fitbit", "Heartrate", new object()},
-                new object[] {2,  "Heartrate", new [] { 1d }},
+                new object[] { 2,  "Heartrate", new [] { 1d }},
                 new object[] {"watches/fitbit", 2, new [] { 1d }},
             };
 
@@ -38,19 +38,19 @@ namespace SlowTests.Client.TimeSeries.Patch
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
-
+        //TODO: egor
         [Theory]
         [ClassData(typeof(CannotAppendTimeSeriesWithNoValueByPatchCases))]
         public async Task CannotAppendTimeSeriesWithWrongArguments(object tag, object timeseries, object values, bool shouldPass = false)
         {
             const string documentId = "users/ayende";
 
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(/*options*/))
             using (var session = store.OpenAsyncSession())
             {
                 await session.StoreAsync(new { Name = "Oren" }, documentId);
                 await session.SaveChangesAsync();
-
+                    
                 session.Advanced.Defer(new PatchCommandData(documentId, null,
                     new PatchRequest
                     {
@@ -66,24 +66,24 @@ namespace SlowTests.Client.TimeSeries.Patch
 
                 var testTask = shouldPass
                     ? session.SaveChangesAsync()
-                    : Assert.ThrowsAsync<RavenException>(async () => await session.SaveChangesAsync());
+                    : Assert.ThrowsAnyAsync<RavenException>(async () => await session.SaveChangesAsync());
 
                 await testTask;
             }
         }
 
         [Theory]
-        [InlineData(59d)]
-        [InlineData(new[] { 59d })]
-        [InlineData(new[] { 59d, 11d, 30d })]
-        [InlineData(new[] { -13d, 60d, 0 })]
-        public async Task CanAppendTimeSeriesByPatch(object values)
+        [RavenData( 59d, JavascriptEngineMode = RavenJavascriptEngineMode.All) ]
+        [RavenData(new []{ 59d }, JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        [RavenData(new []{ 59d, 11d, 30d }, JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        [RavenData(new []{ -13d, 60d, 0 }, JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        public async Task CanAppendTimeSeriesByPatch(Options options, object values)
         {
             const string tag = "watches/fitbit";
             const string timeseries = "Heartrate";
             const string documentId = "users/ayende";
-
-            using (var store = GetDocumentStore())
+            
+            using (var store = GetDocumentStore(options))
             {
                 var baseline = DateTime.UtcNow.EnsureMilliseconds();
 
@@ -91,7 +91,7 @@ namespace SlowTests.Client.TimeSeries.Patch
                 {
                     await session.StoreAsync(new { Name = "Oren" }, documentId);
                     await session.SaveChangesAsync();
-
+                    
                     session.Advanced.Defer(new PatchCommandData(documentId, null,
                         new PatchRequest
                         {
@@ -106,13 +106,13 @@ namespace SlowTests.Client.TimeSeries.Patch
                         }, null));
                     await session.SaveChangesAsync();
                 }
-
+                
                 using (var session = store.OpenAsyncSession())
                 {
                     var val = (await session.TimeSeriesFor(documentId, timeseries)
                             .GetAsync(DateTime.MinValue, DateTime.MaxValue))
                         .Single();
-
+                    
                     Assert.Equal(tag, val.Tag);
                     Assert.Equal(baseline.AddMinutes(1), val.Timestamp, RavenTestHelper.DateTimeComparer.Instance);
 
@@ -123,16 +123,17 @@ namespace SlowTests.Client.TimeSeries.Patch
                 }
             }
         }
-
-        [Fact]
-        public async Task CanAppendTimeSeriesByPatch_WhenDocAsIdAndTimeAsDateObject()
+        
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanAppendTimeSeriesByPatch_WhenDocAsIdAndTimeAsDateObject(Options options)
         {
-            double[] values = { 59d };
+            double[] values = {59d};
             const string tag = "watches/fitbit";
             const string timeseries = "Heartrate";
             const string documentId = "users/ayende";
-
-            using (var store = GetDocumentStore())
+            
+            using (var store = GetDocumentStore(options))
             {
                 var baseline = DateTime.UtcNow.EnsureMilliseconds();
 
@@ -140,7 +141,7 @@ namespace SlowTests.Client.TimeSeries.Patch
                 {
                     await session.StoreAsync(new { Name = "Oren" }, documentId);
                     await session.SaveChangesAsync();
-
+                    
                     session.Advanced.Defer(new PatchCommandData(documentId, null,
                         new PatchRequest
                         {
@@ -155,7 +156,7 @@ namespace SlowTests.Client.TimeSeries.Patch
                         }, null));
                     await session.SaveChangesAsync();
                 }
-
+                
                 using (var session = store.OpenAsyncSession())
                 {
                     var val = (await session.TimeSeriesFor(documentId, timeseries)
@@ -167,17 +168,17 @@ namespace SlowTests.Client.TimeSeries.Patch
                 }
             }
         }
-
+        
         [Theory]
-        [InlineData(@"timeseries(id(this), args.timeseries).append(new Date(args.timestamp), args.values, null);")]
-        [InlineData(@"timeseries(id(this), args.timeseries).append(new Date(args.timestamp), args.values);")]
-        public async Task CanAppendTimeSeriesByPatch_WithoutTag(string script)
+        [RavenData(@"timeseries(id(this), args.timeseries).append(new Date(args.timestamp), args.values, null);", JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        [RavenData(@"timeseries(id(this), args.timeseries).append(new Date(args.timestamp), args.values);", JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        public async Task CanAppendTimeSeriesByPatch_WithoutTag(Options options, string script)
         {
-            double[] values = { 59d };
+            double[] values = {59d};
             const string timeseries = "Heartrate";
             const string documentId = "users/ayende";
-
-            using (var store = GetDocumentStore())
+            
+            using (var store = GetDocumentStore(options))
             {
                 var baseline = DateTime.UtcNow.EnsureMilliseconds();
 
@@ -185,7 +186,7 @@ namespace SlowTests.Client.TimeSeries.Patch
                 {
                     await session.StoreAsync(new { Name = "Oren" }, documentId);
                     await session.SaveChangesAsync();
-
+                    
                     session.Advanced.Defer(new PatchCommandData(documentId, null,
                         new PatchRequest
                         {
@@ -199,7 +200,7 @@ namespace SlowTests.Client.TimeSeries.Patch
                         }, null));
                     await session.SaveChangesAsync();
                 }
-
+                
                 using (var session = store.OpenAsyncSession())
                 {
                     var val = (await session.TimeSeriesFor(documentId, timeseries)
@@ -211,12 +212,13 @@ namespace SlowTests.Client.TimeSeries.Patch
                 }
             }
         }
-
-        [Fact]
-        public async Task CanAppendTimeSeriesByPatch_WhenAppendMultipleItems()
+        
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanAppendTimeSeriesByPatch_WhenAppendMultipleItems(Options options)
         {
-            double[] values = { 59d };
-            string[] tags = { "tag/1", "tag/2", "tag/3", "tag/4" };
+            double[] values = {59d};
+            string[] tags = {"tag/1", "tag/2", "tag/3", "tag/4"};
             const string timeseries = "Heartrate";
             const string documentId = "users/ayende";
 
@@ -224,14 +226,14 @@ namespace SlowTests.Client.TimeSeries.Patch
             var toAppend = Enumerable.Range(0, 100)
                 .Select(i => new Tuple<DateTime, double[], string>(baseline.AddMilliseconds(i), values, tags[i % tags.Length]))
                 .ToArray();
-
-            using (var store = GetDocumentStore())
+            
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {
                     await session.StoreAsync(new { Name = "Oren" }, documentId);
                     await session.SaveChangesAsync();
-
+                    
                     session.Advanced.Defer(new PatchCommandData(documentId, null,
                         new PatchRequest
                         {
@@ -254,7 +256,7 @@ for(i = 0; i < args.toAppend.length; i++){
                     var timeSeriesEntries = (await session.TimeSeriesFor(documentId, timeseries)
                             .GetAsync(DateTime.MinValue, DateTime.MaxValue))
                         .ToArray();
-
+                    
                     Assert.Equal(toAppend.Length, timeSeriesEntries.Length);
                     for (int i = 0; i < toAppend.Length; i++)
                     {
@@ -265,14 +267,15 @@ for(i = 0; i < args.toAppend.length; i++){
                 }
             }
         }
-
-        [Fact]
-        public async Task RavenDB_15193()
+        
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task RavenDB_15193(Options options)
         {
             const string tag = "watches/fitbit";
             const string timeseries = "Heartrate";
             const string documentId = "users/1";
-            var values = new[] { 59.3d, 59.2d, 70.5555d, 72.53399393d, 71.543434d, 70.938457d, 72.53399393d, 60.1d, 59.9d, 0d };
+            var values = new[] {59.3d, 59.2d, 70.5555d, 72.53399393d, 71.543434d, 70.938457d, 72.53399393d, 60.1d, 59.9d, 0d};
 
 
             var fromIndex = 2;
@@ -282,8 +285,8 @@ for(i = 0; i < args.toAppend.length; i++){
             var todeleteFrom = baseline.AddMinutes(fromIndex);
             var todeleteTo = baseline.AddMinutes(toIndex);
             var expectedValues = new List<(DateTime, double)>();
-
-            using (var store = GetDocumentStore())
+            
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -322,9 +325,9 @@ for(i = 0; i < args.toAppend.length; i++){
                     Assert.Equal(values.Length - 1 - (toIndex - fromIndex), (entries?.Count ?? 0));
                     foreach (var expected in expectedValues)
                     {
-                        if (expected.Item1 >= todeleteFrom || expected.Item1 <= todeleteTo)
+                        if (expected.Item1 >= todeleteFrom || expected.Item1 <= todeleteTo) 
                             continue;
-
+                        
                         Assert.Equal(expected.Item1, entries[0].Timestamp, RavenTestHelper.DateTimeComparer.Instance);
                         Assert.Equal(expected.Item2, entries[0].Values[0]);
                         Assert.Equal(tag, entries[0].Tag);
@@ -355,26 +358,26 @@ for(i = 0; i < args.toAppend.length; i++){
         }
 
         [Theory]
-        [InlineData(4, 7)]
-        [InlineData(0, 3)]
-        [InlineData(0, 9)]
-        [InlineData(5, 9)]
-        [InlineData(0, 0)]
-        [InlineData(2, 2)]
-        [InlineData(9, 9)]
-        public async Task Patch_DeleteTimestamp(int fromIndex, int toIndex)
+        [RavenData(4, 7, JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        [RavenData(0, 3, JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        [RavenData(0, 9, JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        [RavenData(5, 9, JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        [RavenData(0, 0, JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        [RavenData(2, 2, JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        [RavenData(9, 9, JavascriptEngineMode = RavenJavascriptEngineMode.All)]
+        public async Task Patch_DeleteTimestamp(Options options, int fromIndex, int toIndex)
         {
             const string tag = "watches/fitbit";
             const string timeseries = "Heartrate";
             const string documentId = "users/1";
-            var values = new[] { 59.3d, 59.2d, 70.5555d, 72.53399393d, 71.543434d, 70.938457d, 72.53399393d, 60.1d, 59.9d, 0d };
-
+            var values = new[] {59.3d, 59.2d, 70.5555d, 72.53399393d, 71.543434d, 70.938457d, 72.53399393d, 60.1d, 59.9d, 0d};
+            
             var baseline = DateTime.UtcNow.EnsureMilliseconds();
             var todeleteFrom = baseline.AddMinutes(fromIndex);
             var todeleteTo = baseline.AddMinutes(toIndex);
             var expectedValues = new List<(DateTime, double)>();
-
-            using (var store = GetDocumentStore())
+            
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -413,9 +416,9 @@ for(i = 0; i < args.toAppend.length; i++){
                     Assert.Equal(values.Length - 1 - (toIndex - fromIndex), (entries?.Count ?? 0));
                     foreach (var expected in expectedValues)
                     {
-                        if (expected.Item1 >= todeleteFrom || expected.Item1 <= todeleteTo)
+                        if (expected.Item1 >= todeleteFrom || expected.Item1 <= todeleteTo) 
                             continue;
-
+                        
                         Assert.Equal(expected.Item1, entries[0].Timestamp, RavenTestHelper.DateTimeComparer.Instance);
                         Assert.Equal(expected.Item2, entries[0].Values[0]);
                         Assert.Equal(tag, entries[0].Tag);
@@ -423,135 +426,41 @@ for(i = 0; i < args.toAppend.length; i++){
                 }
             }
         }
-
-        [Theory]
-        [InlineData(59d)]
-        [InlineData(new[] { 59d })]
-        [InlineData(new[] { 59d, 11d, 30d })]
-        [InlineData(new[] { -13d, 60d, 0 })]
-        public async Task CanIncrementTimeSeriesByPatch(object values)
-        {
-            const string timeseries = "INC:Downloads";
-            const string documentId = "users/ayende";
-
-            using (var store = GetDocumentStore())
-            {
-                var baseline = DateTime.UtcNow.EnsureMilliseconds();
-
-                using (var session = store.OpenAsyncSession())
-                {
-                    await session.StoreAsync(new { Name = "Oren" }, documentId);
-                    await session.SaveChangesAsync();
-                }
-
-                using (var session = store.OpenAsyncSession())
-                {
-                    session.Advanced.Defer(new PatchCommandData(documentId, null,
-                            new PatchRequest
-                            {
-                                Script = @"timeseries(this, args.timeseries).increment(new Date(args.timestamp), args.values);",
-                                Values =
-                                {
-                                    { "timeseries", timeseries },
-                                    { "timestamp", baseline.AddMinutes(1) },
-                                    { "values", values }
-                                }
-                            }, null));
-                    await session.SaveChangesAsync();
-                }
-
-                using (var session = store.OpenAsyncSession())
-                {
-                    var val = (await session.IncrementalTimeSeriesFor(documentId, timeseries)
-                            .GetAsync(DateTime.MinValue, DateTime.MaxValue))
-                        .Single();
-
-                    Assert.Equal(baseline.AddMinutes(1), val.Timestamp, RavenTestHelper.DateTimeComparer.Instance);
-
-                    var actual = values is double
-                        ? val.Value
-                        : (object)val.Values;
-                    Assert.Equal(values, actual);
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData(@"timeseries(id(this), args.timeseries).increment(new Date(args.timestamp), args.values);")]
-        [InlineData(@"timeseries(id(this), args.timeseries).increment(args.values);")]
-        public async Task CanIncrementTimeSeriesByPatch_WithoutTimestamp(string script)
-        {
-            double[] values = { 59d };
-            const string timeseries = "INC:Downloads";
-            const string documentId = "users/ayende";
-
-            using (var store = GetDocumentStore())
-            {
-                var baseline = DateTime.UtcNow.EnsureMilliseconds();
-
-                using (var session = store.OpenAsyncSession())
-                {
-                    await session.StoreAsync(new { Name = "Oren" }, documentId);
-                    await session.SaveChangesAsync();
-
-                    session.Advanced.Defer(new PatchCommandData(documentId, null,
-                        new PatchRequest
-                        {
-                            Script = script,
-                            Values =
-                            {
-                                { "timeseries", timeseries },
-                                { "timestamp", baseline.AddMinutes(1) },
-                                { "values", values }
-                            }
-                        }, null));
-                    await session.SaveChangesAsync();
-                }
-
-                using (var session = store.OpenAsyncSession())
-                {
-                    var val = (await session.IncrementalTimeSeriesFor(documentId, timeseries)
-                            .GetAsync(DateTime.MinValue, DateTime.MaxValue))
-                        .Single();
-                    Assert.Equal(values, val.Values);
-                }
-            }
-        }
-
+        
         class GetRangeOfTimestampByPatchCases : IEnumerable<object[]>
         {
-            private readonly int[][] _startEndIndexes = { new[] { 4, 7 }, new[] { 0, 3 }, new[] { 0, 9 }, new[] { 5, 9 }, new[] { 0, 0 }, new[] { 2, 2 }, new[] { 9, 9 }, };
-            readonly string[] _tags = { "Heartrate", null };
+            private readonly int[][] _startEndIndexes = {new[] {4, 7}, new[] {0, 3}, new[] {0, 9}, new[] {5, 9}, new[] {0, 0}, new[] {2, 2}, new[] {9, 9},};
+            readonly string[] _tags = {"Heartrate", null};
 
             public IEnumerator<object[]> GetEnumerator()
             {
-                foreach (string tag in _tags)
-                {
-                    foreach (int[] startEndIndex in _startEndIndexes)
+                    foreach (string tag in _tags)
                     {
-                        yield return new object[] { tag, startEndIndex[0], startEndIndex[1] };
+                        foreach (int[] startEndIndex in _startEndIndexes)
+                        {
+                            yield return new object[] {tag, startEndIndex[0], startEndIndex[1]};
+                        }
                     }
-                }
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
-
-
+        
+        //TODO: egor 
         [Theory]
         [ClassData(typeof(GetRangeOfTimestampByPatchCases))]
         public async Task Patch_GetRangeOfTimestamp(string tag, int fromIndex, int toIndex)
         {
             const string timeseries = "Heartrate";
             const string documentId = "users/1";
-            var values = new[] { 59.3d, 59.2d, 70.5555d, 72.53399393d, 71.543434d, 70.938457d, 72.53399393d, 60.1d, 59.9d, 0d };
-
+            var values = new[] {59.3d, 59.2d, 70.5555d, 72.53399393d, 71.543434d, 70.938457d, 72.53399393d, 60.1d, 59.9d, 0d};
+            
             var baseline = DateTime.UtcNow.EnsureMilliseconds();
             var todeleteFrom = baseline.AddMinutes(fromIndex);
             var todeleteTo = baseline.AddMinutes(toIndex);
             var expectedValues = new List<(DateTime, double)>();
-
-            using (var store = GetDocumentStore())
+            
+            using (var store = GetDocumentStore(/*options*/))
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -589,9 +498,9 @@ for(i = 0; i < args.toAppend.length; i++){
                     Assert.Equal(toIndex - fromIndex + 1, entries.Length);
                     foreach (var expected in expectedValues)
                     {
-                        if (expected.Item1 < todeleteFrom || expected.Item1 > todeleteTo)
+                        if (expected.Item1 < todeleteFrom || expected.Item1 > todeleteTo) 
                             continue;
-
+                        
                         Assert.Equal(expected.Item1, entries[entriesIndex].Timestamp, RavenTestHelper.DateTimeComparer.Instance);
                         Assert.Equal(expected.Item2, entries[entriesIndex].Values[0]);
                         Assert.Equal(tag, entries[entriesIndex].Tag);
@@ -600,17 +509,18 @@ for(i = 0; i < args.toAppend.length; i++){
                 }
             }
         }
-
-        [Fact]
-        public async Task Patch_ReuseTimeSeriesEntries()
+        
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task Patch_ReuseTimeSeriesEntries(Options options)
         {
             const string timeseries = "Heartrate";
             const string documentId = "users/1";
-            var values = new[] { 59.3d, 59.2d, 70.5555d, 72.53399393d, 71.543434d, 70.938457d, 72.53399393d, 60.1d, 59.9d, 0d };
-
+            var values = new[] {59.3d, 59.2d, 70.5555d, 72.53399393d, 71.543434d, 70.938457d, 72.53399393d, 60.1d, 59.9d, 0d};
+            
             var baseline = DateTime.UtcNow.EnsureMilliseconds();
-
-            using (var store = GetDocumentStore())
+            
+            using (var store = GetDocumentStore()) //Options.ForJavaScriptEngine(jsEngineType))) // TODO [shlomo] to fix V8 test (it drops testing)
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -650,13 +560,14 @@ for(i = 0; i < args.toAppend.length; i++){
 
                     Assert.Equal(result.Timestamp, baseline);
                     Assert.Equal(result.Values, values);
-                    Assert.Equal(result.Tag, "Taggy");
+                    Assert.Equal(result.Tag,"Taggy");
                 }
             }
         }
 
-        [Fact]
-        public async Task CanPerformMultipleOperationsOnSingleTimeSeriesInstanceByPatch()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanPerformMultipleOperationsOnSingleTimeSeriesInstanceByPatch(Options options)
         {
             double[] values = { 59d };
             string[] tags = { "tag/1", "tag/2", "tag/3", "tag/4" };
@@ -668,7 +579,7 @@ for(i = 0; i < args.toAppend.length; i++){
                 .Select(i => new Tuple<DateTime, double[], string>(baseline.AddMilliseconds(i), values, tags[i % tags.Length]))
                 .ToArray();
 
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -764,14 +675,15 @@ for (var i = 0; i < args.todelete.length; i++)
             public string Id { get; set; }
         }
 
-        [Fact]
-        public async Task GetStatsTestAsync()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task GetStatsTestAsync(Options options)
         {
             var id = "users/1-A";
             var baseline = RavenTestHelper.UtcToday.EnsureMilliseconds();
             var name = "Heartrate";
 
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

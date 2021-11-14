@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Sparrow.Json;
 using Xunit;
 using Xunit.Abstractions;
@@ -41,10 +42,11 @@ namespace SlowTests.Issues
             public Dictionary<string, string> Values { get; set; }
         }
 
-        [Fact]
-        public void CanModifyDictionaryWithPatch_Add()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanModifyDictionaryWithPatch_Add(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -80,10 +82,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanModifyDictionaryWithPatch_Add2()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanModifyDictionaryWithPatch_Add2(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -119,10 +122,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanModifyDictionaryWithPatch_Add_WithVariables()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanModifyDictionaryWithPatch_Add_WithVariables(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -183,10 +187,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanModifyDictionaryWithPatch_Add_WithComplexNestedPath()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanModifyDictionaryWithPatch_Add_WithComplexNestedPath(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -253,10 +258,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public async Task CanModifyDictionaryWithPatch_Add_AsyncSession()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanModifyDictionaryWithPatch_Add_AsyncSession(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -292,10 +298,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public async Task CanModifyDictionaryWithPatch_Add2_AsyncSession()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanModifyDictionaryWithPatch_Add2_AsyncSession(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -332,10 +339,11 @@ namespace SlowTests.Issues
         }
 
 
-        [Fact]
-        public void CanModifyDictionaryWithPatch_Remove()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanModifyDictionaryWithPatch_Remove(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -371,10 +379,11 @@ namespace SlowTests.Issues
         }
 
 
-        [Fact]
-        public void CanModifyDictionaryWithPatch_Remove_WithVariable()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanModifyDictionaryWithPatch_Remove_WithVariable(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -412,10 +421,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public async Task CanModifyDictionaryWithPatch_Remove_AsyncSession()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanModifyDictionaryWithPatch_Remove_AsyncSession(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {

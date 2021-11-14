@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Queries;
 using Xunit;
@@ -36,10 +37,11 @@ namespace SlowTests.MailingList
             public string Id { get; set; }
             public IList<string> data { get; set; }
         }
-        [Fact]
-        public async Task CanSelectValuesWithOnlySingleIdentity()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanSelectValuesWithOnlySingleIdentity(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -87,10 +89,11 @@ namespace SlowTests.MailingList
                 }
             }
         }
-        [Fact]
-        public async Task CanSelectValuesWithCollection()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanSelectValuesWithCollection(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -6,9 +7,9 @@ using System.Threading.Tasks;
 using Raven.Client.Http;
 using Raven.Client.ServerWide;
 using Raven.Server;
+using Raven.Server.Config;
 using Raven.Server.Documents.Patch;
 using Raven.Server.ServerWide.Context;
-using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,11 +21,15 @@ namespace RachisTests
         {
         }
 
-        [Fact]
-        public async Task LeaderCanCecedeFromClusterAndNewLeaderWillBeElected()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task LeaderCanCecedeFromClusterAndNewLeaderWillBeElected(Options options)
         {
+            var customSettings = new Dictionary<string, string>();
+            customSettings[RavenConfiguration.GetKey(x => x.JavaScript.EngineType)] = options.JavascriptEngineMode.ToString();
+            
             var clusterSize = 3;
-            var (_, leader) = await CreateRaftCluster(clusterSize);
+            var (_, leader) = await CreateRaftCluster(clusterSize, customSettings: customSettings);
             ClusterTopology old, @new;
             old = GetServerTopology(leader);
             new AdminJsConsole(leader, null).ApplyScript(new AdminJsScript
@@ -44,11 +49,15 @@ namespace RachisTests
             Assert.True(await Task.WhenAny(leaderSelectedTasks).WaitWithoutExceptionAsync(TimeSpan.FromSeconds(10)), "New leader was not elected after old leader left the cluster.");
         }
 
-        [Fact]
-        public async Task FollowerCanCecedeFromCluster()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task FollowerCanCecedeFromCluster(Options options)
         {
+            var customSettings = new Dictionary<string, string>();
+            customSettings[RavenConfiguration.GetKey(x => x.JavaScript.EngineType)] = options.JavascriptEngineMode.ToString();
+
             var clusterSize = 3;
-            await CreateRaftCluster(clusterSize);
+            await CreateRaftCluster(clusterSize, customSettings: customSettings);
             var follower = Servers.First(x => x.ServerStore.CurrentRachisState == RachisState.Follower);
             ClusterTopology old, @new;
             old = GetServerTopology(follower);

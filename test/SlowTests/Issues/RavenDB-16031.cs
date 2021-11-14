@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
@@ -11,10 +12,11 @@ namespace SlowTests.Issues
 {
     public class RavenDB_16031 : RavenTestBase
     {
-        [Fact]
-        public void ShouldWork()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ShouldWork(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 new Index_TestGrouping4().Execute(store);
                 using (var session = store.OpenSession())
@@ -140,7 +142,7 @@ namespace SlowTests.Issues
         ac: g.key.ac,
         a: {
             b: g.key.ab,
-            c: g.key.ac
+            c: g.key.ac,
             f: g.values.reduce((res, val) => res + val.a.f, 0)
         },
         d: g.values.reduce((res, val) => res + val.d, 0)

@@ -7,6 +7,7 @@
 using System;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Queries;
@@ -72,10 +73,11 @@ namespace SlowTests.MailingList
             }
         }
 
-        [Fact]
-        public void PatchShouldWorkCorrectly()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void PatchShouldWorkCorrectly(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 store.ExecuteIndex(new Proficiencies_ConsultantId());
 

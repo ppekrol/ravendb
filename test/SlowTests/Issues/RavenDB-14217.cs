@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using FastTests;
+using Tests.Infrastructure;
 using Newtonsoft.Json.Linq;
 using Orders;
 using Xunit;
@@ -15,10 +16,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void CanUseAliasesOnFunctions()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanUseAliasesOnFunctions(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var s = store.OpenSession())
                 {

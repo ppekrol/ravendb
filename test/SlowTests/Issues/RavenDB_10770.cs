@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,10 +23,11 @@ namespace SlowTests.Issues
             public List<Document> SubDocuments { get; set; }
         }
 
-        [Fact]
-        public void ConcurrentProjectionsWithLazy()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ConcurrentProjectionsWithLazy(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var doc1 = new Document
                 {

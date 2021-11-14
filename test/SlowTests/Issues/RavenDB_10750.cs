@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Commands.Batches;
 using Raven.Client.Documents.Indexes;
 using Raven.Tests.Core.Utils.Entities;
@@ -17,8 +18,8 @@ namespace SlowTests.Issues
         }
 
         [Theory]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Corax, Skip = "RavenDB-17966")]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Corax, JavascriptEngineMode = RavenJavascriptEngineMode.Jint, Skip = "RavenDB-17966")]
         public void ShouldNotCreatePropertyAfterAccessingIt(Options options)
         {
             using (var store = GetDocumentStore(options))
@@ -69,8 +70,8 @@ namespace SlowTests.Issues
         }
 
         [Theory]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Corax, Skip = "RavenDB-17966")]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Corax, JavascriptEngineMode = RavenJavascriptEngineMode.Jint, Skip = "RavenDB-17966")]
         public void ShouldNotProjectPropertyValueIfOnlyViewedStoredIndexedValue(Options options)
         {
             using (var store = GetDocumentStore(options))
@@ -106,8 +107,8 @@ b:u.newField
 
 
         [Theory]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Corax, Skip = "RavenDB-17966")]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Corax, JavascriptEngineMode = RavenJavascriptEngineMode.Jint, Skip = "RavenDB-17966")]
         public void ShouldProjectPropertyValueIfViewedAndUpdatedStoredIndexedValue(Options options)
         {
             using (var store = GetDocumentStore(options))
@@ -146,8 +147,8 @@ b:u.newField
 
 
         [Theory]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Corax, Skip = "RavenDB-17966")]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Corax, JavascriptEngineMode = RavenJavascriptEngineMode.Jint, Skip = "RavenDB-17966")]
         public void ShouldProjectPropertyValueIfViewedAndUpdatedStoredIndexedValueShouldRespectOperationsOrder(Options options)
         {
             using (var store = GetDocumentStore(options))

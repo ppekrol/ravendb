@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Operations;
 using Sparrow.Json;
 using Xunit;
@@ -18,10 +19,11 @@ namespace SlowTests.Issues
             public List<string> Captains { get; set; }
         }
 
-        [Fact]
-        public void PatchingShouldSentListArgumentAsJsonArray()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void PatchingShouldSentListArgumentAsJsonArray(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Operations;
 using Xunit;
 using Xunit.Abstractions;
@@ -18,10 +19,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void can_save_javascript_array_values()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void can_save_javascript_array_values(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var foo = new Foo
                 {
@@ -51,10 +53,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void can_use_non_existing_function1()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void can_use_non_existing_function1(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var foo = new Foo
                 {
@@ -81,10 +84,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void can_use_non_existing_function2()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void can_use_non_existing_function2(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var foo = new Foo
                 {
@@ -111,10 +115,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void can_use_non_existing_function3()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void can_use_non_existing_function3(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var foo = new Foo
                 {
@@ -143,10 +148,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void can_evaluate_function()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void can_evaluate_function(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var foo = new Foo
                 {

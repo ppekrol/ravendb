@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Indexes;
 using Xunit;
 using Xunit.Abstractions;
@@ -47,10 +48,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void JsProjectionIdFromMapReduceIndex()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void JsProjectionIdFromMapReduceIndex(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 new DocumentIndex().Execute(store);
 
@@ -74,7 +76,7 @@ namespace SlowTests.Issues
                             doc.Name
                         };
 
-                    Assert.Equal("from index 'DocumentIndex' as doc select { Id : id(doc)+\" test\", Name : doc.Name }"
+                    Assert.Equal("from index 'DocumentIndex' as doc select { Id : id(doc)+\" test\", Name : doc?.Name }"
                         , query.ToString());
 
                     var item = query.Single();

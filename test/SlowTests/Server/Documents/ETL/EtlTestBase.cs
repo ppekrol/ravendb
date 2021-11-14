@@ -101,7 +101,7 @@ namespace SlowTests.Server.Documents.ETL
         protected (DocumentStore src, DocumentStore dest, AddEtlOperationResult result) CreateSrcDestAndAddEtl(IEnumerable<string> collections, string script, bool applyToAllDocuments = false, bool disabled = false, string mentor = null, Options srcOptions = null)
         {
             _src = GetDocumentStore(srcOptions);
-            var dest = GetDocumentStore();
+            var dest = GetDocumentStore(); //TODO: egor do we need to define the same js engine on dest?
 
             var result = AddEtl(_src, dest, collections, script, applyToAllDocuments);
             return (_src, dest, result);

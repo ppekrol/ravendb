@@ -8,6 +8,7 @@ using Raven.Client.Documents.Queries;
 using Raven.Client.Documents.Session;
 using Raven.Client.Exceptions;
 using Raven.Tests.Core.Utils.Entities;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -92,10 +93,11 @@ namespace SlowTests.Client.Indexing
             }
         }
 
-        [Fact]
-        public async Task UpdateByQuery()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task UpdateByQuery(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -120,7 +122,7 @@ namespace SlowTests.Client.Indexing
 
                 var operation = await store
                     .Operations
-                    .SendAsync(new PatchByQueryOperation(new IndexQuery { Query = $"FROM INDEX '{indexName}' UPDATE {{ this.LastName = 'Test'; }}" }, new QueryOperationOptions { AllowStale = false }));
+                    .SendAsync(new PatchByQueryOperation(new IndexQuery { Query = $"FROM INDEX '{indexName}' UPDATE {{ if (this) {{this.LastName = 'Test'; }} }}" }, new QueryOperationOptions { AllowStale = false }));
 
                 await operation
                     .WaitForCompletionAsync(TimeSpan.FromSeconds(15));

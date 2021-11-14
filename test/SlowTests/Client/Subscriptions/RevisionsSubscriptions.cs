@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using FastTests;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Documents.Operations.Revisions;
-using Raven.Client.Documents.Session;
 using Raven.Client.Documents.Subscriptions;
 using Raven.Server.Rachis;
 using Raven.Server.ServerWide.Commands.Subscriptions;
@@ -195,20 +195,23 @@ namespace SlowTests.Client.Subscriptions
             public int Age;
         }
 
-        [Fact]
-        public async Task RevisionsSubscriptionsWithCustomScript()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task RevisionsSubscriptionsWithCustomScript(Options options)
         {
-            using (var store = GetDocumentStore())
+            var optChaining = options.JavascriptEngineMode.ToString() == "Jint" ? "" : "?";
+            
+            using (var store = GetDocumentStore(options))
             {
                 var subscriptionId = await store.Subscriptions.CreateAsync(new SubscriptionCreationOptions
                 {
-                    Query = @"
-declare function match(d){
-    return d.Current.Age > d.Previous.Age;
-}
+                    Query = @$"
+declare function match(d){{
+    return d.Current{optChaining}.Age > d.Previous{optChaining}.Age;
+}}
 from Users (Revisions = true) as d
 where match(d)
-select { Id: id(d.Current), Age: d.Current.Age }
+select {{ Id: id(d.Current), Age: d.Current{optChaining}.Age }}
 "
                 });
 
@@ -284,21 +287,24 @@ select { Id: id(d.Current), Age: d.Current.Age }
             }
         }
 
-        [Fact]
-        public async Task RevisionsSubscriptionsWithCustomScriptCompareDocs()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task RevisionsSubscriptionsWithCustomScriptCompareDocs(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
 
+                var optChaining = options.JavascriptEngineMode.ToString() == "Jint" ? "" : "?";
+            
                 var subscriptionId = await store.Subscriptions.CreateAsync(new SubscriptionCreationOptions
                 {
-                    Query = @"
-declare function match(d){
-    return d.Current.Age > d.Previous.Age;
-}
+                    Query = @$"
+declare function match(d){{
+    return d.Current{optChaining}.Age > d.Previous{optChaining}.Age;
+}}
 from Users (Revisions = true) as d
 where match(d)
-select { Id: id(d.Current), Age: d.Current.Age }
+select {{ Id: id(d.Current), Age: d.Current{optChaining}.Age }}
 "
                 });
 

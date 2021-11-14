@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations;
@@ -150,7 +151,7 @@ namespace SlowTests.Core.Commands
         }
 
         [RavenTheory(RavenTestCategory.Patching)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(DatabaseMode = RavenDatabaseMode.All, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public async Task CanDeleteAndUpdateDocumentByIndex(Options options)
         {
             using (var store = GetDocumentStore(options))

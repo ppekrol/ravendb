@@ -24,7 +24,6 @@ using Raven.Client.Documents.Smuggler;
 using Raven.Client.Exceptions.Security;
 using Raven.Client.Util;
 using Raven.Server.Documents;
-using Raven.Server.Documents.Handlers.Processors;
 using Raven.Server.Documents.Handlers.Processors.Smuggler;
 using Raven.Server.Documents.Operations;
 using Raven.Server.Json;
@@ -48,7 +47,7 @@ namespace Raven.Server.Smuggler.Documents.Handlers
         [RavenAction("/databases/*/smuggler/validate-options", "POST", AuthorizationStatus.ValidUser, EndpointType.Read)]
         public async Task ValidateOptions()
         {
-            using (var processor = new SmugglerHandlerProcessorForValidateOptions<DocumentsOperationContext>(this))
+            using (var processor = new SmugglerHandlerProcessorForValidateOptions<DocumentsOperationContext>(this, Database.Configuration, Database.DatabaseShutdown))
             {
                 await processor.ExecuteAsync();
             }

@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Operations;
 using Xunit;
 using Xunit.Abstractions;
@@ -17,10 +18,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void NullPropagationShouldNotAffectOperators()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void NullPropagationShouldNotAffectOperators(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var commands = store.Commands())
                 {

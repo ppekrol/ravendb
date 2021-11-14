@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Tests.Infrastructure;
 using Orders;
 using Raven.Client.Documents.Operations.ETL;
 using Raven.Client.Documents.Operations.ETL.OLAP;
@@ -17,10 +18,11 @@ namespace SlowTests.Server.Documents.ETL.Olap
         {
         }
 
-        [Fact]
-        public async Task ShouldNotReuseCustomPartitionFromPreviousTestRun()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task ShouldNotReuseCustomPartitionFromPreviousTestRun(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var baseline = new DateTime(2020, 1, 1);
 

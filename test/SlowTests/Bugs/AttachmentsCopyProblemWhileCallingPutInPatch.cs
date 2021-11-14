@@ -4,6 +4,7 @@ using Orders;
 using Raven.Client;
 using Raven.Client.Documents.Commands.Batches;
 using Raven.Client.Documents.Operations;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,8 +16,9 @@ namespace SlowTests.Bugs
         {
         }
 
-        [Fact]
-        public void PatchPut_WhileContainAttachments_TheNewDocumentShouldNotContainThem()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void PatchPut_WhileContainAttachments_TheNewDocumentShouldNotContainThem(Options options)
         {
             var expectedAttachmentStream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5, 6 });
             var employee = new Employee { FirstName = "Avi" };
@@ -25,7 +27,7 @@ namespace SlowTests.Bugs
 
             bool doesHaveAttachments;
 
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 //Store employee with attachment
                 using (var session = store.OpenSession())
@@ -65,8 +67,9 @@ namespace SlowTests.Bugs
             Assert.False(doesHaveAttachments, "The new employee should have no attachment properties in metadata");
         }
 
-        [Fact]
-        public void PatchPut_WhileContainCounters_TheNewDocumentShouldNotContainThem()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void PatchPut_WhileContainCounters_TheNewDocumentShouldNotContainThem(Options options)
         {
             var employee = new Employee { FirstName = "Avi" };
             const string newId = "second/1-A";
@@ -74,7 +77,7 @@ namespace SlowTests.Bugs
 
             bool doesHaveCounters;
 
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 //Store employee with counter
                 using (var session = store.OpenSession())

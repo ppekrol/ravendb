@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Tests.Infrastructure;
+using System.Collections.Generic;
 using System.Linq;
 using FastTests;
 using Orders;
@@ -6,6 +7,8 @@ using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations.Indexes;
 using Xunit;
 using Xunit.Abstractions;
+using IndexingFields = Raven.Client.Constants.Documents.Indexing.Fields;
+
 
 namespace SlowTests.Issues
 {
@@ -15,12 +18,13 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void JavaScriptIndexesShouldNotIndexImplicitNullValues()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void JavaScriptIndexesShouldNotIndexImplicitNullValues(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
-                var index = new JsIndex();
+                JsIndex index = options.JavascriptEngineMode.ToString() == "Jint" ? new JsIndexJint() : new JsIndexV8();
                 index.Execute(store);
 
                 using (var session = store.OpenSession())
@@ -31,15 +35,21 @@ namespace SlowTests.Issues
 
                 Indexes.WaitForIndexing(store);
 
+                var termsCountNull = options.JavascriptEngineMode.ToString() == "Jint" ? 0 : 1;
+
                 var terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "City", fromValue: null));
-                Assert.Empty(terms);
+                Assert.Equal(termsCountNull, terms.Length);
+                if (termsCountNull > 0)
+                    Assert.Contains(IndexingFields.NullValue, terms);
 
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "IsNull", fromValue: null));
                 Assert.Equal(1, terms.Length);
                 Assert.Contains("true", terms);
 
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "Name", fromValue: null));
-                Assert.Empty(terms);
+                Assert.Equal(termsCountNull, terms.Length);
+                if (termsCountNull > 0)
+                    Assert.Contains(IndexingFields.NullValue, terms);
 
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "IsProductNull", fromValue: null));
                 Assert.Equal(1, terms.Length);
@@ -55,7 +65,9 @@ namespace SlowTests.Issues
                 Indexes.WaitForIndexing(store);
 
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "City", fromValue: null));
-                Assert.Equal(1, terms.Length);
+                Assert.Equal(1 + termsCountNull, terms.Length);
+                if (termsCountNull > 0)
+                    Assert.Contains(IndexingFields.NullValue, terms);
                 Assert.Contains("torun", terms);
 
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "IsNull", fromValue: null));
@@ -64,7 +76,9 @@ namespace SlowTests.Issues
                 Assert.Contains("false", terms);
 
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "Name", fromValue: null));
-                Assert.Equal(1, terms.Length);
+                Assert.Equal(1 + termsCountNull, terms.Length);
+                if (termsCountNull > 0)
+                    Assert.Contains(IndexingFields.NullValue, terms);
                 Assert.Contains("p2", terms);
 
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "IsProductNull", fromValue: null));
@@ -86,7 +100,7 @@ namespace SlowTests.Issues
 
                 using (var session = store.OpenSession())
                 {
-                    var companies = session.Query<Company, JsIndex>()
+                    var companies = (options.JavascriptEngineMode.ToString() == "Jint" ? session.Query<Company, JsIndexJint>() : session.Query<Company, JsIndexV8>())
                         .ToList();
 
                     Assert.Equal(2, companies.Count);
@@ -97,7 +111,7 @@ namespace SlowTests.Issues
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "City", fromValue: null));
                 Assert.Equal(2, terms.Length);
                 Assert.Contains("torun", terms);
-                Assert.Contains("NULL_VALUE", terms);
+                Assert.Contains(IndexingFields.NullValue, terms);
 
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "IsNull", fromValue: null));
                 Assert.Equal(2, terms.Length);
@@ -105,7 +119,9 @@ namespace SlowTests.Issues
                 Assert.Contains("false", terms);
 
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "Name", fromValue: null));
-                Assert.Equal(1, terms.Length);
+                Assert.Equal(1 + termsCountNull, terms.Length);
+                if (termsCountNull > 0)
+                    Assert.Contains(IndexingFields.NullValue, terms);
                 Assert.Contains("p2", terms);
 
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "IsProductNull", fromValue: null));
@@ -136,7 +152,7 @@ namespace SlowTests.Issues
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "Name", fromValue: null));
                 Assert.Equal(2, terms.Length);
                 Assert.Contains("p2", terms);
-                Assert.Contains("NULL_VALUE", terms);
+                Assert.Contains(IndexingFields.NullValue, terms);
 
                 terms = store.Maintenance.Send(new GetTermsOperation(index.IndexName, "IsProductNull", fromValue: null));
                 Assert.Equal(1, terms.Length);
@@ -174,30 +190,68 @@ namespace SlowTests.Issues
 
         private class JsIndex : AbstractJavaScriptIndexCreationTask
         {
-            public JsIndex()
+          
+        }
+
+        private class JsIndexJint : JsIndex
+        {
+            public JsIndexJint() 
             {
+                var optChaining = "" ;
+
                 Maps = new HashSet<string>
                 {
-                    @"map('Companies', function (c) {
-                        var city = c.Address.City;
+                    @$"map('Companies', function (c) {{
+                        var city = c.Address{optChaining}.City;
                         var isNull = false;
-                        if (!city) {
+                        if (!city) {{
                             isNull = true;
-                        }
+                        }}
 
                         var product = load(c.ExternalId, 'Products');
                         var isProductNull = false;
-                        if (!product) {
+                        if (!product) {{
                             isProductNull = true;
-                        }
+                        }}
 
-                        return {
-                            City: c.Address.City,
+                        return {{
+                            City: c.Address{optChaining}.City,
                             IsNull: isNull,
-                            Name: product.Name,
+                            Name: product{optChaining}.Name,
                             IsProductNull: isProductNull
-                        };
-                    })",
+                        }};
+                    }})",
+                };
+            }
+        }
+
+        private class JsIndexV8 : JsIndex
+        {
+            public JsIndexV8()
+            {
+                var optChaining = "?";
+                Maps = new HashSet<string>
+                {
+                    @$"map('Companies', function (c) {{
+                        var city = c.Address{optChaining}.City;
+                        var isNull = false;
+                        if (!city) {{
+                            isNull = true;
+                        }}
+
+                        var product = load(c.ExternalId, 'Products');
+                        var isProductNull = false;
+                        if (!product) {{
+                            isProductNull = true;
+                        }}
+
+                        return {{
+                            City: c.Address{optChaining}.City,
+                            IsNull: isNull,
+                            Name: product{optChaining}.Name,
+                            IsProductNull: isProductNull
+                        }};
+                    }})",
                 };
             }
         }

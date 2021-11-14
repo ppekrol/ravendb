@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Queries;
 using Raven.Client.Exceptions.Documents;
 using Xunit;
 using Xunit.Abstractions;
+using JavaScriptException = Raven.Client.Exceptions.Documents.Patching.JavaScriptException;
 
 namespace SlowTests.Issues
 {
@@ -15,10 +17,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void CanApplyCounterToAnotherDocument()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanApplyCounterToAnotherDocument(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var testDoc = new TestDoc
                 {
@@ -91,10 +94,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanDeleteCounterFromAnotherDocument()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanDeleteCounterFromAnotherDocument(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var testDoc1 = new TestDoc
                 {
@@ -152,10 +156,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void ThrowIfCounterDoesntExist()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ThrowIfCounterDoesntExist(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var testDoc1 = new TestDoc
                 {
@@ -168,7 +173,7 @@ namespace SlowTests.Issues
                     session.SaveChanges();
                 }
 
-                Assert.Throws<DocumentDoesNotExistException>(() =>
+                Assert.Throws(typeof(DocumentDoesNotExistException), () =>
                 {
                     store.Operations
                         .Send(new PatchOperation(testDoc1.Id, null, new PatchRequest
@@ -177,7 +182,7 @@ namespace SlowTests.Issues
                         }));
                 });
 
-                Assert.Throws<DocumentDoesNotExistException>(() =>
+                Assert.Throws(typeof(DocumentDoesNotExistException), () =>
                 {
                     store.Operations
                         .Send(new PatchOperation(testDoc1.Id, null, new PatchRequest

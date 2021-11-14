@@ -1,8 +1,7 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using FastTests.Client;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Orders;
 using Raven.Client.Documents.Operations.ETL;
 using Raven.Client.Documents.Operations.ETL.OLAP;
@@ -20,10 +19,11 @@ namespace SlowTests.Server.Documents.ETL.Olap
         {
         }
 
-        [Fact]
-        public async Task CanTestOlapEtlScript()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanTestOlapEtlScript(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var baseline = new DateTime(2020, 1, 1);
 

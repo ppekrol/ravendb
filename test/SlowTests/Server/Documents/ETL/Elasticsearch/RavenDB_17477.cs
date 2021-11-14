@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Orders;
 using Raven.Client.Documents.Operations.ETL.ElasticSearch;
 using Tests.Infrastructure;
+using Tests.Infrastructure.Entities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,10 +15,11 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
         {
         }
 
-        [RequiresElasticSearchFact]
-        public async Task ShouldErrorAndAlertOnInvalidIndexSetupInElastic()
+        [RequiresElasticSearchTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task ShouldErrorAndAlertOnInvalidIndexSetupInElastic(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             using (GetElasticClient(out var client))
             {
                 client.Indices.Create(OrdersIndexName, c => c
@@ -28,12 +28,14 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
                             .MatchOnlyText(t => t
                                 .Name("Id")))));
 
-                var config = SetupElasticEtl(store, @"
-var orderData = {
+                var optChaining = options.JavascriptEngineMode.ToString() == "Jint" ? "" : "?";
+                var zeroIfNull = options.JavascriptEngineMode.ToString() == "Jint" ? "" : " ?? 0";
+                var config = SetupElasticEtl(store, @$"
+var orderData = {{
     Id: id(this),
-    OrderLinesCount: this.Lines.length,
+    OrderLinesCount: this.Lines{optChaining}.length{zeroIfNull},
     TotalCost: 0
-};
+}};
 
 loadTo" + OrdersIndexName + @"(orderData);", 
                     new []{ new ElasticSearchIndex { IndexName = OrdersIndexName, DocumentIdProperty = "Id" } },

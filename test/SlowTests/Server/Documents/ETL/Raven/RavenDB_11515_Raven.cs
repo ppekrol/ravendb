@@ -1,7 +1,8 @@
-﻿using System;
-using Raven.Tests.Core.Utils.Entities;
+﻿using Tests.Infrastructure;
+using System;
 using Xunit;
 using Xunit.Abstractions;
+using Raven.Tests.Core.Utils.Entities;
 
 namespace SlowTests.Server.Documents.ETL.Raven
 {
@@ -11,11 +12,12 @@ namespace SlowTests.Server.Documents.ETL.Raven
         {
         }
 
-        [Fact]
-        public void Can_filter_out_deletions_of_documents()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_filter_out_deletions_of_documents(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script:
 @"
@@ -62,11 +64,12 @@ namespace SlowTests.Server.Documents.ETL.Raven
             }
         }
 
-        [Fact]
-        public void Can_define_multiple_delete_behavior_functions()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_define_multiple_delete_behavior_functions(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, collections: new []{ "Users", "Employees"}, script:
                     @"

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations;
 using Raven.Tests.Core.Utils.Entities;
@@ -29,7 +30,7 @@ namespace SlowTests.Issues
         }
 
         [RavenTheory(RavenTestCategory.ClientApi | RavenTestCategory.Patching)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(DatabaseMode = RavenDatabaseMode.All, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void Session_PatchByIndex(Options options)
         {
             using (var store = GetDocumentStore(options))

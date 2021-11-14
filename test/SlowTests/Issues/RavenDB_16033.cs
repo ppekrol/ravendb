@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client;
 using Raven.Client.Documents.Queries;
 using Raven.Tests.Core.Utils.Entities;
@@ -16,10 +17,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void CanSelectMetadata_SingleCallExpression()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanSelectMetadata_SingleCallExpression(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 const string id = "users/1";
 

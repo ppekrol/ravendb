@@ -19,6 +19,7 @@ using Raven.Client.Exceptions;
 using Raven.Client.ServerWide;
 using Raven.Client.ServerWide.Operations;
 using Raven.Server;
+using Raven.Server.Config;
 using SlowTests.Rolling;
 using Tests.Infrastructure;
 using Xunit;
@@ -177,8 +178,9 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public async Task CanPassNodeTagToRestorePatchOperation()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanPassNodeTagToRestorePatchOperation(Options options)
         {
             var clusterSize = 3;
             var databaseName = GetDatabaseName();
@@ -191,7 +193,8 @@ namespace SlowTests.Issues
                 Database = databaseName,
             }.Initialize())
             {
-                var doc = new DatabaseRecord(databaseName);
+
+                var doc = new DatabaseRecord(databaseName) { Settings = { [RavenConfiguration.GetKey(x => x.JavaScript.EngineType)] = options.JavascriptEngineMode.ToString() } };
                 var databaseResult = await store.Maintenance.Server.SendAsync(new CreateDatabaseOperation(doc, clusterSize));
                 myNodesList.AddRange(databaseResult.Topology.AllNodes);
 

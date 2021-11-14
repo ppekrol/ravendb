@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -39,11 +40,11 @@ using Raven.Tests.Core.Utils.Entities;
 using Sparrow;
 using Sparrow.Json;
 using Sparrow.Server.Json.Sync;
-using Tests.Infrastructure;
 using Tests.Infrastructure.Entities;
 using Voron.Data.Tables;
 using Xunit;
 using Xunit.Abstractions;
+using User = SlowTests.Core.Utils.Entities.User;
 
 namespace SlowTests.Server.Documents.PeriodicBackup
 {
@@ -973,11 +974,12 @@ namespace SlowTests.Server.Documents.PeriodicBackup
             }
         }
 
-        [Fact, Trait("Category", "Smuggler")]
-        public async Task RestoreSnapshotWithTimeSeriesCollectionConfiguration_WhenConfigurationInIncrementalSnapshot()
+        [Theory, Trait("Category", "Smuggler")]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task RestoreSnapshotWithTimeSeriesCollectionConfiguration_WhenConfigurationInIncrementalSnapshot(Options options)
         {
             var backupPath = NewDataPath(suffix: "BackupFolder");
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var entity = new User();
                 using (var session = store.OpenAsyncSession())
@@ -2259,14 +2261,15 @@ namespace SlowTests.Server.Documents.PeriodicBackup
             }
         }
 
-        [Fact, Trait("Category", "Smuggler")]
-        public async Task Backup_WhenContainRevisionWithoutConfiguration_ShouldBackupRevisions()
+        [Theory, Trait("Category", "Smuggler")]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task Backup_WhenContainRevisionWithoutConfiguration_ShouldBackupRevisions(Options options)
         {
             var backupPath = NewDataPath(suffix: "BackupFolder");
 
             var userForFullBackup = new User();
             var userForIncrementalBackup = new User();
-            using (var src = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
             {
                 using (var session = src.OpenAsyncSession())
                 {
@@ -2289,7 +2292,7 @@ namespace SlowTests.Server.Documents.PeriodicBackup
                 await Backup.RunBackupAsync(Server, backupTaskId, src, isFullBackup: false);
             }
 
-            using (var dest = GetDocumentStore())
+            using (var dest = GetDocumentStore(options))
             {
                 string fromDirectory = Directory.GetDirectories(backupPath).First();
                 await dest.Smuggler.ImportIncrementalAsync(new DatabaseSmugglerImportOptions(), fromDirectory);

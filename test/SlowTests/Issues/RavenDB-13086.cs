@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Linq;
 using Raven.Client.Documents.Queries;
 using Xunit;
@@ -13,10 +14,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void ResultCacheShouldConsiderDocumentsLoadedInProjection()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ResultCacheShouldConsiderDocumentsLoadedInProjection(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 Document mainDocument;
                 Document2 referencedDocument;

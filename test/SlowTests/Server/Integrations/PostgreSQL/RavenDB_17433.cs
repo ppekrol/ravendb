@@ -2,6 +2,7 @@
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Tests.Infrastructure;
 using Orders;
 using Raven.Client.Documents;
 using Xunit;
@@ -174,8 +175,9 @@ limit 1000";
             }
         }
 
-        [Fact]
-        public async Task QueryWithSingleWhereFilteringAndSelectShouldWork()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task QueryWithSingleWhereFilteringAndSelectShouldWork(Options options)
         {
             const string queryWithSingleWhereCondition = @"select ""_"".""id()"",
     ""_"".""LastName"",
@@ -202,7 +204,7 @@ limit 1000";
 
             DoNotReuseServer(EnablePostgresSqlSettings);
 
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 Samples.CreateNorthwindDatabase(store);
 

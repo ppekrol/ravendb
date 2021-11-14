@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -358,10 +359,11 @@ select out(u)
             }
         }
 
-        [Fact]
-        public async Task QueryFromMultipleTimeSeriesAtOnce_UsingJsFunctionAsArgumentOfTimeSeriesFunction()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task QueryFromMultipleTimeSeriesAtOnce_UsingJsFunctionAsArgumentOfTimeSeriesFunction(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var raw = new RawTimeSeriesPolicy(TimeSpan.FromHours(24));
 
@@ -1129,10 +1131,11 @@ select out()
             }
         }
 
-        [Fact]
-        public async Task QueryFromMultipleTimeSeriesAtOnce_RawQuery_UsingJsProjection()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task QueryFromMultipleTimeSeriesAtOnce_RawQuery_UsingJsProjection(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var raw = new RawTimeSeriesPolicy(TimeSpan.FromHours(24));
 
@@ -1206,10 +1209,11 @@ select out()
             }
         }
 
-        [Fact]
-        public async Task QueryFromMultipleTimeSeriesAtOnce_AggregationQuery_UsingJsProjection()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task QueryFromMultipleTimeSeriesAtOnce_AggregationQuery_UsingJsProjection(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var raw = new RawTimeSeriesPolicy(TimeSpan.FromHours(24));
 

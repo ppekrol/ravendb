@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using Tests.Infrastructure;
+using System.Linq;
 using FastTests;
 using Newtonsoft.Json;
 using Raven.Client.Json.Serialization.NewtonsoftJson;
@@ -13,21 +14,19 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void ProjectionAgainstMissingBasicValueTypes()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ProjectionAgainstMissingBasicValueTypes(Options options)
         {
             const string documentId = "document-id";
-
-            using (var store = GetDocumentStore(new Options
+            options.ModifyDocumentStore = s =>
             {
-                ModifyDocumentStore = s =>
+                s.Conventions.Serialization = new NewtonsoftJsonSerializationConventions
                 {
-                    s.Conventions.Serialization = new NewtonsoftJsonSerializationConventions
-                    {
-                        CustomizeJsonDeserializer = des => des.NullValueHandling = NullValueHandling.Ignore
-                    };
-                }
-            }))
+                    CustomizeJsonDeserializer = des => des.NullValueHandling = NullValueHandling.Ignore
+                };
+            };
+            using (var store = GetDocumentStore(options))
             {
                 using (var s = store.OpenSession())
                 {

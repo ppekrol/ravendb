@@ -4,6 +4,7 @@ using FastTests;
 using Orders;
 using Raven.Client.Documents.Operations;
 using Raven.Server.Config;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,13 +16,12 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void CanDisableStrictMode()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanDisableStrictMode(Options options)
         {
-            using (var store = GetDocumentStore(new Options
-            {
-                ModifyDatabaseRecord = record => record.Settings[RavenConfiguration.GetKey(x => x.Patching.StrictMode)] = "false"
-            }))
+            options.ModifyDatabaseRecord += record => record.Settings[RavenConfiguration.GetKey(x => x.JavaScript.StrictMode)] = "false";
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

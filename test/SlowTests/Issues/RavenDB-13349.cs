@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Newtonsoft.Json;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Linq;
@@ -98,10 +99,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public async Task Query_with_nested_JsonPropertyName_inside_js_projection()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task Query_with_nested_JsonPropertyName_inside_js_projection(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -121,7 +123,7 @@ namespace SlowTests.Issues
                             Foo = "foo" + x.Age
                         });
 
-                    Assert.Contains("CityName : x.user_address.city_name", query.ToString());
+                    Assert.Contains("CityName : ((x?.user_address)?.city_name)", query.ToString());
 
                     var result = await query.ToListAsync();
 

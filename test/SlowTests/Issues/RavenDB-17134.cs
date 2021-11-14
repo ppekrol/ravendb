@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -36,10 +37,11 @@ namespace SlowTests.Issues
             public Dog[] Dogs;
         } 
         
-        [Fact]
-        public async Task CanProjectNoValuesFromResult()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanProjectNoValuesFromResult(Options options)
         {
-            using var store = GetDocumentStore();
+            using var store = GetDocumentStore(options);
 
             using (var session = store.OpenAsyncSession())
             {
@@ -69,8 +71,9 @@ select project(u)
             }
         } 
 
-        [Fact]
-        public async Task CanProjectMultipleValuesFromManyResult()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanProjectMultipleValuesFromManyResult(Options options)
         {
             using var store = GetDocumentStore();
 
@@ -106,10 +109,11 @@ select project(u)
         } 
 
 
-        [Fact]
-        public async Task CanProjectMultipleValuesFromSingleResultInCollectionQuery()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanProjectMultipleValuesFromSingleResultInCollectionQuery(Options options)
         {
-            using var store = GetDocumentStore();
+            using var store = GetDocumentStore(options);
 
             using (var session = store.OpenAsyncSession())
             {
@@ -139,10 +143,11 @@ select project(u)
             }
         } 
         
-        [Fact]
-        public async Task CanProjectMultipleValuesFromSingleResultInIndexQuery()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanProjectMultipleValuesFromSingleResultInIndexQuery(Options options)
         {
-            using var store = GetDocumentStore();
+            using var store = GetDocumentStore(options);
 
             using (var session = store.OpenAsyncSession())
             {
@@ -174,10 +179,11 @@ select project(u)
         } 
 
         
-        [Fact]
-        public async Task CanProjectTimeSeriesInCollectionQuery()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanProjectTimeSeriesInCollectionQuery(Options options)
         {
-            using var store = GetDocumentStore();
+            using var store = GetDocumentStore(options);
 
             using (var session = store.OpenAsyncSession())
             {
@@ -213,10 +219,11 @@ select project(e)
             }
         } 
         
-        [Fact]
-        public async Task CanProjectTimeSeriesInIndexQuery()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanProjectTimeSeriesInIndexQuery(Options options)
         {
-            using var store = GetDocumentStore();
+            using var store = GetDocumentStore(options);
 
             using (var session = store.OpenAsyncSession())
             {

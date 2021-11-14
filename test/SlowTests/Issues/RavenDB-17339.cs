@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Linq;
 using Raven.Client.Documents.Queries;
 using Xunit;
@@ -13,10 +14,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void CanRawProjectOnNestedTypes()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanRawProjectOnNestedTypes(Options options)
         {
-            using var store = GetDocumentStore();
+            using var store = GetDocumentStore(options);
             {
                 using var session = store.OpenSession();
                 session.Store(new MyEntity() { Value = 123, Result = new() { RawValue = 1234 } });

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Raven.Client.Documents.Operations.ConnectionStrings;
@@ -37,10 +36,11 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
             new ElasticSearchIndex {IndexName = UsersIndexName, DocumentIdProperty = "UserId"}
         };
 
-        [RequiresElasticSearchFact]
-        public void SimpleScript()
+        [RequiresElasticSearchTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void SimpleScript(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             using (GetElasticClient(out var client))
             {
                 var config = SetupElasticEtl(store, DefaultScript, DefaultIndexes, DefaultCollections);
@@ -91,10 +91,11 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
             }
         }
 
-        [RequiresElasticSearchFact]
-        public void SimpleScriptWithManyDocuments()
+        [RequiresElasticSearchTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void SimpleScriptWithManyDocuments(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             using (GetElasticClient(out var client))
             {
                 var numberOfOrders = 100;
@@ -153,10 +154,11 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
             }
         }
 
-        [Fact]
-        public async Task Simple_script_error_expected()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task Simple_script_error_expected(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var config = new ElasticSearchEtlConfiguration
                 {
@@ -200,10 +202,11 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
             }
         }
 
-        [RequiresElasticSearchFact]
-        public void Can_get_document_id()
+        [RequiresElasticSearchTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_get_document_id(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             using (GetElasticClient(out var client))
             {
                 using (var session = store.OpenSession())
@@ -278,10 +281,11 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
             }
         }
 
-        [RequiresElasticSearchFact]
-        public void Can_Update_To_Be_No_Items_In_Child_TTable()
+        [RequiresElasticSearchTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_Update_To_Be_No_Items_In_Child_TTable(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             using (GetElasticClient(out var client))
             {
                 var config = SetupElasticEtl(store, DefaultScript, DefaultIndexes, DefaultCollections);
@@ -332,10 +336,11 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
             }
         }
 
-        [RequiresElasticSearchFact]
-        public void Update_of_disassembled_document()
+        [RequiresElasticSearchTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Update_of_disassembled_document(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             using (GetElasticClient(out var client))
             {
                 using (var session = store.OpenSession())
@@ -415,10 +420,11 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
             }
         }
 
-        [RequiresElasticSearchFact]
-        public void Docs_from_two_collections_loaded_to_single_one()
+        [RequiresElasticSearchTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Docs_from_two_collections_loaded_to_single_one(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             using (GetElasticClient(out var client))
             {
                 var config = SetupElasticEtl(store, @"var userData = { UserId: id(this), Name: this.Name }; loadToUsers" + IndexSuffix + @"(userData)", UsersIndex, new[] { "Users", "People" });
@@ -517,10 +523,11 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
             }
         }
 
-        [RequiresElasticSearchFact]
-        public void Can_load_to_specific_collection_when_applying_to_all_docs()
+        [RequiresElasticSearchTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Can_load_to_specific_collection_when_applying_to_all_docs(Options options)
         {
-            using (var src = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
             using (GetElasticClient(out var client))
             {
                 var etlDone = WaitForEtl(src, (n, statistics) => statistics.LoadSuccesses != 0);
@@ -552,10 +559,11 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
             }
         }
 
-        [RequiresElasticSearchFact]
-        public void Should_delete_existing_document_when_filtered_by_script()
+        [RequiresElasticSearchTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_delete_existing_document_when_filtered_by_script(Options options)
         {
-            using (var src = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
             using (GetElasticClient(out var client))
             {
                 var etlDone = WaitForEtl(src, (n, statistics) => statistics.LoadSuccesses != 0);
@@ -649,8 +657,9 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
             Assert.Equal("Script 'test' must not be empty", errors[0]);
         }
 
-        [RequiresElasticSearchFact]
-        public void Etl_from_encrypted_to_non_encrypted_db_will_work()
+        [RequiresElasticSearchTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Etl_from_encrypted_to_non_encrypted_db_will_work(Options options)
         {
             var certificates = Certificates.SetupServerAuthentication();
             var dbName = GetDatabaseName();
@@ -678,14 +687,11 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
             }
 
             Server.ServerStore.PutSecretKey(base64Key, dbName, true);
-
-            using (var src = GetDocumentStore(new Options
-            {
-                AdminCertificate = adminCert,
-                ClientCertificate = adminCert,
-                ModifyDatabaseRecord = record => record.Encrypted = true,
-                ModifyDatabaseName = s => dbName,
-            }))
+            options.AdminCertificate = adminCert;
+            options.ClientCertificate = adminCert;
+            options.ModifyDatabaseName = s => dbName;
+            options.ModifyDatabaseRecord = record => record.Encrypted = true;
+            using (var src = GetDocumentStore(options))
             using (GetElasticClient(out var client))
             {
                 var config = new ElasticSearchEtlConfiguration
@@ -749,10 +755,11 @@ namespace SlowTests.Server.Documents.ETL.ElasticSearch
             Assert.True(c.UsingEncryptedCommunicationChannel());
         }
 
-        [Fact]
-        public async Task CanTestScript()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanTestScript(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {

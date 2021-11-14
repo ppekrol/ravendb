@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Queries;
@@ -62,10 +63,11 @@ namespace SlowTests.Issues
 
         }
 
-        [Fact]
-        public void CanLimitOpsPerSecOnUpdate()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanLimitOpsPerSecOnUpdate(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var bulkInsert = store.BulkInsert())
                 {

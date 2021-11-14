@@ -16,12 +16,13 @@ namespace SlowTests.Issues
         public RavenDB_11196(ITestOutputHelper output) : base(output)
         {
         }
-
-        [Fact]
-        public void Should_be_James()
+        
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Should_be_James(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 AddEtl(src, dest, "Users", script:
                     @"
@@ -66,7 +67,7 @@ loadToPeople(person);
         }
 
         [RavenTheory(RavenTestCategory.Patching)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(DatabaseMode = RavenDatabaseMode.All, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void CanDeleteEverything(Options options)
         {
             using (var store = GetDocumentStore(options))

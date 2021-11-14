@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using FastTests;
+using Tests.Infrastructure;
 using Newtonsoft.Json;
 using Orders;
 using Raven.Client;
@@ -21,7 +22,7 @@ namespace SlowTests.Core.ScriptedPatching
         }
 
         [RavenTheory(RavenTestCategory.ClientApi | RavenTestCategory.Patching)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(DatabaseMode = RavenDatabaseMode.All, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public void PatchingWithParametersShouldWork(Options options)
         {
             using var store = GetDocumentStore(options);
@@ -55,11 +56,12 @@ namespace SlowTests.Core.ScriptedPatching
             }
         }
 
-        [Fact]
-        public void PatchingShouldThrowProperException()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void PatchingShouldThrowProperException(Options options)
         {
             var ttl = Debugger.IsAttached ? TimeSpan.FromMinutes(15) : TimeSpan.FromSeconds(15);
-            using var store = GetDocumentStore();
+            using var store = GetDocumentStore(options);
             using (var session = store.OpenSession())
             {
                 session.Store(new Supplier
@@ -178,7 +180,8 @@ Update
 }"
             }));
             var e = Assert.Throws<JavaScriptException>(() => operation.WaitForCompletion(ttl));
-            Assert.Contains("Unit is not defined", e.Message);
+            Assert.Contains("Unit", e.Message);
+            Assert.Contains("defined", e.Message);
         }
 
         private class PermittedDocumentAge

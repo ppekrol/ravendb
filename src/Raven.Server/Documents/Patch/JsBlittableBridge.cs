@@ -1,263 +1,215 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Jint;
-using Jint.Native;
-using Jint.Native.Array;
-using Jint.Native.Date;
-using Jint.Native.Function;
-using Jint.Native.Object;
-using Jint.Native.RegExp;
-using Jint.Runtime;
-using Jint.Runtime.Descriptors;
 using Jint.Runtime.Interop;
 using Raven.Client;
-using Raven.Server.Extensions;
-using Sparrow;
+using Raven.Server.Documents.Patch.Jint;
+using Raven.Server.Documents.Patch.V8;
 using Sparrow.Extensions;
 using Sparrow.Json;
 using Sparrow.Utils;
+using Voron.Util;
 
-namespace Raven.Server.Documents.Patch
+namespace Raven.Server.Documents.Patch;
+
+public abstract class JsBlittableBridge<T>
+    where T : struct, IJsHandle<T>
 {
-    public struct JsBlittableBridge
+    protected  ManualBlittableJsonDocumentBuilder<UnmanagedWriteBuffer> _writer;
+    protected BlittableJsonDocumentBuilder.UsageMode _usageMode;
+    public IJsEngineHandle<T> _scriptEngine;
+    [ThreadStatic]
+    protected static HashSet<object> _recursive;
+
+
+    protected static readonly double MaxJsDateMs = (DateTime.MaxValue - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
+    protected static readonly double MinJsDateMs = -(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc) - DateTime.MinValue).TotalMilliseconds;
+
+    static JsBlittableBridge()
     {
-        private readonly ManualBlittableJsonDocumentBuilder<UnmanagedWriteBuffer> _writer;
-        private readonly BlittableJsonDocumentBuilder.UsageMode _usageMode;
-        private readonly Engine _scriptEngine;
+        ThreadLocalCleanup.ReleaseThreadLocalState += () => _recursive = null;
+    }
 
-        [ThreadStatic]
-        private static HashSet<object> _recursive;
+    protected JsBlittableBridge(IJsEngineHandle<T> scriptEngine)
+    {
+        _scriptEngine = scriptEngine;
+    }
 
-        private static readonly double MaxJsDateMs = (DateTime.MaxValue - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
-        private static readonly double MinJsDateMs = -(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc) - DateTime.MinValue).TotalMilliseconds;
+    public IDisposable Initialize(ManualBlittableJsonDocumentBuilder<UnmanagedWriteBuffer> writer, BlittableJsonDocumentBuilder.UsageMode usageMode)
+    {
+        _writer = writer;
+        _usageMode = usageMode;
 
-        static JsBlittableBridge()
+        return new DisposableAction(() =>
         {
-            ThreadLocalCleanup.ReleaseThreadLocalState += () => _recursive = null;
+            _writer = null;
+            _usageMode = default;
+        });
+    }
+
+    protected void WriteInstance(T jsObject, IResultModifier modifier, bool isRoot, bool filterProperties)
+    {
+        _writer.StartWriteObject();
+
+        modifier?.Modify(jsObject, _scriptEngine);
+        var boundObject = jsObject.AsObject();
+        if (boundObject is IBlittableObjectInstance<T> boi)
+        {
+            WriteBlittableInstance(boi, isRoot, filterProperties);
         }
+        else
+            WriteJsInstance(jsObject, isRoot, filterProperties);
 
-        public JsBlittableBridge(ManualBlittableJsonDocumentBuilder<UnmanagedWriteBuffer> writer, BlittableJsonDocumentBuilder.UsageMode usageMode, Engine scriptEngine)
+        _writer.WriteObjectEnd();
+    }
+
+    protected abstract string GetDateValue(T jsValue, string propertyName);
+
+    protected void WriteJsonValue(object jsParent, bool isRoot, bool filterProperties, string propertyName, T jsValue)
+    {
+        jsValue.ThrowOnError();
+
+        if (jsValue.IsBoolean)
+            _writer.WriteValue(jsValue.AsBoolean);
+        else if (jsValue.IsUndefined || jsValue.IsNull)
+            _writer.WriteValueNull();
+        else if (jsValue.IsStringEx)
+            _writer.WriteValue(jsValue.AsString);
+        else if (jsValue.IsDate)
+            _writer.WriteValue(GetDateValue(jsValue, propertyName));
+        else if (jsValue.IsInt32)
+            WriteNumber(jsParent, propertyName, jsValue.AsInt32);
+        else if (jsValue.IsNumberEx)
+            WriteNumber(jsParent, propertyName, jsValue.AsDouble);
+        else if (jsValue.IsArray)
+            WriteArray(jsValue);
+        else if (jsValue.IsObject)
         {
-            _writer = writer;
-            _usageMode = usageMode;
-            _scriptEngine = scriptEngine;
-        }
+            if (isRoot)
+                filterProperties = string.Equals(propertyName, Constants.Documents.Metadata.Key, StringComparison.Ordinal);
 
-        private void WriteInstance(ObjectInstance jsObject, IResultModifier modifier, bool isRoot, bool filterProperties)
-        {
-            _writer.StartWriteObject();
-
-            modifier?.Modify(jsObject);
-
-            if (jsObject is BlittableObjectInstance blittableJsObject)
-                WriteBlittableInstance(blittableJsObject, isRoot, filterProperties);
-            else
-                WriteJsInstance(jsObject, isRoot, filterProperties);
-
-            _writer.WriteObjectEnd();
-        }
-
-        private void WriteJsonValue(object parent, bool isRoot, string propertyName, object value)
-        {
-            if (value is JsValue js)
+            object asObject = jsValue.AsObject();
+            if (asObject is ObjectWrapper wrapper)
             {
-                if (js.IsBoolean())
-                    _writer.WriteValue(js.AsBoolean());
-                else if (js.IsUndefined() || js.IsNull())
-                    _writer.WriteValueNull();
-                else if (js.IsString())
-                    _writer.WriteValue(js.AsString());
-                else if (js.IsDate())
-                {
-                    var jsDate = js.AsDate();
-                    if (double.IsNaN(jsDate.PrimitiveValue) ||
-                        jsDate.PrimitiveValue > MaxJsDateMs ||
-                        jsDate.PrimitiveValue < MinJsDateMs)
-                        // not a valid Date. 'ToDateTime()' will throw
-                        throw new InvalidOperationException($"Invalid '{nameof(DateInstance)}' on property '{propertyName}'. Date value : '{jsDate.PrimitiveValue}'. " +
-                                                            "Note that JavaScripts 'Date' measures time as the number of milliseconds that have passed since the Unix epoch.");
 
-                    _writer.WriteValue(jsDate.ToDateTime().ToString(DefaultFormat.DateTimeOffsetFormatsToWrite));
+                if (wrapper.Target is LazyNumberValue)
+                {
+                    _writer.WriteValue(BlittableJsonToken.LazyNumber, wrapper.Target);
                 }
-                else if (js.IsNumber())
-                    WriteNumber(parent, propertyName, js.AsNumber());
-                else if (js.IsArray())
-                    WriteArray(js.AsArray());
-                else if (js.IsObject())
+                else if (wrapper.Target is LazyStringValue)
                 {
-                    var asObject = js.AsObject();
-                    if (asObject is ObjectWrapper wrapper)
-                    {
-                        if (wrapper.Target is LazyNumberValue)
-                        {
-                            _writer.WriteValue(BlittableJsonToken.LazyNumber, wrapper.Target);
-                        }
-                        else if (wrapper.Target is LazyStringValue)
-                        {
-                            _writer.WriteValue(BlittableJsonToken.String, wrapper.Target);
-                        }
-                        else if (wrapper.Target is LazyCompressedStringValue)
-                        {
-                            _writer.WriteValue(BlittableJsonToken.CompressedString, wrapper.Target);
-                        }
-                        else if (wrapper.Target is long)
-                        {
-                            _writer.WriteValue(BlittableJsonToken.Integer, (long)wrapper.Target);
-                        }
-                        else
-                        {
-                            var filterProperties = isRoot && string.Equals(propertyName, Constants.Documents.Metadata.Key, StringComparison.Ordinal);
-
-                            WriteNestedObject(js.AsObject(), filterProperties);
-                        }
-                    }
-                    else
-                    {
-                        var filterProperties = isRoot && string.Equals(propertyName, Constants.Documents.Metadata.Key, StringComparison.Ordinal);
-
-                        WriteNestedObject(js.AsObject(), filterProperties);
-                    }
+                    _writer.WriteValue(BlittableJsonToken.String, wrapper.Target);
+                }
+                else if (wrapper.Target is LazyCompressedStringValue)
+                {
+                    _writer.WriteValue(BlittableJsonToken.CompressedString, wrapper.Target);
+                }
+                else if (wrapper.Target is long)
+                {
+                    _writer.WriteValue(BlittableJsonToken.Integer, (long)wrapper.Target);
                 }
                 else
                 {
-                    throw new InvalidOperationException("Unknown type: " + js.Type);
+                    WriteNestedObject(jsValue, filterProperties);
                 }
-                return;
             }
-            WriteValue(parent, isRoot, propertyName, value);
-        }
-
-        private void WriteArray(ArrayInstance arrayInstance)
-        {
-            _writer.StartWriteArray();
-            foreach (var property in arrayInstance.GetOwnPropertiesWithoutLength())
+            else if (asObject != null)
             {
-                JsValue propertyValue = SafelyGetJsValue(property.Value);
-
-                WriteJsonValue(arrayInstance, false, property.Key.AsString(), propertyValue);
-            }
-            _writer.WriteArrayEnd();
-        }
-
-        private void WriteValue(object parent, bool isRoot, string propertyName, object value)
-        {
-            if (value is bool b)
-                _writer.WriteValue(b);
-            else if (value is string s)
-                _writer.WriteValue(s);
-            else if (value is byte by)
-                _writer.WriteValue(by);
-            else if (value is int i)
-                WriteNumber(parent, propertyName, i);
-            else if (value is uint ui)
-                _writer.WriteValue(ui);
-            else if (value is long l)
-                _writer.WriteValue(l);
-            else if (value is double d)
-            {
-                WriteNumber(parent, propertyName, d);
-            }
-            else if (value == null || ReferenceEquals(value, Null.Instance) || ReferenceEquals(value, Undefined.Instance))
-                _writer.WriteValueNull();
-            else if (value is ArrayInstance jsArray)
-            {
-                _writer.StartWriteArray();
-                foreach (var property in jsArray.GetOwnPropertiesWithoutLength())
+                //TODO: egor in other places we use the Item.BoundObject for v8, should we do here  as well? or asObject = BOundObject in V8 so I can drop usage of Item.BoundObject and just use asObj is LazyNum... like here also in other places
+                if (asObject is LazyNumberValue)
                 {
-                    WriteValue(jsArray, false, property.Key.AsString(), property.Value);
+                    _writer.WriteValue(BlittableJsonToken.LazyNumber, asObject);
                 }
-                _writer.WriteArrayEnd();
-            }
-            else if (value is RegExpInstance)
-            {
-                _writer.WriteValueNull();
-            }
-            else if (value is ObjectInstance obj)
-            {
-                var filterProperties = isRoot && string.Equals(propertyName, Constants.Documents.Metadata.Key, StringComparison.Ordinal);
-
-                WriteNestedObject(obj, filterProperties);
-            }
-            else if (value is LazyStringValue lsv)
-            {
-                _writer.WriteValue(lsv);
-            }
-            else if (value is LazyCompressedStringValue lcsv)
-            {
-                _writer.WriteValue(lcsv);
-            }
-            else if (value is LazyNumberValue lnv)
-            {
-                _writer.WriteValue(lnv);
+                else if (asObject is LazyStringValue)
+                {
+                    _writer.WriteValue(BlittableJsonToken.String, asObject);
+                }
+                else if (asObject is LazyCompressedStringValue)
+                {
+                    _writer.WriteValue(BlittableJsonToken.CompressedString, asObject);
+                }
+                else if (asObject is long)
+                {
+                    _writer.WriteValue(BlittableJsonToken.Integer, (long)asObject);
+                }
+                else
+                {
+                    WriteNestedObject(jsValue, filterProperties);
+                }
             }
             else
             {
-                throw new NotSupportedException(value.GetType().ToString());
+                WriteNestedObject(jsValue, filterProperties);
             }
         }
+    }
 
-        private void WriteNestedObject(ObjectInstance obj, bool filterProperties)
+    private void WriteArray(T jsArr)
+    {
+        _writer.StartWriteArray();
+        for (int i = 0; i < jsArr.ArrayLength; i++)
         {
-            if (_recursive == null)
-                _recursive = new HashSet<object>();
-
-            if (obj is ObjectWrapper objectWrapper)
+            using (var jsValue = jsArr.GetProperty(i))
             {
-                var target = objectWrapper.Target;
-
-                if (target is IDictionary)
-                {
-                    WriteValueInternal(target, obj, filterProperties);
-                }
-                else if (target is IEnumerable enumerable)
-                {
-                    var jsArray = (ArrayInstance)_scriptEngine.Array.Construct(Arguments.Empty);
-                    foreach (var item in enumerable)
-                    {
-                        var jsItem = JsValue.FromObject(_scriptEngine, item);
-                        _scriptEngine.Array.PrototypeObject.Push(jsArray, Arguments.From(jsItem));
-                    }
-                    WriteArray(jsArray);
-                }
-                else
-                    WriteObjectType(target);
-            }
-            else if (obj is FunctionInstance)
-                _writer.WriteValueNull();
-            else
-                WriteValueInternal(obj, obj, filterProperties);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void WriteObjectType(object target)
-        {
-            _writer.WriteValue('[' + target.GetType().Name + ']');
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void WriteValueInternal(object target, ObjectInstance obj, bool filterProperties)
-        {
-            try
-            {
-                if (_recursive.Add(target))
-                    WriteInstance(obj, modifier: null, isRoot: false, filterProperties: filterProperties);
-                else
-                    _writer.WriteValueNull();
-            }
-            finally
-            {
-                _recursive.Remove(target);
+                WriteJsonValue(jsArr, false, false, i.ToString(), jsValue);
             }
         }
+        _writer.WriteArrayEnd();
+    }
 
-        private void WriteNumber(object parent, string propName, double d)
+    private void WriteValue(object parent, bool isRoot, string propertyName, object value)
+    {
+        if (value is bool b)
+            _writer.WriteValue(b);
+        else if (value is string s)
+            _writer.WriteValue(s);
+        else if (value is byte by)
+            _writer.WriteValue(by);
+        else if (value is int n)
+            WriteNumber(parent, propertyName, n);
+        else if (value is uint ui)
+            _writer.WriteValue(ui);
+        else if (value is long l)
+            _writer.WriteValue(l);
+        else if (value is double d)
         {
-            var writer = _writer;
-            var boi = parent as BlittableObjectInstance;
+            WriteNumber(parent, propertyName, d);
+        }
+        else if (value == null)
+            _writer.WriteValueNull();
+        else if (value is LazyStringValue lsv)
+        {
+            _writer.WriteValue(lsv);
+        }
+        else if (value is LazyCompressedStringValue lcsv)
+        {
+            _writer.WriteValue(lcsv);
+        }
+        else if (value is LazyNumberValue lnv)
+        {
+            _writer.WriteValue(lnv);
+        }
+        else
+        {
+            throw new NotSupportedException(value.GetType().ToString());
+        }
+    }
+
+    protected abstract void WriteNestedObject(T jsObj, bool filterProperties);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected void WriteObjectType(object target)
+    {
+        _writer.WriteValue('[' + target.GetType().Name + ']');
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public abstract void WriteValueInternal(object target, T jsObj, bool filterProperties);
+
+    private void WriteNumber(object parent, string propName, double d)
+    {
+         var writer = _writer;
+            var boi = parent as IBlittableObjectInstance<T>;
             if (boi == null || propName == null)
             {
                 GuessNumberType();
@@ -334,212 +286,103 @@ namespace Raven.Server.Documents.Patch
 
                 return true;
             }
+    }
+
+    private void WriteJsInstance(T instance, bool isRoot, bool filterProperties)
+    {
+        IEnumerable<KeyValuePair<string, T>> properties;
+        if (instance.IsBinder())
+        {
+            properties = instance.GetOwnProperties();
+        }
+        else
+        {
+
+            properties = instance.GetOwnProperties();
         }
 
-        private void WriteJsInstance(ObjectInstance obj, bool isRoot, bool filterProperties)
+        foreach (var (propertyName, jsPropertyValue) in properties)
         {
-            var properties = obj is ObjectWrapper objectWrapper
-                ? GetObjectProperties(objectWrapper)
-                : obj.GetOwnProperties();
-
-            foreach (var property in properties)
+            using (jsPropertyValue)
             {
-                var propertyName = property.Key;
-                var propertyNameAsString = propertyName.AsString();
-
-                if (ShouldFilterProperty(filterProperties, propertyNameAsString))
+                if (ShouldFilterProperty(filterProperties, propertyName))
                     continue;
 
-                var value = property.Value;
-                if (value == null)
-                    continue;
-                JsValue safeValue = SafelyGetJsValue(value);
-
-                _writer.WritePropertyName(propertyNameAsString);
-
-                WriteJsonValue(obj, isRoot, propertyNameAsString, safeValue);
-            }
-        }
-
-        private IEnumerable<KeyValuePair<JsValue, PropertyDescriptor>> GetObjectProperties(ObjectWrapper objectWrapper)
-        {
-            var target = objectWrapper.Target;
-            if (target is IDictionary dictionary)
-            {
-                foreach (DictionaryEntry entry in dictionary)
-                {
-                    var jsValue = JsValue.FromObject(_scriptEngine, entry.Value);
-                    var descriptor = new PropertyDescriptor(jsValue, false, false, false);
-                    yield return new KeyValuePair<JsValue, PropertyDescriptor>(entry.Key.ToString(), descriptor);
-                }
-                yield break;
-            }
-
-            var type = target.GetType();
-            if (target is Task task &&
-                task.IsCompleted == false)
-            {
-                foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
-                {
-                    if (property.CanRead == false)
-                        continue;
-
-                    if (property.Name == nameof(Task<int>.Result))
-                    {
-                        var taskResultDescriptor = JintPreventResolvingTasksReferenceResolver.GetRunningTaskResult(task);
-                        yield return new KeyValuePair<JsValue, PropertyDescriptor>(property.Name, taskResultDescriptor);
-                        continue;
-                    }
-
-                    var descriptor = ObjectWrapper.GetPropertyDescriptor(_scriptEngine, target, property);
-                    yield return new KeyValuePair<JsValue, PropertyDescriptor>(property.Name, descriptor);
-                }
-                yield break;
-            }
-
-            // look for properties
-            foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
-            {
-                if (property.CanRead == false)
+                if (jsPropertyValue.IsEmpty)
                     continue;
 
-                var descriptor = ObjectWrapper.GetPropertyDescriptor(_scriptEngine, target, property);
-                yield return new KeyValuePair<JsValue, PropertyDescriptor>(property.Name, descriptor);
+                _writer.WritePropertyName(propertyName);
+
+                WriteJsonValue(instance, isRoot, filterProperties, propertyName, jsPropertyValue);
             }
-
-            // look for fields
-            foreach (var field in type.GetFields(BindingFlags.Instance | BindingFlags.Public))
-            {
-                var descriptor = ObjectWrapper.GetPropertyDescriptor(_scriptEngine, target, field);
-                yield return new KeyValuePair<JsValue, PropertyDescriptor>(field.Name, descriptor);
-            }
-        }
-
-        private JsValue SafelyGetJsValue(PropertyDescriptor property)
-        {
-            try
-            {
-                return property.Value;
-            }
-            catch (Exception e)
-            {
-                return e.ToString();
-            }
-        }
-
-        private unsafe void WriteBlittableInstance(BlittableObjectInstance obj, bool isRoot, bool filterProperties)
-        {
-            HashSet<string> modifiedProperties = null;
-            if (obj.DocumentId != null &&
-                _usageMode == BlittableJsonDocumentBuilder.UsageMode.None)
-            {
-                var metadata = obj.GetOrCreate(Constants.Documents.Metadata.Key);
-                metadata.Set(Constants.Documents.Metadata.Id, obj.DocumentId, false);
-            }
-            if (obj.Blittable != null)
-            {
-                using var propertiesByInsertionOrder = obj.Blittable.GetPropertiesByInsertionOrder();
-                for (int i = 0; i < propertiesByInsertionOrder.Size; i++)
-                {
-                    var prop = new BlittableJsonReaderObject.PropertyDetails();
-                    var propIndex = propertiesByInsertionOrder.Properties[i];
-                    obj.Blittable.GetPropertyByIndex(propIndex, ref prop);
-
-                    BlittableObjectInstance.BlittableObjectProperty modifiedValue = default;
-                    JsValue key = prop.Name.ToString();
-                    var existInObject = obj.OwnValues?
-                        .TryGetValue(key, out modifiedValue) == true;
-
-                    if (existInObject == false && obj.Deletes?.Contains(key) == true)
-                        continue;
-
-                    if (existInObject)
-                    {
-                        modifiedProperties ??= new HashSet<string>();
-
-                        modifiedProperties.Add(prop.Name);
-                    }
-
-                    if (ShouldFilterProperty(filterProperties, prop.Name))
-                        continue;
-
-                    _writer.WritePropertyName(prop.Name);
-
-                    if (existInObject && modifiedValue.Changed)
-                    {
-                        WriteJsonValue(obj, isRoot, prop.Name, modifiedValue.Value);
-                    }
-                    else
-                    {
-                        _writer.WriteValue(prop.Token & BlittableJsonReaderBase.TypesMask, prop.Value);
-                    }
-                }
-            }
-
-            if (obj.OwnValues == null)
-                return;
-
-            foreach (var modificationKvp in obj.OwnValues)
-            {
-                //We already iterated through those properties while iterating the original properties set.
-                if (modifiedProperties != null && modifiedProperties.Contains(modificationKvp.Key.AsString()))
-                    continue;
-
-                var propertyName = modificationKvp.Key;
-                var propertyNameAsString = propertyName.AsString();
-                if (ShouldFilterProperty(filterProperties, propertyNameAsString))
-                    continue;
-
-                if (modificationKvp.Value.Changed == false)
-                    continue;
-
-                _writer.WritePropertyName(propertyNameAsString);
-                var blittableObjectProperty = modificationKvp.Value;
-                WriteJsonValue(obj, isRoot, propertyNameAsString, blittableObjectProperty.Value);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool ShouldFilterProperty(bool filterProperties, string property)
-        {
-            if (filterProperties == false)
-                return false;
-
-            return property == Constants.Documents.Indexing.Fields.ReduceKeyHashFieldName ||
-                   property == Constants.Documents.Indexing.Fields.DocumentIdFieldName ||
-                   property == Constants.Documents.Indexing.Fields.SourceDocumentIdFieldName ||
-                   property == Constants.Documents.Metadata.Id ||
-                   property == Constants.Documents.Metadata.LastModified ||
-                   property == Constants.Documents.Metadata.IndexScore ||
-                   property == Constants.Documents.Metadata.ChangeVector ||
-                   property == Constants.Documents.Metadata.Flags;
-        }
-
-        public static BlittableJsonReaderObject Translate(JsonOperationContext context, Engine scriptEngine, ObjectInstance objectInstance, IResultModifier modifier = null, BlittableJsonDocumentBuilder.UsageMode usageMode = BlittableJsonDocumentBuilder.UsageMode.None, bool isNested = false)
-        {
-            if (objectInstance == null)
-                return null;
-
-            if (objectInstance is BlittableObjectInstance boi && boi.Changed == false && isNested == false)
-                return boi.Blittable.Clone(context);
-
-            using (var writer = new ManualBlittableJsonDocumentBuilder<UnmanagedWriteBuffer>(context))
-            {
-                writer.Reset(usageMode);
-                writer.StartWriteObjectDocument();
-
-                var blittableBridge = new JsBlittableBridge(writer, usageMode, scriptEngine);
-                blittableBridge.WriteInstance(objectInstance, modifier, isRoot: true, filterProperties: false);
-
-                writer.FinalizeDocument();
-
-                return writer.CreateReader();
-            }
-        }
-
-        public interface IResultModifier
-        {
-            void Modify(ObjectInstance json);
         }
     }
+
+    protected abstract unsafe void WriteBlittableInstance(IBlittableObjectInstance<T> jsObj, bool isRoot, bool filterProperties);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected static bool ShouldFilterProperty(bool filterProperties, string property)
+    {
+        if (filterProperties == false)
+            return false;
+
+        return property == Constants.Documents.Indexing.Fields.ReduceKeyHashFieldName ||
+               property == Constants.Documents.Indexing.Fields.DocumentIdFieldName ||
+               property == Constants.Documents.Indexing.Fields.SourceDocumentIdFieldName ||
+               property == Constants.Documents.Metadata.Id ||
+               property == Constants.Documents.Metadata.LastModified ||
+               property == Constants.Documents.Metadata.IndexScore ||
+               property == Constants.Documents.Metadata.ChangeVector ||
+               property == Constants.Documents.Metadata.Flags;
+    }
+
+    public BlittableJsonReaderObject Translate(JsonOperationContext context, T instance,
+        IResultModifier modifier = null, BlittableJsonDocumentBuilder.UsageMode usageMode = BlittableJsonDocumentBuilder.UsageMode.None, bool isRoot = true)
+    {
+        var objectInstance = instance.AsObject();
+        //TODO: egor here its 100% IsObject == true check if I can jsut continue here (without returning null) in jint because thats what we do in v8.
+        if (objectInstance == null && instance.IsObject == false)
+            return null;
+
+        if (objectInstance is IBlittableObjectInstance<T> boi && boi.Changed == false && isRoot)
+            return boi.Blittable.Clone(context);
+
+        using (var writer = new ManualBlittableJsonDocumentBuilder<UnmanagedWriteBuffer>(context))
+        using (Initialize(writer, usageMode))
+        {
+            writer.Reset(usageMode);
+            writer.StartWriteObjectDocument();
+            WriteInstance(instance, modifier, isRoot: isRoot, filterProperties: false);
+
+            writer.FinalizeDocument();
+
+            return writer.CreateReader();
+        }
+    }
+
+    public static BlittableJsonReaderObject Translate(JsonOperationContext context, IJsEngineHandle<T> scriptEngine, T objectInstance, IResultModifier modifier = null,
+        BlittableJsonDocumentBuilder.UsageMode usageMode = BlittableJsonDocumentBuilder.UsageMode.None, bool isRoot = true)
+    {
+        switch (scriptEngine)
+        {
+            case V8EngineEx ex when objectInstance is JsHandleV8 jsHandleV8:
+                return new JsBlittableBridgeV8(ex).Translate(context, jsHandleV8, modifier, usageMode, isRoot);
+            case JintEngineEx ex2 when objectInstance is JsHandleJint jsHandleJint:
+                return new JsBlittableBridgeJint(ex2).Translate(context, jsHandleJint, modifier, usageMode, isRoot);
+            default:
+                throw new ArgumentException($"expected {nameof(V8EngineEx)} and {nameof(JsHandleV8)} or {nameof(JintEngineEx)} and {nameof(JsHandleJint)} but got: {scriptEngine.GetType().Name} and {objectInstance.GetType().Name}");
+        }
+    }
+}
+
+public interface IBlittableObjectProperty<T> : IDisposable
+    where T : struct, IJsHandle<T>
+{
+    bool Changed { get; }
+    T ValueHandle { get; }
+}
+
+public interface IResultModifier
+{
+    void Modify<T>(T json, IJsEngineHandle<T> engine) where T : struct, IJsHandle<T>;
 }

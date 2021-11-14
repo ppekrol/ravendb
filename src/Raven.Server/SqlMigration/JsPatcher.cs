@@ -3,14 +3,15 @@ using Raven.Server.Documents.Patch;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.SqlMigration.Model;
 using Sparrow.Json;
+using Raven.Server.Config.Categories;
 
 namespace Raven.Server.SqlMigration
 {
     public class JsPatcher : IDisposable
     {
-        private readonly ScriptRunner.SingleRun _runner;
+        private readonly ISingleRun _runner;
         private readonly DocumentsOperationContext _context;
-        private ScriptRunner.ReturnRun scriptRunner;
+        private ReturnRun scriptRunner;
         
         public JsPatcher(RootCollection collection, DocumentsOperationContext context) 
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Tests.Infrastructure;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FastTests;
@@ -137,7 +138,7 @@ namespace SlowTests.Client.Lazy.Async
         }
 
         [Theory]
-        [RavenData(DatabaseMode = RavenDatabaseMode.Single)]
+        [RavenData(DatabaseMode = RavenDatabaseMode.Single, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public async Task LazyLoadById(Options options)
         {
             using var store = GetDocumentStore(options);
@@ -241,7 +242,7 @@ select {
         }
 
         [Theory]
-        [RavenData(DatabaseMode = RavenDatabaseMode.Single)]
+        [RavenData(DatabaseMode = RavenDatabaseMode.Single, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public async Task WithTransformer(Options options)
         {
             using (var store = GetDocumentStore(options))

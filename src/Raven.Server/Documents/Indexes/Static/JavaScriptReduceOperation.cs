@@ -6,53 +6,99 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Esprima.Ast;
 using Jint;
-using Jint.Native;
-using Jint.Native.Array;
 using Jint.Native.Function;
-using Jint.Native.Object;
-using Jint.Runtime;
-using Jint.Runtime.Descriptors;
+using Raven.Client.ServerWide.JavaScript;
 using Raven.Server.Documents.Indexes.MapReduce;
 using Raven.Server.Documents.Patch;
+using Raven.Server.Documents.Patch.Jint;
+using Raven.Server.Documents.Patch.V8;
 using Raven.Server.ServerWide;
 using Sparrow;
 using Sparrow.Json;
 using Sparrow.Server;
+using V8Exception = V8.Net.V8Exception;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public class JavaScriptReduceOperation
+    public class JavaScriptReduceOperationV8 : JavaScriptReduceOperation<JsHandleV8>
     {
-        public JavaScriptReduceOperation(ScriptFunctionInstance reduce, ScriptFunctionInstance key, Engine engine, JintPreventResolvingTasksReferenceResolver resolver, long indexVersion)
-        {
-            Reduce = reduce ?? throw new ArgumentNullException(nameof(reduce));
-            Key = key ?? throw new ArgumentNullException(nameof(key));
-            Engine = engine;
-            _resolver = resolver;
-            GetReduceFieldsNames();
+        private V8EngineEx EngineExV8 => EngineHandle as V8EngineEx;
+        private readonly AbstractJavaScriptIndexV8 IndexV8;
 
-            _groupedItems = null;
-            _indexVersion = indexVersion;
+        public JavaScriptReduceOperationV8(AbstractJavaScriptIndexV8 index, JavaScriptIndexUtils<JsHandleV8> jsIndexUtils, ScriptFunctionInstance keyJint, Engine engineForParsing, 
+            JsHandleV8 reduce, JsHandleV8 key, long indexVersion) : base(index, jsIndexUtils, keyJint, engineForParsing, reduce, key, indexVersion)
+        {
+            IndexV8 = index;
         }
+    }
+
+    public class JavaScriptReduceOperationJint : JavaScriptReduceOperation<JsHandleJint>
+    {
+        public JavaScriptReduceOperationJint(AbstractJavaScriptIndexJint index, JavaScriptIndexUtils<JsHandleJint> jsIndexUtils, ScriptFunctionInstance keyJint, Engine engineForParsing,
+            JsHandleJint reduce, JsHandleJint key, long indexVersion) : base(index, jsIndexUtils, keyJint, engineForParsing, reduce, key, indexVersion)
+        {
+        }
+    }
+    public abstract class JavaScriptReduceOperation<T>
+        where T : struct, IJsHandle<T>
+    {
+        private readonly AbstractJavaScriptIndex<T> _index;
+        private JavaScriptIndexUtils<T> _jsIndexUtils { get; }
+        private IJavaScriptUtils<T> _jsUtils { get; }
+        protected IJsEngineHandle<T> EngineHandle { get; }
+        private JavaScriptEngineType _jsEngineType => EngineHandle.EngineType;
+        private Engine EngineForParsing { get; }
+        public ScriptFunctionInstance KeyJint { get; }
+
+        public T Reduce { get; }
+        public T Key { get; }
+
+        protected Dictionary<BlittableJsonReaderObject, List<BlittableJsonReaderObject>> _groupedItems;
 
         private readonly long _indexVersion;
-
-        private readonly JsValue[] _oneItemArray = new JsValue[1];
-
-        private readonly JintPreventResolvingTasksReferenceResolver _resolver;
-
-        private Dictionary<BlittableJsonReaderObject, List<BlittableJsonReaderObject>> _groupedItems;
-
-        private struct GroupByKeyComparer : IEqualityComparer<BlittableJsonReaderObject>
+        
+        protected JavaScriptReduceOperation(AbstractJavaScriptIndex<T> index, JavaScriptIndexUtils<T> jsIndexUtils, ScriptFunctionInstance keyJint, Engine engineForParsing,
+            T reduce, T key, long indexVersion)
         {
-            private readonly JavaScriptReduceOperation _parent;
+            _index = index;
+            _indexVersion = indexVersion;
+            EngineHandle = jsIndexUtils.EngineHandle;
+            _groupedItems = null;
+
+            KeyJint = keyJint ?? throw new ArgumentNullException(nameof(keyJint));
+            EngineForParsing = engineForParsing;
+            GetReduceFieldsNames();
+
+            if (reduce.IsUndefined || reduce.IsNull)
+                throw new ArgumentNullException(nameof(reduce));
+            Reduce = reduce;
+
+            if (key.IsUndefined || key.IsNull)
+                throw new ArgumentNullException(nameof(key));
+            Key = key;
+
+            _jsIndexUtils = jsIndexUtils;
+            _jsUtils = _jsIndexUtils.JsUtils;
+        }
+
+        ~JavaScriptReduceOperation()
+        {
+            Reduce.Dispose();
+            Key.Dispose();
+        }
+       
+
+        protected struct GroupByKeyComparer/*<T>*/ : IEqualityComparer<BlittableJsonReaderObject>
+          //  where T : struct, IJsHandle<T>
+        {
+            private readonly JavaScriptReduceOperation<T> _parent;
             private readonly ReduceKeyProcessor _xKey;
             private readonly ReduceKeyProcessor _yKey;
             private BlittableJsonReaderObject _lastUsedBlittable;
             private BlittableJsonReaderObject _lastUsedBucket;
             private readonly ByteStringContext _allocator;
 
-            public GroupByKeyComparer(JavaScriptReduceOperation parent, UnmanagedBuffersPoolWithLowMemoryHandling buffersPool, ByteStringContext allocator, long indexVersion)
+            public GroupByKeyComparer(JavaScriptReduceOperation<T> parent, UnmanagedBuffersPoolWithLowMemoryHandling buffersPool, ByteStringContext allocator, long indexVersion)
             {
                 _parent = parent;
                 _allocator = allocator;
@@ -142,7 +188,6 @@ namespace Raven.Server.Documents.Indexes.Static
                 return (int)Hashing.Mix(_yKey.Hash);
             }
         }
-
         public IEnumerable IndexingFunction(IEnumerable<dynamic> items)
         {
             try
@@ -155,21 +200,49 @@ namespace Raven.Server.Documents.Indexes.Static
                         list = new List<BlittableJsonReaderObject>();
                         _groupedItems[item.BlittableJson] = list;
                     }
+
                     list.Add(item.BlittableJson);
                 }
+
+                var memorySnapshotName = "reduce";
+                bool isMemorySnapshotMade = false;
+                if (EngineHandle.IsMemoryChecksOn)
+                {
+                    EngineHandle.MakeSnapshot(memorySnapshotName);
+                    isMemorySnapshotMade = true;
+                }
+
                 foreach (var item in _groupedItems.Values)
                 {
-                    Engine.ResetCallStack();
-                    Engine.ResetConstraints();
+                    //TODO: egor check if this error handling needed
+                    // _index._lastException = null;
 
-                    _oneItemArray[0] = ConstructGrouping(item);
-                    JsValue jsItem;
+                    EngineHandle.ResetCallStack();
+                    EngineHandle.ResetConstraints();
+
+                    T jsRes = EngineHandle.Empty;
                     try
                     {
-                        jsItem = Reduce.Call(JsValue.Null, _oneItemArray).AsObject();
+                        using (var jsGrouping = ConstructGrouping(item))
+                        {
+                            jsRes = Reduce.StaticCall(jsGrouping);
+                            //if (_index._lastException != null)
+                            //{
+                            //    ExceptionDispatchInfo.Capture(_index._lastException).Throw();
+                            //}
+                            //else
+                            //{
+                            jsRes.ThrowOnError();
+                            //   }
+
+                            if (jsRes.IsObject == false)
+                                throw new JavaScriptIndexFuncException($"Failed to execute {ReduceString}",
+                                    new Exception($"Reduce result is not object: {jsRes.ToString()}"));
+                        }
                     }
-                    catch (JavaScriptException jse)
+                    catch (V8Exception jse)
                     {
+                        ProcessRunException(jsRes, memorySnapshotName, isMemorySnapshotMade);
                         var (message, success) = JavaScriptIndexFuncException.PrepareErrorMessageForJavaScriptIndexFuncException(ReduceString, jse);
                         if (success == false)
                             throw new JavaScriptIndexFuncException($"Failed to execute {ReduceString}", jse);
@@ -177,21 +250,50 @@ namespace Raven.Server.Documents.Indexes.Static
                     }
                     catch (Exception e)
                     {
+                        ProcessRunException(jsRes, memorySnapshotName, isMemorySnapshotMade);
                         throw new JavaScriptIndexFuncException($"Failed to execute {ReduceString}", e);
                     }
-                    yield return jsItem;
-                    _resolver.ExplodeArgsOn(null, null);
+                    finally
+                    {
+                        //   _index._lastException = null;
+                    }
+
+                    if (isMemorySnapshotMade)
+                    {
+                        EngineHandle.AddToLastMemorySnapshotBefore(jsRes);
+                    }
+
+                    yield return jsRes;
+
+                    EngineHandle.ForceGarbageCollection();
+                    if (isMemorySnapshotMade)
+                    {
+                        EngineHandle.CheckForMemoryLeaks(memorySnapshotName, shouldRemove: false);
+                    }
                 }
+                // memory snapshot is removed after removing all reduce results and the final check in AggregatedAnonymousObjects.Dispose() 
             }
             finally
             {
-                _oneItemArray[0] = null;
                 _groupedItems.Clear();
             }
         }
 
+
+        private void ProcessRunException(T jsRes, string memorySnapshotName, bool isMemorySnapshotMade)
+        {
+            EngineHandle.AddToLastMemorySnapshotBefore(jsRes); // as jsRes has been saved in V8Exception
+            jsRes.Dispose(); // jsRes still has one reference
+
+            EngineHandle.ForceGarbageCollection();
+            if (isMemorySnapshotMade)
+            {
+                EngineHandle.CheckForMemoryLeaks(memorySnapshotName, shouldRemove: false);
+            }
+        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void EnsureGroupItemCreated()
+        protected void EnsureGroupItemCreated()
         {
             if (_groupedItems == null)
             {
@@ -209,19 +311,15 @@ namespace Raven.Server.Documents.Indexes.Static
             }
         }
 
-        private JsValue ConstructGrouping(List<BlittableJsonReaderObject> values)
+        private T ConstructGrouping(List<BlittableJsonReaderObject> values)
         {
-            var jsValues = ConstructValues();
-            var jsKey = ConstructKey();
-
-            var result = new ObjectInstance(Engine);
-
-            result.Set("values", jsValues, false);
-            result.Set("key", jsKey, false);
+            var result = EngineHandle.CreateObject();
+            result.SetProperty("values", ConstructValues());
+            result.SetProperty("key", ConstructKey());
 
             return result;
 
-            JsValue ConstructKey()
+            T ConstructKey()
             {
                 if (_singleField)
                 {
@@ -230,15 +328,14 @@ namespace Raven.Server.Documents.Indexes.Static
                     {
                         BlittableJsonReaderObject.PropertyDetails prop = default;
                         values[0].GetPropertyByIndex(index, ref prop);
-
-                        return JsValue.FromObject(Engine, prop.Value);
+                        return _jsIndexUtils.GetValueOrThrow(prop.Value, isMapReduce: true);
                     }
 
-                    return JsValue.Null;
+                    return EngineHandle.CreateNullValue();
                 }
 
-                var key = new ObjectInstance(Engine);
-
+                T jsRes;
+                jsRes = EngineHandle.CreateObject();
                 foreach (var groupByField in _groupByFields)
                 {
                     var index = values[0].GetPropertyIndex(groupByField.Name);
@@ -252,53 +349,52 @@ namespace Raven.Server.Documents.Indexes.Static
                             propertyName = jsnf.PropertyName;
 
                         var value = groupByField.GetValue(null, prop.Value);
-
-                        JsValue jsValue = value switch
+                        var jsValue = value switch
                         {
-                            BlittableJsonReaderObject bjro => new BlittableObjectInstance(Engine, null, bjro, null, null, null),
-                            Document doc => new BlittableObjectInstance(Engine, null, doc.Data, doc),
-                            LazyStringValue lsv => new JsString(lsv.ToString()),
-                            LazyCompressedStringValue lcsv => new JsString(lcsv.ToString()),
-                            LazyNumberValue lnv => new JsNumber(lnv.ToDouble(CultureInfo.InvariantCulture)),
-                            _ => JsValue.FromObject(Engine, value)
+                            BlittableJsonReaderObject bjro => ((Func<BlittableJsonReaderObject, T>)((BlittableJsonReaderObject bjro) =>
+                            {
+                                var boi = _jsUtils.CreateBlittableObjectInstanceFromScratch(null, bjro, null, null, null);
+                                return boi.CreateJsHandle(keepAlive: true);
+                            }))(bjro),
+                            Document doc => ((Func<Document, T>)((Document doc) =>
+                            {
+                                var boi = _jsUtils.CreateBlittableObjectInstanceFromDoc(null, doc.Data, doc);
+                                return boi.CreateJsHandle(keepAlive: true);
+                            }))(doc),
+                            LazyNumberValue lnv => EngineHandle.CreateValue(lnv.ToDouble(CultureInfo.InvariantCulture)),
+                            _ => _jsIndexUtils.GetValueOrThrow(value, isMapReduce: true)
                         };
 
-                        key.Set(propertyName, jsValue, throwOnError: false);
+                        jsRes.SetProperty(propertyName, jsValue);
                     }
                 }
 
-                return key;
+                return jsRes;
             }
 
-            ArrayInstance ConstructValues()
+            T ConstructValues()
             {
-                var items = new PropertyDescriptor[values.Count];
-                for (var i = 0; i < values.Count; i++)
+                int arrayLength = values.Count;
+                var jsItems = new T[arrayLength];
+
+                for (int i = 0; i < arrayLength; ++i)
                 {
                     var val = values[i];
 
-                    if (JavaScriptIndexUtils.GetValue(Engine, val, out var jsValue, isMapReduce: true) == false)
+                    if (_jsIndexUtils.GetValue(val, out T jsValueHandle, isMapReduce: true) == false)
                         continue;
 
-                    items[i] = new PropertyDescriptor(jsValue, true, true, true);
+                    jsItems[i] = jsValueHandle;
                 }
 
-                var jsArray = new ArrayInstance(Engine, items);
-                jsArray.SetPrototypeOf(Engine.Array.PrototypeObject);
-                jsArray.PreventExtensions();
-
-                return jsArray;
+                return EngineHandle.CreateArray((IEnumerable<T>)jsItems);
             }
         }
-
-        public Engine Engine { get; }
-
-        public ScriptFunctionInstance Reduce { get; }
-        public ScriptFunctionInstance Key { get; }
+        
         public string ReduceString { get; internal set; }
 
-        private CompiledIndexField[] _groupByFields;
-        private bool _singleField;
+        protected CompiledIndexField[] _groupByFields;
+        protected bool _singleField;
         private UnmanagedBuffersPoolWithLowMemoryHandling _bufferPool;
         private ByteStringContext _byteStringContext;
 
@@ -307,7 +403,7 @@ namespace Raven.Server.Documents.Indexes.Static
             if (_groupByFields != null)
                 return _groupByFields;
 
-            var ast = Key.FunctionDeclaration;
+            var ast = KeyJint.FunctionDeclaration;
             var body = ast.ChildNodes.ToList();
 
             if (body.Count != 2)
@@ -379,7 +475,7 @@ namespace Raven.Server.Documents.Indexes.Static
                         if (property.Value is MemberExpression me)
                             path = GetPropertyPath(me).ToArray();
 
-                        var propertyName = property.GetKey(Engine);
+                        var propertyName = property.GetKey(EngineForParsing);
                         cur.Add(CreateField(propertyName.AsString(), path));
                     }
                 }

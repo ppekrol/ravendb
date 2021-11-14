@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Queries;
 using Xunit;
 using Xunit.Abstractions;
@@ -26,11 +27,12 @@ namespace SlowTests.Issues
             public string Name { get; set; }
         }
 
-        [Fact]
-        public void CanProject()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanProject(Options options)
         {
             Document doc;
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -87,11 +89,12 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanProject2()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanProject2(Options options)
         {
             Document doc;
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

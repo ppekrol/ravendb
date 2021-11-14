@@ -1,4 +1,5 @@
-﻿//-----------------------------------------------------------------------
+﻿using Tests.Infrastructure;
+//-----------------------------------------------------------------------
 // <copyright file="RevisionsTests.cs" company="Hibernating Rhinos LTD">
 //     Copyright (c) Hibernating Rhinos LTD. All rights reserved.
 // </copyright>
@@ -11,7 +12,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FastTests.Utils;
-using NuGet.Packaging;
 using Raven.Client;
 using Raven.Client.Documents.Commands;
 using Raven.Client.Documents.Conventions;
@@ -30,7 +30,6 @@ using Raven.Server.Documents.Patch;
 using Raven.Server.Documents.Revisions;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
-using Raven.Server.Utils;
 using Raven.Tests.Core.Utils.Entities;
 using Sparrow.Json;
 using Tests.Infrastructure;
@@ -1789,19 +1788,23 @@ namespace FastTests.Server.Documents.Revisions
             }
         }
 
+        //TODO: egor
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task DeleteRevisionsBeforeFromConsole(bool useConsole)
+        [RavenData(false, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(true, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task DeleteRevisionsBeforeFromConsole(Options options, bool useConsole)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 await RevisionsHelper.SetupRevisionsAsync(store, modifyConfiguration: configuration => configuration.Collections["Users"].PurgeOnDelete = false);
 
                 var database = await Databases.GetDocumentDatabaseInstanceFor(store);
                 database.Time.UtcDateTime = () => DateTime.UtcNow.AddDays(-1);
 
-                for (var i = 0; i < 10; i++)
+                int baseCount = 10;
+                int totalCount = 2 * baseCount;
+                
+                for (var i = 0; i < baseCount; i++)
                 {
                     using (var session = store.OpenAsyncSession())
                     {
@@ -1811,7 +1814,7 @@ namespace FastTests.Server.Documents.Revisions
                 }
 
                 database.Time.UtcDateTime = () => DateTime.UtcNow.AddDays(1);
-                for (var i = 0; i < 10; i++)
+                for (var i = 0; i < baseCount; i++)
                 {
                     using (var session = store.OpenAsyncSession())
                     {
@@ -1823,8 +1826,8 @@ namespace FastTests.Server.Documents.Revisions
                 database.Time.UtcDateTime = () => DateTime.UtcNow;
 
                 var statistics = store.Maintenance.Send(new GetStatisticsOperation());
-                Assert.Equal(21, statistics.CountOfDocuments);
-                Assert.Equal(20, statistics.CountOfRevisionDocuments);
+                Assert.Equal(totalCount + 1, statistics.CountOfDocuments);
+                Assert.Equal(totalCount, statistics.CountOfRevisionDocuments);
 
                 if (useConsole)
                 {
@@ -1837,8 +1840,8 @@ namespace FastTests.Server.Documents.Revisions
                 }
 
                 statistics = store.Maintenance.Send(new GetStatisticsOperation());
-                Assert.Equal(21, statistics.CountOfDocuments);
-                Assert.Equal(10, statistics.CountOfRevisionDocuments);
+                Assert.Equal(totalCount + 1, statistics.CountOfDocuments);
+                Assert.Equal(baseCount, statistics.CountOfRevisionDocuments);
             }
         }
 

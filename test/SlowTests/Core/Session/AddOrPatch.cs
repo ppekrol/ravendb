@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,10 +14,11 @@ namespace SlowTests.Core.Session
         {
         }
         
-        [Fact]
-        public void CanAddOrPatch()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanAddOrPatch(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var id = "users/1";
                 using (var session = store.OpenSession())
@@ -73,11 +75,12 @@ namespace SlowTests.Core.Session
             }
         }
         
-        [Fact]
-        public void CanAddOrPatchAddItemToAnExistingArray()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanAddOrPatchAddItemToAnExistingArray(Options options)
         {
             
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 
                 var id = "users/1";
@@ -153,10 +156,11 @@ namespace SlowTests.Core.Session
             }
         }
         
-        [Fact]
-        public void CanAddOrPatchIncrement()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanAddOrPatchIncrement(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var id = "users/1";
                 using (var session = store.OpenSession())

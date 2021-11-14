@@ -1,7 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using Tests.Infrastructure;
+using System.Threading.Tasks;
 using FastTests.Server.Replication;
 using Raven.Client.Documents.Session;
-using Raven.Tests.Core.Utils.Entities;
+using SlowTests.Core.Utils.Entities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,15 +14,15 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public async Task PatchingClusterTransactionDocumentShouldWork()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task PatchingClusterTransactionDocumentShouldWork(Options options)
         {
             var (_, leader) = await CreateRaftCluster(3);
-            using (var leaderStore = GetDocumentStore(new Options
-            {
-                Server = leader,
-                ReplicationFactor = 3
-            }))
+            options.Server = leader;
+            options.ReplicationFactor = 3;
+
+            using (var leaderStore = GetDocumentStore(options))
             {
                 var user1 = new User
                 {

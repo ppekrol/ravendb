@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Threading.Tasks;
 using FastTests;
 using FastTests.Utils;
@@ -149,10 +150,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public async Task CanUseSubscriptionRevisionsWithIncludesViaJavaScript()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanUseSubscriptionRevisionsWithIncludesViaJavaScript(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 await RevisionsHelper.SetupRevisionsAsync(store);
                 using (var session = store.OpenSession())
@@ -185,13 +187,14 @@ namespace SlowTests.Issues
                     session.SaveChanges();
                 }
 
+                var optChaining = options.JavascriptEngineMode.ToString() == "Jint" ? "" : "?";
                 var id = store.Subscriptions.Create(new SubscriptionCreationOptions
                 {
-                    Query = @"declare function f(d) { 
+                    Query = @$"declare function f(d) {{ 
                                 include(d.Current.Owner);
-                                include(d.Previous.Owner);
+                                include(d.Previous{optChaining}.Owner);
                                 return d;
-                            }
+                            }}
                             from Dogs (Revisions = true) as dog
                             select f(dog)
                             "
@@ -226,10 +229,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public async Task CanUseSubscriptionWithIncludesViaJavaScript()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanUseSubscriptionWithIncludesViaJavaScript(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

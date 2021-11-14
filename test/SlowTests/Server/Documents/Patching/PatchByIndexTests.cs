@@ -1,25 +1,16 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using FastTests;
-using MySqlX.XDevAPI;
-using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations.Indexes;
 using Raven.Client.Documents.Queries;
 using Raven.Server.Documents.Indexes;
-using Raven.Server.Documents.Indexes.Auto;
-using Raven.Server.Documents.Indexes.MapReduce.Auto;
-using Raven.Server.Documents.Indexes.Static;
 using Raven.Server.Documents.Patch;
 using Raven.Server.Documents.Queries;
-using Raven.Server.Documents.Queries.Dynamic;
 using Raven.Server.ServerWide;
-using Raven.Server.ServerWide.Context;
 using Raven.Tests.Core.Utils.Entities;
-using Sparrow.Json;
-using Sparrow.Json.Parsing;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -33,10 +24,11 @@ namespace SlowTests.Server.Documents.Patching
 
         private static readonly TimeSpan CancelAfter = TimeSpan.FromMinutes(10);
 
-        [Fact]
-        public async Task PatchByIndex_WhenFinish_ShouldFreeInternalUsageMemory()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task PatchByIndex_WhenFinish_ShouldFreeInternalUsageMemory(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var database = await GetDatabase(store.Database);
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,9 +24,9 @@ namespace SlowTests.Client.Subscriptions
         private readonly TimeSpan _reasonableWaitTime = Debugger.IsAttached ? TimeSpan.FromSeconds(60 * 10) : TimeSpan.FromSeconds(30);
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task BasicCriteriaTest(bool useSsl)
+        [RavenData(false, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(true, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task BasicCriteriaTest(Options options, bool useSsl)
         {
             string dbName = GetDatabaseName();
             X509Certificate2 clientCertificate = null;
@@ -40,12 +41,10 @@ namespace SlowTests.Client.Subscriptions
                 });
             }
 
-            using (var store = GetDocumentStore(new Options
-            {
-                AdminCertificate = adminCertificate,
-                ClientCertificate = clientCertificate,
-                ModifyDatabaseName = s => dbName
-            }))
+            options.AdminCertificate = adminCertificate;
+            options.ClientCertificate = clientCertificate;
+            options.ModifyDatabaseName = s => dbName;
+            using (var store = GetDocumentStore(options))
             {
                 using (var subscriptionManager = new DocumentSubscriptions(store))
                 {
@@ -84,9 +83,9 @@ namespace SlowTests.Client.Subscriptions
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task CriteriaScriptWithTransformation(bool useSsl)
+        [RavenData(false, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(true, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CriteriaScriptWithTransformation(Options options, bool useSsl)
         {
             string dbName = GetDatabaseName();
             X509Certificate2 clientCertificate = null;
@@ -100,13 +99,10 @@ namespace SlowTests.Client.Subscriptions
                     [dbName] = DatabaseAccess.ReadWrite,
                 });
             }
-
-            using (var store = GetDocumentStore(new Options
-            {
-                AdminCertificate = adminCertificate,
-                ClientCertificate = clientCertificate,
-                ModifyDatabaseName = s => dbName
-            }))
+            options.AdminCertificate = adminCertificate;
+            options.ClientCertificate = clientCertificate;
+            options.ModifyDatabaseName = s => dbName;
+            using (var store = GetDocumentStore(options))
             {
                 using (var subscriptionManager = new DocumentSubscriptions(store))
                 {

@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using FastTests.Client;
 using Parquet;
 using Parquet.Data;
 using Raven.Client.Documents;
@@ -15,7 +15,6 @@ using Raven.Client.Documents.Operations.ETL.OLAP;
 using Raven.Server.Documents.ETL.Providers.OLAP;
 using Raven.Server.Documents.PeriodicBackup;
 using Raven.Server.Documents.PeriodicBackup.Azure;
-using Tests.Infrastructure;
 using Tests.Infrastructure.Entities;
 using Xunit;
 using Xunit.Abstractions;
@@ -31,14 +30,15 @@ namespace SlowTests.Server.Documents.ETL.Olap
         private readonly string _azureTestsPrefix = $"olap/tests/{nameof(AzureTests)}-{Guid.NewGuid()}";
         private const string CollectionName = "Orders";
 
-        [AzureFact]
-        public async Task CanUploadToAzure()
+        [AzureTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanUploadToAzure(Options options)
         {
             var settings = GetAzureSettings();
 
             try
             {
-                using (var store = GetDocumentStore())
+                using (var store = GetDocumentStore(options))
                 {
                     var baseline = new DateTime(2020, 1, 1);
 
@@ -106,14 +106,15 @@ loadToOrders(partitionBy(key),
             }
         }
 
-        [AzureFact]
-        public async Task SimpleTransformation()
+        [AzureTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task SimpleTransformation(Options options)
         {
             var settings = GetAzureSettings();
 
             try
             {
-                using (var store = GetDocumentStore())
+                using (var store = GetDocumentStore(options))
                 {
                     var baseline = new DateTime(2020, 1, 1);
 
@@ -213,15 +214,16 @@ loadToOrders(partitionBy(key),
             }
         }
 
-        [AzureFact]
-        public async Task CanLoadToMultipleTables()
+        [AzureTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanLoadToMultipleTables(Options options)
         {
             const string salesTableName = "Sales";
             var settings = GetAzureSettings();
 
             try
             {
-                using (var store = GetDocumentStore())
+                using (var store = GetDocumentStore(options))
                 {
                     var baseline = new DateTime(2020, 1, 1);
 
@@ -395,14 +397,15 @@ loadToOrders(partitionBy(key), orderData);
             }
         }
 
-        [AzureFact]
-        public async Task CanModifyPartitionColumnName()
+        [AzureTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanModifyPartitionColumnName(Options options)
         {
             var settings = GetAzureSettings();
 
             try
             {
-                using (var store = GetDocumentStore())
+                using (var store = GetDocumentStore(options))
                 {
                     const string partitionColumn = "order_date";
 
@@ -490,13 +493,14 @@ loadToOrders(partitionBy(['order_date', key]),
             }
         }
 
-        [AzureFact]
-        public async Task SimpleTransformation_NoPartition()
+        [AzureTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task SimpleTransformation_NoPartition(Options options)
         {
             var settings = GetAzureSettings();
             try
             {
-                using (var store = GetDocumentStore())
+                using (var store = GetDocumentStore(options))
                 {
                     var baseline = new DateTime(2020, 1, 1).ToUniversalTime();
 
@@ -521,7 +525,7 @@ loadToOrders(partitionBy(['order_date', key]),
                     var script = @"
 loadToOrders(noPartition(),
     {
-        OrderDate : this.OrderedAt
+        OrderDate : this.OrderedAt,
         Company : this.Company,
         ShipVia : this.ShipVia
     });
@@ -599,15 +603,16 @@ loadToOrders(noPartition(),
             }
         }
 
-        [AzureFact]
-        public async Task SimpleTransformation_MultiplePartitions()
+        [AzureTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task SimpleTransformation_MultiplePartitions(Options options)
         {
             var settings = GetAzureSettings();
             var prefix = $"{settings.RemoteFolderName}/{CollectionName}/";
 
             try
             {
-                using (var store = GetDocumentStore())
+                using (var store = GetDocumentStore(options))
                 {
                     var baseline = DateTime.SpecifyKind(new DateTime(2020, 1, 1), DateTimeKind.Utc);
 
@@ -736,13 +741,14 @@ loadToOrders(partitionBy(
             }
         }
 
-        [AzureFact]
-        public async Task CanUseCustomPrefix()
+        [AzureTheory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanUseCustomPrefix(Options options)
         {
             var settings = GetAzureSettings();
             try
             {
-                using (var store = GetDocumentStore())
+                using (var store = GetDocumentStore(options))
                 {
                     var baseline = new DateTime(2020, 1, 1);
 

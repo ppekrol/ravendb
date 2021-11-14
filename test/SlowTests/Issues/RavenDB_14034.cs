@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations.CompareExchange;
 using Raven.Client.Documents.Queries;
@@ -183,10 +184,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CmpxchgInSelectShouldAffectQueryEtag_IndexQuery()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CmpxchgInSelectShouldAffectQueryEtag_IndexQuery(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var key = "names/ayende";
 
@@ -274,8 +276,9 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CmpxchgInSelectShouldAffectQueryEtag_CollectionQuery()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CmpxchgInSelectShouldAffectQueryEtag_CollectionQuery(Options options)
         {
             using (var store = GetDocumentStore())
             {
@@ -361,10 +364,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void ShouldConsiderBothCountersAndCmpXchgInQueryEtagComputation()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ShouldConsiderBothCountersAndCmpXchgInQueryEtagComputation(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var key = "names/ayende";
 

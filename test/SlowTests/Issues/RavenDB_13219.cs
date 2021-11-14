@@ -1,8 +1,10 @@
 ﻿using System;
 using FastTests;
+using Tests.Infrastructure;
 using Orders;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Exceptions;
+using Raven.Client.Exceptions.Documents.Patching;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,10 +16,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public void ShouldNotBeAbleToCreateCountersWithoutNames()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ShouldNotBeAbleToCreateCountersWithoutNames(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -34,7 +37,8 @@ namespace SlowTests.Issues
                     incrementCounter(id(this), '', 5)
                 }"));
 
-                var e = Assert.Throws<RavenException>(() => operation.WaitForCompletion(TimeSpan.FromSeconds(15)));
+                var e = (Exception)Assert.Throws<RavenException>(() => operation.WaitForCompletion(TimeSpan.FromSeconds(15)));
+
                 Assert.Contains("'name' must be a non-empty string argument", e.Message);
             }
         }

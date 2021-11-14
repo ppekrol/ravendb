@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Linq;
 using Raven.Client.Documents.Queries;
 using Xunit;
@@ -26,10 +27,11 @@ namespace SlowTests.Issues
             public string Id { get; set; }
         }
 
-        [Fact]
-        public void CanUseLetClauseWithConditionalLoad()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanUseLetClauseWithConditionalLoad(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var inputDocumentId = "ravenDocuments/1";
                 var externalDocumentId = "ravenDocuments/100";
@@ -62,9 +64,9 @@ namespace SlowTests.Issues
 
                     RavenTestHelper.AssertEqualRespectingNewLines(
 @"declare function output(d, $p1) {
-	var externalDocument = id(d)==null?null:load($p1);
-	var x = id(d)==null?0:10;
-	return { Id : id(d), Int1 : x, Int2 : externalDocument.Int+1 };
+    var externalDocument = id(d)==null?null:load($p1);
+    var x = id(d)==null?0:10;
+    return { Id : id(d), Int1 : x, Int2 : externalDocument?.Int+1 };
 }
 from 'RavenDocuments' as d where id() = $p0 select output(d, $p1)"
     , query.ToString());

@@ -1,10 +1,10 @@
-using System;
+using Tests.Infrastructure;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Raven.Server.Config;
 using Raven.Server.ServerWide.Context;
-using Raven.Tests.Core.Utils.Entities;
+using SlowTests.Core.Utils.Entities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,18 +21,22 @@ namespace SlowTests.Server.Documents.ETL
         public EtlCountersTests(ITestOutputHelper output) : base(output)
         {
         }
-        
+
         [Theory]
-        [InlineData(16)]
-        [InlineData(1024)]
-        public async Task EtlCounter_WhenUseAddCountersAndRemoveCounterFromSrc_ShouldRemoveTheCounterFromDest(int count)
+        [RavenData(16, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(1024, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task EtlCounter_WhenUseAddCountersAndRemoveCounterFromSrc_ShouldRemoveTheCounterFromDest(Options options, int count)
         {
-            const string script = @"
+            var optChaining = options.JavascriptEngineMode.ToString() == "Jint" ? "" : "?";
+            var zeroIfNull = options.JavascriptEngineMode.ToString() == "Jint" ? "" : " ?? 0";
+            string script = @$"
 var doc = loadToUsers(this);
 var counters = this['@metadata']['@counters'];
-for (var i = 0; i < counters.length; i++) {
+for (var i = 0; i < counters{optChaining}.length{zeroIfNull}; i++) {{
     doc.addCounter(loadCounter(counters[i]));
-}";
+}}";
+
+            // TODO: ego dispose the document stores ??
             var (src, dest, _) = CreateSrcDestAndAddEtl("Users", script, srcOptions:_options);
 
             var entity = new User();
@@ -70,17 +74,20 @@ for (var i = 0; i < counters.length; i++) {
             }, interval:_waitInterval);
         }
 
+
         [Theory]
-        [InlineData(16)]
-        [InlineData(1024)]
-        public async Task EtlCounter_WhenUseAddCountersAndRemoveCounterFromSrc_ShouldRemoveTheCounterFromDest2(int count)
+        [RavenData(16, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        [RavenData(1024, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task EtlCounter_WhenUseAddCountersAndRemoveCounterFromSrc_ShouldRemoveTheCounterFromDest2(Options options, int count)
         {
-            const string script = @"
+            var optChaining = options.JavascriptEngineMode.ToString() == "Jint" ? "" : "?";
+            var zeroIfNull = options.JavascriptEngineMode.ToString() == "Jint" ? "" : " ?? 0";
+            string script = @$"
 var doc = loadToUsers(this);
 var counters = this['@metadata']['@counters'];
-for (var i = 0; i < counters.length; i++) {
+for (var i = 0; i < counters{optChaining}.length{zeroIfNull}; i++) {{
     doc.addCounter(loadCounter(counters[i]));
-}";
+}}";
             var (src, dest, _) = CreateSrcDestAndAddEtl("Users", script, srcOptions: _options);
 
             var entity = new User();

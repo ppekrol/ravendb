@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,10 +20,11 @@ namespace SlowTests.Issues
             public TestView[] Children { get; set; }
         }
 
-        [Fact]
-        public void CanProjectDefaultingToEmptyArray()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanProjectDefaultingToEmptyArray(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -59,10 +61,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanProjectDefaultingToNonEmptyArray()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanProjectDefaultingToNonEmptyArray(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -111,10 +114,11 @@ namespace SlowTests.Issues
             public Dictionary<string, string> Dictionary { get; set; }
         }
 
-        [Fact]
-        public void CanProjectDefaultingToEmptyList()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanProjectDefaultingToEmptyList(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -137,10 +141,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanProjectToListWithParmeter()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanProjectToListWithParmeter(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -201,10 +206,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanProjectDefaultingToNewListWithInitializers()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanProjectDefaultingToNewListWithInitializers(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -256,10 +262,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanProjectDefaultingToDictionary()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanProjectDefaultingToDictionary(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -297,10 +304,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void CanProjectDefaultingToHashSet()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanProjectDefaultingToHashSet(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

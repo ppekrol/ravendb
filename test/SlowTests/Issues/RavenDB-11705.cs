@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using FastTests.Utils;
 using Raven.Client.Documents.Commands.Batches;
 using Raven.Client.Exceptions.Documents.Patching;
@@ -15,10 +16,11 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public async Task CanHandleRevisionOperationBeingRolledBack()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanHandleRevisionOperationBeingRolledBack(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 await RevisionsHelper.SetupRevisionsAsync(store, modifyConfiguration: conf =>
                 {

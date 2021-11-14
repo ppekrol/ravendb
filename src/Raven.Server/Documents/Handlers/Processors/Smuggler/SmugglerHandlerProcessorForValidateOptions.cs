@@ -1,7 +1,13 @@
-﻿using System;
+﻿
+using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using Raven.Client.ServerWide.JavaScript;
+using Raven.Server.Config;
 using Raven.Server.Documents.Patch;
+using Raven.Server.Documents.Patch.Jint;
+using Raven.Server.Documents.Patch.V8;
 using Raven.Server.Json;
 using Raven.Server.Web;
 using Sparrow.Json;
@@ -11,9 +17,24 @@ namespace Raven.Server.Documents.Handlers.Processors.Smuggler
     internal class SmugglerHandlerProcessorForValidateOptions<TOperationContext> : AbstractDatabaseHandlerProcessor<TOperationContext>
         where TOperationContext : JsonOperationContext
     {
-        internal SmugglerHandlerProcessorForValidateOptions(AbstractDatabaseRequestHandler<TOperationContext> requestHandler) : base(requestHandler)
+        private readonly IScriptEngineChanges _engine;
+        internal SmugglerHandlerProcessorForValidateOptions(AbstractDatabaseRequestHandler<TOperationContext> requestHandler, RavenConfiguration configuration, CancellationToken token) : base(requestHandler)
         {
+            _engine = CreateJsEngine(configuration, token);
+        }
 
+        private static IScriptEngineChanges CreateJsEngine(RavenConfiguration configuration, CancellationToken token)
+        {
+            switch (configuration.JavaScript.EngineType)
+            {
+                case JavaScriptEngineType.Jint:
+                    return new JintEngineEx(configuration);
+                case JavaScriptEngineType.V8:
+                    var engine = V8EngineEx.GetEngine(configuration, jsContext: null, token);
+                    return engine;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         public override async ValueTask ExecuteAsync()
@@ -34,7 +55,7 @@ namespace Raven.Server.Documents.Handlers.Processors.Smuggler
 
                 try
                 {
-                    ScriptRunner.TryCompileScript(string.Format(@"
+                    _engine.TryCompileScript(string.Format(@"
                     function execute(){{
                         {0}
                     }};", options.TransformScript));
@@ -48,4 +69,5 @@ namespace Raven.Server.Documents.Handlers.Processors.Smuggler
             }
         }
     }
+
 }

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Tests.Infrastructure;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -47,20 +47,18 @@ namespace SlowTests.Issues
             public DocumentStatus Status { get; set; }
         }
 
-        [Fact]
-        public void CanGetDefaultNonSerializedEnumValue()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanGetDefaultNonSerializedEnumValue(Options options)
         {
-            DateTimeOffset date = DateTimeOffset.UtcNow.Date;
-            using (var store = GetDocumentStore(options: new Options
+            options.ModifyDocumentStore = x =>
             {
-                ModifyDocumentStore = x =>
+                x.Conventions.Serialization = new NewtonsoftJsonSerializationConventions
                 {
-                    x.Conventions.Serialization = new NewtonsoftJsonSerializationConventions
-                    {
-                        CustomizeJsonSerializer = c => c.NullValueHandling = NullValueHandling.Ignore
-                    };
-                }
-            }))
+                    CustomizeJsonSerializer = c => c.NullValueHandling = NullValueHandling.Ignore
+                };
+            };
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

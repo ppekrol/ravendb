@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents;
 using Raven.Client.Exceptions;
+using Raven.Client.ServerWide.JavaScript;
 using Sparrow.Extensions;
 using Xunit;
 using Xunit.Abstractions;
@@ -17,9 +20,11 @@ namespace SlowTests.Server.Documents.Indexing.Static
         {
         }
 
-        private const string QueryWithScalarToRawStringForAllValues = @"declare function MyProjection(x){
-return {
-    IntMinVal : scalarToRawString(x, u=> u.IntMinVal),
+    private string QueryWithScalarToRawStringForAllValues(Options options)
+        {
+            return @$"declare function MyProjection(x){{
+return {{
+    IntMinVal : scalarToRawString(x, u=> u.IntMinVal ),
     IntMaxVal : scalarToRawString(x, u=> u.IntMaxVal),
     LongMinVal : scalarToRawString(x, u=> u.LongMinVal),
     LongMaxVal : scalarToRawString(x, u=> u.LongMaxVal),
@@ -31,7 +36,7 @@ return {
     DoublePositiveInfinity : scalarToRawString(x, u=> u.DoublePositiveInfinity),
     DoubleNan : scalarToRawString(x, u=> u.DoubleNan),
     DoubleEpsilon : scalarToRawString(x, u=> u.DoubleEpsilon),
-    FloatMinVal : scalarToRawString(x, u=> u.FloatMinVal ),
+    FloatMinVal : scalarToRawString(x, u=> u.FloatMinVal),
     FloatMaxVal : scalarToRawString(x, u=> u.FloatMaxVal),
     FloatMaxPercision : scalarToRawString(x, u=> u.FloatMaxPercision),
     FloatNegativeInfinity : scalarToRawString(x, u=> u.FloatNegativeInfinity),
@@ -51,9 +56,10 @@ return {
     TimeSpanSeconds : scalarToRawString(x, u=> u.TimeSpanSeconds),
     TimeSpanMiliseconds : scalarToRawString(x, u=> u.TimeSpanMiliseconds),
     TimeSpanNanoseconds : scalarToRawString(x, u=> u.TimeSpanNanoseconds)
-}
-}
+}}
+}}
 from EdgeCaseValues as e select MyProjection(e)";
+        }
 
         public class TypeWithDecimal
         {
@@ -162,15 +168,14 @@ from EdgeCaseValues as e select MyProjection(e)";
             }
         }
 
-        [Fact]
-        public async Task CanParseNumericEdgeCasesRawValuesInJSProjection()
+        // TODO [shlomo] RavenDB-18121: V8 version should be activated
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanParseNumericEdgeCasesRawValuesInJSProjection(Options options)
         {
             EdgeCaseValues edgeCaseValues = GenerateEdgeCaseValues();
-
-            using (var store = GetDocumentStore(new Options()
-            {
-                ModifyDocumentStore = x => x.Conventions.MaxNumberOfRequestsPerSession = 200
-            }))
+            options.ModifyDocumentStore = x => x.Conventions.MaxNumberOfRequestsPerSession = 200;
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -181,7 +186,7 @@ from EdgeCaseValues as e select MyProjection(e)";
                 using (var session = store.OpenAsyncSession())
                 {
                     var edgeCaseDeserialized = await session.Advanced.AsyncRawQuery<EdgeCaseValues>(
-                        QueryWithScalarToRawStringForAllValues
+                        QueryWithScalarToRawStringForAllValues(options)
                     ).FirstAsync();
 
                     AssertFieldsValuesEqual(edgeCaseValues, edgeCaseDeserialized);
@@ -189,15 +194,14 @@ from EdgeCaseValues as e select MyProjection(e)";
             }
         }
 
-        [Fact]
-        public async Task CanParseNumericPercisionEdgeCasesRawValuesInJSProjection()
+        // TODO [shlomo] RavenDB-18121: V8 version should be activated
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanParseNumericPercisionEdgeCasesRawValuesInJSProjection(Options options)
         {
             EdgeCaseValues edgeCaseValues = GenerateEdgeCasePercisionValues();
-
-            using (var store = GetDocumentStore(new Options()
-            {
-                ModifyDocumentStore = x => x.Conventions.MaxNumberOfRequestsPerSession = 200
-            }))
+            options.ModifyDocumentStore = x => x.Conventions.MaxNumberOfRequestsPerSession = 200;
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -208,7 +212,7 @@ from EdgeCaseValues as e select MyProjection(e)";
                 using (var session = store.OpenAsyncSession())
                 {
                     var edgeCaseDeserialized = await session.Advanced.AsyncRawQuery<EdgeCaseValues>(
-                        QueryWithScalarToRawStringForAllValues
+                        QueryWithScalarToRawStringForAllValues(options)
                     ).FirstAsync();
 
                     AssertFieldsValuesEqual(edgeCaseValues, edgeCaseDeserialized);
@@ -216,14 +220,14 @@ from EdgeCaseValues as e select MyProjection(e)";
             }
         }
 
-        [Fact]
-        public async Task ScalarToRawThrowsOnIllegalLambdas()
+        // TODO [shlomo] RavenDB-18121: V8 version should be activated
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task ScalarToRawThrowsOnIllegalLambdas(Options options)
         {
             EdgeCaseValues edgeCaseValues = GenerateEdgeCaseValues();
-            using (var store = GetDocumentStore(new Options()
-            {
-                ModifyDocumentStore = x => x.Conventions.MaxNumberOfRequestsPerSession = 200
-            }))
+            options.ModifyDocumentStore = x => x.Conventions.MaxNumberOfRequestsPerSession = 200;
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -246,7 +250,7 @@ from EdgeCaseValues as e select MyProjection(e)"
                     ).FirstAsync());
 
                     await Assert.ThrowsAsync<RavenException>(() => session.Advanced.AsyncRawQuery<EdgeCaseValues>(
-                      @"declare function MyProjection(x){
+                        @"declare function MyProjection(x){
 x.IntMinVal = 4;
 var intMinValRaw = parseInt(scalarToRawString(x, u=> 4).toString());
 x.IntMinVal = intMinValRaw;
@@ -254,10 +258,10 @@ var intMinValOriginal = x.IntMinVal;
 return x;
 }
 from EdgeCaseValues as e select MyProjection(e)"
-                  ).FirstAsync());
+                    ).FirstAsync());
 
                     await Assert.ThrowsAsync<RavenException>(() => session.Advanced.AsyncRawQuery<EdgeCaseValues>(
-                    @"declare function MyProjection(x){
+                        @"declare function MyProjection(x){
 x.IntMinVal = 4;
 var intMinValRaw = parseInt(scalarToRawString(x, 4).toString());
 x.IntMinVal = intMinValRaw;
@@ -265,10 +269,10 @@ var intMinValOriginal = x.IntMinVal;
 return x;
 }
 from EdgeCaseValues as e select MyProjection(e)"
-                ).FirstAsync());
+                    ).FirstAsync());
 
                     await Assert.ThrowsAsync<RavenException>(() => session.Advanced.AsyncRawQuery<EdgeCaseValues>(
-                    @"declare function MyProjection(x){
+                        @"declare function MyProjection(x){
 x.IntMinVal = 4;
 var intMinValRaw = parseInt(scalarToRawString(x, u=> u.IntMinVal + 5).toString());
 x.IntMinVal = intMinValRaw;
@@ -276,20 +280,18 @@ var intMinValOriginal = x.IntMinVal;
 return x;
 }
 from EdgeCaseValues as e select MyProjection(e)"
-                ).FirstAsync());
+                    ).FirstAsync());
                 }
             }
         }
 
-        [Fact]
-        public async Task CanModifyRawAndOriginalValuesTogether()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanModifyRawAndOriginalValuesTogether(Options options)
         {
             EdgeCaseValues edgeCaseValues = GenerateEdgeCaseValues();
-
-            using (var store = GetDocumentStore(new Options()
-            {
-                ModifyDocumentStore = x => x.Conventions.MaxNumberOfRequestsPerSession = 200
-            }))
+            options.ModifyDocumentStore = x => x.Conventions.MaxNumberOfRequestsPerSession = 200;
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenAsyncSession())
                 {
@@ -301,13 +303,13 @@ from EdgeCaseValues as e select MyProjection(e)"
                 using (var session = store.OpenAsyncSession())
                 {
                     var edgeCaseDeserialized = await session.Advanced.AsyncRawQuery<EdgeCaseValues>(
-                        @"declare function MyProjection(x){
+                        @$"declare function MyProjection(x){{
 x.IntMinVal = 4;
 var intMinValRaw = parseInt(scalarToRawString(x, u=> u.IntMinVal).toString());
 x.IntMinVal = intMinValRaw;
 var intMinValOriginal = x.IntMinVal;
 return x;
-}
+}}
 from EdgeCaseValues as e select MyProjection(e)"
                     ).FirstAsync();
 
@@ -318,14 +320,14 @@ from EdgeCaseValues as e select MyProjection(e)"
                 using (var session = store.OpenAsyncSession())
                 {
                     var edgeCaseDeserialized = await session.Advanced.AsyncRawQuery<EdgeCaseValues>(
-                        @"declare function MyProjection(x){
+                        @$"declare function MyProjection(x){{
 x.IntMinVal = 4;
 var intMinValOriginal = x.IntMinVal;
 x.IntMinVal = intMinValOriginal;
 var intMinValRaw = parseInt(scalarToRawString(x, u=> u.IntMinVal).toString());
 
 return x;
-}
+}}
 from EdgeCaseValues as e select MyProjection(e)"
                     ).FirstAsync();
 
@@ -337,12 +339,12 @@ from EdgeCaseValues as e select MyProjection(e)"
                 using (var session = store.OpenAsyncSession())
                 {
                     var edgeCaseDeserialized = await session.Advanced.AsyncRawQuery<EdgeCaseValues>(
-                        @"declare function MyProjection(x){
+                        @$"declare function MyProjection(x){{
 var intMinValRaw = scalarToRawString(x, u=> u.IntMinVal);
 var intMinValOriginal = x.IntMinVal;
 x.IntMinVal = 4;
 return x;
-}
+}}
 from EdgeCaseValues as e select MyProjection(e)"
                     ).FirstAsync();
 
@@ -353,12 +355,12 @@ from EdgeCaseValues as e select MyProjection(e)"
                 using (var session = store.OpenAsyncSession())
                 {
                     var edgeCaseDeserialized = await session.Advanced.AsyncRawQuery<EdgeCaseValues>(
-                        @"declare function MyProjection(x){
+                        @$"declare function MyProjection(x){{
 var intMinValOriginal = x.IntMinVal;
 var intMinValRaw = scalarToRawString(x, u=> u.IntMinVal);
 x.IntMinVal = 4;
 return x;
-}
+}}
 from EdgeCaseValues as e select MyProjection(e)"
                     ).FirstAsync();
 
@@ -369,12 +371,12 @@ from EdgeCaseValues as e select MyProjection(e)"
                 using (var session = store.OpenAsyncSession())
                 {
                     var edgeCaseDeserialized = await session.Advanced.AsyncRawQuery<EdgeCaseValues>(
-                        @"declare function MyProjection(x){
+                        @$"declare function MyProjection(x){{
 var intMinValOriginal = x.DecimalMaxVal;
 var intMinValRaw = scalarToRawString(x, u=> u.DecimalMaxVal);
 x.DecimalMaxVal = 4;
 return x;
-}
+}}
 from EdgeCaseValues as e select MyProjection(e)"
                     ).FirstAsync();
 
@@ -385,12 +387,12 @@ from EdgeCaseValues as e select MyProjection(e)"
                 using (var session = store.OpenAsyncSession())
                 {
                     var edgeCaseDeserialized = await session.Advanced.AsyncRawQuery<EdgeCaseValues>(
-                        @"declare function MyProjection(x){
+                        @$"declare function MyProjection(x){{
 var intMinValOriginal = x.StringMaxLength;
 var intMinValRaw = scalarToRawString(x, u=> u.StringMaxLength);
 x.StringMaxLength = 'shorter string';
 return x;
-}
+}}
 from EdgeCaseValues as e select MyProjection(e)"
                     ).FirstAsync();
 

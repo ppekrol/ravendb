@@ -8,6 +8,7 @@ using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Smuggler;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,8 +20,9 @@ namespace SlowTests.Issues
         {
         }
 
-        [Fact]
-        public async Task ShouldWork()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task ShouldWork(Options options)
         {
             var dummyDump = CreateDummyDump(1);
             using (var ctx = JsonOperationContext.ShortTermSingleUse())
@@ -31,12 +33,12 @@ namespace SlowTests.Issues
                 await bjro.WriteJsonToAsync(zipStream);
                 await zipStream.FlushAsync();
                 ms.Position = 0;
-                using (var store = GetDocumentStore())
+                using (var store = GetDocumentStore(options))
                 {
                     var operation = await store.Smuggler.ImportAsync(new DatabaseSmugglerImportOptions
                     {
                         OperateOnTypes = DatabaseItemType.Documents | DatabaseItemType.Identities | DatabaseItemType.CompareExchange,
-                        MaxStepsForTransformScript = int.MaxValue,
+                        OptionsForTransformScript = new JavaScriptOptionsForSmuggler {MaxSteps = int.MaxValue},
                         TransformScript = @"
                     function sleep(milliseconds) {
                       var date = Date.now();

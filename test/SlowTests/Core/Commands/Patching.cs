@@ -1,5 +1,6 @@
 ﻿using System;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Operations;
 using Sparrow.Json;
 using Xunit;
@@ -14,10 +15,11 @@ namespace SlowTests.Core.Commands
         {
         }
 
-        [Fact]
-        public void CanDoScriptedPatching()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanDoScriptedPatching(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var commands = store.Commands())
                 {
@@ -178,10 +180,11 @@ this.Comments = this.Comments.filter(function (c) {
             }
         }
 
-        [Fact]
-        public void CanGenerateDynamicIdsOnPutDocument()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanGenerateDynamicIdsOnPutDocument(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var commands = store.Commands())
                 {
@@ -256,10 +259,11 @@ this.Comments = this.Comments.filter(function (c) {
             }
         }
 
-        [Fact]
-        public void CanTestPatches()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanTestPatches(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {

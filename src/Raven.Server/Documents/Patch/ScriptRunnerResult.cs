@@ -1,58 +1,189 @@
 using System;
-using Jint;
-using Jint.Native;
-using Jint.Native.Object;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Raven.Server.Documents.Patch.Jint;
+using Raven.Server.Documents.Patch.V8;
 using Sparrow.Json;
 
-namespace Raven.Server.Documents.Patch
+namespace Raven.Server.Documents.Patch;
+
+public abstract class ScriptRunnerResult<T> : IScriptRunnerResult
+    where T : struct, IJsHandle<T>
 {
-    public class ScriptRunnerResult : IDisposable
+    private readonly SingleRun<T> _parent;
+    public T Instance;
+
+    protected ScriptRunnerResult(SingleRun<T> parent, T instance)
     {
-        private readonly ScriptRunner.SingleRun _parent;
+        _parent = parent;
+        var cloned = instance.Clone();
+        Instance = cloned;
+    }
 
-        public ScriptRunnerResult(ScriptRunner.SingleRun parent, JsValue instance)
+    public IJsEngineHandle<T> EngineHandle => _parent.EngineHandle;
+    public abstract bool GetOrCreateInternal(string propertyName, out T value);
+    public abstract void TryReset();
+    public T GetOrCreate(string propertyName)
+    {
+        //TODO: egor (needed for ETL only)
+        if (GetOrCreateInternal(propertyName, out T value))
+            return value;
+
+        T o = Instance.GetProperty(propertyName);
+        if (o.IsUndefined || o.IsNull)
         {
-            _parent = parent;
-            Instance = instance;
+            o.Dispose();
+            o = _parent.EngineHandle.CreateObject();
+            Instance.SetProperty(propertyName, o, throwOnError: true);
         }
+        return o;
+    }
 
-        public readonly JsValue Instance;
+    public bool? BooleanValue
+    {
+        get => Instance.IsBoolean ? Instance.AsBoolean : (bool?)null;
+    }
 
-        public ObjectInstance GetOrCreate(JsValue property)
+    public bool IsNull
+    {
+        get => Instance.IsEmpty || Instance.IsNull || Instance.IsUndefined;
+    }
+
+    public string StringValue => Instance.IsStringEx ? Instance.AsString : null;
+    public T RawJsValue => Instance;
+    //public object RawJsValue
+    //{
+    //    get => Instance;
+    //    set => Instance = value;
+    //}
+
+    public BlittableJsonReaderObject TranslateToObject(JsonOperationContext context, IResultModifier modifier = null, 
+        BlittableJsonDocumentBuilder.UsageMode usageMode = BlittableJsonDocumentBuilder.UsageMode.None)
+    {
+        if (IsNull)
+            return null;
+
+        return _parent.JsBlittableBridge.Translate(context, Instance, modifier, usageMode);
+    }
+
+    public  void Dispose()
+    {
+        TryReset();
+
+
+        _parent?.JsUtils.Clear();
+        
+        Instance.Dispose();
+    }
+
+    public object TranslateRawJsValue(JsonOperationContext context, IResultModifier modifier = null,
+        BlittableJsonDocumentBuilder.UsageMode usageMode = BlittableJsonDocumentBuilder.UsageMode.None, bool isRoot = true)
+    {
+        var jsValue = TranslateRawJsValueInternal(RawJsValue, context, modifier, usageMode, isRoot);
+        return jsValue;
+    }
+
+    private object TranslateRawJsValueInternal(T jsValue, JsonOperationContext context, IResultModifier modifier = null,
+        BlittableJsonDocumentBuilder.UsageMode usageMode = BlittableJsonDocumentBuilder.UsageMode.None, bool isRoot = true)
+    {
+        if (jsValue.IsStringEx)
+            return jsValue.AsString;
+        if (jsValue.IsBoolean)
+            return jsValue.AsBoolean;
+        if (jsValue.IsArray)
         {
-            if (Instance.AsObject() is BlittableObjectInstance b)
-                return b.GetOrCreate(property);
-            var parent = Instance.AsObject();
-            var o = parent.Get(property);
-            if (o == null || o.IsUndefined() || o.IsNull())
+            RuntimeHelpers.EnsureSufficientExecutionStack();
+            var list = new List<object>();
+            for (int i = 0; i < jsValue.ArrayLength; i++)
             {
-                o = _parent.ScriptEngine.Object.Construct(Array.Empty<JsValue>());
-                parent.Set(property, o, false);
+                using (var jsItem = jsValue.GetProperty(i))
+                {
+                    list.Add(TranslateRawJsValueInternal(jsItem, context, modifier, usageMode, isRoot: false));
+                }
             }
-            return o.AsObject();
+
+            return list;
         }
 
-        public bool? BooleanValue => Instance.IsBoolean() ? Instance.AsBoolean() : (bool?)null;
-
-        public bool IsNull => Instance == null || Instance.IsNull() || Instance.IsUndefined();
-        public string StringValue => Instance.IsString() ? Instance.AsString() : null;
-        public JsValue RawJsValue => Instance;
-
-        public BlittableJsonReaderObject TranslateToObject(JsonOperationContext context, JsBlittableBridge.IResultModifier modifier = null, BlittableJsonDocumentBuilder.UsageMode usageMode = BlittableJsonDocumentBuilder.UsageMode.None)
+        if (jsValue.IsObject)
         {
-            if (IsNull)
+            if (jsValue.IsNull)
                 return null;
 
-            var obj = Instance.AsObject();
-            return JsBlittableBridge.Translate(context, _parent.ScriptEngine, obj, modifier, usageMode);
+            return _parent.JsBlittableBridge.Translate(context, jsValue, modifier, usageMode, isRoot);
         }
 
-        public void Dispose()
-        {
-            if (Instance is BlittableObjectInstance boi)
-                boi.Reset();
+        if (jsValue.IsNumberOrIntEx)
+            return jsValue.AsDouble;
+        if (jsValue.IsNull || jsValue.IsUndefined)
+            return null;
+        throw new NotSupportedException("Unable to translate " + jsValue.ValueType);
+    }
+}
 
-            _parent?.JavaScriptUtils.Clear();
+public class ScriptRunnerResultJint : ScriptRunnerResult<JsHandleJint>
+{
+    public ScriptRunnerResultJint(SingleRun<JsHandleJint> parent, JsHandleJint instance) : base(parent, instance)
+    {
+    }
+
+    public override bool GetOrCreateInternal(string propertyName, out JsHandleJint value)
+    {
+        value = default;
+        if (Instance.Object is BlittableObjectInstanceJint boi)
+        {
+           value = boi.GetOrCreate(propertyName);
+           return true;
+        }
+
+        return false;
+    }
+
+    public override void TryReset()
+    {
+        if (Instance.IsObject && Instance.Object is BlittableObjectInstanceJint boi)
+        {
+            boi.Reset();
         }
     }
+}
+
+public class ScriptRunnerResultV8 : ScriptRunnerResult<JsHandleV8>
+{
+    public ScriptRunnerResultV8(SingleRun<JsHandleV8> parent, JsHandleV8 instance) : base(parent, instance)
+    {
+    }
+
+    public override bool GetOrCreateInternal(string propertyName, out JsHandleV8 value)
+    {
+        //TODO: egor make it nullabel???
+        value = default;
+        if (Instance.Object is BlittableObjectInstanceV8 boi)
+        {
+            value = boi.GetOrCreate(propertyName);
+            return true;
+        }
+
+        return false;
+    }
+
+    public override void TryReset()
+    {
+        if (Instance.IsObject && Instance.Object is BlittableObjectInstanceV8 boi)
+        {
+            boi.Reset();
+        }
+    }
+}
+
+public interface IScriptRunnerResult : IDisposable
+{
+    object TranslateRawJsValue(JsonOperationContext context, IResultModifier modifier = null,
+        BlittableJsonDocumentBuilder.UsageMode usageMode = BlittableJsonDocumentBuilder.UsageMode.None, bool isRoot = true);
+
+    BlittableJsonReaderObject TranslateToObject(JsonOperationContext context, IResultModifier modifier = null,
+        BlittableJsonDocumentBuilder.UsageMode usageMode = BlittableJsonDocumentBuilder.UsageMode.None);
+    public bool? BooleanValue { get; }
+    public bool IsNull { get; }
+    public string StringValue { get; }
 }

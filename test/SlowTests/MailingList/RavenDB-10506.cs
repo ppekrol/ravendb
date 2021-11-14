@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Linq;
 using Raven.Client.Documents.Queries;
 using Xunit;
@@ -13,10 +14,11 @@ namespace SlowTests.MailingList
         {
         }
 
-        [Fact]
-        public void Projections_with_multiple_Loads_using_complex_id_reference()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Projections_with_multiple_Loads_using_complex_id_reference(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var session = store.OpenSession())
                 {
@@ -42,19 +44,19 @@ namespace SlowTests.MailingList
 
                 using (var session = store.OpenSession())
                 {
-                    var projection = from package in session.Query<Package>()
-                                     let somethingElse = RavenQuery.Load<SomethingElse>(package.SomethingElseReference)
-                                     let rule = RavenQuery.Load<Rule>(package.ComplexRuleReference.Id) //COMPLEX ID REFERENCE LAST
+                    var projection = from pckg in session.Query<Package>()
+                                     let somethingElse = RavenQuery.Load<SomethingElse>(pckg.SomethingElseReference)
+                                     let rule = RavenQuery.Load<Rule>(pckg.ComplexRuleReference.Id) //COMPLEX ID REFERENCE LAST
                                      select new
                                      {
-                                         PackageId = package.Id,
+                                         PackageId = pckg.Id,
                                          RuleName = rule.Name,
                                          SomethingElseName = somethingElse.Name
                                      };
 
-                    Assert.Equal("from 'Packages' as package " +
-                                 "load package.SomethingElseReference as somethingElse, package.ComplexRuleReference.Id as rule " +
-                                 "select { PackageId : id(package), RuleName : rule.Name, SomethingElseName : somethingElse.Name }"
+                    Assert.Equal("from 'Packages' as pckg " +
+                                 "load pckg?.SomethingElseReference as somethingElse, pckg?.ComplexRuleReference?.Id as rule " +
+                                 "select { PackageId : id(pckg), RuleName : rule?.Name, SomethingElseName : somethingElse?.Name }"
                                 , projection.ToString());
 
                     var result = projection.ToList();

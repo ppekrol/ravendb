@@ -61,11 +61,11 @@ namespace Raven.Server.Documents.Patch
 
         }
 
-        public override void GenerateScript(ScriptRunner runner)
+        public override void GenerateScript<T>(ScriptRunner<T> runner)
         {
-            if (_functions!= null)
+            if (_functions != null)
             {
-                foreach(var function in _functions)
+                foreach (var function in _functions)
                 {
                     runner.AddScript(function.Value.FunctionText);
                 }

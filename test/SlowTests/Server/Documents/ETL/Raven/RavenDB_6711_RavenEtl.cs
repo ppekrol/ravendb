@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Tests.Infrastructure;
+using System;
 using System.Collections.Generic;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Operations.ETL;
-using Raven.Tests.Core.Utils.Entities;
 using Tests.Infrastructure.Entities;
 using Xunit;
 using Xunit.Abstractions;
+using Raven.Tests.Core.Utils.Entities;
 
 namespace SlowTests.Server.Documents.ETL.Raven
 {
@@ -148,11 +149,12 @@ namespace SlowTests.Server.Documents.ETL.Raven
             }
         }
 
-        [Fact]
-        public void Script_defined_for_all_documents()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Script_defined_for_all_documents(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 var etlDone = WaitForEtl(src, (n, statistics) => statistics.LoadSuccesses >= 3);
 
@@ -249,11 +251,12 @@ namespace SlowTests.Server.Documents.ETL.Raven
             }
         }
 
-        [Fact]
-        public void Script_defined_for_all_documents_with_filtering_and_loads_to_the_same_collection_for_some_docs()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void Script_defined_for_all_documents_with_filtering_and_loads_to_the_same_collection_for_some_docs(Options options)
         {
-            using (var src = GetDocumentStore())
-            using (var dest = GetDocumentStore())
+            using (var src = GetDocumentStore(options))
+            using (var dest = GetDocumentStore(options))
             {
                 var etlDone = WaitForEtl(src, (n, statistics) => statistics.LoadSuccesses >= 3);
 

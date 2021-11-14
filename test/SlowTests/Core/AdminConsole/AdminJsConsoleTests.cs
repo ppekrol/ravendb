@@ -8,6 +8,7 @@ using Raven.Server;
 using Raven.Server.Config.Settings;
 using Raven.Server.Documents;
 using Raven.Server.Documents.Patch;
+using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,10 +21,11 @@ namespace SlowTests.Core.AdminConsole
             DoNotReuseServer();
         }
 
-        [Fact]
-        public async Task CanGetSettings()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanGetSettings(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var database = await Databases.GetDocumentDatabaseInstanceFor(store);
 
@@ -59,10 +61,11 @@ namespace SlowTests.Core.AdminConsole
             return token;
         }
 
-        [Fact]
-        public async Task CanGetResultAsDateObject()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanGetResultAsDateObject(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var database = await Databases.GetDocumentDatabaseInstanceFor(store);
                 var startTime = database.StartTime;
@@ -75,10 +78,11 @@ namespace SlowTests.Core.AdminConsole
             }
         }
 
-        [Fact]
-        public async Task CanGetResultAsPrimitiveObject()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanGetResultAsPrimitiveObject(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var database = await Databases.GetDocumentDatabaseInstanceFor(store);
                 var maxConcurrentFlushes = (long)database.Configuration.Storage.MaxConcurrentFlushes;
@@ -107,10 +111,11 @@ namespace SlowTests.Core.AdminConsole
             }
         }
 
-        [Fact]
-        public async Task CanGetResultAsComplexObject()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanGetResultAsComplexObject(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var database = await Databases.GetDocumentDatabaseInstanceFor(store);
                 var requestsMeter = database.Metrics.Requests.RequestsPerSec;
@@ -141,10 +146,11 @@ namespace SlowTests.Core.AdminConsole
             }
         }
 
-        [Fact]
-        public async Task CanConvertAllJsonTypesToString()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanConvertAllJsonTypesToString(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var database = await Databases.GetDocumentDatabaseInstanceFor(store);
 
@@ -170,10 +176,11 @@ namespace SlowTests.Core.AdminConsole
             }
         }
 
-        [Fact]
-        public async Task CanModifyConfigurationOnTheFly()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanModifyConfigurationOnTheFly(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 var database = await Databases.GetDocumentDatabaseInstanceFor(store);
                 var configuration = database.Configuration;
@@ -195,8 +202,9 @@ namespace SlowTests.Core.AdminConsole
             }
         }
 
-        [Fact]
-        public void CanGetServerSettings()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanGetServerSettings(Options options)
         {
             var result = ExecuteScript(null, @"
                             return { 
@@ -208,13 +216,14 @@ namespace SlowTests.Core.AdminConsole
             Assert.Equal(10L, result["MaxConcurrentFlushes"]);
         }
 
-        [Fact]
-        public void CanGetServerStoreConfigs()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanGetServerStoreConfigs(Options options)
         {
             DoNotReuseServer();
             var result = ExecuteScript(null, @"
                             return { 
-                                StrictMode: server.ServerStore.Configuration.Patching.StrictMode,
+                                StrictMode: server.ServerStore.Configuration.JavaScript.StrictMode,
                                 MaxConcurrentFlushes: server.ServerStore.Configuration.Storage.MaxConcurrentFlushes
                             };"
             );
@@ -230,8 +239,9 @@ namespace SlowTests.Core.AdminConsole
             }
         }
 
-        [Fact]
-        public void CanModifyServerConfigurationOnTheFly()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanModifyServerConfigurationOnTheFly(Options options)
         {
             var configuration = Server.Configuration;
 
@@ -251,8 +261,9 @@ namespace SlowTests.Core.AdminConsole
             Assert.Equal(40, configuration.Storage.MaxConcurrentFlushes);            
         }
 
-        [Fact]
-        public void CanReturnNullResult()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanReturnNullResult(Options options)
         {
             var result = ExecuteScript(null, "return null");
             Assert.Equal(JValue.CreateNull(), (JValue)result);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Queries;
 using Raven.Tests.Core.Utils.Entities;
 using Xunit;
@@ -22,10 +23,11 @@ namespace SlowTests.Issues
             public string ChangeVector { get; set; }
         }
 
-        [Fact]
-        public void CanUseConditionalLoadLazily()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void CanUseConditionalLoadLazily(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var bulkInsert = store.BulkInsert())
                 {
@@ -108,10 +110,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public async Task CanUseConditionalAsyncLoadLazily()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public async Task CanUseConditionalAsyncLoadLazily(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var bulkInsert = store.BulkInsert())
                 {

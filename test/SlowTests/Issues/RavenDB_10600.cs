@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Smuggler;
 using Tests.Infrastructure;
@@ -17,7 +18,7 @@ namespace SlowTests.Issues
         }
 
         [RavenTheory(RavenTestCategory.Indexes | RavenTestCategory.Replication)]
-        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene)]
+        [RavenData(SearchEngineMode = RavenSearchEngineMode.Lucene, JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
         public async Task TransformScriptShouldWorkWhenAttachmentsArePresentAndShouldBeAbleToSkipDocumentsUsingThrow(Options options)
         {
             var exportPath = Path.Combine(NewDataPath(forceCreateDir: true), "export.ravendbdump");

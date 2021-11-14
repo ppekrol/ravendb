@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client.Documents.Operations;
 using Xunit;
 using Xunit.Abstractions;
@@ -69,10 +70,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void ShouldNotOverwriteDocumentIfPatchOperationDidNotModifyItButPutDefaultValues()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void ShouldNotOverwriteDocumentIfPatchOperationDidNotModifyItButPutDefaultValues(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 using (var s = store.OpenSession())
                 {

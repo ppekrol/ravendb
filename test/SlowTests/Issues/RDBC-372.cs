@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FastTests;
+using Tests.Infrastructure;
 using Raven.Client;
 using Sparrow.Json;
 using Tests.Infrastructure;
@@ -131,10 +132,11 @@ namespace SlowTests.Issues
             }
         }
 
-        [Fact]
-        public void RawQueryWithBlittableJsonReturnType_JsProjection()
+        [Theory]
+        [RavenData(JavascriptEngineMode = RavenJavascriptEngineMode.Jint)]
+        public void RawQueryWithBlittableJsonReturnType_JsProjection(Options options)
         {
-            using (var store = GetDocumentStore())
+            using (var store = GetDocumentStore(options))
             {
                 store.Maintenance.Send(new CreateSampleDataOperation());
 
