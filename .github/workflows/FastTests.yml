@@ -3,11 +3,11 @@ name: tests/fast
 on:
   push:
     branches:
-        - v5.3
+        - macos
 
   pull_request:
     branches:
-        - v5.3
+        - macos
 
 env:
   DOTNET_VERSION: 6.0.102
@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
         matrix:
-          os: [ ubuntu-latest, windows-latest ]
+          os: [ ubuntu-latest, windows-latest, macos-latest ]
         fail-fast: false
     steps:
     - uses: actions/checkout@v2
