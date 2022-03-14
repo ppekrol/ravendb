@@ -1,7 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations;
+using Raven.Client.Http;
 using Raven.Client.ServerWide;
 using Raven.Server.Documents.Handlers.Processors;
 using Raven.Server.Documents.Sharding.Handlers;
@@ -15,14 +17,20 @@ namespace Raven.Server.Documents.Sharding.Processors
         {
         }
 
-        protected override async ValueTask<DatabaseStatistics> GetDatabaseStatisticsAsync(string nodeTag)
+        protected override bool SupportsCurrentNode => false;
+
+        protected override ValueTask<DatabaseStatistics> GetResultForCurrentNodeAsync()
         {
-            ValidateNodeTag(nodeTag);
-            var shardNumber = RequestHandler.GetIntValueQueryString("shardNumber", required: true).Value;
+            throw new NotSupportedException();
+        }
 
-            var command = new GetStatisticsOperation.GetStatisticsCommand(debugTag: null, nodeTag);
+        protected override async ValueTask<DatabaseStatistics> GetResultForRemoteNodeAsync(RavenCommand<DatabaseStatistics> command, string nodeTag)
+        {
+            var shardNumber = GetShardNumber();
 
-            return await RequestHandler.ShardExecutor.ExecuteSingleShardAsync(command, shardNumber);
+            await RequestHandler.ShardExecutor.ExecuteSingleShardAsync(command, shardNumber);
+
+            return command.Result;
         }
 
         internal static IndexInformation[] GetDatabaseIndexesFromRecord(DatabaseRecord record)

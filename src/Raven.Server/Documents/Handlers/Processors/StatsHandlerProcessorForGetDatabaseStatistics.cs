@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Raven.Client.Documents.Operations;
+using Raven.Client.Http;
 using Raven.Server.Documents.Indexes;
 using Raven.Server.ServerWide.Context;
 
@@ -14,24 +15,26 @@ namespace Raven.Server.Documents.Handlers.Processors
         {
         }
 
-        protected override async ValueTask<DatabaseStatistics> GetDatabaseStatisticsAsync(string nodeTag)
+        protected override bool SupportsCurrentNode => true;
+
+        protected override ValueTask<DatabaseStatistics> GetResultForCurrentNodeAsync()
         {
-            if (IsCurrentNode(nodeTag))
+            using (var context = QueryOperationContext.Allocate(RequestHandler.Database, needsServerContext: true))
+            using (context.OpenReadTransaction())
             {
-                using (var context = QueryOperationContext.Allocate(RequestHandler.Database, needsServerContext: true))
-                using (context.OpenReadTransaction())
-                {
-                    var stats = new DatabaseStatistics();
+                var stats = new DatabaseStatistics();
 
-                    FillDatabaseStatistics(stats, context, RequestHandler.Database);
+                FillDatabaseStatistics(stats, context, RequestHandler.Database);
 
-                    return stats;
-                }
+                return ValueTask.FromResult(stats);
             }
+        }
 
-            var commad = ...;
-            await RequestHandler.ExecuteForNodeAsync(command);
-            return commad.Result;
+        protected override async ValueTask<DatabaseStatistics> GetResultForRemoteNodeAsync(RavenCommand<DatabaseStatistics> command, string nodeTag)
+        {
+            //await RequestHandler.ExecuteForNodeAsync(command, nodeTag);
+
+            return command.Result;
         }
 
         internal static void FillDatabaseStatistics(DatabaseStatistics stats, QueryOperationContext context, DocumentDatabase database)
@@ -98,6 +101,5 @@ namespace Raven.Server.Documents.Handlers.Processors
                     stats.LastIndexingTime = index.LastIndexingTime;
             }
         }
-
     }
 }

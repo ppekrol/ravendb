@@ -24,19 +24,6 @@ namespace Raven.Server.Documents.Handlers.Processors
             ContextPool = contextPool ?? throw new ArgumentNullException(nameof(contextPool));
         }
 
-        protected string GetNodeTag()
-        {
-            return RequestHandler.GetStringQueryString("nodeTag", required: false);
-        }
-
-        protected bool IsCurrentNode(string nodeTag)
-        {
-            if (nodeTag == null)
-                return true;
-
-            return string.Equals(nodeTag, RequestHandler.ServerStore.NodeTag, StringComparison.OrdinalIgnoreCase);
-        }
-
         public abstract ValueTask ExecuteAsync();
 
         public virtual void Dispose()
