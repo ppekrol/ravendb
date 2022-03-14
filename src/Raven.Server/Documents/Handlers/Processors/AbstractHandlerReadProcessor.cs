@@ -49,7 +49,7 @@ internal abstract class AbstractHandlerReadProcessor<TResult, TRequestHandler, T
 
     private bool IsCurrentNode(out string nodeTag)
     {
-        nodeTag = GetNodeTag(required: false);
+        nodeTag = GetNodeTag(required: SupportsCurrentNode == false);
 
         if (SupportsCurrentNode == false)
             return false;
