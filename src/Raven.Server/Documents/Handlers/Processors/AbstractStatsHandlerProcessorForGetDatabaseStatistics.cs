@@ -15,11 +15,12 @@ namespace Raven.Server.Documents.Handlers.Processors
         {
         }
 
-        protected abstract ValueTask<DatabaseStatistics> GetDatabaseStatisticsAsync();
+        protected abstract ValueTask<DatabaseStatistics> GetDatabaseStatisticsAsync(string nodeTag);
 
         public override async ValueTask ExecuteAsync()
         {
-            var databaseStats = await GetDatabaseStatisticsAsync();
+            var nodeTag = GetNodeTag();
+            var databaseStats = await GetDatabaseStatisticsAsync(nodeTag);
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             await using (var writer = new AsyncBlittableJsonTextWriter(context, RequestHandler.ResponseBodyStream()))

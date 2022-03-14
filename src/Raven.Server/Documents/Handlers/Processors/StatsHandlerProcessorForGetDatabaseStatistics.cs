@@ -14,17 +14,24 @@ namespace Raven.Server.Documents.Handlers.Processors
         {
         }
 
-        protected override ValueTask<DatabaseStatistics> GetDatabaseStatisticsAsync()
+        protected override async ValueTask<DatabaseStatistics> GetDatabaseStatisticsAsync(string nodeTag)
         {
-            using (var context = QueryOperationContext.Allocate(RequestHandler.Database, needsServerContext: true))
-            using (context.OpenReadTransaction())
+            if (IsCurrentNode(nodeTag))
             {
-                var stats = new DatabaseStatistics();
+                using (var context = QueryOperationContext.Allocate(RequestHandler.Database, needsServerContext: true))
+                using (context.OpenReadTransaction())
+                {
+                    var stats = new DatabaseStatistics();
 
-                FillDatabaseStatistics(stats, context, RequestHandler.Database);
+                    FillDatabaseStatistics(stats, context, RequestHandler.Database);
 
-                return ValueTask.FromResult(stats);
+                    return stats;
+                }
             }
+
+            var commad = ...;
+            await RequestHandler.ExecuteForNodeAsync(command);
+            return commad.Result;
         }
 
         internal static void FillDatabaseStatistics(DatabaseStatistics stats, QueryOperationContext context, DocumentDatabase database)
