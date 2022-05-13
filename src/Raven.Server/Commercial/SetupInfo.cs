@@ -324,6 +324,18 @@ namespace Raven.Server.Commercial
             return json;
         }
 
+        IOperationProgress IOperationProgress.Clone()
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IOperationProgress.CanMerge => false;
+
+        void IOperationProgress.MergeWith(IOperationProgress progress)
+        {
+            throw new NotImplementedException();
+        }
+
         public void AddWarning(string message)
         {
             AddMessage("WARNING", message);

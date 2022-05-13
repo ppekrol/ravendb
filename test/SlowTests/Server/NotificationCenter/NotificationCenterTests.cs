@@ -433,7 +433,7 @@ namespace SlowTests.Server.NotificationCenter
         {
             using (var database = CreateDocumentDatabase())
             {
-                database.NotificationCenter.Add(OperationChanged.Create(database.Name, 1, new Operations.OperationDescription(), new OperationState()
+                database.NotificationCenter.Add(OperationChanged.Create(database.Name, 1, new OperationDescription(), new OperationState()
                 {
                     Result = new PersistableResult()
                 }, false));
@@ -617,7 +617,7 @@ namespace SlowTests.Server.NotificationCenter
                     PerformanceHintType.SqlEtl_SlowSql, // filtered out, PerformanceHint
                     NotificationSeverity.Info,
                     "test"),
-                OperationChanged.Create(null,1, new Operations.OperationDescription(), new OperationState()
+                OperationChanged.Create(null,1, new OperationDescription(), new OperationState()
                 {
                     Result = new PersistableResult()
                 }, false),

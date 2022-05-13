@@ -13,23 +13,23 @@ namespace Raven.Server.SqlMigration.Model
         protected MigrationProgress _progress;
         private readonly Stopwatch _sw;
         public bool ShouldPersist => true;
-        
+
         public MigrationResult(MigrationSettings settings)
         {
             _sw = Stopwatch.StartNew();
             _messages = new List<string>();
             _progress = new MigrationProgress(this);
-            
+
             PerCollectionCount = new Dictionary<string, Counts>();
-            
+
             foreach (var collection in settings.Collections)
             {
                 PerCollectionCount[collection.Name] = new Counts();
             }
         }
 
-        public Dictionary<string, Counts> PerCollectionCount { get; set;}
-        
+        public Dictionary<string, Counts> PerCollectionCount { get; set; }
+
         public string Message { get; private set; }
 
         public TimeSpan Elapsed => _sw.Elapsed;
@@ -69,7 +69,7 @@ namespace Raven.Server.SqlMigration.Model
         public DynamicJsonValue ToJson()
         {
             _sw.Stop();
-            
+
             return new DynamicJsonValue(GetType())
             {
                 [nameof(PerCollectionCount)] = DynamicJsonValue.Convert(PerCollectionCount),
@@ -79,7 +79,7 @@ namespace Raven.Server.SqlMigration.Model
         }
     }
 
-    public class MigrationProgress: IOperationProgress
+    public class MigrationProgress : IOperationProgress
     {
         protected readonly MigrationResult _result;
 
@@ -98,8 +98,20 @@ namespace Raven.Server.SqlMigration.Model
                 [nameof(MigrationResult.PerCollectionCount)] = DynamicJsonValue.Convert(_result.PerCollectionCount)
             };
         }
+
+        IOperationProgress IOperationProgress.Clone()
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IOperationProgress.CanMerge => false;
+
+        void IOperationProgress.MergeWith(IOperationProgress progress)
+        {
+            throw new NotImplementedException();
+        }
     }
-    
+
     public class Counts : IDynamicJson
     {
         public bool Processed { get; set; }
@@ -107,7 +119,7 @@ namespace Raven.Server.SqlMigration.Model
         public long ReadCount { get; set; }
 
         public long ErroredCount { get; set; }
-        
+
         public long SkippedCount { get; set; }
 
         public virtual DynamicJsonValue ToJson()
@@ -123,7 +135,7 @@ namespace Raven.Server.SqlMigration.Model
 
         public override string ToString()
         {
-            return $"Skipped: {SkippedCount}. " + 
+            return $"Skipped: {SkippedCount}. " +
                    $"Read: {ReadCount}. " +
                    $"Errored: {ErroredCount}.";
         }

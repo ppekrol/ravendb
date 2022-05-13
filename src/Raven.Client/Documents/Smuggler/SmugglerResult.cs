@@ -161,6 +161,18 @@ namespace Raven.Client.Documents.Smuggler
                 json[nameof(Message)] = _result?.Message ?? Message;
                 return json;
             }
+
+            IOperationProgress IOperationProgress.Clone()
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IOperationProgress.CanMerge => false;
+
+            void IOperationProgress.MergeWith(IOperationProgress progress)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public long GetLastEtag()
