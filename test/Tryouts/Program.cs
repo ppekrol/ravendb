@@ -1,8 +1,6 @@
 using System;
-using System.Diagnostics;
 using Tests.Infrastructure;
-using FastTests.Voron.Sets;
-using FastTests.Corax;
+using SlowTests.Issues;
 
 namespace Tryouts;
 
@@ -15,51 +13,18 @@ public static class Program
 
     public static void Main(string[] args)
     {
-        Console.WriteLine(Process.GetCurrentProcess().Id);        
-
-        for (int i = 0; i < 100; i++)
+        try
         {
-            Console.WriteLine($"Starting to run {i}");
-            try
-            {
-                using (var testOutputHelper = new ConsoleTestOutputHelper())
-                {
-                    int minFailure = int.MaxValue;
-                    int failureRandom = -1;
-
-                    var rnd = new Random();
-                    int number = 500000;
-                    while (number > 16)
-                    {
-                        int seed = rnd.Next(100000);
-                        try
-                        {
-                           // new SetTests(testOutputHelper).CanDeleteAndInsertInBulk(seed, number, 1000, includeDuplicates:true);
-                        }
-                        catch (Exception ex)
-                        {
-                            if (number < minFailure)
-                            {
-                                minFailure = number;
-                                failureRandom = seed;
-                                Console.WriteLine($"[N:{minFailure}, Rnd:{failureRandom}]");
-                                Console.WriteLine($"--> {ex}");
-                            }
-                        }
-
-                        number = rnd.Next(Math.Min(500000, minFailure));
-                    }
-
-                    Console.ReadLine();
-                }
-            }
-            catch (Exception e)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(e);
-                Console.ForegroundColor = ConsoleColor.White;
-                return;
-            }
+            using (var testOutputHelper = new ConsoleTestOutputHelper())
+            using (var x = new RavenDB_13291(testOutputHelper))
+                x.CanMigrateTablesWithCounterWord();
+        }
+        catch (Exception e)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(e);
+            Console.ForegroundColor = ConsoleColor.White;
+            return;
         }
     }
 }
