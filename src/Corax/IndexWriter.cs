@@ -463,9 +463,13 @@ namespace Corax
             private int _buildingList;
             public long EntryId => _entryId;
 
+            private ByteString _internalBuffer;
+            private ByteStringContext<ByteStringMemoryCache>.InternalScope _internalBufferScope;
+
             public IndexEntryBuilder(IndexWriter parent)
             {
                 _parent = parent;
+                _internalBuffer = default;
             }
 
             public void Boost(float boost)
@@ -477,6 +481,7 @@ namespace Corax
             {
                 Active = true;
                 _entryId = entryId;
+                _internalBufferScope = _parent._entriesAllocator.Allocate(256, out _internalBuffer);
             }
 
             public void Dispose()
@@ -492,7 +497,6 @@ namespace Corax
                     RegisterEmptyOrNull(field.Name, StoredFieldType.Null);    
                 }
                 ExactInsert(field, Constants.NullValueSlice);
-                
             }
 
             private IndexedField GetField(int fieldId, string path)
@@ -624,17 +628,35 @@ namespace Corax
                 }
             }
 
+            private const int CharToByteMultiplier = 8;
+
             public void Write(int fieldId, string path, string value)
             {
-                using var _ = Slice.From(_parent._entriesAllocator, value, out var slice);
-                Write(fieldId, path, slice);
+                if (value.Length * CharToByteMultiplier > _internalBuffer.Length)
+                    GrowInternalBuffer(value.Length);
+
+                var sliceLength = Encoding.UTF8.GetBytes(value.AsSpan(), _internalBuffer.ToSpan());
+                
+                Write(fieldId, path, _internalBuffer.ToSpan(sliceLength));
+            }
+
+            private void GrowInternalBuffer(int length)
+            {
+                _internalBufferScope.Dispose();
+
+                int size = length * 2 * CharToByteMultiplier;
+                size = Bits.PowerOf2(size);
+                _internalBufferScope = _parent._entriesAllocator.Allocate(size, out _internalBuffer);
             }
 
             public void Write(int fieldId, ReadOnlySpan<byte> value, long longValue, double dblValue) => Write(fieldId, null, value, longValue, dblValue);
             public void Write(int fieldId, string path, string value, long longValue, double dblValue)
             {
-                using var _ = Slice.From(_parent._entriesAllocator, value, out var slice);
-                Write(fieldId, path, slice, longValue, dblValue);
+                if (value.Length * CharToByteMultiplier > _internalBuffer.Length)
+                    GrowInternalBuffer(value.Length);
+
+                var sliceLength = Encoding.UTF8.GetBytes(value.AsSpan(), _internalBuffer.ToSpan());
+                Write(fieldId, path, _internalBuffer.ToSpan(sliceLength), longValue, dblValue);
             }
 
             public void Write(int fieldId, string path, ReadOnlySpan<byte> value, long longValue, double dblValue)
@@ -649,8 +671,8 @@ namespace Corax
                 ref var term = ref ExactInsert(field, value);
                 term.Long = longValue;
                 term.Double = dblValue;
+
                 NumericInsert(field, longValue, dblValue);
-                
             }
 
             public void WriteSpatial(int fieldId, string path, CoraxSpatialPointEntry entry)
@@ -658,13 +680,14 @@ namespace Corax
                 var field = GetField(fieldId, path);
                 RecordSpatialPointForEntry(field, (entry.Latitude, entry.Longitude));
 
-                var maxLen = Encoding.UTF8.GetMaxByteCount(entry.Geohash.Length);
-                using var _ = _parent._entriesAllocator.Allocate(maxLen, out var buffer);
-                var len = Encoding.UTF8.GetBytes(entry.Geohash, buffer.ToSpan());
+                // The assumption here is that the geo hash is ASCII based therefore the size of the
+                // geohash is going to be exactly the size needed.
+                if (entry.Geohash.Length + 1 > _internalBuffer.Length)
+                    GrowInternalBuffer(entry.Geohash.Length);
+
+                Encoding.UTF8.GetBytes(entry.Geohash, _internalBuffer.ToSpan());
                 for (int i = 1; i <= entry.Geohash.Length; ++i)
-                {
-                    ExactInsert(field, buffer.ToReadOnlySpan()[..i]);
-                }
+                    ExactInsert(field, _internalBuffer.ToReadOnlySpan(i));
             }
 
             public void Store(BlittableJsonReaderObject storedValue)

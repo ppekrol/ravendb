@@ -469,9 +469,33 @@ namespace Sparrow.Server
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReadOnlySpan<byte> ToReadOnlySpan(int length)
+        {
+            return new ReadOnlySpan<byte>(Ptr, Math.Min(Length, length));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReadOnlySpan<byte> ToReadOnlySpan(int start, int length)
+        {
+            return new ReadOnlySpan<byte>(Ptr + start, Math.Min(Length - start, length));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Span<byte> ToSpan()
         {
             return new Span<byte>(Ptr, Length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Span<byte> ToSpan(int length)
+        {
+            return new Span<byte>(Ptr, Math.Min(Length, length));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Span<byte> ToSpan(int start, int length)
+        {
+            return new Span<byte>(Ptr + start, Math.Min(Length - start, length));
         }
     }
 
