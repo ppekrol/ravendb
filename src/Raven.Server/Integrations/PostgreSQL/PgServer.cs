@@ -6,9 +6,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Server.Config;
-using Raven.Server.Config.Categories;
-using Raven.Server.Exceptions;
+using Raven.Server.Logging;
 using Raven.Server.Utils.Features;
 using Sparrow.Logging;
 
@@ -16,7 +16,7 @@ namespace Raven.Server.Integrations.PostgreSQL
 {
     public class PgServer : IDisposable
     {
-        private readonly Logger _logger = LoggingSource.Instance.GetLogger<PgServer>("Postgres Server");
+        private static readonly Logger _logger = RavenLogManager.Instance.GetLoggerForServer<PgServer>();
 
         private readonly RavenServer _server;
         private readonly ConcurrentDictionary<TcpClient, Task> _connections = new();
@@ -66,8 +66,8 @@ namespace Raven.Server.Integrations.PostgreSQL
                         activate = true;
                     else
                     {
-                        if (_logger.IsOperationsEnabled)
-                            _logger.Operations($"You have enabled the PostgreSQL integration via '{RavenConfiguration.GetKey(x => x.Integrations.PostgreSql.Enabled)}' configuration but " +
+                        if (_logger.IsWarnEnabled)
+                            _logger.Warn($"You have enabled the PostgreSQL integration via '{RavenConfiguration.GetKey(x => x.Integrations.PostgreSql.Enabled)}' configuration but " +
                                          "this is an experimental feature and the server does not support experimental features. " +
                                          $"Please enable experimental features by changing '{RavenConfiguration.GetKey(x => x.Core.FeaturesAvailability)}' configuration value to '{nameof(FeaturesAvailability.Experimental)}'.");
                     }
@@ -142,8 +142,8 @@ namespace Raven.Server.Integrations.PostgreSQL
             }
             catch (Exception e)
             {
-                if (_logger.IsOperationsEnabled)
-                    _logger.Operations($"Failed to handle Postgres connection (session ID: {identifier})", e);
+                if (_logger.IsErrorEnabled)
+                    _logger.Error(e, $"Failed to handle Postgres connection (session ID: {identifier})");
             }
         }
 
@@ -171,8 +171,8 @@ namespace Raven.Server.Integrations.PostgreSQL
                         }
                         catch (Exception e)
                         {
-                            if (_logger.IsOperationsEnabled)
-                                _logger.Operations($"Failed to accept TCP client (port: {((IPEndPoint)tcpListener.LocalEndpoint).Port})", e);
+                            if (_logger.IsWarnEnabled)
+                                _logger.Warn(e, $"Failed to accept TCP client (port: {((IPEndPoint)tcpListener.LocalEndpoint).Port})");
                         }
 
                         if (client == null)

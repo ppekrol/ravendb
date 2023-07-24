@@ -8,8 +8,8 @@ using System.Text;
 using Sparrow.Binary;
 using Sparrow.Server;
 using Voron.Exceptions;
-using Voron.Global;
 using Voron.Impl;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Data.CompactTrees;
 

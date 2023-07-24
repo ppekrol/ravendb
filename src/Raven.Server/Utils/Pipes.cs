@@ -5,17 +5,21 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Raven.Server.Utils.Cli;
+using NLog;
+#if !RVN
 using Sparrow.Logging;
+using Raven.Server.Logging;
+#endif
+using Raven.Server.Utils.Cli;
 using Sparrow.Platform;
 using Sparrow.Server.Platform.Posix;
 
 namespace Raven.Server.Utils
 {
-    public class Pipes
+    public sealed class Pipes
     {
 #if !RVN
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<Pipes>("Server");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<Pipes>();
 #endif
 
         public const string AdminConsolePipePrefix = "raven-control-pipe-";
@@ -99,7 +103,7 @@ namespace Raven.Server.Utils
                     {
                         if (Logger.IsInfoEnabled)
                         {
-                            Logger.Info("Got an exception inside CLI (internal error) while in pipe connection", e);
+                            Logger.Info(e, "Got an exception inside CLI (internal error) while in pipe connection");
                         }
                     }
 
@@ -114,7 +118,7 @@ namespace Raven.Server.Utils
             {
                 if (Logger.IsInfoEnabled)
                 {
-                    Logger.Info("Got an exception trying to connect to server admin channel pipe", e);
+                    Logger.Info(e, "Got an exception trying to connect to server admin channel pipe");
                 }
             }
         }
@@ -142,14 +146,14 @@ namespace Raven.Server.Utils
                     catch (Exception e)
                     {
                         if (Logger.IsInfoEnabled)
-                            Logger.Info("Unable to delete old pipe file " + pipeFile, e);
+                            Logger.Info(e, "Unable to delete old pipe file " + pipeFile);
                     }
                 }
             }
             catch (Exception ex)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Unable to list old pipe files for deletion", ex);
+                    Logger.Info(ex, "Unable to list old pipe files for deletion");
             }
         }
 
@@ -176,19 +180,19 @@ namespace Raven.Server.Utils
 
                     try
                     {
-                        LoggingSource.Instance.AttachPipeSink(pipe);
-
-                        while (pipe.IsConnected && pipe.CanWrite)
-                            await Task.Delay(TimeSpan.FromSeconds(1));
+                        using (StreamTarget.Register(pipe))
+                        {
+                            while (pipe.IsConnected && pipe.CanWrite)
+                                await Task.Delay(TimeSpan.FromSeconds(1));
+                        }
                     }
                     catch (Exception e)
                     {
                         if (Logger.IsInfoEnabled)
-                            Logger.Info("Error streaming logs through pipe.", e);
+                            Logger.Info(e, "Error streaming logs through pipe.");
                     }
                     finally
                     {
-                        LoggingSource.Instance.DetachPipeSink();
                         pipe.Disconnect();
                     }
                 }
@@ -200,7 +204,7 @@ namespace Raven.Server.Utils
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Error connecting to log stream pipe", e);
+                    Logger.Info(e, "Error connecting to log stream pipe");
             }
         }
 #endif

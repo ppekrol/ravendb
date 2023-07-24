@@ -19,6 +19,7 @@ using Raven.Client.Exceptions.Sharding;
 using Raven.Server.Config;
 using SlowTests.Core.Session;
 using SlowTests.Core.Utils.Entities;
+using Sparrow;
 using Sparrow.Json.Parsing;
 using Tests.Infrastructure;
 using Xunit;

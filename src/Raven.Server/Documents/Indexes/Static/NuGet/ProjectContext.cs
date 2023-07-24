@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Xml.Linq;
+using NLog;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
+using Raven.Server.Logging;
 using Sparrow.Logging;
+using LogLevel = NuGet.Common.LogLevel;
 
 namespace Raven.Server.Documents.Indexes.Static.NuGet
 {
     public class ProjectContext : INuGetProjectContext
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<RavenServer>("NuGet");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<ProjectContext>();
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
 
@@ -32,14 +35,27 @@ namespace Raven.Server.Documents.Indexes.Static.NuGet
                 return;
             }
 
-            if (Logger.IsOperationsEnabled)
+            var logLevel = GetLogLevel(level);
+
+            if (Logger.IsEnabled(logLevel))
+            {
+                Logger.Log(logLevel, string.Format(message, args));
+            }
+
+            static NLog.LogLevel GetLogLevel(MessageLevel level)
             {
                 switch (level)
                 {
+                    case MessageLevel.Info:
+                        return NLog.LogLevel.Info;
                     case MessageLevel.Warning:
+                        return NLog.LogLevel.Warn;
+                    case MessageLevel.Debug:
+                        return NLog.LogLevel.Debug;
                     case MessageLevel.Error:
-                        Logger.Operations(string.Format(message, args));
-                        break;
+                        return NLog.LogLevel.Error;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(level), level, null);
                 }
             }
         }
@@ -70,8 +86,8 @@ namespace Raven.Server.Documents.Indexes.Static.NuGet
 
         public void ReportError(string message)
         {
-            if (Logger.IsOperationsEnabled)
-                Logger.Operations(message);
+            if (Logger.IsErrorEnabled)
+                Logger.Error(message);
         }
 
         public void ReportError(ILogMessage message)

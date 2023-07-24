@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using NLog;
 using Raven.Server.Config.Categories;
-using Sparrow.Logging;
 using Sparrow.Utils;
 using Voron;
 
@@ -112,8 +112,8 @@ namespace Raven.Server.Utils
                 }
 
                 // Can have exit code 0 (success) but still get errors. We log the errors anyway.
-                if (log.IsOperationsEnabled)
-                    log.Operations($"Executing '{parameters.OnDirectoryInitializeExec} {args}' took {sw.ElapsedMilliseconds:#,#;;0} ms. Exit code: {process.ExitCode}{Environment.NewLine}Output: {GetStdOut()}{Environment.NewLine}Errors: {GetStdError()}{Environment.NewLine}");
+                if (log.IsErrorEnabled)
+                    log.Error($"Executing '{parameters.OnDirectoryInitializeExec} {args}' took {sw.ElapsedMilliseconds:#,#;;0} ms. Exit code: {process.ExitCode}{Environment.NewLine}Output: {GetStdOut()}{Environment.NewLine}Errors: {GetStdError()}{Environment.NewLine}");
 
                 if (process.ExitCode != 0)
                 {

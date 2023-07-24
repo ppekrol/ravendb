@@ -1,9 +1,9 @@
 ﻿using System.Threading;
+using NLog;
 using Raven.Client.Documents.Queries.Suggestions;
 using Raven.Server.Documents.Queries;
 using Raven.Server.Documents.Queries.Suggestions;
 using Sparrow.Json;
-using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Indexes.Persistence
 {

@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Changes;
 using Raven.Client.Documents.Operations.ConnectionStrings;
@@ -21,6 +22,8 @@ using Raven.Server.Documents.ETL.Providers.Queue.Kafka;
 using Raven.Server.Documents.ETL.Providers.Queue.RabbitMq;
 using Raven.Server.Documents.ETL.Providers.Raven;
 using Raven.Server.Documents.ETL.Providers.SQL;
+using Raven.Server.Documents.ETL.Providers.SQL.RelationalWriters;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
@@ -56,7 +59,7 @@ namespace Raven.Server.Documents.ETL
 
         public EtlLoader(DocumentDatabase database, ServerStore serverStore)
         {
-            Logger = LoggingSource.Instance.GetLogger(database.Name, GetType().FullName);
+            Logger = RavenLogManager.Instance.GetLoggerForDatabase<EtlLoader>(database);
 
             _database = database;
             _serverStore = serverStore;
@@ -688,7 +691,7 @@ namespace Raven.Server.Documents.ETL
                     catch (Exception e)
                     {
                         if (Logger.IsInfoEnabled)
-                            Logger.Info($"Failed to stop ETL process {process.Name} on the database record change", e);
+                            Logger.Info(e, $"Failed to stop ETL process {process.Name} on the database record change");
                     }
                 }
             });
@@ -708,7 +711,7 @@ namespace Raven.Server.Documents.ETL
                     catch (Exception e)
                     {
                         if (Logger.IsInfoEnabled)
-                            Logger.Info($"Failed to dispose ETL process {process.Name} on the database record change", e);
+                            Logger.Info(e, $"Failed to dispose ETL process {process.Name} on the database record change");
                     }
                 }
             });

@@ -10,8 +10,8 @@ using Sparrow.Platform;
 using Sparrow.Server;
 using Sparrow.Utils;
 using Voron.Data.Fixed;
-using Voron.Global;
 using Voron.Impl;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Data.Tables
 {

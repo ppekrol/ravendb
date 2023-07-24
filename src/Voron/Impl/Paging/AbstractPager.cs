@@ -6,9 +6,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using NLog;
 using Sparrow;
 using Sparrow.Binary;
-using Sparrow.Logging;
 using Sparrow.LowMemory;
 using Sparrow.Platform;
 using Sparrow.Server.Platform;
@@ -23,7 +23,7 @@ namespace Voron.Impl.Paging
 {
     public abstract unsafe class AbstractPager : IDisposable, ILowMemoryHandler
     {
-        public readonly Logger Log = LoggingSource.Instance.GetLogger<AbstractPager>("AbstractPager");
+        protected readonly Logger Logger;
         private readonly StorageEnvironmentOptions _options;
 
         public static ConcurrentDictionary<string, uint> PhysicalDrivePerMountCache = new ConcurrentDictionary<string, uint>();
@@ -50,11 +50,6 @@ namespace Voron.Impl.Paging
             return AllocatedInBytesFunc?.Invoke() ?? NumberOfAllocatedPages * Constants.Storage.PageSize;
         }
 
-        protected AbstractPager()
-        {
-            CanPrefetch = new Lazy<bool>(CanPrefetchQuery);
-        }
-        
         public void SetPagerState(PagerState newState)
         {
             if (DisposeOnceRunner.Disposed)
@@ -76,8 +71,8 @@ namespace Voron.Impl.Paging
                                 continue;
 
                             Lock(info.BaseAddress, info.Size, state: null);
-                                }
-                            }
+                        }
+                    }
                     catch
                     {
                         // need to restore the state to the way it was, so we'll dispose the pager state
@@ -99,7 +94,7 @@ namespace Voron.Impl.Paging
             var lockTaken = false;
             try
             {
-                if (Sodium.Lock(address, (UIntPtr)sizeToLock) == 0) 
+                if (Sodium.Lock(address, (UIntPtr)sizeToLock) == 0)
                     return;
 
                 if (DoNotConsiderMemoryLockFailureAsCatastrophicError)
@@ -132,56 +127,56 @@ namespace Voron.Impl.Paging
                 var retries = 10;
                 while (retries > 0)
                 {
-                // From: https://msdn.microsoft.com/en-us/library/windows/desktop/ms686234(v=vs.85).aspx
-                // "The maximum number of pages that a process can lock is equal to the number of pages in its minimum working set minus a small overhead"
-                // let's increase the max size of memory we can lock by increasing the MinWorkingSet. On Windows, that is available for all users
-                var nextWorkingSetSize = GetNearestFileSize(currentProcess.MinWorkingSet.ToInt64() + sizeToLock);
+                    // From: https://msdn.microsoft.com/en-us/library/windows/desktop/ms686234(v=vs.85).aspx
+                    // "The maximum number of pages that a process can lock is equal to the number of pages in its minimum working set minus a small overhead"
+                    // let's increase the max size of memory we can lock by increasing the MinWorkingSet. On Windows, that is available for all users
+                    var nextWorkingSetSize = GetNearestFileSize(currentProcess.MinWorkingSet.ToInt64() + sizeToLock);
 
-                if (nextWorkingSetSize > int.MaxValue && PlatformDetails.Is32Bits)
-                {
-                    nextWorkingSetSize = int.MaxValue;
-                }
-
-                // Minimum working set size must be less than or equal to the maximum working set size.
-                // Let's increase the max as well.
-                if (nextWorkingSetSize > (long)currentProcess.MaxWorkingSet)
-                {
-                    try
+                    if (nextWorkingSetSize > int.MaxValue && PlatformDetails.Is32Bits)
                     {
-#pragma warning disable CA1416 // Validate platform compatibility
-                        currentProcess.MaxWorkingSet = new IntPtr(nextWorkingSetSize);
-#pragma warning restore CA1416 // Validate platform compatibility
+                        nextWorkingSetSize = int.MaxValue;
                     }
-                    catch (Exception e)
+
+                    // Minimum working set size must be less than or equal to the maximum working set size.
+                    // Let's increase the max as well.
+                    if (nextWorkingSetSize > (long)currentProcess.MaxWorkingSet)
                     {
+                        try
+                        {
+#pragma warning disable CA1416 // Validate platform compatibility
+                            currentProcess.MaxWorkingSet = new IntPtr(nextWorkingSetSize);
+#pragma warning restore CA1416 // Validate platform compatibility
+                        }
+                        catch (Exception e)
+                        {
                             throw new InsufficientMemoryException(
                                 $"Need to increase the min working set size from {new Size(currentProcess.MinWorkingSet.ToInt64(), SizeUnit.Bytes)} to {new Size(nextWorkingSetSize, SizeUnit.Bytes)} but the max working set size was too small: {new Size(currentProcess.MaxWorkingSet.ToInt64(), SizeUnit.Bytes)}. " +
                                 $"Failed to increase the max working set size so we can lock {new Size(sizeToLock, SizeUnit.Bytes)} for {FileName}. With encrypted " +
                                                               "databases we lock some memory in order to avoid leaking secrets to disk. Treating this as a catastrophic error " +
                                                               "and aborting the current operation.", e);
+                        }
                     }
-                }
 
-                try
-                {
+                    try
+                    {
 #pragma warning disable CA1416 // Validate platform compatibility
-                    currentProcess.MinWorkingSet = new IntPtr(nextWorkingSetSize);
+                        currentProcess.MinWorkingSet = new IntPtr(nextWorkingSetSize);
 #pragma warning restore CA1416 // Validate platform compatibility
-                }
-                catch (Exception e)
-                {
+                    }
+                    catch (Exception e)
+                    {
                         throw new InsufficientMemoryException(
                             $"Failed to increase the min working set size to {new Size(nextWorkingSetSize, SizeUnit.Bytes)} so we can lock {new Size(sizeToLock, SizeUnit.Bytes)} for {FileName}. With encrypted " +
                                                           "databases we lock some memory in order to avoid leaking secrets to disk. Treating this as a catastrophic error " +
                                                           "and aborting the current operation.", e);
-                }
+                    }
 
                     if (Sodium.Lock(addressToLock, (UIntPtr)sizeToLock) == 0)
-                    return;
+                        return;
 
                     // let's retry, since we increased the WS, but other thread might have locked the memory
                     retries--;
-            }
+                }
             }
 
             var msg =
@@ -234,8 +229,10 @@ namespace Voron.Impl.Paging
 
         public VoronPathSetting FileName { get; protected set; }
 
-        protected AbstractPager(StorageEnvironmentOptions options, bool canPrefetchAhead, bool usePageProtection = false) : this()
+        protected AbstractPager(Logger logger, StorageEnvironmentOptions options, bool canPrefetchAhead, bool usePageProtection = false)
         {
+            Logger = logger;
+            CanPrefetch = new Lazy<bool>(CanPrefetchQuery);
             DisposeOnceRunner = new DisposeOnce<SingleAttempt>(() =>
             {
                 if (FileName?.FullPath != null)
@@ -326,7 +323,7 @@ namespace Voron.Impl.Paging
             }
 
             tx?.EnsurePagerStateReference(ref state);
-            
+
             if (state._released)
                 goto InvalidPagerState;
 
@@ -352,7 +349,7 @@ namespace Voron.Impl.Paging
         {
             return AcquirePagePointerInternal(tx, pageNumber, pagerState);
         }
-        
+
         public virtual T AcquirePagePointerHeaderForDebug<T>(IPagerLevelTransactionState tx, long pageNumber, PagerState pagerState = null) where T : unmanaged
         {
             var pointer = AcquirePagePointer(tx, pageNumber, pagerState);
@@ -437,8 +434,8 @@ namespace Voron.Impl.Paging
             {
                 try
                 {
-                    if (Log.IsInfoEnabled)
-                        Log.Info("AbstractPager finalizer was called (leak?), and 'DisposeOnceRunner.Dispose' threw exception", e);
+                    if (Logger.IsInfoEnabled)
+                        Logger.Info(e, "AbstractPager finalizer was called (leak?), and 'DisposeOnceRunner.Dispose' threw exception");
                 }
                 catch
                 {
@@ -449,8 +446,8 @@ namespace Voron.Impl.Paging
             {
                 try
                 {
-                    if (Log.IsInfoEnabled)
-                        Log.Info("AbstractPager finalizer was called although GC.SuppressFinalize should have been called", new InvalidOperationException("Leak in "));
+                    if (Logger.IsInfoEnabled)
+                        Logger.Info(new InvalidOperationException("Leak in "), "AbstractPager finalizer was called although GC.SuppressFinalize should have been called");
                 }
                 catch
                 {
@@ -613,7 +610,7 @@ namespace Voron.Impl.Paging
 
             object IEnumerator.Current => Current;
 
-            public void Dispose() {}
+            public void Dispose() { }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -652,7 +649,7 @@ namespace Voron.Impl.Paging
         {
             if (_options.DiscardVirtualMemory == false)
                 return;
-            
+
             var pagerState = PagerState;
             Debug.Assert(pagerState.AllocationInfos.Length == 1);
 

@@ -14,6 +14,7 @@ using Sparrow.Json;
 using Sparrow.Server;
 using Sparrow.Server.Utils;
 using Voron;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Indexes
 {

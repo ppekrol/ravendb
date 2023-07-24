@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Operations.Backups;
@@ -16,6 +17,7 @@ using Raven.Client.Util;
 using Raven.Server.Config;
 using Raven.Server.Config.Settings;
 using Raven.Server.Documents.Indexes.Auto;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.Routing;
@@ -48,7 +50,7 @@ namespace Raven.Server.Documents.PeriodicBackup.Restore
         protected readonly JsonOperationContext Context;
 
         protected string DatabaseName => RestoreConfiguration.DatabaseName;
-        protected static readonly Logger Logger = LoggingSource.Instance.GetLogger<AbstractRestoreBackupTask>("Server");
+        protected static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<AbstractRestoreBackupTask>();
         protected bool DatabaseValidation = true;
         protected bool DeleteDatabaseOnFailure = true;
         protected InitializeOptions Options = InitializeOptions.SkipLoadingDatabaseRecord;
@@ -578,8 +580,8 @@ namespace Raven.Server.Documents.PeriodicBackup.Restore
 
         private async Task OnErrorAsync(Action<IOperationProgress> onProgress, Exception e)
         {
-            if (Logger.IsOperationsEnabled)
-                Logger.Operations("Failed to restore database", e);
+            if (Logger.IsErrorEnabled)
+                Logger.Error(e, "Failed to restore database");
 
             var alert = AlertRaised.Create(
                 RestoreConfiguration.DatabaseName,

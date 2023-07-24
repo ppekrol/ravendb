@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using NLog;
 using Raven.Client.Util;
 using Raven.Server.Config;
 using Raven.Server.NotificationCenter.BackgroundWork;
@@ -76,9 +77,9 @@ public abstract class AbstractNotificationCenter : NotificationsBase
                     // (OOME or any other storage error)
                     // we still want to send it to any of the connected watchers
                     if (_logger.IsInfoEnabled)
-                        _logger.Info($"Failed to save a persistent notification '{notification.Id}' " +
+                        _logger.Info(e, $"Failed to save a persistent notification '{notification.Id}' " +
                                      $"to the notification center. " +
-                                     $"Title: {notification.Title}, message: {notification.Message}", e);
+                                     $"Title: {notification.Title}, message: {notification.Message}");
                 }
             }
 
@@ -110,7 +111,7 @@ public abstract class AbstractNotificationCenter : NotificationsBase
         catch (Exception e)
         {
             if (_logger.IsInfoEnabled)
-                _logger.Info($"Failed to add notification '{notification.Id}' to the notification center. Title: {notification.Title}, message: {notification.Message}", e);
+                _logger.Info(e, $"Failed to add notification '{notification.Id}' to the notification center. Title: {notification.Title}, message: {notification.Message}");
         }
     }
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
-using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Server.Config.Attributes;
 using Raven.Server.Config.Settings;
@@ -13,8 +12,9 @@ using Raven.Server.Documents.Indexes.Persistence.Lucene;
 using Raven.Server.ServerWide;
 using Raven.Server.Utils.Features;
 using Sparrow;
-using Sparrow.LowMemory;
 using Sparrow.Platform;
+using Sparrow.Server.LowMemory;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Config.Categories
 {

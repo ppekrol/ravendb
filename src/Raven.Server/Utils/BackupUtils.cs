@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using NCrontab.Advanced;
+using NLog;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Operations.Backups;
 using Raven.Client.Documents.Operations.OngoingTasks;
@@ -337,8 +338,8 @@ internal static class BackupUtils
         if (backupStatus == null)
         {
             // we want to wait for the backup occurrence
-            if (parameters.Logger.IsOperationsEnabled)
-                parameters.Logger.Operations($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' is never backed up yet.");
+            if (parameters.Logger.IsInfoEnabled)
+                parameters.Logger.Info($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' is never backed up yet.");
 
             return new IdleDatabaseActivity(IdleDatabaseActivityType.WakeUpDatabase, DateTime.UtcNow);
         }
@@ -348,8 +349,8 @@ internal static class BackupUtils
         if (responsibleNodeTag == null)
         {
             // cluster is down
-            if (parameters.Logger.IsOperationsEnabled)
-                parameters.Logger.Operations($"Could not find the responsible node for backup task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}'.");
+            if (parameters.Logger.IsInfoEnabled)
+                parameters.Logger.Info($"Could not find the responsible node for backup task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}'.");
 
             return new IdleDatabaseActivity(IdleDatabaseActivityType.WakeUpDatabase, DateTime.UtcNow);
         }
@@ -357,8 +358,8 @@ internal static class BackupUtils
         if (responsibleNodeTag != parameters.ServerStore.NodeTag)
         {
             // not responsible for this backup task
-            if (parameters.Logger.IsOperationsEnabled)
-                parameters.Logger.Operations($"Current server '{parameters.ServerStore.NodeTag}' is not responsible node for backup task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}'. Backup Task responsible node is '{responsibleNodeTag}'.");
+            if (parameters.Logger.IsInfoEnabled)
+                parameters.Logger.Info($"Current server '{parameters.ServerStore.NodeTag}' is not responsible node for backup task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}'. Backup Task responsible node is '{responsibleNodeTag}'.");
 
             return null;
         }
@@ -376,8 +377,8 @@ internal static class BackupUtils
 
         if (nextBackup == null)
         {
-            if (parameters.Logger.IsOperationsEnabled)
-                parameters.Logger.Operations($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' doesn't have next backup. Should not happen and likely a bug.");
+            if (parameters.Logger.IsErrorEnabled)
+                parameters.Logger.Error($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' doesn't have next backup. Should not happen and likely a bug.");
             return null;
         }
 
@@ -385,8 +386,8 @@ internal static class BackupUtils
         if (nextBackup.DateTime < nowUtc)
         {
             // this backup is delayed
-            if (parameters.Logger.IsOperationsEnabled)
-                parameters.Logger.Operations($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' is delayed.");
+            if (parameters.Logger.IsInfoEnabled)
+                parameters.Logger.Info($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' is delayed.");
             return new IdleDatabaseActivity(IdleDatabaseActivityType.WakeUpDatabase, DateTime.UtcNow);
         }
 
@@ -394,15 +395,15 @@ internal static class BackupUtils
         {
             // we have changes since last backup
             var type = nextBackup.IsFull ? "full" : "incremental";
-            if (parameters.Logger.IsOperationsEnabled)
-                parameters.Logger.Operations($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' have changes since last backup. Wakeup timer will be set to the next {type} backup at '{nextBackup.DateTime}'.");
+            if (parameters.Logger.IsInfoEnabled)
+                parameters.Logger.Info($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' have changes since last backup. Wakeup timer will be set to the next {type} backup at '{nextBackup.DateTime}'.");
             return new IdleDatabaseActivity(IdleDatabaseActivityType.WakeUpDatabase, nextBackup.DateTime);
         }
 
         if (nextBackup.IsFull)
         {
-            if (parameters.Logger.IsOperationsEnabled)
-                parameters.Logger.Operations($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' doesn't have changes since last backup. Wakeup timer will be set to the next full backup at '{nextBackup.DateTime}'.");
+            if (parameters.Logger.IsInfoEnabled)
+                parameters.Logger.Info($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' doesn't have changes since last backup. Wakeup timer will be set to the next full backup at '{nextBackup.DateTime}'.");
             return new IdleDatabaseActivity(IdleDatabaseActivityType.WakeUpDatabase, nextBackup.DateTime);
         }
 
@@ -418,14 +419,14 @@ internal static class BackupUtils
 
         if (nextFullBackup < nowUtc)
         {
-            if (parameters.Logger.IsOperationsEnabled)
-                parameters.Logger.Operations($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' doesn't have changes since last backup but has delayed backup.");
+            if (parameters.Logger.IsInfoEnabled)
+                parameters.Logger.Info($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' doesn't have changes since last backup but has delayed backup.");
             // this backup is delayed
             return new IdleDatabaseActivity(IdleDatabaseActivityType.WakeUpDatabase, DateTime.UtcNow);
         }
 
-        if (parameters.Logger.IsOperationsEnabled)
-            parameters.Logger.Operations($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' doesn't have changes since last backup. Wakeup timer set to next full backup at {nextFullBackup}, and will skip the incremental backups.");
+        if (parameters.Logger.IsInfoEnabled)
+            parameters.Logger.Info($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' doesn't have changes since last backup. Wakeup timer set to next full backup at {nextFullBackup}, and will skip the incremental backups.");
 
         return new IdleDatabaseActivity(IdleDatabaseActivityType.UpdateBackupStatusOnly, nextBackup.DateTime, parameters.Configuration.TaskId, parameters.LastEtag);
     }
@@ -465,8 +466,8 @@ internal static class BackupUtils
         {
             const string message = "Error saving the periodic backup status";
 
-            if (logger.IsOperationsEnabled)
-                logger.Operations(message, e);
+            if (logger.IsErrorEnabled)
+                logger.Error(e, message);
 
             backupResult?.AddError($"{message}{Environment.NewLine}{e}");
         }

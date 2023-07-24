@@ -23,6 +23,7 @@ using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Commands;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Exceptions;
@@ -39,7 +40,6 @@ using Raven.Client.ServerWide.Tcp;
 using Raven.Client.Util;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
-using Sparrow.Logging;
 using Sparrow.Utils;
 
 namespace Raven.Client.Documents.Subscriptions
@@ -73,14 +73,14 @@ namespace Raven.Client.Documents.Subscriptions
 
         public event Action<Exception> OnUnexpectedSubscriptionError;
 
-        internal AbstractSubscriptionWorker(SubscriptionWorkerOptions options, string dbName)
+        internal AbstractSubscriptionWorker(SubscriptionWorkerOptions options, string dbName, Logger logger)
         {
             if (string.IsNullOrEmpty(options.SubscriptionName))
                 throw new ArgumentException("SubscriptionConnectionOptions must specify the SubscriptionName", nameof(options));
 
             _options = options;
-            _dbName = dbName;
-            _logger = LoggingSource.Instance.GetLogger<AbstractSubscriptionWorker<TBatch, TType>>(dbName);
+            _dbName = dbName ?? throw new ArgumentNullException(nameof(dbName));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public void Dispose()
@@ -114,8 +114,8 @@ namespace Raven.Client.Documents.Subscriptions
                     {
                         if (await _subscriptionTask.WaitWithTimeout(TimeSpan.FromSeconds(60)).ConfigureAwait(false) == false)
                         {
-                            if (_logger.IsInfoEnabled)
-                                _logger.Info($"Subscription worker for '{SubscriptionName}' wasn't done after 60 seconds, cannot hold subscription disposal any longer.");
+                            if (_logger.IsDebugEnabled)
+                                _logger.Debug($"Subscription worker for '{SubscriptionName}' wasn't done after 60 seconds, cannot hold subscription disposal any longer.");
                         }
                     }
                     catch (Exception)
@@ -129,8 +129,8 @@ namespace Raven.Client.Documents.Subscriptions
             }
             catch (Exception ex)
             {
-                if (_logger.IsInfoEnabled)
-                    _logger.Info("Error during dispose of subscription", ex);
+                if (_logger.IsDebugEnabled)
+                    _logger.Debug(ex, "Error during dispose of subscription");
             }
             finally
             {
@@ -553,9 +553,9 @@ namespace Raven.Client.Documents.Subscriptions
                             }
                             catch (Exception ex)
                             {
-                                if (_logger.IsInfoEnabled)
+                                if (_logger.IsDebugEnabled)
                                 {
-                                    _logger.Info($"Subscription '{_options.SubscriptionName}'. Subscriber threw an exception on document batch", ex);
+                                    _logger.Debug(ex, $"Subscription '{_options.SubscriptionName}'. Subscriber threw an exception on document batch");
                                 }
 
                                 HandleSubscriberError(ex);
@@ -825,10 +825,10 @@ namespace Raven.Client.Documents.Subscriptions
                             return;
                         }
 
-                        if (_logger.IsInfoEnabled)
+                        if (_logger.IsDebugEnabled)
                         {
-                            _logger.Info(
-                                $"Subscription '{_options.SubscriptionName}'. Pulling task threw the following exception", ex);
+                            _logger.Debug(ex, 
+                                $"Subscription '{_options.SubscriptionName}'. Pulling task threw the following exception");
                         }
 
                         (bool shouldTryToReconnect, _redirectNode) = CheckIfShouldReconnectWorker(ex, AssertLastConnectionFailure, OnUnexpectedSubscriptionError);
@@ -844,15 +844,14 @@ namespace Raven.Client.Documents.Subscriptions
                                 try
                                 {
                                     (_, _redirectNode) = await reqEx.GetRequestedNode(curTopology[nextNodeIndex].ClusterTag, throwIfContainsFailures: true).ConfigureAwait(false);
-                                    if (_logger.IsInfoEnabled)
-                                        _logger.Info($"Subscription '{_options.SubscriptionName}'. Will modify redirect node from null to {_redirectNode.ClusterTag}",
-                                            ex);
+                                    if (_logger.IsDebugEnabled)
+                                        _logger.Debug(ex, $"Subscription '{_options.SubscriptionName}'. Will modify redirect node from null to {_redirectNode.ClusterTag}");
                                 }
                                 catch (Exception e)
                                 {
                                     // will let topology to decide
-                                    if (_logger.IsInfoEnabled)
-                                        _logger.Info($"Subscription '{_options.SubscriptionName}'. Could not select the redirect node will keep it null.", e);
+                                    if (_logger.IsDebugEnabled)
+                                        _logger.Debug(e, $"Subscription '{_options.SubscriptionName}'. Could not select the redirect node will keep it null.");
                                 }
                             }
 
@@ -861,8 +860,8 @@ namespace Raven.Client.Documents.Subscriptions
                         }
                         else
                         {
-                            if (_logger.IsInfoEnabled)
-                                _logger.Info($"Connection to subscription '{_options.SubscriptionName}' have been shut down because of an error", ex);
+                            if (_logger.IsDebugEnabled)
+                                _logger.Debug(ex, $"Connection to subscription '{_options.SubscriptionName}' have been shut down because of an error");
 
                             throw;
                         }

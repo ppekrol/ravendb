@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime;
 using System.Threading;
+using NLog;
 using Sparrow.Collections;
 using Sparrow.Logging;
 using Sparrow.Platform;
@@ -13,7 +14,7 @@ namespace Sparrow.LowMemory
     {
         private const string NotificationThreadName = "Low memory notification thread";
 
-        private readonly Logger _logger;
+        private readonly Logger _logger = RavenLogManager.Instance.GetLoggerForSparrow<LowMemoryNotification>();
 
         private readonly ConcurrentSet<WeakReference<ILowMemoryHandler>> _lowMemoryHandlers = new ConcurrentSet<WeakReference<ILowMemoryHandler>>();
 
@@ -58,13 +59,18 @@ namespace Sparrow.LowMemory
                 try
                 {
                     var now = DateTime.UtcNow;
-                    
-                    if (((isLowMemory && _logger.IsOperationsEnabled) || _logger.IsInfoEnabled)
+
+                    if (((isLowMemory && _logger.IsInfoEnabled) || _logger.IsDebugEnabled)
                         && now - _lastLoggedLowMemory > _logLowMemoryInterval)
                     {
                         _lastLoggedLowMemory = now;
-                        _logger.Operations($"Running {_lowMemoryHandlers.Count} low memory handlers with severity: {lowMemorySeverity}. " +
-                                           $"{MemoryUtils.GetExtendedMemoryInfo(memoryInfo)}");
+
+                        var message = $"Running {_lowMemoryHandlers.Count} low memory handlers with severity: {lowMemorySeverity}. {MemoryUtils.GetExtendedMemoryInfo(memoryInfo)}";
+
+                        if (isLowMemory && _logger.IsInfoEnabled)
+                            _logger.Info(message);
+                        else if (_logger.IsDebugEnabled)
+                            _logger.Debug(message);
                     }
 
 #if NET7_0_OR_GREATER
@@ -93,7 +99,7 @@ namespace Sparrow.LowMemory
                             try
                             {
                                 if (_logger.IsInfoEnabled)
-                                    _logger.Info("Failure to process low memory notification (low memory handler - " + handler + ")", e);
+                                    _logger.Info(e, "Failure to process low memory notification (low memory handler - " + handler + ")");
                             }
                             catch
                             {
@@ -125,13 +131,13 @@ namespace Sparrow.LowMemory
 
 #if NET7_0_OR_GREATER
         internal bool SupportsCompactionOfLargeObjectHeap { get; set; }
-        
+
         private void RequestLohCompactionIfNeeded(MemoryInfoResult memoryInfo, DateTime now)
         {
             if (now - _lastLohCompactionRequest <= _lohCompactionInterval ||
                 GCSettings.LargeObjectHeapCompactionMode == GCLargeObjectHeapCompactionMode.CompactOnce)
                 return;
-            
+
             var threshold = LargeObjectHeapCompactionThresholdPercentage;
 
             var envVariableThreshold = Environment.GetEnvironmentVariable("RAVEN_LOH_COMPACTION_THRESHOLD");
@@ -141,7 +147,7 @@ namespace Sparrow.LowMemory
 
             if (threshold <= 0)
                 return;
-            
+
             var info = GC.GetGCMemoryInfo(GCKind.Any);
 
             if (info.Index == 0) // no GC was run
@@ -155,8 +161,8 @@ namespace Sparrow.LowMemory
 
                 _lastLohCompactionRequest = now;
 
-                if (_logger.IsOperationsEnabled)
-                    _logger.Operations($"Forcing LOH compaction during next blocking generation 2 GC. LOH size after last GC: {lohSizeAfter} (threshold: {threshold})");
+                if (_logger.IsInfoEnabled)
+                    _logger.Info($"Forcing LOH compaction during next blocking generation 2 GC. LOH size after last GC: {lohSizeAfter} (threshold: {threshold})");
             }
         }
 #endif
@@ -185,7 +191,7 @@ namespace Sparrow.LowMemory
 
         public bool IsEarlyOutOfMemory { get; private set; }
 
-        public DirtyMemoryState DirtyMemoryState { get; private set; } = new DirtyMemoryState {IsHighDirty = false};
+        public DirtyMemoryState DirtyMemoryState { get; private set; } = new DirtyMemoryState { IsHighDirty = false };
 
         public Size LowMemoryThreshold { get; private set; }
 
@@ -198,7 +204,7 @@ namespace Sparrow.LowMemory
         public float LargeObjectHeapCompactionThresholdPercentage { get; private set; }
 
         public void Initialize(
-            Size lowMemoryThreshold, 
+            Size lowMemoryThreshold,
             bool useTotalDirtyMemInsteadOfMemUsage,
             bool enableHighTemporaryDirtyMemoryUse,
             float temporaryDirtyMemoryAllowedPercentage,
@@ -246,7 +252,6 @@ namespace Sparrow.LowMemory
 
         internal LowMemoryNotification()
         {
-            _logger = LoggingSource.Instance.GetLogger<LowMemoryNotification>("Server");
         }
 
         private void MonitorMemoryUsage()
@@ -296,9 +301,9 @@ namespace Sparrow.LowMemory
             }
             catch (Exception e)
             {
-                if (_logger.IsOperationsEnabled)
+                if (_logger.IsErrorEnabled)
                 {
-                    _logger.Operations("Catastrophic failure in low memory notification", e);
+                    _logger.Error(e, "Catastrophic failure in low memory notification");
                 }
             }
         }
@@ -450,7 +455,7 @@ namespace Sparrow.LowMemory
 
             if (memInfo.AvailableMemoryForProcessing < LowMemoryThreshold)
                 return LowMemorySeverity.Low;
-            
+
             return LowMemorySeverity.None;
         }
 

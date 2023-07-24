@@ -41,7 +41,7 @@ internal class SqlEtlHandlerProcessorForTestConnection<TOperationContext> : Abst
         catch (Exception ex)
         {
             if (Logger.IsInfoEnabled)
-                Logger.Info("Error occurred during sql replication connection test", ex);
+                Logger.Info(ex, "Error occurred during sql replication connection test");
 
             using (ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {

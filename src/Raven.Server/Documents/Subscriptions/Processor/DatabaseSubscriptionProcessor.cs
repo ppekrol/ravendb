@@ -89,7 +89,7 @@ namespace Raven.Server.Documents.Subscriptions.Processor
             }
 
             if (Logger.IsInfoEnabled)
-                Logger.Info(reason, batchItem.Exception);
+                Logger.Info(batchItem.Exception, reason);
 
             if (batchItem.Status  == SubscriptionBatchItemStatus.Exception)
             {

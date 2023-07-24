@@ -5,10 +5,12 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
+using NLog;
 using Raven.Client.Exceptions.Commercial;
 using Raven.Server.Commercial.LetsEncrypt;
 using Raven.Server.Config;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
@@ -21,7 +23,7 @@ namespace Raven.Server.Commercial
 {
     public class LicenseHelper
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<LicenseHelper>("Server");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<LicenseHelper>();
         public static readonly string LicenseStringConfigurationName = RavenConfiguration.GetKey(x => x.Licensing.License);
 
         private readonly ServerStore _serverStore;
@@ -54,7 +56,7 @@ namespace Raven.Server.Commercial
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Failed to update the license locally", e);
+                    Logger.Info(e, "Failed to update the license locally");
             }
             finally
             {
@@ -77,7 +79,7 @@ namespace Raven.Server.Commercial
                 var msg = $"Failed to read license from '{LicenseStringConfigurationName}' configuration.";
 
                 if (Logger.IsInfoEnabled)
-                    Logger.Info(msg, e);
+                    Logger.Info(e, msg);
 
                 if (throwOnFailure)
                     throw new LicenseActivationException(msg, e);
@@ -104,7 +106,7 @@ namespace Raven.Server.Commercial
                 var msg = $"Failed to read license from '{path.FullPath}' path.";
 
                 if (Logger.IsInfoEnabled)
-                    Logger.Info(msg, e);
+                    Logger.Info(e, msg);
 
                 if (throwOnFailure)
                     throw new LicenseActivationException(msg, e);
@@ -208,7 +210,7 @@ namespace Raven.Server.Commercial
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Failed to validate license: `{oldLicense}`", e);
+                    Logger.Info(e, $"Failed to validate license: `{oldLicense}`");
 
                 return true;
             }

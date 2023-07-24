@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using NLog;
 using Raven.Client.Util;
 using Raven.Server.Json;
 using Raven.Server.Routing;
@@ -142,7 +143,7 @@ namespace Raven.Server.ServerWide
             catch (Exception e)
             {
                 if (logger.IsInfoEnabled)
-                    logger.Info("Could not load server statistics.", e);
+                    logger.Info(e, "Could not load server statistics.");
             }
         }
 
@@ -176,7 +177,7 @@ namespace Raven.Server.ServerWide
                 catch (Exception e)
                 {
                     if (logger.IsInfoEnabled)
-                        logger.Info("Could not persist server statistics.", e);
+                        logger.Info(e, "Could not persist server statistics.");
                 }
             }
         }

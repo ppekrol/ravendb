@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.WebUtilities;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Operations.Backups;
 using Raven.Client.Util;
@@ -28,6 +29,7 @@ using Raven.Server.Utils;
 using Sparrow;
 using Sparrow.Logging;
 using Size = Raven.Client.Util.Size;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.PeriodicBackup.Azure
 {

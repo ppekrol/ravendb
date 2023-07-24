@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using NLog;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Extensions;
 using Raven.Client.Http;
@@ -13,6 +14,7 @@ using Raven.Client.Util;
 using Raven.Server.Documents;
 using Raven.Server.Documents.Sharding;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Web.System.Processors.Databases;
@@ -22,9 +24,9 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Web.System.Processors.Studio;
 
-internal class StudioDatabasesHandlerForGetDatabasesState : AbstractDatabasesHandlerProcessorForAllowedDatabases<StudioDatabasesHandlerForGetDatabasesState.StudioDatabasesState>
+internal sealed class StudioDatabasesHandlerForGetDatabasesState : AbstractDatabasesHandlerProcessorForAllowedDatabases<StudioDatabasesHandlerForGetDatabasesState.StudioDatabasesState>
 {
-    private static readonly Logger Logger = LoggingSource.Instance.GetLogger<DatabasesHandler>("Server");
+    private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<StudioDatabasesHandlerForGetDatabasesState>();
 
     public StudioDatabasesHandlerForGetDatabasesState([NotNull] RequestHandler requestHandler) : base(requestHandler)
     {
@@ -117,7 +119,7 @@ internal class StudioDatabasesHandlerForGetDatabasesState : AbstractDatabasesHan
         catch (Exception e)
         {
             if (Logger.IsInfoEnabled)
-                Logger.Info($"Failed to get orchestrator info for '{databaseName}' database.", e);
+                Logger.Info(e, $"Failed to get orchestrator info for '{databaseName}' database.");
 
             WriteFaultedOrchestratorState(databaseName, e, context, writer);
         }
@@ -158,7 +160,7 @@ internal class StudioDatabasesHandlerForGetDatabasesState : AbstractDatabasesHan
         catch (Exception e)
         {
             if (Logger.IsInfoEnabled)
-                Logger.Info($"Failed to get database info for '{databaseName}' database.", e);
+                Logger.Info(e, $"Failed to get database info for '{databaseName}' database.");
 
             WriteFaultedDatabaseState(databaseName, e, context, writer);
         }

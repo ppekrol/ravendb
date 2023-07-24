@@ -33,7 +33,7 @@ internal struct CoraxDocumentTrainEnumerator : IReadOnlySpanEnumerator
 
         public void WriteNull(int fieldId, string path)
         {
-            _allocator.From(global::Corax.Constants.NullValueSlice.AsSpan(), out var b);
+            _allocator.From(global::Corax.Global.Constants.NullValueSlice.AsSpan(), out var b);
             _terms.Add((fieldId, path, b));
         }
 

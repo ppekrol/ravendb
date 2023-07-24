@@ -4,7 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using NLog;
 using Raven.Client.ServerWide.Tcp;
+using Raven.Server.Logging;
 using Raven.Server.Rachis.Json.Sync;
 using Raven.Server.ServerWide;
 using Sparrow;
@@ -13,12 +15,13 @@ using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Logging;
 using Sparrow.Server.Json.Sync;
+using Sparrow.Server.Logging;
 using Sparrow.Threading;
 using Sparrow.Utils;
 
 namespace Raven.Server.Rachis.Remote
 {
-    public class RemoteConnection : IDisposable
+    public sealed class RemoteConnection : IDisposable
     {
         private string _destTag;
         private string _src;
@@ -52,7 +55,7 @@ namespace Raven.Server.Rachis.Remote
             _context = JsonOperationContext.ShortTermSingleUse();
             _releaseBuffer = _context.GetMemoryBuffer(out _buffer);
             _disposeOnce = new DisposeOnce<SingleAttempt>(DisposeInternal);
-            _log = LoggingSource.Instance.GetLogger<RemoteConnection>($"{src} > {dest}");
+            _log = RavenLogManager.Instance.GetLoggerForCluster<RemoteConnection>(LoggingComponent.RemoteConnection(src, dest));
             RegisterConnection(dest, term, caller);
         }
 
@@ -259,7 +262,7 @@ namespace Raven.Server.Rachis.Remote
         {
             if (_log.IsInfoEnabled)
             {
-                _log.Info("Sending an error (and aborting connection)", e);
+                _log.Info(e, "Sending an error (and aborting connection)");
             }
 
             Send(context, new DynamicJsonValue
@@ -434,7 +437,7 @@ namespace Raven.Server.Rachis.Remote
                 var rachisHello = JsonDeserializationRachis<RachisHello>.Deserialize(json);
                 _src = rachisHello.DebugSourceIdentifier ?? "unknown";
                 _destTag = rachisHello.DebugDestinationIdentifier ?? _destTag;
-                _log = LoggingSource.Instance.GetLogger<RemoteConnection>($"{_src} > {_destTag}");
+                _log = RavenLogManager.Instance.GetLoggerForCluster<RemoteConnection>(LoggingComponent.RemoteConnection(_src, _destTag));
                 _info.Destination = _destTag;
 
                 return rachisHello;

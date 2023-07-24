@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using Sparrow.Logging;
+using NLog;
 
 namespace Raven.Server.Utils;
 
@@ -17,7 +17,7 @@ public static class ThreadHelper
         {
             if (logger.IsInfoEnabled && threadName != null)
             {
-                logger.Info($"`{threadName}` was unable to set the thread priority to {priority}, will continue with the same priority", e);
+                logger.Info(e, $"`{threadName}` was unable to set the thread priority to {priority}, will continue with the same priority");
             }
             return false;
         }

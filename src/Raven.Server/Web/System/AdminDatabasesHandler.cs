@@ -15,7 +15,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Raven.Client;
+using NLog;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations;
@@ -38,6 +38,7 @@ using Raven.Server.Documents.Operations;
 using Raven.Server.Documents.Patch;
 using Raven.Server.Documents.PeriodicBackup.Restore;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.Rachis;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide;
@@ -58,12 +59,13 @@ using Sparrow.Utils;
 using Voron.Util.Settings;
 using Index = Raven.Server.Documents.Indexes.Index;
 using Size = Sparrow.Size;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Web.System
 {
     public class AdminDatabasesHandler : ServerRequestHandler
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<AdminDatabasesHandler>("Server");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<AdminDatabasesHandler>();
 
         [RavenAction("/admin/databases", "GET", AuthorizationStatus.Operator)]
         public async Task Get()
@@ -200,12 +202,12 @@ namespace Raven.Server.Web.System
                 var json = await context.ReadForDiskAsync(RequestBodyStream(), "Database Record");
                 var databaseRecord = JsonDeserializationCluster.DatabaseRecord(json);
 
-                if (LoggingSource.AuditLog.IsInfoEnabled)
+                if (RavenLogManager.Instance.IsAuditEnabled)
                 {
                     var clientCert = GetCurrentCertificate();
 
-                    var auditLog = LoggingSource.AuditLog.GetLogger("DbMgmt", "Audit");
-                    auditLog.Info($"Database {databaseRecord.DatabaseName} PUT by {clientCert?.Subject} ({clientCert?.Thumbprint})");
+                    var auditLog = RavenLogManager.Instance.GetAuditLoggerForServer();
+                    auditLog.Audit($"Database {databaseRecord.DatabaseName} PUT by {clientCert?.Subject} ({clientCert?.Thumbprint})");
                 }
 
                 if (ServerStore.LicenseManager.LicenseStatus.HasDocumentsCompression && databaseRecord.DocumentsCompression == null)
@@ -367,7 +369,7 @@ namespace Raven.Server.Web.System
                     catch (Exception e)
                     {
                         if (Logger.IsInfoEnabled)
-                            Logger.Info($"Could not open index {Path.GetFileName(indexPath)}", e);
+                            Logger.Info(e, $"Could not open index {Path.GetFileName(indexPath)}");
                     }
                     finally
                     {
@@ -629,12 +631,12 @@ namespace Raven.Server.Web.System
 
                 X509Certificate2 clientCertificate = null;
 
-                if (LoggingSource.AuditLog.IsInfoEnabled)
+                if (RavenLogManager.Instance.IsAuditEnabled)
                 {
                     clientCertificate = GetCurrentCertificate();
 
-                    var auditLog = LoggingSource.AuditLog.GetLogger("DbMgmt", "Audit");
-                    auditLog.Info($"Attempt to delete [{string.Join(", ", parameters.DatabaseNames)}] database(s) from ({string.Join(", ", parameters.FromNodes ?? Enumerable.Empty<string>())}) by {clientCertificate?.Subject} ({clientCertificate?.Thumbprint})");
+                    var auditLog = RavenLogManager.Instance.GetAuditLoggerForServer();
+                    auditLog.Audit($"Attempt to delete [{string.Join(", ", parameters.DatabaseNames)}] database(s) from ({string.Join(", ", parameters.FromNodes ?? Enumerable.Empty<string>())}) by {clientCertificate?.Subject} ({clientCertificate?.Thumbprint})");
                 }
 
                 using (context.OpenReadTransaction())
@@ -664,11 +666,11 @@ namespace Raven.Server.Web.System
                                     databasesToDelete.Add(databaseName);
                                     break;
                                 case DatabaseLockMode.PreventDeletesIgnore:
-                                    if (Logger.IsOperationsEnabled)
+                                    if (Logger.IsWarnEnabled)
                                     {
                                         clientCertificate ??= GetCurrentCertificate();
 
-                                        Logger.Operations($"Attempt to delete '{databaseName}' database was prevented due to lock mode set to '{rawRecord.LockMode}'. IP: '{HttpContext.Connection.RemoteIpAddress}'. Certificate: {clientCertificate?.Subject} ({clientCertificate?.Thumbprint})");
+                                        Logger.Warn($"Attempt to delete '{databaseName}' database was prevented due to lock mode set to '{rawRecord.LockMode}'. IP: '{HttpContext.Connection.RemoteIpAddress}'. Certificate: {clientCertificate?.Subject} ({clientCertificate?.Thumbprint})");
                                     }
 
                                     continue;
@@ -713,12 +715,12 @@ namespace Raven.Server.Web.System
                     }
                 }
 
-                if (LoggingSource.AuditLog.IsInfoEnabled)
+                if (RavenLogManager.Instance.IsAuditEnabled)
                 {
                     var clientCert = GetCurrentCertificate();
 
-                    var auditLog = LoggingSource.AuditLog.GetLogger("DbMgmt", "Audit");
-                    auditLog.Info($"Delete [{string.Join(", ", databasesToDelete)}] database(s) from ({string.Join(", ", parameters.FromNodes ?? Enumerable.Empty<string>())}) by {clientCert?.Subject} ({clientCert?.Thumbprint})");
+                    var auditLog = RavenLogManager.Instance.GetAuditLoggerForServer();
+                    auditLog.Audit($"Delete [{string.Join(", ", databasesToDelete)}] database(s) from ({string.Join(", ", parameters.FromNodes ?? Enumerable.Empty<string>())}) by {clientCert?.Subject} ({clientCert?.Thumbprint})");
                 }
 
                 long index = -1;
@@ -944,9 +946,9 @@ namespace Raven.Server.Web.System
                 if (isServerScript)
                 {
                     var console = new AdminJsConsole(Server, null);
-                    if (console.Log.IsOperationsEnabled)
+                    if (console.Log.IsWarnEnabled)
                     {
-                        console.Log.Operations($"The certificate that was used to initiate the operation: {clientCert ?? "None"}");
+                        console.Log.Warn($"The certificate that was used to initiate the operation: {clientCert ?? "None"}");
                     }
 
                     result = console.ApplyScript(adminJsScript);
@@ -961,9 +963,9 @@ namespace Raven.Server.Web.System
                     }
 
                     var console = new AdminJsConsole(Server, database);
-                    if (console.Log.IsOperationsEnabled)
+                    if (console.Log.IsWarnEnabled)
                     {
-                        console.Log.Operations($"The certificate that was used to initiate the operation: {clientCert ?? "None"}");
+                        console.Log.Warn($"The certificate that was used to initiate the operation: {clientCert ?? "None"}");
                     }
                     result = console.ApplyScript(adminJsScript);
                 }
@@ -1126,8 +1128,8 @@ namespace Raven.Server.Web.System
                         }
                         catch (Exception e)
                         {
-                            if (Logger.IsOperationsEnabled)
-                                Logger.Operations("Compaction process failed", e);
+                            if (Logger.IsErrorEnabled)
+                                Logger.Error(e, "Compaction process failed");
 
                             throw;
                         }

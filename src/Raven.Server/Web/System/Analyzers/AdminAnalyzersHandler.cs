@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Raven.Server.Documents.Indexes.Analysis;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.Rachis;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide.Commands.Analyzers;
@@ -29,12 +30,12 @@ namespace Raven.Server.Web.System.Analyzers
                     var analyzerDefinition = JsonDeserializationServer.AnalyzerDefinition((BlittableJsonReaderObject)analyzerToAdd);
                     analyzerDefinition.Name = analyzerDefinition.Name?.Trim();
 
-                    if (LoggingSource.AuditLog.IsInfoEnabled)
+                    if (RavenLogManager.Instance.IsAuditEnabled)
                     {
                         var clientCert = GetCurrentCertificate();
 
-                        var auditLog = LoggingSource.AuditLog.GetLogger("Server", "Audit");
-                        auditLog.Info($"Analyzer {analyzerDefinition.Name} PUT by {clientCert?.Subject} {clientCert?.Thumbprint} with definition: {analyzerToAdd}");
+                        var auditLog = RavenLogManager.Instance.GetAuditLoggerForServer();
+                        auditLog.Audit($"Analyzer {analyzerDefinition.Name} PUT by {clientCert?.Subject} {clientCert?.Thumbprint} with definition: {analyzerToAdd}");
                     }
 
                     analyzerDefinition.Validate();
@@ -62,12 +63,12 @@ namespace Raven.Server.Web.System.Analyzers
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
 
-            if (LoggingSource.AuditLog.IsInfoEnabled)
+            if (RavenLogManager.Instance.IsAuditEnabled)
             {
                 var clientCert = GetCurrentCertificate();
 
-                var auditLog = LoggingSource.AuditLog.GetLogger("Server", "Audit");
-                auditLog.Info($"Analyzer {name} DELETE by {clientCert?.Subject} {clientCert?.Thumbprint}");
+                var auditLog = RavenLogManager.Instance.GetAuditLoggerForServer();
+                auditLog.Audit($"Analyzer {name} DELETE by {clientCert?.Subject} {clientCert?.Thumbprint}");
             }
 
             var command = new DeleteServerWideAnalyzerCommand(name, GetRaftRequestIdFromQuery());

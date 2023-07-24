@@ -9,9 +9,11 @@ using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
+using NLog;
 using Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers;
 using Raven.Server.Exceptions;
 using Raven.Server.Indexing;
+using Raven.Server.Logging;
 using Raven.Server.Utils;
 using Sparrow.Logging;
 using Sparrow.Server.Utils;
@@ -44,7 +46,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             _maxFieldLength = maxFieldLength;
             _index = index;
             _field = field;
-            _logger = LoggingSource.Instance.GetLogger<LuceneSuggestionIndexWriter>(_index.DocumentDatabase.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForIndex<LuceneSuggestionIndexWriter>(index);
 
             RecreateIndexWriter(state);
         }
@@ -301,7 +303,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             catch (Exception e)
             {
                 if (_logger.IsInfoEnabled)
-                    _logger.Info($"Error while closing the suggestions index for field '{_field}' (closing the analyzer failed)", e);
+                    _logger.Info(e, $"Error while closing the suggestions index for field '{_field}' (closing the analyzer failed)");
             }
 
             try
@@ -312,7 +314,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             catch (Exception e)
             {
                 if (_logger.IsInfoEnabled)
-                    _logger.Info($"Error when closing the suggestions index for field '{_field}'", e);
+                    _logger.Info(e, $"Error when closing the suggestions index for field '{_field}'");
             }
         }
 

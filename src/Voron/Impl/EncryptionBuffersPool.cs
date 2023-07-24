@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using NLog;
 using Sparrow;
 using Sparrow.Binary;
 using Sparrow.Json;
@@ -10,11 +11,11 @@ using Sparrow.Json.Parsing;
 using Sparrow.Logging;
 using Sparrow.LowMemory;
 using Sparrow.Platform;
-using Sparrow.Server;
 using Sparrow.Server.Platform;
 using Sparrow.Threading;
 using Sparrow.Utils;
-using Voron.Global;
+using Voron.Logging;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Impl
 {
@@ -23,7 +24,7 @@ namespace Voron.Impl
         private readonly object _locker = new object();
 
         public static EncryptionBuffersPool Instance = new EncryptionBuffersPool();
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<EncryptionBuffersPool>("Memory");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForGlobalVoron<EncryptionBuffersPool>();
         private const int MaxNumberOfPagesToCache = 128; // 128 * 8K = 1 MB, beyond that, we'll not both
         private readonly MultipleUseFlag _isLowMemory = new MultipleUseFlag();
         private readonly MultipleUseFlag _isExtremelyLowMemory = new MultipleUseFlag();
@@ -375,8 +376,8 @@ namespace Voron.Impl
             catch (Exception e)
             {
                 Debug.Assert(e is OutOfMemoryException, $"Expecting OutOfMemoryException but got: {e}");
-                if (Logger.IsOperationsEnabled)
-                    Logger.Operations("Error during cleanup.", e);
+                if (Logger.IsWarnEnabled)
+                    Logger.Warn(e, "Error during cleanup.");
             }
             finally
             {

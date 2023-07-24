@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
+using Raven.Client.Logging;
 using Raven.Client.Util;
 using Sparrow;
 using Sparrow.Json;
@@ -16,7 +18,7 @@ namespace Raven.Client.Http
     {
         internal const string NotFoundResponse = "404 Response";
 
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<HttpCache>("Client");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForClient<HttpCache>();
 
         private readonly long _maxSize;
         private readonly ConcurrentDictionary<string, HttpCacheItem> _items = new ConcurrentDictionary<string, HttpCacheItem>();
@@ -31,7 +33,7 @@ namespace Raven.Client.Http
         public HttpCache(long maxSize)
         {
             _maxSize = maxSize;
-            _unmanagedBuffersPool = new UnmanagedBuffersPool(nameof(HttpCache), "Client");
+            _unmanagedBuffersPool = new UnmanagedBuffersPool(Logger,nameof(HttpCache), "Client");
             LowMemoryNotification.Instance.RegisterLowMemoryHandler(this);
         }
 
@@ -95,9 +97,9 @@ namespace Raven.Client.Http
 
                 GC.SuppressFinalize(this);
 
-                if (Logger.IsInfoEnabled)
+                if (Logger.IsDebugEnabled)
                 {
-                    Logger.Info($"Released item from cache. Total cache size: {Cache._totalSize}");
+                    Logger.Debug($"Released item from cache. Total cache size: {Cache._totalSize}");
                 }
             }
 
@@ -226,8 +228,8 @@ namespace Raven.Client.Http
 
                 Debug.Assert(_isFreeSpaceRunning);
 
-                if (Logger.IsInfoEnabled)
-                    Logger.Info($"Started to clear the http cache. Items: {_items.Count:#,#;;0}");
+                if (Logger.IsDebugEnabled)
+                    Logger.Debug($"Started to clear the http cache. Items: {_items.Count:#,#;;0}");
 
                 // Using the current total size will always ensure that under low memory conditions
                 // we are making our best effort to actually get some memory back to the system in
@@ -269,8 +271,8 @@ namespace Raven.Client.Http
                     sizeCleared += value.Size;
                 }
 
-                if (Logger.IsInfoEnabled)
-                    Logger.Info($"Cleared {numberOfClearedItems:#,#;;0} items from the http cache, " +
+                if (Logger.IsDebugEnabled)
+                    Logger.Debug($"Cleared {numberOfClearedItems:#,#;;0} items from the http cache, " +
                                 $"size: {new Sparrow.Size(sizeCleared, SizeUnit.Bytes)} " +
                                 $"Total items: {_items.Count:#,#;;0}");
             }
@@ -336,8 +338,8 @@ namespace Raven.Client.Http
                         obj.BlittableValidation();
                     }
 #endif
-                    if (Logger.IsInfoEnabled)
-                        Logger.Info($"Url returned from the cache with etag: {changeVector}. {url}.");
+                    if (Logger.IsDebugEnabled)
+                        Logger.Debug($"Url returned from the cache with etag: {changeVector}. {url}.");
 
                     return releaser;
                 }

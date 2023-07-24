@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using NLog;
 using Raven.Client;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Json;
 using Sparrow.Logging;
@@ -18,7 +20,7 @@ namespace Raven.Server.Documents.Patch
 
         public PatchConflict(DocumentDatabase database, IReadOnlyList<DocumentConflict> docs)
         {
-            _logger = LoggingSource.Instance.GetLogger<PatchConflict>(database.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<PatchConflict>(database);
             _database = database;
 
             foreach (var doc in docs)

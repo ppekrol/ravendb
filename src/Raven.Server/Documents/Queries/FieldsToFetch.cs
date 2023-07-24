@@ -11,6 +11,7 @@ using Raven.Server.Documents.Indexes.MapReduce.Static;
 using Raven.Server.Documents.Queries.AST;
 using Raven.Server.Documents.Queries.Results;
 using Sparrow;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Queries
 {

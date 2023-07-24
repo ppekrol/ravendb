@@ -28,17 +28,17 @@ namespace SlowTests.Issues
                 {
                     var configuration1 = await store.Maintenance.Server.SendAsync(new GetLogsConfigurationOperation(), cts.Token);
 
-                    LogMode newLogMode;
+                    LogLevel newLogMode;
                     switch (configuration1.CurrentMode)
                     {
-                        case LogMode.None:
-                            newLogMode = LogMode.Information;
+                        case LogLevel.None:
+                            newLogMode = LogLevel.Information;
                             break;
-                        case LogMode.Operations:
-                            newLogMode = LogMode.Information;
+                        case LogLevel.Operations:
+                            newLogMode = LogLevel.Information;
                             break;
-                        case LogMode.Information:
-                            newLogMode = LogMode.None;
+                        case LogLevel.Information:
+                            newLogMode = LogLevel.None;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
@@ -91,7 +91,7 @@ namespace SlowTests.Issues
                     {
                         var newParams = new SetLogsConfigurationOperation.Parameters(configuration1)
                         {
-                            Mode = LogMode.Information,
+                            Mode = LogLevel.Information,
                             Compress = newCompress,
                             RetentionTime = newTime,
                             RetentionSize = newSize
@@ -103,7 +103,7 @@ namespace SlowTests.Issues
 
                         Assert.Equal(newCompress, configuration2.Compress);
                         Assert.Equal(newTime, configuration2.RetentionTime);
-                        Assert.Equal(LogMode.Information, configuration2.CurrentMode);
+                        Assert.Equal(LogLevel.Information, configuration2.CurrentMode);
                         Assert.Equal(newSize, configuration2.RetentionSize);
 
                         Assert.Equal(configuration1.Mode, configuration2.Mode);

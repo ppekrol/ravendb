@@ -177,7 +177,7 @@ namespace Voron.Recovery
                     if (loggingModeArg.HasValue())
                     {
                         var value = loggingModeArg.Value();
-                        if (Enum.TryParse(value, out LogMode mode) == false)
+                        if (Enum.TryParse(value, out LogLevel mode) == false)
                             return ExitWithError($"{nameof(config.LoggingMode)} argument value ({value}) is invalid", cmd);
                         config.LoggingMode = mode;
                     }

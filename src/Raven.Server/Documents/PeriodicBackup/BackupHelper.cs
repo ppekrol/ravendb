@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Operations.Backups;
 using Raven.Client.Documents.Smuggler;

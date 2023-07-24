@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using NLog;
 using Raven.Client.Documents.Operations.Attachments;
 using Raven.Client.Documents.Operations.Counters;
 using Raven.Client.Documents.Smuggler;
@@ -39,6 +40,7 @@ using static System.String;
 using static Raven.Server.Documents.Schemas.Counters;
 using static Voron.Data.BTrees.Tree;
 using Constants = Voron.Global.Constants;
+using LogLevel = Sparrow.Logging.LogLevel;
 
 namespace Voron.Recovery
 {
@@ -61,7 +63,7 @@ namespace Voron.Recovery
 
             _progressIntervalInSec = config.ProgressIntervalInSec;
             _previouslyWrittenDocs = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
-            if (config.LoggingMode != LogMode.None)
+            if (config.LoggingMode != LogLevel.None)
                 LoggingSource.Instance.SetupLogMode(config.LoggingMode, Path.Combine(Path.GetDirectoryName(_output), LogFileName), TimeSpan.FromDays(3), long.MaxValue, false);
             _logger = LoggingSource.Instance.GetLogger<Recovery>("Voron Recovery");
             _shouldIgnoreInvalidPagesInARaw = config.IgnoreInvalidPagesInARow;
@@ -577,7 +579,7 @@ namespace Voron.Recovery
             {
                 tx?.Dispose();
                 se?.Dispose();
-                if (_config.LoggingMode != LogMode.None)
+                if (_config.LoggingMode != LogLevel.None)
                     LoggingSource.Instance.EndLogging();
             }
         }

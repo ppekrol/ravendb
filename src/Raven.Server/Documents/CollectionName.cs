@@ -5,6 +5,7 @@ using Raven.Client;
 using Raven.Server.Documents.Indexes.Static;
 using Sparrow;
 using Sparrow.Json;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents
 {

@@ -48,7 +48,7 @@ namespace SlowTests.RecoveryTests
             var recoveryExportPath = options.RecoveryDirectory;
             using (var recovery = new Recovery(new VoronRecoveryConfiguration
             {
-                LoggingMode = Sparrow.Logging.LogMode.None,
+                LoggingMode = Sparrow.Logging.LogLevel.None,
                 DataFileDirectory = options.PathToDataFile,
                 PathToDataFile = Path.Combine(options.PathToDataFile, "Raven.voron"),
                 OutputFileName = Path.Combine(recoveryExportPath, "recovery.ravendbdump"),

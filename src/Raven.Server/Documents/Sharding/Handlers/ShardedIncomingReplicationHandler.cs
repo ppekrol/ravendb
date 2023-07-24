@@ -427,7 +427,7 @@ namespace Raven.Server.Documents.Sharding.Handlers
                 {
                     if (Logger.IsInfoEnabled)
                     {
-                        Logger.Info($"Failed to dispose sharded outgoing replication to {instance.Value?.DestinationFormatted}", e);
+                        Logger.Info(e, $"Failed to dispose sharded outgoing replication to {instance.Value?.DestinationFormatted}");
                     }
                 }
             });

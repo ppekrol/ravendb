@@ -4,14 +4,11 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
-using Corax;
 using Corax.Mappings;
 using Corax.Queries;
-using Corax.Queries.SortingMatches;
 using Corax.Queries.SortingMatches.Meta;
 using Corax.Utils;
 using Raven.Client.Exceptions;
-using Raven.Client.Exceptions.Corax;
 using Raven.Server.Documents.Indexes.Persistence.Corax.QueryOptimizer;
 using Raven.Server.Documents.Queries;
 using Raven.Server.Documents.Queries.AST;
@@ -23,7 +20,7 @@ using Sparrow.Server;
 using Spatial4n.Shapes;
 using RavenConstants = Raven.Client.Constants;
 using IndexSearcher = Corax.IndexSearcher;
-using CoraxConstants = Corax.Constants;
+using CoraxConstants = Corax.Global.Constants;
 using SpatialUnits = Raven.Client.Documents.Indexes.Spatial.SpatialUnits;
 using MoreLikeThisQuery = Raven.Server.Documents.Queries.MoreLikeThis.Corax;
 
@@ -831,9 +828,9 @@ internal static class CoraxQueryBuilder
 
             var op = fieldExpression.Compound[0];
             if (string.Equals("AND", op.Value, StringComparison.OrdinalIgnoreCase))
-                @operator = Constants.Search.Operator.And;
+                @operator = CoraxConstants.Search.Operator.And;
             else if (string.Equals("OR", op.Value, StringComparison.OrdinalIgnoreCase))
-                @operator = Constants.Search.Operator.Or;
+                @operator = CoraxConstants.Search.Operator.Or;
             else
                 QueryBuilderHelper.ThrowInvalidOperatorInSearch(metadata, queryParameters, fieldExpression);
         }

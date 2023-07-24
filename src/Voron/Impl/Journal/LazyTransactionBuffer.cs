@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using NLog;
 using Sparrow.Logging;
 using Sparrow.Platform;
 using Voron.Impl.Paging;
+using Voron.Logging;
 using Constants = Voron.Global.Constants;
 
 namespace Voron.Impl.Journal
 {
-    public unsafe class LazyTransactionBuffer : IDisposable
+    public sealed unsafe class LazyTransactionBuffer : IDisposable
     {
         public bool HasDataInBuffer() => _firstPositionInJournalFile != null;
 
@@ -27,7 +29,7 @@ namespace Voron.Impl.Journal
             _options = options;
             _lazyTransactionPager = CreateBufferPager();
             _transactionPersistentContext = new TransactionPersistentContext(true);
-            _log = LoggingSource.Instance.GetLogger<LazyTransactionBuffer>(options.BasePath.FullPath);
+            _log = RavenLogManager.Instance.GetLoggerForVoron<LazyTransactionBuffer>(options, options.BasePath.FullPath);
         }
 
         private AbstractPager CreateBufferPager()
@@ -116,7 +118,7 @@ namespace Voron.Impl.Journal
         {
             if (_options.Encryption.IsEnabled == false)
                 return;
-            
+
             var lazyTxBufferSize = _lazyTransactionPager.NumberOfAllocatedPages * Constants.Storage.PageSize;
             var pagePointer = _lazyTransactionPager.AcquirePagePointer(tx, 0);
             Sodium.sodium_memzero(pagePointer, (UIntPtr)lazyTxBufferSize);

@@ -8,15 +8,15 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Sparrow;
 using Sparrow.Collections;
+using Sparrow.Logging;
 using Sparrow.Server.Meters;
-using Sparrow.Server.Platform;
 using Sparrow.Server.Platform.Posix;
-using Sparrow.Utils;
 using Voron.Data;
-using Voron.Global;
 using Voron.Impl;
 using Voron.Impl.Paging;
+using Voron.Logging;
 using Voron.Util.Settings;
+using Constants = Voron.Global.Constants;
 using NativeMemory = Sparrow.Utils.NativeMemory;
 
 namespace Voron.Platform.Posix
@@ -37,8 +37,8 @@ namespace Voron.Platform.Posix
         private const int NumberOfPagesInAllocationGranularity = AllocationGranularity / Constants.Storage.PageSize;
         public override long TotalAllocationSize => _totalAllocationSize;
 
-        public Posix32BitsMemoryMapPager(StorageEnvironmentOptions options, VoronPathSetting file, long? initialFileSize = null,
-            bool usePageProtection = false) : base(options, canPrefetchAhead: false, usePageProtection: usePageProtection, supportsUnmapping: false)
+        public Posix32BitsMemoryMapPager(StorageEnvironmentOptions options, VoronPathSetting file, long? initialFileSize = null, bool usePageProtection = false) 
+            : base(RavenLogManager.Instance.GetLoggerForVoron<Posix32BitsMemoryMapPager>(options, file?.FullPath), options, canPrefetchAhead: false, usePageProtection: usePageProtection, supportsUnmapping: false)
         {
             _options = options;
             FileName = file;

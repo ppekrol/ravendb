@@ -2,10 +2,13 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using JetBrains.Annotations;
+using NLog;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Util;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
+using Sparrow.Global;
 using Sparrow.Json;
 using Sparrow.Logging;
 
@@ -36,7 +39,7 @@ namespace Raven.Server.NotificationCenter
         {
             _notificationCenter = notificationCenter ?? throw new ArgumentNullException(nameof(notificationCenter));
 
-            _logger = LoggingSource.Instance.GetLogger(notificationCenter.Database, GetType().FullName);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<Indexing>(_notificationCenter.Database);
         }
 
         public void AddWarning(string indexName, WarnIndexOutputsPerDocument.WarningDetails indexOutputsWarning)
@@ -146,7 +149,7 @@ namespace Raven.Server.NotificationCenter
             catch (Exception e)
             {
                 if (_logger.IsInfoEnabled)
-                    _logger.Info("Error in the notification center indexing timer", e);
+                    _logger.Info(e, "Error in the notification center indexing timer");
             }
         }
 

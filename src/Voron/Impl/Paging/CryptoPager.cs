@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Sparrow;
+using Sparrow.Logging;
 using Sparrow.Platform;
 using Sparrow.Utils;
 using Voron.Data;
+using Voron.Logging;
 using Constants = Voron.Global.Constants;
 
 namespace Voron.Impl.Paging
@@ -112,7 +114,8 @@ namespace Voron.Impl.Paging
 
         public override long NumberOfAllocatedPages => Inner.NumberOfAllocatedPages;
 
-        public CryptoPager(AbstractPager inner) : base(inner.Options, inner.UsePageProtection)
+        public CryptoPager(AbstractPager inner) 
+            : base(RavenLogManager.Instance.GetLoggerForVoron<CryptoPager>(inner.Options, inner.FileName?.FullPath), inner.Options, inner.UsePageProtection)
         {
             if (inner.Options.Encryption.IsEnabled == false)
                 throw new InvalidOperationException("Cannot use CryptoPager if IsEnabled is false (no key defined)");

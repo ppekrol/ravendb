@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Util;
 using Raven.Server.Config;
 using Raven.Server.Config.Settings;
@@ -15,8 +16,8 @@ using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
 using Sparrow;
 using Sparrow.Json;
-using Sparrow.Logging;
 using Sparrow.LowMemory;
+using Sparrow.Server.LowMemory;
 using Sparrow.Server.Meters;
 using Sparrow.Server.Utils;
 using Sparrow.Utils;
@@ -63,10 +64,11 @@ namespace Raven.Server.Documents.TransactionMerger
             [NotNull] string resourceName,
             [NotNull] RavenConfiguration configuration,
             [NotNull] SystemTime time,
+            [JetBrains.Annotations.NotNull] Logger logger,
             CancellationToken shutdown)
         {
             _resourceName = resourceName ?? throw new ArgumentNullException(nameof(resourceName));
-            _log = LoggingSource.Instance.GetLogger(_resourceName, GetType().FullName);
+            _log = logger ?? throw new ArgumentNullException(nameof(logger));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _time = time ?? throw new ArgumentNullException(nameof(time));
             _shutdown = shutdown;
@@ -191,13 +193,11 @@ namespace Raven.Server.Documents.TransactionMerger
                     // in particular, an OOM error is something that we want to recover
                     // we'll handle this by throwing out all the pending transactions,
                     // waiting for 3 seconds and then resuming normal operations
-                    if (_log.IsOperationsEnabled)
+                    if (_log.IsWarnEnabled)
                     {
                         try
                         {
-                            _log.Operations(
-                                "OutOfMemoryException happened in the transaction merger, will abort all transactions for the next 3 seconds and then resume operations",
-                                e);
+                            _log.Warn(e, "OutOfMemoryException happened in the transaction merger, will abort all transactions for the next 3 seconds and then resume operations");
                         }
                         catch
                         {
@@ -229,11 +229,9 @@ namespace Raven.Server.Documents.TransactionMerger
                 }
                 catch (Exception e)
                 {
-                    if (_log.IsOperationsEnabled)
+                    if (_log.IsFatalEnabled)
                     {
-                        _log.Operations(
-                            "Serious failure in transaction merging thread, the database must be restarted!",
-                            e);
+                        _log.Fatal(e, "Serious failure in transaction merging thread, the database must be restarted!");
                     }
                     Interlocked.Exchange(ref _edi, ExceptionDispatchInfo.Capture(e));
                     // cautionary, we make sure that stuff that is waiting on the
@@ -371,7 +369,7 @@ namespace Raven.Server.Documents.TransactionMerger
                             if (_log.IsInfoEnabled)
                             {
                                 var errorMessage = $"{pendingOps.Count:#,#0} operations were cancelled because of high dirty memory, details: {highDirtyMemoryException.Message}";
-                                _log.Info(errorMessage, highDirtyMemoryException);
+                                _log.Info(highDirtyMemoryException, errorMessage);
                             }
 
                             NotifyHighDirtyMemoryFailure(pendingOps, highDirtyMemoryException);
@@ -380,7 +378,7 @@ namespace Raven.Server.Documents.TransactionMerger
                         {
                             if (_log.IsInfoEnabled)
                             {
-                                _log.Info($"Failed to run merged transaction with {pendingOps.Count:#,#0}, will retry independently", e);
+                                _log.Info(e, $"Failed to run merged transaction with {pendingOps.Count:#,#0}, will retry independently");
                             }
 
                             NotifyTransactionFailureAndRerunIndependently(pendingOps, e);
@@ -465,7 +463,7 @@ namespace Raven.Server.Documents.TransactionMerger
 
             if (_log.IsInfoEnabled)
             {
-                _log.Info($"Error when merging {pendingOps.Count} transactions, will try running independently", e);
+                _log.Info(e, $"Error when merging {pendingOps.Count} transactions, will try running independently");
             }
 
             RunEachOperationIndependently(pendingOps);
@@ -562,7 +560,7 @@ namespace Raven.Server.Documents.TransactionMerger
                             if (_log.IsInfoEnabled)
                             {
                                 var errorMessage = $"{currentPendingOps.Count:#,#0} operations were cancelled because of high dirty memory, details: {highDirtyMemoryException.Message}";
-                                _log.Info(errorMessage, highDirtyMemoryException);
+                                _log.Info(highDirtyMemoryException, errorMessage);
                             }
 
                             NotifyHighDirtyMemoryFailure(currentPendingOps, highDirtyMemoryException);
@@ -571,7 +569,7 @@ namespace Raven.Server.Documents.TransactionMerger
                         {
                             if (_log.IsInfoEnabled)
                             {
-                                _log.Info($"Failed to run merged transaction with {currentPendingOps.Count:#,#0} operations in async manner, will retry independently", e);
+                                _log.Info(e, $"Failed to run merged transaction with {currentPendingOps.Count:#,#0} operations in async manner, will retry independently");
                             }
 
                             NotifyTransactionFailureAndRerunIndependently(currentPendingOps, e);
@@ -745,10 +743,10 @@ namespace Raven.Server.Documents.TransactionMerger
 
             var currentOperationsCount = _operations.Count;
             var status = GetPendingOperationsStatus(context, currentOperationsCount == 0);
-            if (_log.IsInfoEnabled)
+            if (_log.IsDebugEnabled)
             {
                 var opType = previousOperation == null ? string.Empty : "(async) ";
-                _log.Info($"Merged {executedOps.Count:#,#;;0} operations in {sp.Elapsed} {opType}with {currentOperationsCount:#,#;;0} operations remaining. Status: {status}");
+                _log.Debug($"Merged {executedOps.Count:#,#;;0} operations in {sp.Elapsed} {opType}with {currentOperationsCount:#,#;;0} operations remaining. Status: {status}");
             }
             return status;
         }
@@ -802,7 +800,7 @@ namespace Raven.Server.Documents.TransactionMerger
                 }
 
                 if (_log.IsInfoEnabled)
-                    _log.Info($"Rejecting {rejectedBuffer.Count} to avoid OOM error", timeout);
+                    _log.Info(timeout, $"Rejecting {rejectedBuffer.Count} to avoid OOM error");
 
                 NotifyOnThreadPool(rejectedBuffer);
             }

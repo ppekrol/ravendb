@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using NLog;
 using Sparrow.Logging;
 using Sparrow.Platform;
 using Sparrow.Server.Meters;
@@ -9,14 +10,14 @@ using Sparrow.Server.Platform;
 using Sparrow.Threading;
 using Voron.Global;
 using Voron.Impl.Paging;
-using Voron.Platform;
+using Voron.Logging;
 using Voron.Platform.Posix;
 using Voron.Platform.Win32;
 using Voron.Util.Settings;
 
 namespace Voron.Impl.Journal
 {
-    public unsafe class JournalWriter : IJournalWriter
+    public sealed unsafe class JournalWriter : IJournalWriter
     {
         private const int ERROR_WORKING_SET_QUOTA = 0x5AD;
 
@@ -38,7 +39,7 @@ namespace Voron.Impl.Journal
         {
             _options = options;
             FileName = filename;
-            _log = LoggingSource.Instance.GetLogger<JournalWriter>(options.BasePath.FullPath);
+            _log = RavenLogManager.Instance.GetLoggerForVoron<JournalWriter>(options, options.BasePath.FullPath);
 
             var result = Pal.rvn_open_journal_for_writes(filename.FullPath, mode, size, options.SupportDurabilityFlags, out _writeHandle, out var actualSize, out var error);
             if (result != PalFlags.FailCodes.Success)
@@ -57,10 +58,9 @@ namespace Voron.Impl.Journal
                 if (result != PalFlags.FailCodes.Success)
                     PalHelper.ThrowLastError(result, error, $"Attempted to write to journal file - Path: {FileName.FullPath} Size: {numberOf4Kb * 4L * Constants.Size.Kilobyte}, numberOf4Kb={numberOf4Kb}");
 
-                if (error == ERROR_WORKING_SET_QUOTA && _log.IsOperationsEnabled && _workingSetQuotaLogged == false)
+                if (error == ERROR_WORKING_SET_QUOTA && _log.IsInfoEnabled && _workingSetQuotaLogged == false)
                 {
-                    _log.Operations(
-                        $"We managed to accomplish journal write although we got {nameof(ERROR_WORKING_SET_QUOTA)} under the covers and wrote data in 4KB chunks");
+                    _log.Info($"We managed to accomplish journal write although we got {nameof(ERROR_WORKING_SET_QUOTA)} under the covers and wrote data in 4KB chunks");
 
                     _workingSetQuotaLogged = true;
                 }

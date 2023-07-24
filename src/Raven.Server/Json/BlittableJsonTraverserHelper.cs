@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Raven.Client;
 using Raven.Server.Documents;
 using Sparrow;
 using Sparrow.Json;
 using TypeConverter = Raven.Server.Utils.TypeConverter;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Json
 {

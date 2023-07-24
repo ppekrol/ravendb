@@ -7,6 +7,7 @@ using Lucene.Net.Analysis;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Server.Documents.Indexes.MapReduce.OutputToCollection;
@@ -19,6 +20,7 @@ using Raven.Server.Documents.Indexes.Static.TimeSeries;
 using Raven.Server.Documents.Queries;
 using Raven.Server.Exceptions;
 using Raven.Server.Indexing;
+using Raven.Server.Logging;
 using Raven.Server.Utils;
 using Sparrow.Json;
 using Sparrow.Logging;
@@ -27,7 +29,6 @@ using Sparrow.Threading;
 using Voron;
 using Voron.Data.BTrees;
 using Voron.Impl;
-
 using Version = Lucene.Net.Util.Version;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene
@@ -68,7 +69,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 
         public LuceneIndexPersistence(Index index, IIndexReadOperationFactory indexReadOperationFactory) : base(index, indexReadOperationFactory)
         {
-            _logger = LoggingSource.Instance.GetLogger<LuceneIndexPersistence>(index.DocumentDatabase.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForIndex<LuceneIndexPersistence>(index);
             _suggestionsDirectories = new Dictionary<string, LuceneVoronDirectory>();
             _suggestionsIndexSearcherHolders = new Dictionary<string, LuceneIndexSearcherHolder>();
             _disposeOnce = new DisposeOnce<SingleAttempt>(() =>
@@ -139,7 +140,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 
             _fields = fields.ToDictionary(x => x.Name, x => x);
 
-            _luceneIndexSearcherHolder = new LuceneIndexSearcherHolder(CreateIndexSearcher, _index._indexStorage.DocumentDatabase);
+            _luceneIndexSearcherHolder = new LuceneIndexSearcherHolder(CreateIndexSearcher, _index);
 
             foreach (var field in _fields)
             {
@@ -147,7 +148,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
                     continue;
 
                 string fieldName = field.Key;
-                _suggestionsIndexSearcherHolders[fieldName] = new LuceneIndexSearcherHolder(state => new IndexSearcher(_suggestionsDirectories[fieldName], true, state), _index._indexStorage.DocumentDatabase);
+                _suggestionsIndexSearcherHolders[fieldName] = new LuceneIndexSearcherHolder(state => new IndexSearcher(_suggestionsDirectories[fieldName], true, state), _index);
             }
 
             IndexSearcher CreateIndexSearcher(IState state)
@@ -177,7 +178,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
                             catch (Exception e)
                             {
                                 if (_logger.IsInfoEnabled)
-                                    _logger.Info($"Could not reopen the index reader for index '{_index.Name}'.", e);
+                                    _logger.Info(e, $"Could not reopen the index reader for index '{_index.Name}'.");
 
                                 // fallback strategy in case of a reader to be closed
                                 // before Reopen and DecRef are executed
@@ -390,7 +391,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
                 if (!field.Value.HasSuggestions)
                     continue;
 
-                var directory = new LuceneVoronDirectory(tx, environment, TempFileCache, $"Suggestions-{field.Key}", _index.Configuration.LuceneIndexInput);
+                var directory = new LuceneVoronDirectory(_index, tx, environment, TempFileCache, $"Suggestions-{field.Key}", _index.Configuration.LuceneIndexInput);
                 _suggestionsDirectories[field.Key] = directory;
 
                 using (directory.SetTransaction(tx, out IState state))
@@ -404,7 +405,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 
         private void InitializeMainIndexStorage(Transaction tx, StorageEnvironment environment)
         {
-            _directory = new LuceneVoronDirectory(tx, environment, TempFileCache, _index.Configuration.LuceneIndexInput);
+            _directory = new LuceneVoronDirectory(_index, tx, environment, TempFileCache, _index.Configuration.LuceneIndexInput);
 
             using (_directory.SetTransaction(tx, out IState state))
             {

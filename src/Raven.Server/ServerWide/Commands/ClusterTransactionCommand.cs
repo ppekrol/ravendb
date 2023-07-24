@@ -24,6 +24,7 @@ using Voron;
 using Voron.Data.BTrees;
 using Voron.Data.Tables;
 using static Raven.Client.Exceptions.ClusterTransactionConcurrencyException;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.ServerWide.Commands
 {

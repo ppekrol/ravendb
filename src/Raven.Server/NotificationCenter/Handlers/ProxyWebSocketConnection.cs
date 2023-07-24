@@ -4,7 +4,9 @@ using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Raven.Client;
+using NLog;
+using Raven.Client.Util;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
 using Sparrow.Json;
@@ -14,7 +16,7 @@ namespace Raven.Server.NotificationCenter.Handlers
 {
     public class ProxyWebSocketConnection : IDisposable
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<ProxyWebSocketConnection>(nameof(ProxyWebSocketConnection));
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer(typeof(ProxyWebSocketConnection));
 
         private readonly CancellationTokenSource _cts;
         private readonly Uri _remoteWebSocketUri;
@@ -100,7 +102,7 @@ namespace Raven.Server.NotificationCenter.Handlers
                 catch (IOException ex)
                 {
                     if (Logger.IsInfoEnabled)
-                        Logger.Info($"Websocket proxy got disconnected (local WS proxy to {_remoteWebSocketUri})", ex);
+                        Logger.Info(ex, $"Websocket proxy got disconnected (local WS proxy to {_remoteWebSocketUri})");
                 }
                 catch (Exception ex)
                 {
@@ -152,7 +154,7 @@ namespace Raven.Server.NotificationCenter.Handlers
                 catch (IOException ex)
                 {
                     if (Logger.IsInfoEnabled)
-                        Logger.Info($"Websocket proxy got disconnected ({_remoteWebSocketUri} to local)", ex);
+                        Logger.Info(ex, $"Websocket proxy got disconnected ({_remoteWebSocketUri} to local)");
                 }
                 catch (Exception ex)
                 {

@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations;
-using Raven.Client.Documents.Operations.Replication;
 using Raven.Client.Documents.Smuggler;
 using Raven.Client.ServerWide;
 using Raven.Server.Documents;
 using Raven.Server.Documents.PeriodicBackup;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Commands;
 using Raven.Server.Smuggler.Documents.Actions;
@@ -24,6 +25,7 @@ namespace Raven.Server.Smuggler.Documents
     {
         private readonly DatabaseRecord _databaseRecord;
         private readonly ServerStore _server;
+        private readonly Logger _logger;
 
         public ShardedDatabaseSmuggler(
             ISmugglerSource source,
@@ -39,14 +41,14 @@ namespace Raven.Server.Smuggler.Documents
         {
             _databaseRecord = databaseRecord;
             _server = server;
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<ShardedDatabaseSmuggler>(_databaseRecord.DatabaseName);
         }
 
         public override SmugglerPatcher CreatePatcher() => new ServerSmugglerPatcher(_options, _server);
 
         protected override async Task<SmugglerProgressBase.DatabaseRecordProgress> ProcessDatabaseRecordAsync(SmugglerResult result)
         {
-            await using (var action = new DatabaseRecordActions(_server, _databaseRecord, _databaseRecord.DatabaseName,
-                             LoggingSource.Instance.GetLogger<DatabaseDestination>(_databaseRecord.DatabaseName)))
+            await using (var action = new DatabaseRecordActions(_server, _databaseRecord, _databaseRecord.DatabaseName, _logger))
             {
                 return await ProcessDatabaseRecordInternalAsync(result, action);
             }
@@ -89,7 +91,7 @@ namespace Raven.Server.Smuggler.Documents
                     externalReplication.MentorNode = null;
                 }
             }
-            
+
             foreach (var queueEtl in databaseRecord.QueueEtls)
             {
                 if (string.IsNullOrEmpty(queueEtl.MentorNode) == false)
@@ -294,7 +296,7 @@ namespace Raven.Server.Smuggler.Documents
 
         private class ShardedDatabaseCompareExchangeActions : AbstractDatabaseCompareExchangeActions
         {
-            public ShardedDatabaseCompareExchangeActions(ServerStore serverStore, DatabaseRecord databaseRecord, JsonOperationContext context, BackupKind? backupKind, CancellationToken token) 
+            public ShardedDatabaseCompareExchangeActions(ServerStore serverStore, DatabaseRecord databaseRecord, JsonOperationContext context, BackupKind? backupKind, CancellationToken token)
                 : base(serverStore, databaseRecord.DatabaseName, databaseRecord.Client?.IdentityPartsSeparator ?? Constants.Identities.DefaultSeparator, context, backupKind, token)
             {
             }

@@ -38,6 +38,7 @@ using Spatial4n.Shapes.Nts;
 using BinaryExpression = Raven.Server.Documents.Queries.AST.BinaryExpression;
 using Circle = Raven.Server.Documents.Indexes.Spatial.Circle;
 using System.Diagnostics.CodeAnalysis;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Queries
 {

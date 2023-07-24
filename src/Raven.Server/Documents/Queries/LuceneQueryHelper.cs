@@ -13,6 +13,7 @@ using Raven.Server.Documents.Queries.LuceneIntegration;
 using Sparrow;
 using Sparrow.Json;
 using Index = Raven.Server.Documents.Indexes.Index;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Queries
 {

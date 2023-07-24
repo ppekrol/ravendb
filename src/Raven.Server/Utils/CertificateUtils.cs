@@ -6,8 +6,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
@@ -18,17 +18,18 @@ using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
 using Org.BouncyCastle.X509.Extension;
-using Raven.Client;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Util;
 using Raven.Server.Commercial;
 using Raven.Server.Commercial.SetupWizard;
 using Raven.Server.Config.Categories;
+using Raven.Server.Logging;
 using Sparrow;
 using Sparrow.Logging;
 using Sparrow.Platform;
 using BigInteger = Org.BouncyCastle.Math.BigInteger;
 using X509Certificate = Org.BouncyCastle.X509.X509Certificate;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Utils
 {
@@ -36,7 +37,7 @@ namespace Raven.Server.Utils
     {
         private const int BitsPerByte = 8;
 
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger("Server", typeof(CertificateUtils).FullName);
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer(typeof(CertificateUtils));
 
         internal static bool CertHasKnownIssuer(X509Certificate2 userCertificate, X509Certificate2 knownCertificate, SecurityConfiguration securityConfiguration)
         {
@@ -59,7 +60,7 @@ namespace Raven.Server.Utils
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Cannot validate new client certificate '{userCertificate.FriendlyName} {userCertificate.Thumbprint}', failed to build the chain.", e);
+                    Logger.Info(e, $"Cannot validate new client certificate '{userCertificate.FriendlyName} {userCertificate.Thumbprint}', failed to build the chain.");
                 return false;
             }
 
@@ -72,7 +73,7 @@ namespace Raven.Server.Utils
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Cannot extract pinning hash from the client certificate's issuer '{issuerCertificate?.FriendlyName} {issuerCertificate?.Thumbprint}'.", e);
+                    Logger.Info(e, $"Cannot extract pinning hash from the client certificate's issuer '{issuerCertificate?.FriendlyName} {issuerCertificate?.Thumbprint}'.");
                 return false;
             }
 
@@ -83,7 +84,7 @@ namespace Raven.Server.Utils
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Cannot validate new client certificate '{userCertificate.FriendlyName} {userCertificate.Thumbprint}'. Found a known certificate '{knownCertificate.Thumbprint}' with the same hash but failed to build its chain.", e);
+                    Logger.Info(e, $"Cannot validate new client certificate '{userCertificate.FriendlyName} {userCertificate.Thumbprint}'. Found a known certificate '{knownCertificate.Thumbprint}' with the same hash but failed to build its chain.");
                 return false;
             }
 
@@ -520,7 +521,7 @@ namespace Raven.Server.Utils
                 catch (Exception e)
                 {
                     if (Logger.IsInfoEnabled)
-                        Logger.Info($"Failed to register client certificate in the current user personal store '{userPersonalStore.Name}'.", e);
+                        Logger.Info(e, $"Failed to register client certificate in the current user personal store '{userPersonalStore.Name}'.");
                 }
             }
         }

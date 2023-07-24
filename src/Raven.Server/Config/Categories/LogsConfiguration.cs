@@ -1,9 +1,6 @@
-using System.Collections.Generic;
 using System.ComponentModel;
-using Microsoft.Extensions.Configuration;
 using Raven.Server.Config.Attributes;
 using Raven.Server.Config.Settings;
-using Raven.Server.ServerWide;
 using Sparrow;
 using Sparrow.Logging;
 
@@ -12,56 +9,43 @@ namespace Raven.Server.Config.Categories
     [ConfigurationCategory(ConfigurationCategoryType.Logs)]
     public class LogsConfiguration : ConfigurationCategory
     {
+        [DefaultValue(null)]
+        [ConfigurationEntry("Logs.ConfigPath", ConfigurationEntryScope.ServerWideOnly)]
+        public PathSetting ConfigPath { get; set; }
+
         [DefaultValue("Logs")]
         [ConfigurationEntry("Logs.Path", ConfigurationEntryScope.ServerWideOnly)]
         public PathSetting Path { get; set; }
 
-        [DefaultValue(LogMode.Operations)]
-        [ConfigurationEntry("Logs.Mode", ConfigurationEntryScope.ServerWideOnly)]
-        public LogMode Mode { get; set; }
+        [DefaultValue(LogLevel.Info)]
+        [ConfigurationEntry("Logs.MinLevel", ConfigurationEntryScope.ServerWideOnly)]
+        public LogLevel MinLevel { get; set; }
 
-        [DefaultValue(true)]
-        [ConfigurationEntry("Logs.UseUtcTime", ConfigurationEntryScope.ServerWideOnly)]
-        public bool UseUtcTime { get; set; }
+        [DefaultValue(LogLevel.Fatal)]
+        [ConfigurationEntry("Logs.MaxLevel", ConfigurationEntryScope.ServerWideOnly)]
+        public LogLevel MaxLevel { get; set; }
 
         [DefaultValue(128)]
         [MinValue(16)]
         [SizeUnit(SizeUnit.Megabytes)]
-        [ConfigurationEntry("Logs.MaxFileSizeInMb", ConfigurationEntryScope.ServerWideOnly)]
-        public Size MaxFileSize { get; set; }
+        [ConfigurationEntry("Logs.ArchiveAboveSizeInMb", ConfigurationEntryScope.ServerWideOnly)]
+        public Size ArchiveAboveSize { get; set; }
 
-        [Description("How far back we should retain log entries in hours")]
-        [DefaultValue(3 * 24)]
-        [MinValue(24)]
-        [TimeUnit(TimeUnit.Hours)]
-        [ConfigurationEntry("Logs.RetentionTimeInHrs", ConfigurationEntryScope.ServerWideOnly)]
-        public TimeSetting? RetentionTime { get; set; }
+        [DefaultValue(3)]
+        [ConfigurationEntry("Logs.MaxArchiveDays", ConfigurationEntryScope.ServerWideOnly)]
+        public int? MaxArchiveDays { get; set; }
 
-        [Description("The maximum size of the log after which the old files will be deleted")]
         [DefaultValue(null)]
-        [MinValue(256)]
-        [SizeUnit(SizeUnit.Megabytes)]
-        [ConfigurationEntry("Logs.RetentionSizeInMb", ConfigurationEntryScope.ServerWideOnly)]
-        public Size? RetentionSize { get; set; }
+        [MinValue(0)]
+        [ConfigurationEntry("Logs.MaxArchiveFiles", ConfigurationEntryScope.ServerWideOnly)]
+        public int? MaxArchiveFiles { get; set; }
 
-        [Description("Will determine whether to compress the log files")]
         [DefaultValue(false)]
-        [ConfigurationEntry("Logs.Compress", ConfigurationEntryScope.ServerWideOnly)]
-        public bool Compress { get; set; }
+        [ConfigurationEntry("Logs.EnableArchiveFileCompression", ConfigurationEntryScope.ServerWideOnly)]
+        public bool EnableArchiveFileCompression { get; set; }
 
-        #region Microsoft Logs
-        [Description("Will determine whether to disable the Microsoft logs")]
-        [DefaultValue(true)]
-        [ConfigurationEntry("Logs.Microsoft.Disable", ConfigurationEntryScope.ServerWideOnly)]
-        public bool DisableMicrosoftLogs { get; set; }
-        
-        [Description("The path to json configuration file of Microsoft logs")]
-        [ReadOnlyPath]
-        [DefaultValue("settings.logs.microsoft.json")]
-        [ConfigurationEntry("Logs.Microsoft.ConfigurationPath", ConfigurationEntryScope.ServerWideOnly)]
-        public PathSetting MicrosoftLogsConfigurationPath { get; set; }
-   
-        #endregion
-        
+        [DefaultValue(LogLevel.Error)]
+        [ConfigurationEntry("Logs.Microsoft.MinLevel", ConfigurationEntryScope.ServerWideOnly)]
+        public LogLevel MicrosoftMinLevel { get; set; }
     }
 }

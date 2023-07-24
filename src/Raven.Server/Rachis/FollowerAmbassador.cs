@@ -446,7 +446,7 @@ namespace Raven.Server.Rachis
 
                 if (_engine.Log.IsInfoEnabled)
                 {
-                    _engine.Log.Info("Failed to talk to remote follower: " + _tag, e);
+                    _engine.Log.Info(e, "Failed to talk to remote follower: " + _tag);
                 }
             }
             finally
@@ -496,7 +496,7 @@ namespace Raven.Server.Rachis
                 StatusMessage = $"{message}.{Environment.NewLine}" + e;
                 if (_engine.Log.IsInfoEnabled)
                 {
-                    _engine.Log.Info(message, e);
+                    _engine.Log.Info(e, message);
                 }
 
                 _leader?.NotifyAboutException(_tag, $"Node {_tag} encountered an error", message, e);

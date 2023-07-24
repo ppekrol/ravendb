@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.WebUtilities;
-using Raven.Client;
 using Raven.Client.Documents.Changes;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Documents.Operations.ConnectionStrings;
@@ -30,6 +29,7 @@ using Raven.Client.ServerWide.Operations.Certificates;
 using Raven.Client.Util;
 using Raven.Server.Extensions;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
@@ -38,6 +38,7 @@ using Sparrow;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Logging;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Web
 {
@@ -936,11 +937,14 @@ namespace Raven.Server.Web
 
         public void LogTaskToAudit(string description, long id, BlittableJsonReaderObject configuration)
         {
-            if (LoggingSource.AuditLog.IsInfoEnabled)
+            if (RavenLogManager.Instance.IsAuditEnabled)
             {
                 DynamicJsonValue conf = GetCustomConfigurationAuditJson(description, configuration);
                 var clientCert = GetCurrentCertificate();
-                var auditLog = LoggingSource.AuditLog.GetLogger(_context.DatabaseName ?? "Server", "Audit");
+                var auditLog = _context.Database == null 
+                    ? RavenLogManager.Instance.GetAuditLoggerForServer() 
+                    : RavenLogManager.Instance.GetAuditLoggerForDatabase(_context.DatabaseName);
+
                 var line = $"Task: '{description}' with taskId: '{id}'";
 
                 if (clientCert != null)
@@ -957,7 +961,7 @@ namespace Raven.Server.Web
                     line += ($" Configuration: {confString}");
                 }
 
-                auditLog.Info(line);
+                auditLog.Audit(line);
             }
         }
     }

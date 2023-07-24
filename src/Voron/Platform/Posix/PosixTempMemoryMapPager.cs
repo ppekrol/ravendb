@@ -1,12 +1,14 @@
 using System;
 using System.Runtime.InteropServices;
 using Sparrow;
+using Sparrow.Logging;
 using Sparrow.Server.Platform.Posix;
-using Sparrow.Utils;
-using Voron.Global;
 using Voron.Impl;
 using Voron.Util.Settings;
 using NativeMemory = Sparrow.Utils.NativeMemory;
+using Constants = Voron.Global.Constants;
+using Voron.Impl.Paging;
+using Voron.Logging;
 
 namespace Voron.Platform.Posix
 {
@@ -30,7 +32,7 @@ namespace Voron.Platform.Posix
         private long _totalAllocationSize;
         public override long TotalAllocationSize => _totalAllocationSize;
         public PosixTempMemoryMapPager(StorageEnvironmentOptions options, VoronPathSetting file, long? initialFileSize = null)
-            : base(options, canPrefetchAhead: false)
+            : base(RavenLogManager.Instance.GetLoggerForVoron<Windows32BitsMemoryMapPager>(options, file?.FullPath), options, canPrefetchAhead: false)
         {
             _options = options;
             FileName = file;
@@ -38,7 +40,7 @@ namespace Voron.Platform.Posix
 
             _fd = Syscall.open(FileName.FullPath, OpenFlags.O_RDWR | PerPlatformValues.OpenFlags.O_CREAT | PerPlatformValues.OpenFlags.O_EXCL,
                 FilePermissions.S_IWUSR | FilePermissions.S_IRUSR);
-                
+
             if (_fd == -1)
             {
                 var err = Marshal.GetLastWin32Error();
@@ -152,7 +154,7 @@ namespace Voron.Platform.Posix
                 Size = _totalAllocationSize,
                 MappedFile = null
             };
-            
+
             return new PagerState(this, Options.PrefetchSegmentSize, Options.PrefetchResetThreshold, allocationInfo);
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Operations.Backups;
 using Raven.Client.Documents.Operations.OngoingTasks;
 using Raven.Client.Util;
@@ -114,8 +115,8 @@ namespace Raven.Server.Documents.PeriodicBackup
 
             _backupTimer?.Dispose();
 
-            if (_logger.IsOperationsEnabled)
-                _logger.Operations($"Next {(nextBackup.IsFull ? "full" : "incremental")} backup is in {nextBackup.TimeSpan.TotalMinutes} minutes.");
+            if (_logger.IsInfoEnabled)
+                _logger.Info($"Next {(nextBackup.IsFull ? "full" : "incremental")} backup is in {nextBackup.TimeSpan.TotalMinutes} minutes.");
 
             var timer = nextBackup.TimeSpan < _periodicBackupRunner.MaxTimerTimeout
                 ? new Timer(_periodicBackupRunner.TimerCallback, nextBackup, nextBackup.TimeSpan, Timeout.InfiniteTimeSpan)

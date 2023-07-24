@@ -6,13 +6,14 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using NLog;
 using Raven.Client.Documents.Indexes;
 using Raven.Server.Documents.Indexes.MapReduce.Auto;
 using Raven.Server.Documents.Indexes.MapReduce.Exceptions;
 using Raven.Server.Documents.Indexes.MapReduce.Static;
 using Raven.Server.Documents.Indexes.Persistence;
-using Raven.Server.Documents.Indexes.Persistence.Lucene;
 using Raven.Server.Documents.Indexes.Workers;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
 using Sparrow.Binary;
@@ -20,6 +21,7 @@ using Sparrow.Json;
 using Sparrow.Logging;
 using Sparrow.LowMemory;
 using Sparrow.Server;
+using Sparrow.Server.LowMemory;
 using Voron;
 using Voron.Data.BTrees;
 using Voron.Data.Tables;
@@ -60,7 +62,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce
             _indexStorage = indexStorage;
             _metrics = metrics;
             _mapReduceContext = mapReduceContext;
-            _logger = LoggingSource.Instance.GetLogger<ReduceMapResultsBase<T>>(indexStorage.DocumentDatabase.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForIndex(GetType(), index);
         }
 
         static ReduceMapResultsBase()
@@ -749,7 +751,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce
             var message = builder.ToString();
             
             if (_logger.IsInfoEnabled)
-                _logger.Info(message, error);
+                _logger.Info(error, message);
 
             try
             {
@@ -758,7 +760,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce
             catch (Exception e)
             {
                 if (_logger.IsInfoEnabled)
-                    _logger.Info($"Failed to delete an index result from '${_indexDefinition.Name}' index on reduce error (reduce key hash: ${reduceKeyHash})", e);
+                    _logger.Info(e, $"Failed to delete an index result from '${_indexDefinition.Name}' index on reduce error (reduce key hash: ${reduceKeyHash})");
             }
             
             if (updateStats)

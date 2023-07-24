@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Raven.Server.Documents.Indexes;
-using Raven.Server.Web;
+using Raven.Server.Logging;
 using Sparrow.Json;
 using Sparrow.Logging;
 
@@ -22,12 +22,12 @@ internal abstract class AbstractIndexHandlerProcessorForDelete<TRequestHandler, 
     {
         var name = GetName();
 
-        if (LoggingSource.AuditLog.IsInfoEnabled)
+        if (RavenLogManager.Instance.IsAuditEnabled)
         {
             var clientCert = RequestHandler.GetCurrentCertificate();
 
-            var auditLog = LoggingSource.AuditLog.GetLogger(RequestHandler.DatabaseName, "Audit");
-            auditLog.Info($"Index {name} DELETE by {clientCert?.Subject} {clientCert?.Thumbprint}");
+            var auditLog = RavenLogManager.Instance.GetAuditLoggerForDatabase(RequestHandler.DatabaseName);
+            auditLog.Audit($"Index {name} DELETE by {clientCert?.Subject} {clientCert?.Thumbprint}");
         }
 
         var processor = GetIndexDeleteProcessor();

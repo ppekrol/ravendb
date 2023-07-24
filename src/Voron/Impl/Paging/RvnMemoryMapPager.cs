@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using NLog;
 using Sparrow;
 using Sparrow.Logging;
 using Sparrow.Server.Exceptions;
@@ -8,13 +9,13 @@ using Sparrow.Server.Meters;
 using Sparrow.Server.Platform;
 using Sparrow.Server.Utils;
 using Sparrow.Utils;
-using Voron.Exceptions;
-using Voron.Global;
-using Voron.Platform;
+using Voron.Impl.Journal;
+using Voron.Logging;
 using Voron.Util.Settings;
 using static Sparrow.Server.Platform.Pal;
 using static Sparrow.Server.Platform.PalDefinitions;
 using static Sparrow.Server.Platform.PalFlags;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Impl.Paging
 {
@@ -25,18 +26,16 @@ namespace Voron.Impl.Paging
         public override string ToString() => FileName?.FullPath ?? "";
         protected override string GetSourceName() => $"mmf64: {FileName?.FullPath}";
         private long _totalAllocationSize;
-        private readonly Logger _logger;
         private readonly SafeMmapHandle _handle;
 
         public RvnMemoryMapPager(StorageEnvironmentOptions options, VoronPathSetting file, long? initialFileSize = null, bool canPrefetchAhead = true, bool usePageProtection = false, bool deleteOnClose = false)
-            : base(options, canPrefetchAhead, usePageProtection)
+            : base(RavenLogManager.Instance.GetLoggerForVoron<RvnMemoryMapPager>(options, file?.ToString()), options, canPrefetchAhead, usePageProtection)
         {
             DeleteOnClose = deleteOnClose;
             FileName = file;
             var copyOnWriteMode = options.CopyOnWriteMode && FileName.FullPath.EndsWith(Constants.DatabaseFilename);
-            _logger = LoggingSource.Instance.GetLogger<StorageEnvironment>($"Pager-{file}");
 
-            if (initialFileSize.HasValue == false || initialFileSize.Value == 0) 
+            if (initialFileSize.HasValue == false || initialFileSize.Value == 0)
                 initialFileSize = Math.Max(SysInfo.PageSize * 16, 64 * 1024);
 
             if (initialFileSize % SysInfo.PageSize != 0)
@@ -47,7 +46,7 @@ namespace Voron.Impl.Paging
             var mmapOptions = copyOnWriteMode ? MmapOptions.CopyOnWrite : MmapOptions.None;
             if (DeleteOnClose)
                 mmapOptions |= MmapOptions.DeleteOnClose;
-            
+
             var rc = rvn_create_and_mmap64_file(
                 file.FullPath,
                 initialFileSize.Value,
@@ -82,7 +81,7 @@ namespace Voron.Impl.Paging
                     Size = _totalAllocationSize,
                     MappedFile = null
                 };
-            
+
                 var pager = new PagerState(this, Options.PrefetchSegmentSize, Options.PrefetchResetThreshold, allocationInfo);
                 SetPagerState(pager);
             }
@@ -108,7 +107,7 @@ namespace Voron.Impl.Paging
 
             return true;
         }
-        
+
         public override byte* AcquirePagePointer(IPagerLevelTransactionState tx, long pageNumber, PagerState pagerState = null)
         {
             var state = pagerState ?? _pagerState;
@@ -134,7 +133,7 @@ namespace Voron.Impl.Paging
                         metric.IncrementFileSize(alloc.Size);
                         var rc = rvn_memory_sync(alloc.BaseAddress, alloc.Size, out var errorCode);
                         if (rc != FailCodes.Success)
-                            PalHelper.ThrowLastError(rc, errorCode,$"Failed to memory sync at ${new IntPtr(alloc.BaseAddress).ToInt64():X} for for '{FileName.FullPath}'. TotalUnsynced = ${totalUnsynced}");
+                            PalHelper.ThrowLastError(rc, errorCode, $"Failed to memory sync at ${new IntPtr(alloc.BaseAddress).ToInt64():X} for for '{FileName.FullPath}'. TotalUnsynced = ${totalUnsynced}");
                     }
                     metric.IncrementSize(totalUnsynced);
                 }
@@ -166,11 +165,10 @@ namespace Voron.Impl.Paging
             if (_handle.FailCode == FailCodes.Success)
                 return;
 
-            if (_logger.IsInfoEnabled)
+            if (Logger.IsDebugEnabled)
             {
-                _logger.Info($"Unable to dispose handle for {FileName.FullPath} (ignoring). rc={_handle.FailCode}. DeleteOnClose={DeleteOnClose}, "
-                             + $"errorCode={PalHelper.GetNativeErrorString(_handle.ErrorNo, "Unable to dispose handle for {FileName.FullPath} (ignoring).", out _)}",
-                    new IOException($"Unable to dispose handle for {FileName.FullPath} (ignoring)."));
+                Logger.Debug(new IOException($"Unable to dispose handle for {FileName.FullPath} (ignoring)."),
+                    $"Unable to dispose handle for {FileName.FullPath} (ignoring). rc={_handle.FailCode}. DeleteOnClose={DeleteOnClose}, errorCode={PalHelper.GetNativeErrorString(_handle.ErrorNo, "Unable to dispose handle for {FileName.FullPath} (ignoring).", out _)}");
             }
         }
 
@@ -228,28 +226,28 @@ namespace Voron.Impl.Paging
 
         internal override void ProtectPageRange(byte* start, ulong size, bool force = false)
         {
-            if (size == 0 || 
-                UsePageProtection == false && force == false) 
+            if (size == 0 ||
+                UsePageProtection == false && force == false)
                 return;
 
             if (rvn_protect_range(start, (long)size, ProtectRange.Protect, out var errorCode) == 0)
                 return;
 
-            if (_logger.IsInfoEnabled)
-                _logger.Info($"Unable to protect page range for '{FileName.FullPath}'. start={new IntPtr(start).ToInt64():X}, size={size}, ProtectRange = Protect, errorCode={errorCode}");
+            if (Logger.IsDebugEnabled)
+                Logger.Debug($"Unable to protect page range for '{FileName.FullPath}'. start={new IntPtr(start).ToInt64():X}, size={size}, ProtectRange = Protect, errorCode={errorCode}");
         }
 
         internal override void UnprotectPageRange(byte* start, ulong size, bool force = false)
         {
-            if (size == 0 || 
-                UsePageProtection == false && force == false) 
+            if (size == 0 ||
+                UsePageProtection == false && force == false)
                 return;
 
             if (rvn_protect_range(start, (long)size, ProtectRange.Unprotect, out var errorCode) == 0)
                 return;
 
-            if (_logger.IsInfoEnabled)
-                _logger.Info($"Unable to un-protect page range for '{FileName.FullPath}'. start={new IntPtr(start).ToInt64():X}, size={size}, ProtectRange = Unprotect, errorCode={errorCode}");
+            if (Logger.IsDebugEnabled)
+                Logger.Debug($"Unable to un-protect page range for '{FileName.FullPath}'. start={new IntPtr(start).ToInt64():X}, size={size}, ProtectRange = Unprotect, errorCode={errorCode}");
         }
     }
 }

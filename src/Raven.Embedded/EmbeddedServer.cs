@@ -18,9 +18,11 @@ using Raven.Client.Exceptions;
 using Raven.Client.Extensions;
 using Raven.Client.ServerWide.Operations;
 using System.Security.Cryptography.X509Certificates;
+using NLog;
 using Raven.Client.Http;
 using Sparrow.Logging;
 using Raven.Client.Util;
+using Raven.Embedded.Logging;
 using Sparrow.Platform;
 
 namespace Raven.Embedded
@@ -33,7 +35,7 @@ namespace Raven.Embedded
         {
         }
 
-        private readonly Logger _logger = LoggingSource.Instance.GetLogger<EmbeddedServer>("Embedded");
+        private readonly Logger _logger = RavenLogManager.Instance.GetLoggerForEmbedded<EmbeddedServer>();
         private Lazy<Task<(Uri ServerUrl, Process ServerProcess)>>? _serverTask;
 
         private readonly ConcurrentDictionary<string, Lazy<Task<IDocumentStore>>> _documentStores = new ConcurrentDictionary<string, Lazy<Task<IDocumentStore>>>();
@@ -133,8 +135,8 @@ namespace Raven.Embedded
             if (_serverOptions == null)
                 throw new InvalidOperationException("Cannot get document document before the server was started");
 
-            if (_logger.IsInfoEnabled)
-                _logger.Info($"Creating document store for '{databaseName}'.");
+            if (_logger.IsDebugEnabled)
+                _logger.Debug($"Creating document store for '{databaseName}'.");
 
             token.ThrowIfCancellationRequested();
 
@@ -173,8 +175,8 @@ namespace Raven.Embedded
             {
                 // Expected behaviour when the database is already exists
 
-                if (_logger.IsInfoEnabled)
-                    _logger.Info($"{options.DatabaseRecord.DatabaseName} already exists.");
+                if (_logger.IsDebugEnabled)
+                    _logger.Debug($"{options.DatabaseRecord.DatabaseName} already exists.");
             }
         }
 
@@ -199,8 +201,8 @@ namespace Raven.Embedded
 
                 try
                 {
-                    if (_logger.IsInfoEnabled)
-                        _logger.Info($"Try shutdown server PID {process.Id} gracefully.");
+                    if (_logger.IsDebugEnabled)
+                        _logger.Debug($"Try shutdown server PID {process.Id} gracefully.");
 
                     using (var inputStream = process.StandardInput)
                     {
@@ -212,9 +214,9 @@ namespace Raven.Embedded
                 }
                 catch (Exception e)
                 {
-                    if (_logger.IsInfoEnabled)
+                    if (_logger.IsWarnEnabled)
                     {
-                        _logger.Info($"Failed to shutdown server PID {process.Id} gracefully in {_serverOptions!.GracefulShutdownTimeout.ToString()}", e);
+                        _logger.Warn(e, $"Failed to shutdown server PID {process.Id} gracefully in {_serverOptions!.GracefulShutdownTimeout}");
                     }
                 }
 
@@ -227,9 +229,9 @@ namespace Raven.Embedded
                 }
                 catch (Exception e)
                 {
-                    if (_logger.IsInfoEnabled)
+                    if (_logger.IsWarnEnabled)
                     {
-                        _logger.Info($"Failed to kill process {process.Id}", e);
+                        _logger.Warn(e, $"Failed to kill process {process.Id}");
                     }
                 }
             }
@@ -243,8 +245,8 @@ namespace Raven.Embedded
                 throw new ArgumentNullException(nameof(_serverOptions));
 
             var process = await RavenServerRunner.RunAsync(_serverOptions).ConfigureAwait(false);
-            if (_logger.IsInfoEnabled)
-                _logger.Info($"Starting global server: {process.Id}");
+            if (_logger.IsDebugEnabled)
+                _logger.Debug($"Starting global server: {process.Id}");
 
             process.Exited += (sender, e) => ServerProcessExited?.Invoke(sender, new ServerProcessExitedEventArgs());
 

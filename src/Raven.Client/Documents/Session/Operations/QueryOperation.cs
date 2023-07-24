@@ -2,16 +2,17 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using NLog;
 using Raven.Client.Documents.Commands;
 using Raven.Client.Documents.Queries;
 using Raven.Client.Documents.Queries.Facets;
 using Raven.Client.Documents.Session.Tokens;
 using Raven.Client.Exceptions.Documents.Indexes;
 using Raven.Client.Extensions;
+using Raven.Client.Logging;
 using Raven.Client.Util;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
@@ -30,7 +31,7 @@ namespace Raven.Client.Documents.Session.Operations
         private QueryResult _currentQueryResults;
         private readonly FieldsToFetchToken _fieldsToFetch;
         private Stopwatch _sp;
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<QueryOperation>("Client");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForClient<QueryOperation>();
         private static readonly PropertyInfo[] _facetResultProperties = typeof(FacetResult).GetProperties();
 
         public QueryResult CurrentQueryResults => _currentQueryResults;
@@ -74,8 +75,8 @@ namespace Raven.Client.Documents.Session.Operations
 
         public void LogQuery()
         {
-            if (Logger.IsInfoEnabled)
-                Logger.Info($"Executing query '{_indexQuery.Query}' on index '{_indexName}' in '{_session.StoreIdentifier}'");
+            if (Logger.IsDebugEnabled)
+                Logger.Debug($"Executing query '{_indexQuery.Query}' on index '{_indexName}' in '{_session.StoreIdentifier}'");
         }
 
         public IDisposable EnterQueryContext()
@@ -314,7 +315,7 @@ namespace Raven.Client.Documents.Session.Operations
         {
             _currentQueryResults = result;
 
-            if (Logger.IsInfoEnabled)
+            if (Logger.IsDebugEnabled)
             {
                 var isStale = result.IsStale ? "stale " : "";
 
@@ -343,7 +344,7 @@ namespace Raven.Client.Documents.Session.Operations
                     parameters.Append(") ");
                 }
 
-                Logger.Info($"Query '{_indexQuery.Query}' {parameters}returned {result.Results.Length} {isStale}results (total index results: {result.TotalResults})");
+                Logger.Debug($"Query '{_indexQuery.Query}' {parameters}returned {result.Results.Length} {isStale}results (total index results: {result.TotalResults})");
             }
         }
 

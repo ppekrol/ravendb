@@ -182,7 +182,7 @@ namespace Raven.Server.Rachis
                             {
                                 if (_engine.Log.IsInfoEnabled)
                                 {
-                                    _engine.Log.Info($"Failed to apply leader state to local state with {entries.Count:#,#;;0} entries with leader commit: {appendEntries.LeaderCommit}, term: {appendEntries.Term}. Prev log index: {appendEntries.PrevLogIndex}", e);
+                                    _engine.Log.Info(e, $"Failed to apply leader state to local state with {entries.Count:#,#;;0} entries with leader commit: {appendEntries.LeaderCommit}, term: {appendEntries.Term}. Prev log index: {appendEntries.PrevLogIndex}");
                                 }
                             }
                             finally
@@ -1034,7 +1034,7 @@ namespace Raven.Server.Rachis
 
                         if (_engine.Log.IsInfoEnabled)
                         {
-                            _engine.Log.Info($"{ToString()}: Failed to talk to leader", e);
+                            _engine.Log.Info(e, $"{ToString()}: Failed to talk to leader");
                         }
                     }
                 }
@@ -1046,7 +1046,7 @@ namespace Raven.Server.Rachis
             {
                 if (_engine.Log.IsInfoEnabled)
                 {
-                    _engine.Log.Info("Failed to dispose follower when talking to the leader: " + _engine.Tag, e);
+                    _engine.Log.Info(e, "Failed to dispose follower when talking to the leader: " + _engine.Tag);
                 }
             }
         }

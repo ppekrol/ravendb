@@ -43,6 +43,7 @@ using Sparrow.Json.Parsing;
 using Spatial4n.Distance;
 using ExpressionType = System.Linq.Expressions.ExpressionType;
 using JavaScriptException = Jint.Runtime.JavaScriptException;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Patch
 {

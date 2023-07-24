@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Raven.Client;
+using NLog;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations.Backups;
@@ -31,6 +31,7 @@ using Raven.Client.Util;
 using Raven.Server.Commercial.LetsEncrypt;
 using Raven.Server.Config;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.ServerWide;
@@ -46,12 +47,13 @@ using Sparrow.LowMemory;
 using Sparrow.Utils;
 using Voron;
 using StudioConfiguration = Raven.Client.Documents.Operations.Configuration.StudioConfiguration;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Commercial
 {
     public class LicenseManager : IDisposable
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<LicenseManager>("Server");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<LicenseManager>();
         private static readonly RSAParameters _rsaParameters;
         private readonly LicenseStorage _licenseStorage = new LicenseStorage();
         private Timer _leaseLicenseTimer;
@@ -141,8 +143,8 @@ namespace Raven.Server.Commercial
             }
             catch (Exception e)
             {
-                if (Logger.IsOperationsEnabled)
-                    Logger.Operations("Failed to initialize license manager", e);
+                if (Logger.IsErrorEnabled)
+                    Logger.Error(e, "Failed to initialize license manager");
             }
             finally
             {
@@ -178,8 +180,8 @@ namespace Raven.Server.Commercial
             }
             catch (Exception e)
             {
-                if (Logger.IsOperationsEnabled && _serverStore.IsPassive() == false)
-                    Logger.Operations("Failed to put my node info, will try again later", e);
+                if (Logger.IsDebugEnabled && _serverStore.IsPassive() == false)
+                    Logger.Debug(e, "Failed to put my node info, will try again later");
             }
             finally
             {
@@ -208,8 +210,8 @@ namespace Raven.Server.Commercial
             {
                 ResetLicense(e.Message);
 
-                if (Logger.IsInfoEnabled)
-                    Logger.Info("Could not validate license", e);
+                if (Logger.IsErrorEnabled)
+                    Logger.Error(e, "Could not validate license");
 
                 var alert = AlertRaised.Create(
                      null,
@@ -254,8 +256,8 @@ namespace Raven.Server.Commercial
             catch (Exception e)
             {
                 // nothing we do can here, we'll try to remove it on next restart or when reloading the license
-                if (Logger.IsOperationsEnabled)
-                    Logger.Operations("Failed to remove the AGPL alert", e);
+                if (Logger.IsInfoEnabled)
+                    Logger.Info(e, "Failed to remove the AGPL alert");
             }
         }
 
@@ -277,7 +279,8 @@ namespace Raven.Server.Commercial
             }
             catch (Exception e)
             {
-                Logger.Info("Failed to reload license limits", e);
+                if (Logger.IsInfoEnabled)
+                    Logger.Info(e, "Failed to reload license limits");
             }
         }
 
@@ -447,7 +450,7 @@ namespace Raven.Server.Commercial
                               $"Keys: [{(license.Keys != null ? string.Join(", ", license.Keys) : "N/A")}]";
 
                 if (Logger.IsInfoEnabled)
-                    Logger.Info(message, e);
+                    Logger.Info(e, message);
 
                 throw new InvalidOperationException("Could not save license!", e);
             }
@@ -490,7 +493,7 @@ namespace Raven.Server.Commercial
                               $"Keys: [{(license.Keys != null ? string.Join(", ", license.Keys) : "N/A")}]";
 
                 if (Logger.IsInfoEnabled)
-                    Logger.Info(message, e);
+                    Logger.Info(e, message);
 
                 throw new InvalidDataException("Could not validate license!", e);
             }
@@ -522,7 +525,7 @@ namespace Raven.Server.Commercial
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Failed to activate license", e);
+                    Logger.Info(e, "Failed to activate license");
 
                 if (throwOnActivationFailure)
                     throw new LicenseActivationException("Failed to activate license", e);
@@ -720,7 +723,7 @@ namespace Raven.Server.Commercial
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Failed to execute tasks", e);
+                    Logger.Info(e, "Failed to execute tasks");
             }
         }
 
@@ -835,7 +838,7 @@ namespace Raven.Server.Commercial
             const string title = "Failed to lease license";
             if (Logger.IsInfoEnabled)
             {
-                Logger.Info($"{title}, {errorMessage}", exception);
+                Logger.Info(exception, $"{title}, {errorMessage}");
             }
 
             var alert = AlertRaised.Create(
@@ -897,7 +900,8 @@ namespace Raven.Server.Commercial
             }
             catch (Exception e)
             {
-                Logger.Info($"Failed to set affinity for {cores} cores, error code: {Marshal.GetLastWin32Error()}", e);
+                if (Logger.IsInfoEnabled)
+                    Logger.Info(e, $"Failed to set affinity for {cores} cores, error code: {Marshal.GetLastWin32Error()}");
             }
         }
 
@@ -935,7 +939,8 @@ namespace Raven.Server.Commercial
             }
             catch (Exception e)
             {
-                Logger.Info($"Failed to set max working set to {ramInGb}GB, error code: {Marshal.GetLastWin32Error()}", e);
+                if (Logger.IsInfoEnabled)
+                    Logger.Info(e, $"Failed to set max working set to {ramInGb}GB, error code: {Marshal.GetLastWin32Error()}");
             }
         }
 
@@ -1873,8 +1878,8 @@ namespace Raven.Server.Commercial
             {
                 if (e.IsOutOfMemory() == false)
                 {
-                    if (Logger.IsOperationsEnabled)
-                        Logger.Operations($"Failed to get number of utilized cores. Defaulting to {defaultNumberOfCores} cores", e);
+                    if (Logger.IsWarnEnabled)
+                        Logger.Warn(e, $"Failed to get number of utilized cores. Defaulting to {defaultNumberOfCores} cores");
                 }
 
                 return defaultNumberOfCores;

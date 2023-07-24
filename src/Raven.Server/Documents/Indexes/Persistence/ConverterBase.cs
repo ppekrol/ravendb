@@ -5,16 +5,13 @@ using System.Collections.Generic;
 using System.IO;
 using Corax.Utils;
 using Lucene.Net.Documents;
-using Raven.Client;
 using Raven.Client.Documents.Indexes;
-using Raven.Server.Documents.Indexes.Persistence.Lucene.Documents;
 using Raven.Server.Documents.Indexes.Persistence.Lucene.Documents.Fields;
-using Raven.Server.Documents.Indexes.Spatial;
 using Raven.Server.Documents.Indexes.Static;
 using Raven.Server.Json;
-using Sparrow;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Indexes.Persistence
 {

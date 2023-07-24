@@ -8,17 +8,19 @@ using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Server.Documents;
 using Raven.Server.Documents.Queries.Parser;
 using Raven.Server.Integrations.PostgreSQL.Exceptions;
 using Raven.Server.Integrations.PostgreSQL.Messages;
+using Raven.Server.Logging;
 using Sparrow.Logging;
 
 namespace Raven.Server.Integrations.PostgreSQL
 {
     public class PgSession
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<PgSession>("Postgres Server");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<PgSession>();
         internal ConcurrentDictionary<string, PgQuery> NamedStatements { get; private set; }
         private readonly TcpClient _client;
         private readonly X509Certificate2 _serverCertificate;
@@ -204,7 +206,7 @@ namespace Raven.Server.Integrations.PostgreSQL
             catch (PgFatalException e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"{e.Message} (fatal pg error code {e.ErrorCode}). {GetSourceConnectionDetails(username)}", e);
+                    Logger.Info(e, $"{e.Message} (fatal pg error code {e.ErrorCode}). {GetSourceConnectionDetails(username)}");
 
                 await writer.WriteAsync(messageBuilder.ErrorResponse(
                     PgSeverity.Fatal,
@@ -215,7 +217,7 @@ namespace Raven.Server.Integrations.PostgreSQL
             catch (PgErrorException e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"{e.Message} (pg error code {e.ErrorCode}). {GetSourceConnectionDetails(username)}", e);
+                    Logger.Info(e, $"{e.Message} (pg error code {e.ErrorCode}). {GetSourceConnectionDetails(username)}");
 
                 // Shouldn't get to this point, PgErrorExceptions shouldn't be fatal
                 await writer.WriteAsync(messageBuilder.ErrorResponse(
@@ -231,7 +233,7 @@ namespace Raven.Server.Integrations.PostgreSQL
             catch (QueryParser.ParseException e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Invalid RQL query", e);
+                    Logger.Info(e, "Invalid RQL query");
 
                 try
                 {
@@ -248,7 +250,7 @@ namespace Raven.Server.Integrations.PostgreSQL
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Unexpected internal pg error. {GetSourceConnectionDetails(username)}", e);
+                    Logger.Info(e, $"Unexpected internal pg error. {GetSourceConnectionDetails(username)}");
 
                 try
                 {

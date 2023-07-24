@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using NLog;
+using Raven.Server.Logging;
 using Sparrow.Logging;
+using Sparrow.Server.Logging;
 
 namespace Raven.Server.ServerWide.Maintenance
 {
-    public class ObserverLogger
+    public sealed class ObserverLogger
     {
         private readonly Logger _logger;
         private readonly BlockingCollection<ClusterObserverLogEntry> _decisionsLog;
@@ -15,7 +18,7 @@ namespace Raven.Server.ServerWide.Maintenance
 
         public ObserverLogger(string nodeTag)
         {
-            _logger = LoggingSource.Instance.GetLogger<ClusterObserver>(nodeTag);
+            _logger = RavenLogManager.Instance.GetLoggerForCluster<ObserverLogger>(LoggingComponent.NodeTag(nodeTag));
             _lastLogs = new Dictionary<string, long>();
             _decisionsLog = new BlockingCollection<ClusterObserverLogEntry>();
         }
@@ -36,7 +39,7 @@ namespace Raven.Server.ServerWide.Maintenance
 
             if (_logger.IsInfoEnabled)
             {
-                _logger.Info(message, e);
+                _logger.Info(e, message);
             }
         }
 

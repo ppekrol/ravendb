@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Extensions;
-using Raven.Server.Dashboard;
-using Raven.Server.Monitoring.Snmp.Objects.Server;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter;
 using Raven.Server.NotificationCenter.Notifications;
 using Sparrow.Json;
@@ -15,7 +15,7 @@ namespace Raven.Server.Utils.Cpu
     public class CpuUsageExtensionPoint : IDisposable
     {
         private readonly JsonContextPool _contextPool;
-        private readonly Logger _logger = LoggingSource.Instance.GetLogger<MachineCpu>("Server");
+        private readonly Logger _logger = RavenLogManager.Instance.GetLoggerForServer(typeof(CpuUsageExtensionPoint));
         private readonly ServerNotificationCenter _notificationCenter;
         private readonly ProcessStartInfo _startInfo;
         private readonly TimeSpan _timeout = TimeSpan.FromSeconds(10);
@@ -241,9 +241,9 @@ namespace Raven.Server.Utils.Cpu
 
         private void NotifyWarning(string warningMsg, Exception e = null)
         {
-            if (_logger.IsOperationsEnabled)
+            if (_logger.IsWarnEnabled)
             {
-                _logger.Operations(warningMsg, e);
+                _logger.Warn(e, warningMsg);
             }
 
             try

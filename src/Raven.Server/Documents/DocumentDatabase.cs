@@ -26,7 +26,6 @@ using Raven.Server.Documents.Expiration;
 using Raven.Server.Documents.Handlers.Batches.Commands;
 using Raven.Server.Documents.Handlers.Processors.Batches;
 using Raven.Server.Documents.Indexes;
-using Raven.Server.Documents.OngoingTasks;
 using Raven.Server.Documents.Operations;
 using Raven.Server.Documents.Patch;
 using Raven.Server.Documents.PeriodicBackup;
@@ -56,7 +55,6 @@ using Sparrow.Collections;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Json.Sync;
-using Sparrow.Logging;
 using Sparrow.Platform;
 using Sparrow.Server;
 using Sparrow.Server.Meters;
@@ -70,6 +68,9 @@ using Constants = Raven.Client.Constants;
 using MountPointUsage = Raven.Client.ServerWide.Operations.MountPointUsage;
 using Size = Raven.Client.Util.Size;
 using System.Diagnostics.CodeAnalysis;
+using NLog;
+using Raven.Server.Logging;
+using Sparrow.Logging;
 
 namespace Raven.Server.Documents
 {
@@ -116,7 +117,7 @@ namespace Raven.Server.Documents
         public DocumentDatabase(string name, RavenConfiguration configuration, ServerStore serverStore, Action<string> addToInitLog)
         {
             Name = name;
-            _logger = LoggingSource.Instance.GetLogger<DocumentDatabase>(Name);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<DocumentDatabase>(name);
             _serverStore = serverStore;
             _addToInitLog = addToInitLog;
             StartTime = Time.GetUtcNow();
@@ -449,7 +450,7 @@ namespace Raven.Server.Documents
                     {
                         if (_logger.IsInfoEnabled)
                         {
-                            _logger.Info("An unhandled exception closed the cluster transaction task", e);
+                            _logger.Info(e, "An unhandled exception closed the cluster transaction task");
                         }
                     }
                 }, DatabaseShutdown);
@@ -558,7 +559,7 @@ namespace Raven.Server.Documents
                 {
                     if (_logger.IsInfoEnabled)
                     {
-                        _logger.Info($"Can't perform cluster transaction on database '{Name}'.", e);
+                        _logger.Info(e, $"Can't perform cluster transaction on database '{Name}'.");
                     }
                 }
             }
@@ -645,7 +646,7 @@ namespace Raven.Server.Documents
                     catch (Exception e) when (_databaseShutdown.IsCancellationRequested == false)
                     {
                         if (_logger.IsInfoEnabled)
-                            _logger.Info($"Failed to execute cluster transaction batch (count: {batchCollector.Count}), will retry them one-by-one.", e);
+                            _logger.Info(e, $"Failed to execute cluster transaction batch (count: {batchCollector.Count}), will retry them one-by-one.");
 
                         if (await ExecuteClusterTransactionOneByOne(batch))
                             batchCollector.AllCommandsBeenProcessed = true;
@@ -682,8 +683,8 @@ namespace Raven.Server.Documents
             }
             finally
             {
-                if (_logger.IsInfoEnabled && stopwatch != null)
-                    _logger.Info($"cluster transaction batch took {stopwatch.Elapsed:c}");
+                if (_logger.IsDebugEnabled && stopwatch != null)
+                    _logger.Debug($"cluster transaction batch took {stopwatch.Elapsed:c}");
             }
         }
 
@@ -754,7 +755,7 @@ namespace Raven.Server.Documents
                 // nothing we can do
                 if (_logger.IsInfoEnabled)
                 {
-                    _logger.Info($"Failed to notify about transaction completion for database '{Name}'.", e);
+                    _logger.Info(e, $"Failed to notify about transaction completion for database '{Name}'.");
                 }
             }
         }
@@ -775,7 +776,7 @@ namespace Raven.Server.Documents
                 // nothing we can do
                 if (_logger.IsInfoEnabled)
                 {
-                    _logger.Info($"Failed to notify about transaction completion for database '{Name}'.", e);
+                    _logger.Info(e, $"Failed to notify about transaction completion for database '{Name}'.");
                 }
             }
         }
@@ -847,7 +848,7 @@ namespace Raven.Server.Documents
                 // if we encountered a catastrophic failure we might not be able to retrieve database info
 
                 if (_logger.IsInfoEnabled)
-                    _logger.Info("Failed to generate and store database info", e);
+                    _logger.Info(e, "Failed to generate and store database info");
             }
 
             if (ForTestingPurposes == null || ForTestingPurposes.SkipDrainAllRequests == false)
@@ -878,8 +879,8 @@ namespace Raven.Server.Documents
 
             ForTestingPurposes?.DisposeLog?.Invoke(Name, $"Acquired cluster lock. Taken: {lockTaken}");
 
-            if (lockTaken == false && _logger.IsOperationsEnabled)
-                _logger.Operations("Failed to acquire lock during database dispose for cluster notifications. Will dispose rudely...");
+            if (lockTaken == false && _logger.IsWarnEnabled)
+                _logger.Warn("Failed to acquire lock during database dispose for cluster notifications. Will dispose rudely...");
 
             ForTestingPurposes?.DisposeLog?.Invoke(Name, "Unsubscribing from storage space monitor");
             exceptionAggregator.Execute(() =>
@@ -1523,7 +1524,9 @@ namespace Raven.Server.Documents
 
                     _ = RequestExecutor.UpdateTopologyAsync(new RequestExecutor.UpdateTopologyParameters(new ServerNode()
                     {
-                        ClusterTag = _serverStore.NodeTag, Database = Name, Url = ServerStore.GetNodeHttpServerUrl()
+                        ClusterTag = _serverStore.NodeTag,
+                        Database = Name,
+                        Url = ServerStore.GetNodeHttpServerUrl()
                     })
                     {
                         DebugTag = "database-topology-update"
@@ -1550,7 +1553,7 @@ namespace Raven.Server.Documents
                 RachisLogIndexNotifications.NotifyListenersAbout(index, e);
 
                 if (_logger.IsInfoEnabled)
-                    _logger.Info($"Got exception during StateChanged({index}).", e);
+                    _logger.Info(e, $"Got exception during StateChanged({index}).");
 
                 if (throwShutDown != null)
                     throw throwShutDown;
@@ -1801,8 +1804,8 @@ namespace Raven.Server.Documents
         {
             string title = $"Non Durable File System - {Name ?? "Unknown Database"}";
 
-            if (_logger.IsOperationsEnabled)
-                _logger.Operations($"{title}. {e.Message}", e.Exception);
+            if (_logger.IsWarnEnabled)
+                _logger.Warn(e.Exception, $"{title}. {e.Message}");
 
             _serverStore?.NotificationCenter.Add(AlertRaised.Create(
                 Name,
@@ -1856,8 +1859,8 @@ namespace Raven.Server.Documents
 
             string message = $"{e.Message}{Environment.NewLine}{Environment.NewLine}Environment: {environment}";
 
-            if (_logger.IsOperationsEnabled)
-                _logger.Operations($"{title}. {message}", e.Exception);
+            if (_logger.IsFatalEnabled)
+                _logger.Fatal(e.Exception, $"{title}. {message}");
 
             nc?.Add(AlertRaised.Create(Name,
                 title,
@@ -1909,8 +1912,8 @@ namespace Raven.Server.Documents
 
             string message = $"{e.Message}{Environment.NewLine}{Environment.NewLine}Environment: {environment}";
 
-            if (_logger.IsOperationsEnabled)
-                _logger.Operations($"{title}. {message}", e.Exception);
+            if (_logger.IsFatalEnabled)
+                _logger.Fatal(e.Exception, $"{title}. {message}");
 
             nc?.Add(AlertRaised.Create(Name,
                 title,
@@ -1925,8 +1928,8 @@ namespace Raven.Server.Documents
             var title = $"Recoverable Voron error in '{Name}' database";
             var message = $"Failure {e.FailureMessage} in the following environment: {e.EnvironmentPath}";
 
-            if (_logger.IsOperationsEnabled)
-                _logger.Operations($"{title}. {message}", e.Exception);
+            if (_logger.IsWarnEnabled)
+                _logger.Warn(e.Exception, $"{title}. {message}");
 
             try
             {

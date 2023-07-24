@@ -7,6 +7,7 @@ using Raven.Client.Documents.Indexes;
 using Raven.Server.Documents.Queries;
 using Raven.Server.Extensions;
 using Sparrow;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Indexes
 {

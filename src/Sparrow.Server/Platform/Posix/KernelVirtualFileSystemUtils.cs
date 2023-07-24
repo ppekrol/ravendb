@@ -4,14 +4,16 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using NLog;
 using Sparrow.Collections;
 using Sparrow.Logging;
+using Sparrow.Server.Utils;
 
-namespace Sparrow.Platform.Posix
+namespace Sparrow.Server.Platform.Posix
 {
     internal static class KernelVirtualFileSystemUtils
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger("Server", typeof(KernelVirtualFileSystemUtils).FullName);
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForSparrow(typeof(KernelVirtualFileSystemUtils));
         private static readonly ConcurrentSet<string> IsOldFileAlert = new ConcurrentSet<string>();
         private static readonly ConcurrentSet<string> MissingCgroupFiles = new ConcurrentSet<string>();
 
@@ -19,7 +21,7 @@ namespace Sparrow.Platform.Posix
         {
             if (MissingCgroupFiles.Contains(fileName))
                 return null;
-            
+
             try
             {
                 var txt = File.ReadAllText(fileName);
@@ -33,10 +35,10 @@ namespace Sparrow.Platform.Posix
             {
                 if (e is DirectoryNotFoundException)
                     MissingCgroupFiles.Add(fileName);
-                
-                if (IsOldFileAlert.TryAdd(fileName) && Logger.IsOperationsEnabled)
+
+                if (IsOldFileAlert.TryAdd(fileName) && Logger.IsWarnEnabled)
                 {
-                    Logger.Operations($"Unable to read and parse '{fileName}', will not respect container's limit", e);
+                    Logger.Warn(e, $"Unable to read and parse '{fileName}', will not respect container's limit");
                 }
                 return null;
             }
@@ -64,9 +66,9 @@ namespace Sparrow.Platform.Posix
             }
             catch (Exception e)
             {
-                if (IsOldFileAlert.TryAdd(filename) && Logger.IsOperationsEnabled)
+                if (IsOldFileAlert.TryAdd(filename) && Logger.IsWarnEnabled)
                 {
-                    Logger.Operations($"Unable to read and parse '{filename}', will not respect container's number of cores", e);
+                    Logger.Warn(e, $"Unable to read and parse '{filename}', will not respect container's number of cores");
                 }
                 return Environment.ProcessorCount;
             }
@@ -88,7 +90,7 @@ namespace Sparrow.Platform.Posix
 
 
             // on error or if not applicable - return null path array
-            
+
             const int numberOfRow = 5;
             try
             {
@@ -97,8 +99,8 @@ namespace Sparrow.Platform.Posix
 
                 if (items.Length < numberOfRow + 1)
                 {
-                    if (IsOldFileAlert.TryAdd(filename) && Logger.IsOperationsEnabled)
-                        Logger.Operations($"no swap defined on this system according to {filename}");
+                    if (IsOldFileAlert.TryAdd(filename) && Logger.IsWarnEnabled)
+                        Logger.Warn($"no swap defined on this system according to {filename}");
                     return Array.Empty<(string, bool)>();
                 }
 
@@ -108,16 +110,16 @@ namespace Sparrow.Platform.Posix
                     items[3].Equals("Used") == false ||
                     items[4].Equals("Priority") == false)
                 {
-                    if (IsOldFileAlert.TryAdd(filename) && Logger.IsOperationsEnabled)
-                        Logger.Operations($"Unrecognized header at {filename}, cannot read swap information");
+                    if (IsOldFileAlert.TryAdd(filename) && Logger.IsWarnEnabled)
+                        Logger.Warn($"Unrecognized header at {filename}, cannot read swap information");
                     return Array.Empty<(string, bool)>();
                 }
 
 
                 if (items.Length % numberOfRow != 0)
                 {
-                    if (IsOldFileAlert.TryAdd(filename) && Logger.IsOperationsEnabled)
-                        Logger.Operations($"Invalid number of fields at {filename}, cannot read swap information");
+                    if (IsOldFileAlert.TryAdd(filename) && Logger.IsWarnEnabled)
+                        Logger.Warn($"Invalid number of fields at {filename}, cannot read swap information");
                     return Array.Empty<(string, bool)>();
                 }
 
@@ -138,8 +140,8 @@ namespace Sparrow.Platform.Posix
             }
             catch (Exception e)
             {
-                if (IsOldFileAlert.TryAdd(filename) && Logger.IsOperationsEnabled)
-                    Logger.Operations($"Unable to read and parse '{filename}', cannot read swap information", e);
+                if (IsOldFileAlert.TryAdd(filename) && Logger.IsWarnEnabled)
+                    Logger.Warn(e, $"Unable to read and parse '{filename}', cannot read swap information");
                 return Array.Empty<(string, bool)>();
             }
         }
@@ -155,9 +157,9 @@ namespace Sparrow.Platform.Posix
             }
             catch (Exception e)
             {
-                if (IsOldFileAlert.TryAdd(filename) && Logger.IsOperationsEnabled)
+                if (IsOldFileAlert.TryAdd(filename) && Logger.IsWarnEnabled)
                 {
-                    Logger.Operations($"Unable to read and parse '{filename}'", e);
+                    Logger.Warn(e, $"Unable to read and parse '{filename}'");
                 }
                 return long.MaxValue;
             }
@@ -184,8 +186,8 @@ namespace Sparrow.Platform.Posix
 
                 if (items.Length < 5)
                 {
-                    if (IsOldFileAlert.TryAdd(filename) && Logger.IsOperationsEnabled)
-                        Logger.Operations($"no partitions defined on this system according to {filename}");
+                    if (IsOldFileAlert.TryAdd(filename) && Logger.IsWarnEnabled)
+                        Logger.Warn($"no partitions defined on this system according to {filename}");
                     return results;
                 }
 
@@ -194,15 +196,15 @@ namespace Sparrow.Platform.Posix
                     items[2].Equals("#blocks") == false ||
                     items[3].Equals("name") == false)
                 {
-                    if (IsOldFileAlert.TryAdd(filename) && Logger.IsOperationsEnabled)
-                        Logger.Operations($"Unrecognized header at {filename}, cannot read partitions information");
+                    if (IsOldFileAlert.TryAdd(filename) && Logger.IsWarnEnabled)
+                        Logger.Warn($"Unrecognized header at {filename}, cannot read partitions information");
                     return results;
                 }
 
                 if (items.Length % 4 != 0)
                 {
-                    if (IsOldFileAlert.TryAdd(filename) && Logger.IsOperationsEnabled)
-                        Logger.Operations($"Invalid number of fields at {filename}, cannot read partitions information");
+                    if (IsOldFileAlert.TryAdd(filename) && Logger.IsWarnEnabled)
+                        Logger.Warn($"Invalid number of fields at {filename}, cannot read partitions information");
                     return results;
                 }
 
@@ -219,8 +221,8 @@ namespace Sparrow.Platform.Posix
             }
             catch (Exception e)
             {
-                if (IsOldFileAlert.TryAdd(filename) && Logger.IsOperationsEnabled)
-                    Logger.Operations($"Unable to read and parse '{filename}', cannot read partitions information", e);
+                if (IsOldFileAlert.TryAdd(filename) && Logger.IsWarnEnabled)
+                    Logger.Warn(e, $"Unable to read and parse '{filename}', cannot read partitions information");
                 return new HashSet<string>();
             }
         }
@@ -261,7 +263,7 @@ namespace Sparrow.Platform.Posix
                 _path = path;
                 _buffer = ArrayPool<byte>.Shared.Rent(8 * 1024);
             }
-            
+
             public void ReadFileIntoBuffer()
             {
 
@@ -271,7 +273,7 @@ namespace Sparrow.Platform.Posix
                         ThrowStreamBiggerThenBufferException();
 
                     _bytesRead = 0;
-                    
+
 
                     while (true)
                     {
@@ -279,7 +281,7 @@ namespace Sparrow.Platform.Posix
                         if (read == 0)
                             break;
                         _bytesRead += read;
-                    }    
+                    }
                 }
             }
 
@@ -312,7 +314,7 @@ namespace Sparrow.Platform.Posix
 
                         var start = j + filter.Length;
                         while (
-                            start < _bytesRead && 
+                            start < _bytesRead &&
                             (_buffer[start] == ' ' || _buffer[start] == '\t'))
                         {
                             start++;
@@ -330,7 +332,7 @@ namespace Sparrow.Platform.Posix
 
                 return (0, 0);
             }
-            
+
             public long ExtractNumericValueFromKeyValuePairsFormattedFile(byte[] filter)
             {
                 var (start, end) = SearchInBuffer(filter);
@@ -339,7 +341,7 @@ namespace Sparrow.Platform.Posix
                 {
                     if (_buffer[i] < (byte)'0' || _buffer[i] > (byte)'9')
                         return value;
-                    
+
                     value *= 10;
                     value += _buffer[i] - (byte)'0';
                 }
@@ -358,6 +360,6 @@ namespace Sparrow.Platform.Posix
                 _buffer = null;
             }
         }
-        
+
     }
 }

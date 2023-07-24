@@ -12,10 +12,11 @@ using Raven.Client.Documents.Operations.Expiration;
 using Raven.Client.Documents.Operations.Refresh;
 using Raven.Client.ServerWide;
 using Raven.Server.Background;
+using Raven.Server.Dashboard;
 using Raven.Server.Documents.TransactionMerger.Commands;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.ServerWide.Context;
-using Sparrow.Json;
 using Sparrow.Logging;
 using Sparrow.Platform;
 using Voron;
@@ -35,7 +36,8 @@ namespace Raven.Server.Documents.Expiration
         public ExpirationConfiguration ExpirationConfiguration { get; }
         public RefreshConfiguration RefreshConfiguration { get; }
 
-        private ExpiredDocumentsCleaner(DocumentDatabase database, ExpirationConfiguration expirationConfiguration, RefreshConfiguration refreshConfiguration) : base(database.Name, database.DatabaseShutdown)
+        private ExpiredDocumentsCleaner(DocumentDatabase database, ExpirationConfiguration expirationConfiguration, RefreshConfiguration refreshConfiguration) 
+            : base(database.Name, RavenLogManager.Instance.GetLoggerForDatabase<ExpiredDocumentsCleaner>(database), database.DatabaseShutdown)
         {
             ExpirationConfiguration = expirationConfiguration;
             RefreshConfiguration = refreshConfiguration;
@@ -82,9 +84,9 @@ namespace Raven.Server.Documents.Expiration
                     $"Expiration error in {database.Name}", msg,
                     AlertType.RevisionsConfigurationNotValid, NotificationSeverity.Error, database.Name));
 
-                var logger = LoggingSource.Instance.GetLogger<ExpiredDocumentsCleaner>(database.Name);
-                if (logger.IsOperationsEnabled)
-                    logger.Operations(msg, e);
+                var logger = RavenLogManager.Instance.GetLoggerForDatabase<ExpiredDocumentsCleaner>(database);
+                if (logger.IsErrorEnabled)
+                    logger.Error(e, msg);
 
                 return null;
             }
@@ -178,8 +180,8 @@ namespace Raven.Server.Documents.Expiration
             }
             catch (Exception e)
             {
-                if (Logger.IsOperationsEnabled)
-                    Logger.Operations($"Failed to {(forExpiration ? "delete" : "refresh")} documents on {_database.Name} which are older than {currentTime}", e);
+                if (Logger.IsErrorEnabled)
+                    Logger.Error($"Failed to {(forExpiration ? "delete" : "refresh")} documents on {_database.Name} which are older than {currentTime}", e);
             }
         }
 

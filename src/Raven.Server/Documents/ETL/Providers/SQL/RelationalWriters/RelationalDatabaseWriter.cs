@@ -9,14 +9,17 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using NLog;
 using NpgsqlTypes;
 using Oracle.ManagedDataAccess.Client;
 using Raven.Client.Documents.Operations.ETL.SQL;
 using Raven.Client.Extensions.Streams;
 using Raven.Client.Util;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Sparrow;
+using Sparrow.Global;
 using Sparrow.Json;
 using Sparrow.Logging;
 
@@ -44,7 +47,7 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.RelationalWriters
         {
             _etl = etl;
             _database = database;
-            _logger = LoggingSource.Instance.GetLogger<RelationalDatabaseWriter>(_database.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<RelationalDatabaseWriter>(database);
             _providerFactory = GetDbProviderFactory(etl.Configuration);
             _providerType = SqlProviderParser.GetSupportedProvider(_etl.Configuration.Connection.FactoryName);
             _commandBuilder = _providerFactory.InitializeCommandBuilder();
@@ -76,7 +79,7 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.RelationalWriters
                     if (++retries < maxRetries)
                     {
                         if (_logger.IsInfoEnabled)
-                            _logger.Info($"Failed to open connection, retrying ({retries}/{maxRetries})", e);
+                            _logger.Info(e, $"Failed to open connection, retrying ({retries}/{maxRetries})");
 
                         Thread.Sleep(50);
                         continue;
@@ -129,7 +132,7 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.RelationalWriters
                 var message = $"Could not find provider factory {configuration.Connection.FactoryName} to replicate to sql for {configuration.Name}, ignoring.";
 
                 if (_logger.IsInfoEnabled)
-                    _logger.Info(message, e);
+                    _logger.Info(e, message);
 
                 _database.NotificationCenter.Add(AlertRaised.Create(
                     _database.Name,
@@ -231,9 +234,9 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.RelationalWriters
                     {
                         if (_logger.IsInfoEnabled)
                         {
-                            _logger.Info(
+                            _logger.Info(e,
                                 $"Failed to replicate changes to relational database for: {_etl.Name} " +
-                                $"(doc: {itemToReplicate.DocumentId}), will continue trying. {Environment.NewLine}{cmd.CommandText}", e);
+                                $"(doc: {itemToReplicate.DocumentId}), will continue trying. {Environment.NewLine}{cmd.CommandText}");
                         }
 
                         _etl.Statistics.RecordLoadError($"Insert statement:{Environment.NewLine}{cmd.CommandText}{Environment.NewLine}. Error:{Environment.NewLine}{e}",
@@ -347,8 +350,8 @@ namespace Raven.Server.Documents.ETL.Providers.SQL.RelationalWriters
                     catch (Exception e)
                     {
                         if (_logger.IsInfoEnabled)
-                            _logger.Info($"Failure to replicate deletions to relational database for: {_etl.Name}, " +
-                                         "will continue trying." + Environment.NewLine + cmd.CommandText, e);
+                            _logger.Info(e, $"Failure to replicate deletions to relational database for: {_etl.Name}, " +
+                                         "will continue trying." + Environment.NewLine + cmd.CommandText);
 
                         _etl.Statistics.RecordLoadError($"Delete statement:{Environment.NewLine}{cmd.CommandText}{Environment.NewLine}Error:{Environment.NewLine}{e}", null);
                     }

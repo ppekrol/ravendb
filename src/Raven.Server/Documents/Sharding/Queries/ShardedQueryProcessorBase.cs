@@ -98,5 +98,5 @@ public abstract class ShardedQueryProcessorBase<TCombinedResult> : AbstractShard
         }
     }
 
-    protected virtual ShardedMapReduceQueryResultsMerger CreateMapReduceQueryResultsMerger(TCombinedResult result) => new(result.Results, RequestHandler.DatabaseContext.Indexes, result.IndexName, IsAutoMapReduceQuery, Context, Token);
+    protected virtual ShardedMapReduceQueryResultsMerger CreateMapReduceQueryResultsMerger(TCombinedResult result) => new(result.Results, RequestHandler.DatabaseContext, result.IndexName, IsAutoMapReduceQuery, Context, Token);
 }

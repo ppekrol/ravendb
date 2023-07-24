@@ -45,7 +45,7 @@ namespace Raven.Server.Documents.Replication.Outgoing
                 $"{bucket}@{migrationIndex}/{merged}").Wait(_shardedDatabase.DatabaseShutdown);
         }
 
-        public override ReplicationDocumentSenderBase CreateDocumentSender(Stream stream, Logger logger) => 
+        public override ReplicationDocumentSenderBase CreateDocumentSender(Stream stream, NLog.Logger logger) => 
             new MigrationReplicationDocumentSender(stream, this, logger);
 
         protected override DynamicJsonValue GetInitialHandshakeRequest()

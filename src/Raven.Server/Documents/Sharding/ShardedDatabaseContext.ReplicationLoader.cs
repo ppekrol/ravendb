@@ -74,7 +74,7 @@ namespace Raven.Server.Documents.Sharding
                 {
                     if (_logger.IsInfoEnabled)
                     {
-                        _logger.Info("you can't add two identical connections.", new InvalidOperationException("you can't add two identical connections."));
+                        _logger.Info(new InvalidOperationException("you can't add two identical connections."), "you can't add two identical connections.");
                     }
                     newIncoming.Dispose();
                 }
@@ -132,7 +132,7 @@ namespace Raven.Server.Documents.Sharding
                     _incoming.TryRemove(handler.ConnectionInfo.SourceDatabaseId, out _);
 
                     if (_logger.IsInfoEnabled)
-                        _logger.Info($"Sharded incoming replication handler has thrown an unhandled exception. ({handler.FromToString})", e);
+                        _logger.Info(e, $"Sharded incoming replication handler has thrown an unhandled exception. ({handler.FromToString})");
                 }
             }
         }

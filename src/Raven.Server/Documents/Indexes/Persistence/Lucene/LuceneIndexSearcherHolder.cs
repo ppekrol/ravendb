@@ -2,35 +2,37 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using Sparrow.Logging;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using Sparrow;
 using Sparrow.Threading;
 using Voron.Impl;
-using System.Diagnostics.CodeAnalysis;
+using NLog;
+using Raven.Server.Logging;
+using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 {
     public class LuceneIndexSearcherHolder : IDisposable
     {
         private readonly Func<IState, IndexSearcher> _recreateSearcher;
-        private readonly DocumentDatabase _documentDatabase;
+        private readonly Index _index;
 
         private readonly Logger _logger;
         private ImmutableList<IndexSearcherHoldingState> _states = ImmutableList<IndexSearcherHoldingState>.Empty;
 
-        public LuceneIndexSearcherHolder(Func<IState, IndexSearcher> recreateSearcher, DocumentDatabase documentDatabase)
+        public LuceneIndexSearcherHolder(Func<IState, IndexSearcher> recreateSearcher, [JetBrains.Annotations.NotNull] Index index)
         {
             _recreateSearcher = recreateSearcher;
-            _documentDatabase = documentDatabase;
-            _logger = LoggingSource.Instance.GetLogger<LuceneIndexSearcherHolder>(documentDatabase.Name);
+            _index = index ?? throw new ArgumentNullException(nameof(index));
+            _logger = RavenLogManager.Instance.GetLoggerForIndex<LuceneIndexSearcherHolder>(index);
         }
 
         public void SetIndexSearcher(Transaction asOfTx)
         {
-            var state = new IndexSearcherHoldingState(asOfTx, _recreateSearcher, _documentDatabase.Name);
+            var state = new IndexSearcherHoldingState(asOfTx, _recreateSearcher, _index);
 
             _states = _states.Insert(0, state);
 
@@ -48,7 +50,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             catch (Exception e)
             {
                 if (_logger.IsInfoEnabled)
-                    _logger.Info("Failed to get the index searcher.", e);
+                    _logger.Info(e, "Failed to get the index searcher.");
                 indexSearcherHoldingState.Dispose();
                 throw;
             }
@@ -136,10 +138,10 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             public int Usage;
             public readonly long AsOfTxId;
 
-            public IndexSearcherHoldingState(Transaction tx, Func<IState, IndexSearcher> recreateSearcher, string dbName)
+            public IndexSearcherHoldingState(Transaction tx, Func<IState, IndexSearcher> recreateSearcher, Index index)
             {
                 _recreateSearcher = recreateSearcher;
-                _logger = LoggingSource.Instance.GetLogger<LuceneIndexSearcherHolder>(dbName);
+                _logger = RavenLogManager.Instance.GetLoggerForIndex<IndexSearcherHoldingState>(index);
                 AsOfTxId = tx.LowLevelTransaction.Id;
                 _lazyIndexSearcher = new Lazy<IndexSearcher>(() =>
                 {

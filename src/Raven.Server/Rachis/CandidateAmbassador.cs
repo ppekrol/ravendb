@@ -145,7 +145,7 @@ namespace Raven.Server.Rachis
                             StatusMessage = $"Failed to obtain connection with {_tag}.";
                             if (_engine.Log.IsInfoEnabled)
                             {
-                                _engine.Log.Info($"CandidateAmbassador for {_tag}: Failed to connect to remote peer: " + _url, e);
+                                _engine.Log.Info(e, $"CandidateAmbassador for {_tag}: Failed to connect to remote peer: " + _url);
                             }
 
                             // wait a bit
@@ -353,7 +353,7 @@ namespace Raven.Server.Rachis
                         StatusMessage = $"Failed to get vote from {_tag}.";
                         if (_engine.Log.IsInfoEnabled)
                         {
-                            _engine.Log.Info($"CandidateAmbassador for {_tag}: Failed to get vote from remote peer url={_url} tag={_tag}", e);
+                            _engine.Log.Info(e, $"CandidateAmbassador for {_tag}: Failed to get vote from remote peer url={_url} tag={_tag}");
                         }
 
                         _connection?.Dispose();
@@ -368,7 +368,7 @@ namespace Raven.Server.Rachis
                 StatusMessage = $"Failed to talk to {_url}.";
                 if (_engine.Log.IsInfoEnabled)
                 {
-                    _engine.Log.Info("Failed to talk to remote peer: " + _url, e);
+                    _engine.Log.Info(e, "Failed to talk to remote peer: " + _url);
                 }
             }
             finally

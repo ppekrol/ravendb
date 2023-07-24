@@ -407,9 +407,9 @@ namespace Raven.Server.Rachis
                 }
                 catch (Exception e2)
                 {
-                    if (_engine.Log.IsOperationsEnabled)
+                    if (_engine.Log.IsWarnEnabled)
                     {
-                        _engine.Log.Operations("After leadership failure, could not setup switch to candidate state", e2);
+                        _engine.Log.Warn(e2, "After leadership failure, could not setup switch to candidate state");
                     }
                 }
             }
@@ -421,7 +421,7 @@ namespace Raven.Server.Rachis
 
             if (_engine.Log.IsInfoEnabled)
             {
-                _engine.Log.Info(msg, e);
+                _engine.Log.Info(e, msg);
             }
 
             if (e is VoronErrorException)

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Documents.Subscriptions;
 using Raven.Client.Exceptions.Commercial;
@@ -21,6 +22,7 @@ using Raven.Server.Documents.Subscriptions.Processor;
 using Raven.Server.Documents.Subscriptions.Stats;
 using Raven.Server.Documents.TcpHandlers;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.Rachis;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
@@ -103,7 +105,7 @@ namespace Raven.Server.Documents.Subscriptions
 
             DatabaseName = database;
             CancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-            _logger = LoggingSource.Instance.GetLogger(ExtractDatabaseNameForLogging(tcpConnection), GetType().FullName);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase(GetType(), ExtractDatabaseNameForLogging(tcpConnection));
 
             ClientUri = tcpConnection.TcpClient.Client.RemoteEndPoint.ToString();
 
@@ -623,7 +625,7 @@ namespace Raven.Server.Documents.Subscriptions
             var errorMessage = CreateStatusMessage(ConnectionStatus.Fail, e.ToString());
             AddToStatusDescription($"{errorMessage}. Sending response to client");
             if (_logger.IsInfoEnabled && e is not OperationCanceledException)
-                _logger.Info(errorMessage, e);
+                _logger.Info(e, errorMessage);
 
             await ReportExceptionToClientAsync(e);
         }
@@ -706,7 +708,7 @@ namespace Raven.Server.Documents.Subscriptions
                             AddToStatusDescription(CreateStatusMessage(ConnectionStatus.Info, "Redirecting subscription client to different server"));
                             if (_logger.IsInfoEnabled)
                             {
-                                _logger.Info("Subscription does not belong to current node", ex);
+                                _logger.Info(ex, "Subscription does not belong to current node");
                             }
 
                             await WriteJsonAsync(new DynamicJsonValue
@@ -733,7 +735,7 @@ namespace Raven.Server.Documents.Subscriptions
                                 $"Subscription change vector update concurrency error, reporting to '{ClientUri}'"));
                             if (_logger.IsInfoEnabled)
                             {
-                                _logger.Info("Subscription change vector update concurrency error", ex);
+                                _logger.Info(ex, "Subscription change vector update concurrency error");
                             }
 
                             await WriteJsonAsync(new DynamicJsonValue
@@ -765,7 +767,7 @@ namespace Raven.Server.Documents.Subscriptions
 
                             if (_logger.IsInfoEnabled)
                             {
-                                _logger.Info("Subscription error", ex);
+                                _logger.Info(ex, "Subscription error");
                             }
                         }
 

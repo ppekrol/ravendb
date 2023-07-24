@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using NLog;
 using Raven.Client;
 using Raven.Server.Config;
 using Sparrow.Logging;
@@ -57,9 +58,8 @@ namespace Raven.Server.NotificationCenter
             {
                 //precaution - should never arrive here
                 if (_logger.IsInfoEnabled)
-                    _logger.Info(
-                        $"Failed to write request time in response headers. This is not supposed to happen and is probably a bug. The request path was: {_context.Request.Path}",
-                        e);
+                    _logger.Info(e, 
+                        $"Failed to write request time in response headers. This is not supposed to happen and is probably a bug. The request path was: {_context.Request.Path}");
 
                 throw;
             }

@@ -15,6 +15,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Operations.Configuration;
@@ -24,6 +25,7 @@ using Raven.Client.Exceptions.Database;
 using Raven.Client.Exceptions.Routing;
 using Raven.Client.Exceptions.Security;
 using Raven.Client.Extensions;
+using Raven.Client.Logging;
 using Raven.Client.Properties;
 using Raven.Client.ServerWide.Commands;
 using Raven.Client.Util;
@@ -69,7 +71,7 @@ namespace Raven.Client.Http
         public X509Certificate2 Certificate { get; }
         private readonly string _databaseName;
 
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<RequestExecutor>("Client");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForClient<RequestExecutor>();
         private DateTime _lastReturnedResponse;
 
         public readonly JsonContextPool ContextPool;
@@ -337,7 +339,7 @@ namespace Raven.Client.Http
                 ? 1024
                 : 256;
 
-            ContextPool = new JsonContextPool(Conventions.MaxContextSizeToKeep, maxNumberOfContextsToKeepInGlobalStack, 1024);
+            ContextPool = new JsonContextPool(Conventions.MaxContextSizeToKeep, maxNumberOfContextsToKeepInGlobalStack, 1024, Logger);
 
             GlobalHttpClientTimeout = conventions.GlobalHttpClientTimeout;
             DefaultTimeout = Conventions.RequestTimeout;
@@ -709,8 +711,8 @@ namespace Raven.Client.Http
             }
             catch (Exception e)
             {
-                if (Logger.IsInfoEnabled)
-                    Logger.Info("Couldn't get preferred node Topology from _updateTopologyTimer task", e);
+                if (Logger.IsWarnEnabled)
+                    Logger.Warn(e, "Couldn't get preferred node Topology from _updateTopologyTimer task");
                 return;
             }
             GC.KeepAlive(Task.Run(async () =>
@@ -721,8 +723,8 @@ namespace Raven.Client.Http
                 }
                 catch (Exception e)
                 {
-                    if (Logger.IsInfoEnabled)
-                        Logger.Info("Couldn't Update Topology from _updateTopologyTimer task", e);
+                    if (Logger.IsWarnEnabled)
+                        Logger.Warn(e, "Couldn't Update Topology from _updateTopologyTimer task");
                 }
             }));
         }
@@ -1842,8 +1844,8 @@ namespace Raven.Client.Http
                     }
                     catch (Exception e)
                     {
-                        if (Logger.IsInfoEnabled)
-                            Logger.Info($"{serverNode.ClusterTag} is still down", e);
+                        if (Logger.IsDebugEnabled)
+                            Logger.Debug(e, $"{serverNode.ClusterTag} is still down");
 
                         if (_failedNodesTimers.TryGetValue(nodeStatus.Node, out status))
                             status.Value.UpdateTimer();
@@ -1859,8 +1861,8 @@ namespace Raven.Client.Http
             }
             catch (Exception e)
             {
-                if (Logger.IsInfoEnabled)
-                    Logger.Info("Failed to check node topology, will ignore this node until next topology update", e);
+                if (Logger.IsDebugEnabled)
+                    Logger.Debug(e, "Failed to check node topology, will ignore this node until next topology update");
             }
         }
 
@@ -2077,8 +2079,8 @@ namespace Raven.Client.Http
                 }
                 catch (Exception e)
                 {
-                    if (Logger.IsInfoEnabled)
-                        Logger.Info($"Failed to set the connection limit for url: {url}", e);
+                    if (Logger.IsWarnEnabled)
+                        Logger.Warn(e, $"Failed to set the connection limit for url: {url}");
                 }
             }
         }

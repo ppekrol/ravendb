@@ -7,6 +7,7 @@ using Raven.Client;
 using Raven.Client.Documents.Operations.Attachments;
 using Sparrow;
 using Sparrow.Json;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents
 {

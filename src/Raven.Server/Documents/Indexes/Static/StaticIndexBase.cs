@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Corax.Utils;
 using Lucene.Net.Documents;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Linq;
@@ -15,6 +16,7 @@ using Raven.Client.Exceptions.Corax;
 using Raven.Server.Documents.Indexes.Persistence.Lucene.Documents;
 using Raven.Server.Documents.Indexes.Static.Sharding;
 using Raven.Server.Documents.Indexes.Static.Spatial;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Sparrow.Json;
 using Sparrow.Logging;
@@ -186,7 +188,7 @@ namespace Raven.Server.Documents.Indexes.Static
 
         public readonly HashSet<string> CollectionsWithCompareExchangeReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        protected static Logger Log = LoggingSource.Instance.GetLogger<AbstractStaticIndexBase>("Server");
+        protected static Logger Log = RavenLogManager.Instance.GetLoggerForServer<AbstractStaticIndexBase>();
 
         
         public int StackSizeInSelectClause { get; set; }
@@ -256,8 +258,8 @@ namespace Raven.Server.Documents.Indexes.Static
                     NotificationSeverity.Info,
                     nameof(IndexCompiler)));
                 
-                if (Log.IsOperationsEnabled)
-                    Log.Operations($"Index '{indexMetadata.Name}' contains a lot of `let` clauses. Stack size is {StackSizeInSelectClause}.");
+                if (Log.IsWarnEnabled)
+                    Log.Warn($"Index '{indexMetadata.Name}' contains a lot of `let` clauses. Stack size is {StackSizeInSelectClause}.");
             }
         }
         
@@ -446,7 +448,7 @@ namespace Raven.Server.Documents.Indexes.Static
                 Storage = options.Storage,
                 TermVector = options.TermVector,
                 Indexing = options.Indexing,
-            }, allFields, Corax.Constants.IndexWriter.DynamicField);
+            }, allFields, Corax.Global.Constants.IndexWriter.DynamicField);
 
             if (scope.DynamicFields == null)
                 scope.DynamicFields = new Dictionary<string, IndexField>();

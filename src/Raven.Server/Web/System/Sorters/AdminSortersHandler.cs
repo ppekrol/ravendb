@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Raven.Server.Documents.Indexes.Sorting;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.Rachis;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide.Commands.Sorters;
@@ -29,12 +30,12 @@ namespace Raven.Server.Web.System.Sorters
                     var sorterDefinition = JsonDeserializationServer.SorterDefinition((BlittableJsonReaderObject)sorterToAdd);
                     sorterDefinition.Name = sorterDefinition.Name?.Trim();
 
-                    if (LoggingSource.AuditLog.IsInfoEnabled)
+                    if (RavenLogManager.Instance.IsAuditEnabled)
                     {
                         var clientCert = GetCurrentCertificate();
 
-                        var auditLog = LoggingSource.AuditLog.GetLogger("Server", "Audit");
-                        auditLog.Info($"Sorter {sorterDefinition.Name} PUT by {clientCert?.Subject} {clientCert?.Thumbprint} with definition: {sorterToAdd}");
+                        var auditLog = RavenLogManager.Instance.GetAuditLoggerForServer();
+                        auditLog.Audit($"Sorter {sorterDefinition.Name} PUT by {clientCert?.Subject} {clientCert?.Thumbprint} with definition: {sorterToAdd}");
                     }
 
                     sorterDefinition.Validate();
@@ -62,12 +63,12 @@ namespace Raven.Server.Web.System.Sorters
         {
             var name = GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
 
-            if (LoggingSource.AuditLog.IsInfoEnabled)
+            if (RavenLogManager.Instance.IsAuditEnabled)
             {
                 var clientCert = GetCurrentCertificate();
 
-                var auditLog = LoggingSource.AuditLog.GetLogger("Server", "Audit");
-                auditLog.Info($"Sorter {name} DELETE by {clientCert?.Subject} {clientCert?.Thumbprint}");
+                var auditLog = RavenLogManager.Instance.GetAuditLoggerForServer();
+                auditLog.Audit($"Sorter {name} DELETE by {clientCert?.Subject} {clientCert?.Thumbprint}");
             }
 
             var command = new DeleteServerWideSorterCommand(name, GetRaftRequestIdFromQuery());

@@ -18,7 +18,6 @@ using Sparrow.Json.Parsing;
 using Sparrow.Server;
 using Sparrow.Threading;
 using RavenConstants = Raven.Client.Constants;
-using CoraxConstants = Corax.Constants;
 using Encoding = System.Text.Encoding;
 using System.Diagnostics;
 using Corax.Mappings;

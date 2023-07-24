@@ -5,7 +5,7 @@ using Voron.Data.BTrees;
 using Voron.Data.Fixed;
 using Voron.Data.RawData;
 using Voron.Debugging;
-using Voron.Global;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Data.Tables
 {

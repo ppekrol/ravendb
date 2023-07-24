@@ -4,9 +4,11 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
-using Raven.Client;
+using NLog;
 using Raven.Client.Exceptions;
 using Raven.Client.Exceptions.Documents;
+using Raven.Server.Documents.ETL.Providers.SQL.RelationalWriters;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Context;
 using Sparrow;
 using Sparrow.Binary;
@@ -14,6 +16,7 @@ using Sparrow.Json;
 using Sparrow.Logging;
 using Voron;
 using Voron.Impl;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Expiration
 {
@@ -30,7 +33,7 @@ namespace Raven.Server.Documents.Expiration
         {
             _database = database;
             _documentsStorage = _database.DocumentsStorage;
-            _logger = LoggingSource.Instance.GetLogger<ExpirationStorage>(database.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<ExpirationStorage>(database);
 
             tx.CreateTree(DocumentsByExpiration);
             tx.CreateTree(DocumentsByRefresh);

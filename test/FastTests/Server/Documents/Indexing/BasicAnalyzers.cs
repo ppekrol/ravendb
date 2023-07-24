@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Server.Config;

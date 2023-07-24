@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Subscriptions;
 using Raven.Client.Exceptions.Documents.Subscriptions;
@@ -16,6 +17,7 @@ using Raven.Client.ServerWide;
 using Raven.Client.Util;
 using Raven.Server.Documents.Subscriptions.Stats;
 using Raven.Server.Documents.TcpHandlers;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Commands.Subscriptions;
 using Raven.Server.ServerWide.Context;
@@ -32,11 +34,12 @@ namespace Raven.Server.Documents.Subscriptions
         public event Action<SubscriptionConnection> OnEndConnection;
         public event Action<string, SubscriptionBatchStatsAggregator> OnEndBatch;
 
-        public SubscriptionStorage(DocumentDatabase db, ServerStore serverStore, string name) : base(serverStore, db.Configuration.Subscriptions.MaxNumberOfConcurrentConnections)
+        public SubscriptionStorage(DocumentDatabase db, ServerStore serverStore, string name) 
+            : base(serverStore, db.Configuration.Subscriptions.MaxNumberOfConcurrentConnections)
         {
             _db = db;
             _databaseName = name; // this is full name for sharded db 
-            _logger = LoggingSource.Instance.GetLogger<SubscriptionStorage>(name);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase(GetType(), db);
         }
 
         protected override void DropSubscriptionConnections(SubscriptionConnectionsState state, SubscriptionException ex)
@@ -142,8 +145,8 @@ namespace Raven.Server.Documents.Subscriptions
 
             subscriptionConnectionsState.DropSingleConnection(connectionToDrop, ex);
             if (_logger.IsInfoEnabled)
-                _logger.Info(
-                    $"Connection with id {workerId} in subscription with id '{subscriptionId}' and name '{subscriptionConnectionsState.SubscriptionName}' was dropped.", ex);
+                _logger.Info(ex, 
+                    $"Connection with id {workerId} in subscription with id '{subscriptionId}' and name '{subscriptionConnectionsState.SubscriptionName}' was dropped.");
 
             return true;
         }

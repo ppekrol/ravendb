@@ -5,23 +5,26 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
+using NLog;
 using Sparrow.Logging;
+using Sparrow.Server.Exceptions;
+using Sparrow.Server.Utils;
 using static Sparrow.Server.Platform.Posix.Syscall;
 
 namespace Sparrow.Server.Platform.Posix;
 
 public abstract class CGroup
 {
-    protected static readonly Logger Logger = LoggingSource.Instance.GetLogger("Server", nameof(CGroup));
-    
+    protected static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForSparrow(typeof(CGroup));
+
     public const string PROC_SELF_CGROUP_FILENAME = "/proc/self/cgroup";
     public const string PROC_MOUNTINFO_FILENAME = "/proc/self/mountinfo";
     public const string PROC_CGROUPS_FILENAME = "/proc/cgroups";
 
     private const string MEMORY_CONTROLLER_NAME = "memory";
 
-    protected abstract string MemoryLimitFileName { get; } 
-    protected abstract string MemoryUsageFileName { get; } 
+    protected abstract string MemoryLimitFileName { get; }
+    protected abstract string MemoryUsageFileName { get; }
     protected abstract string MaxMemoryUsageFileName { get; }
 
     private Lazy<CachedPath> _groupPathForMemory;
@@ -29,7 +32,7 @@ public abstract class CGroup
     private class CachedPath
     {
         public DateTime ExpiryTime { get; private set; }
-        public string Path { get;}
+        public string Path { get; }
 
         public CachedPath(string path, DateTime expiryTime)
         {
@@ -57,7 +60,7 @@ public abstract class CGroup
         catch (Exception e)
         {
             if (Logger.IsInfoEnabled)
-                Logger.Info($"Failed to get CGroup max memory usage from {MaxMemoryUsageFileName} - {GetType().Name}", e);
+                Logger.Info(e, $"Failed to get CGroup max memory usage from {MaxMemoryUsageFileName} - {GetType().Name}");
             return null;
         }
     }
@@ -70,7 +73,7 @@ public abstract class CGroup
         catch (Exception e)
         {
             if (Logger.IsInfoEnabled)
-                Logger.Info($"Failed to get CGroup current memory usage from {MemoryUsageFileName} - {GetType().Name}", e);
+                Logger.Info(e, $"Failed to get CGroup current memory usage from {MemoryUsageFileName} - {GetType().Name}");
             return null;
         }
     }
@@ -83,11 +86,11 @@ public abstract class CGroup
         catch (Exception e)
         {
             if (Logger.IsInfoEnabled)
-                Logger.Info($"Failed to get CGroup memory limit from {MemoryLimitFileName} - {GetType().Name}", e);
+                Logger.Info(e, $"Failed to get CGroup memory limit from {MemoryLimitFileName} - {GetType().Name}");
             return null;
         }
     }
-    
+
     private Lazy<CachedPath> GetGroupPathForMemory()
     {
         var groupPathForMemory = _groupPathForMemory;
@@ -113,14 +116,14 @@ public abstract class CGroup
             }
             catch (Exception e)
             {
-                if (Logger.IsOperationsEnabled)
-                    Logger.Operations("Failed to get CGroup path for memory", e);
+                if (Logger.IsWarnEnabled)
+                    Logger.Warn(e, "Failed to get CGroup path for memory");
             }
 
             return new CachedPath(path, DateTime.UtcNow + TimeSpan.FromMinutes(1));
         });
     }
-    
+
     private static bool CheckLimitValues(string textValue, out long? value)
     {
         //'max' stands for unlimited 
@@ -149,7 +152,7 @@ public abstract class CGroup
         {
             if (e is not DirectoryNotFoundException || retry == false)
                 throw;
-            
+
             //If the cgroup changed and the old cgroup was removed
             basePath.Value.Deprecate();
             return ReadValue(file, checkSpecialValues, false);
@@ -161,7 +164,7 @@ public abstract class CGroup
         return FindCGroupPathForMemoryInternal();
     }
     protected abstract string FindCGroupPathForMemoryInternal();
-    
+
     //51 34 0:46 / /sys/fs/cgroup/hugetlb rw,nosuid,nodev,noexec,relatime shared:27 - cgroup cgroup rw,hugetlb
     private static readonly Regex FindHierarchyMountReg = new Regex(@"^(?:\S+\s+){3}(?<mountroot>\S+)\s+(?<mountpath>\S+).* - (?<filesystemType>\S+)\s+\S+\s+(?:(?<options>[^,]+),?)+$", RegexOptions.Compiled);
     protected static IEnumerable<Match> FindHierarchyMount()
@@ -178,7 +181,7 @@ public abstract class CGroup
             yield return match;
         }
     }
-    
+
     protected static string CombinePaths(string mountRoot, string mountPath, string pathForSubsystem)
     {
         var toAppend = mountRoot.Length == 1 || pathForSubsystem.StartsWith(mountRoot) == false
@@ -207,7 +210,7 @@ public abstract class CGroup
 
         return false;
     }
-    
+
     protected delegate bool CheckSpecialValues(string textValue, out long? value);
     private static long? ReadMemoryValueFromFile(string fileName, CheckSpecialValues checkSpecialValues)
     {
@@ -237,7 +240,7 @@ public class CGroupV1 : CGroup
     {
         return FindCGroupPath(l => l.Contains("memory"));
     }
-    
+
     private static string FindCGroupPath(Predicate<IEnumerable<string>> isSubSystem)
     {
         FindHierarchyMount(isSubSystem, out var mountRoot, out var mountPath);
@@ -258,7 +261,7 @@ public class CGroupV1 : CGroup
 
         throw new CGroupException($"Couldn't find hierarchy mount in {PROC_MOUNTINFO_FILENAME}");
     }
-    
+
     // 8:memory:/user.slice/user-1000.slice/user@1000.service
     // 7:cpu,cpuacct:/user.slice
     private static readonly Regex FindCGroupPathForSubsystemReg = new Regex(@"^\d+:(?:(?<subsystem_list>[^,:]+),?)+:(?<path>.*)$", RegexOptions.Compiled);
@@ -269,7 +272,7 @@ public class CGroupV1 : CGroup
             var match = FindCGroupPathForSubsystemReg.Match(line);
             if (match.Success == false)
                 throw new CGroupException($"Failed to parse cgroup info file contents - {line}.");
-                
+
             if (isSubSystem(match.Groups["subsystem_list"].Captures.Select(x => x.Value)) == false)
                 continue;
 
@@ -287,14 +290,14 @@ public class CGroupV2 : CGroup
     protected override string MemoryLimitFileName => "memory.max";
     protected override string MemoryUsageFileName => "memory.current";
     protected override string MaxMemoryUsageFileName => "memory.peak";
-    
+
     protected override string FindCGroupPathForMemoryInternal() => FindCGroupPath();
-    
+
     private static string FindCGroupPath()
     {
         FindHierarchyMount(out var mountRoot, out var mountPath);
         var pathForSubsystem = FindCGroupPathForSubsystem();
-        
+
         return CombinePaths(mountRoot, mountPath, pathForSubsystem);
     }
     private static void FindHierarchyMount(out string mountRoot, out string mountPath)
@@ -308,7 +311,7 @@ public class CGroupV2 : CGroup
 
         throw new CGroupException($"Couldn't find hierarchy mount in {PROC_MOUNTINFO_FILENAME}");
     }
-    
+
     // 0::/user.slice/user-1000.slice/user@1000.service/apps.slice/apps-org.gnome.Terminal.slice/vte-spawn-d7794050-ce4a-451b-92c2-a2433019409e.scope
     private static readonly Regex FindCGroupPathForSubsystemReg = new Regex(@"^\d+::(?<path>.*)$", RegexOptions.Compiled);
     private static string FindCGroupPathForSubsystem()
@@ -318,13 +321,13 @@ public class CGroupV2 : CGroup
             var match = FindCGroupPathForSubsystemReg.Match(line);
             if (match.Success == false)
                 continue;
-                
+
             return match.Groups["path"].Value;
         }
 
         return null;
     }
-    
+
     public override long? GetMaxMemoryUsage()
     {
         try
@@ -335,9 +338,9 @@ public class CGroupV2 : CGroup
         {
             if (e is FileNotFoundException)
                 _hasMemoryPeakFile = false;
-            
+
             if (Logger.IsInfoEnabled)
-                Logger.Info($"Failed to get CGroup max memory usage from {MaxMemoryUsageFileName} - {GetType().Name}", e);
+                Logger.Info(e, $"Failed to get CGroup max memory usage from {MaxMemoryUsageFileName} - {GetType().Name}");
             return null;
         }
     }
@@ -361,8 +364,8 @@ public class UnidentifiedCGroup : CGroup
         if (_lastLog + TimeSpan.FromMinutes(10) < DateTime.UtcNow)
         {
             _lastLog = DateTime.UtcNow;
-            if (Logger.IsOperationsEnabled)
-                Logger.Operations(_errorMessage);
+            if (Logger.IsErrorEnabled)
+                Logger.Error(_errorMessage);
         }
 
         return null;
@@ -390,14 +393,3 @@ public static class CGroupHelper
         };
     }
 }
-
-public class CGroupException : Exception
-{
-    public CGroupException(string message)
-        :base(message)
-    {
-        
-    }
-} 
-
-

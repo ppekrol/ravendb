@@ -1,17 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NLog;
 using Raven.Client.Documents.Commands;
 using Raven.Client.Documents.Operations.TimeSeries;
+using Raven.Client.Logging;
 using Sparrow.Json;
 using Sparrow.Logging;
 
 namespace Raven.Client.Documents.Session.Operations
 {
-    internal class LoadOperation
+    internal sealed class LoadOperation
     {
         private readonly InMemoryDocumentSessionOperations _session;
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<LoadOperation>("Client");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForClient<LoadOperation>();
 
         private string[] _ids;
         private string[] _includes;
@@ -36,8 +38,8 @@ namespace Raven.Client.Documents.Session.Operations
                 return null;
             
             _session.IncrementRequestCount();
-            if (Logger.IsInfoEnabled)
-                Logger.Info($"Requesting the following ids '{string.Join(", ", _ids)}' from {_session.StoreIdentifier}");
+            if (Logger.IsDebugEnabled)
+                Logger.Debug($"Requesting the following ids '{string.Join(", ", _ids)}' from {_session.StoreIdentifier}");
 
             if (_includeAllCounters)
                 return new GetDocumentsCommand(_session.Conventions, _ids, _includes, includeAllCounters: true, timeSeriesIncludes: _timeSeriesToInclude, compareExchangeValueIncludes: _compareExchangeValuesToInclude, metadataOnly: false);

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -11,9 +10,9 @@ using Sparrow.Binary;
 using Sparrow.Server;
 using Voron.Data.BTrees;
 using Voron.Exceptions;
-using Voron.Global;
 using Voron.Impl;
 using Voron.Impl.Paging;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Data.Containers
 {

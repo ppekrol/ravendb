@@ -1,9 +1,8 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Sparrow;
-using Voron.Global;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Data.Fixed
 {

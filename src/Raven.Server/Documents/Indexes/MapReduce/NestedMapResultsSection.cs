@@ -5,11 +5,10 @@ using Sparrow;
 using Sparrow.Json;
 using Voron;
 using Voron.Data.BTrees;
-using Voron.Impl.Paging;
 using System;
 using Sparrow.Server;
 using Voron.Util;
-using Voron.Global;
+using Constants = Voron.Global.Constants;
 
 namespace Raven.Server.Documents.Indexes.MapReduce
 {

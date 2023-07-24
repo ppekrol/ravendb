@@ -1,4 +1,6 @@
-﻿using Sparrow.Platform;
+﻿using NLog;
+using Sparrow.Logging;
+using Sparrow.Platform;
 
 namespace Sparrow.Json
 {
@@ -6,17 +8,18 @@ namespace Sparrow.Json
     {
         private readonly int _maxNumberOfAllocatedStringValuesPerContext;
 
-        public JsonContextPool()
+        internal JsonContextPool() 
+            : base(RavenLogManager.Instance.GetLoggerForSparrow<JsonContextPool>())
         {
         }
 
-        public JsonContextPool(Size? maxContextSizeToKeep)
-            : this(maxContextSizeToKeep, null, PlatformDetails.Is32Bits == false ? 8 * 1024 : 2 * 1024)
+        public JsonContextPool(Size? maxContextSizeToKeep, Logger logger)
+            : this(maxContextSizeToKeep, null, PlatformDetails.Is32Bits == false ? 8 * 1024 : 2 * 1024, logger)
         {
         }
 
-        internal JsonContextPool(Size? maxContextSizeToKeep, long? maxNumberOfContextsToKeepInGlobalStack, int maxNumberOfAllocatedStringValuesPerContext)
-            : base(maxContextSizeToKeep, maxNumberOfContextsToKeepInGlobalStack)
+        internal JsonContextPool(Size? maxContextSizeToKeep, long? maxNumberOfContextsToKeepInGlobalStack, int maxNumberOfAllocatedStringValuesPerContext, Logger logger)
+            : base(maxContextSizeToKeep, maxNumberOfContextsToKeepInGlobalStack, logger)
         {
             _maxNumberOfAllocatedStringValuesPerContext = maxNumberOfAllocatedStringValuesPerContext;
         }

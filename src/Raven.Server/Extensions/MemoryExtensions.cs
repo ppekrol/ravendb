@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Sparrow.Logging;
+using NLog;
 using Sparrow.Platform;
 using Sparrow.Server.Platform.Posix;
 

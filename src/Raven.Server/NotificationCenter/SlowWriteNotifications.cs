@@ -4,10 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using JetBrains.Annotations;
+using NLog;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Util;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
+using Sparrow.Global;
 using Sparrow.Json;
 using Sparrow.Logging;
 using Sparrow.Server;
@@ -31,7 +34,7 @@ namespace Raven.Server.NotificationCenter
             _notificationCenter = notificationCenter ?? throw new ArgumentNullException(nameof(notificationCenter));
 
             _slowWrites = new ConcurrentDictionary<string, SlowIoDetails.SlowWriteInfo>();
-            _logger = LoggingSource.Instance.GetLogger(notificationCenter.Database, GetType().FullName);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<SlowWriteNotifications>(_notificationCenter.Database);
         }
 
         public void Add(IoChange ioChange)
@@ -93,7 +96,7 @@ namespace Raven.Server.NotificationCenter
             catch (Exception e)
             {
                 if (_logger.IsInfoEnabled)
-                    _logger.Info("Error in a notification center timer", e);
+                    _logger.Info(e, "Error in a notification center timer");
             }
         }
 

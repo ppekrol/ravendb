@@ -33,10 +33,12 @@
     <Compile Include="..\..\src\Raven.Server\Config\Categories\SecurityConfiguration.cs" Link="Server\Config\Categories\SecurityConfiguration.cs" />
     <Compile Include="..\..\src\Raven.Server\Config\ConfigurationEnumValueException.cs" Link="Server\Config\ConfigurationEnumValueException.cs" />
     <Compile Include="..\..\src\Raven.Server\Config\Categories\LicenseConfiguration.cs" Link="Server\Config\Categories\LicenseConfiguration.cs" />
+    <Compile Include="..\..\src\Raven.Server\Config\Categories\LogsConfiguration.cs" Link="Server\Config\Categories\LogsConfiguration.cs" />
     <Compile Include="..\..\src\Raven.Server\Config\RavenConfiguration.cs" Link="Server\Config\RavenConfiguration.cs" />
     <Compile Include="..\..\src\Raven.Server\Config\Settings\PathSetting.cs" Link="Server\Config\Settings\PathSetting.cs" />
     <Compile Include="..\..\src\Raven.Server\Config\Settings\TimeSetting.cs" Link="Server\Config\Settings\TimeSetting.cs" />
     <Compile Include="..\..\src\Raven.Server\Config\Settings\UriSetting.cs" Link="Server\Config\Settings\UriSetting.cs" />
+    <Compile Include="..\..\src\Raven.Server\Logging\RavenLogManagerServerExtensions.cs" Link="Server\Logging\RavenLogManagerServerExtensions.cs" />
     <Compile Include="..\..\src\Raven.Server\ServerWide\ResourceType.cs" Link="Server\ServerWide\ResourceType.cs" />
     <Compile Include="..\..\src\Raven.Server\ServerWide\SecretProtection.cs" Link="Server\ServerWide\SecretProtection.cs" />
     <Compile Include="..\..\src\Raven.Server\ServerWide\SodiumSubKeyId.cs" Link="Server\ServerWide\SodiumSubKeyId.cs" />
@@ -155,6 +157,7 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="DasMulli.Win32.ServiceUtils.Signed" Version="1.1.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

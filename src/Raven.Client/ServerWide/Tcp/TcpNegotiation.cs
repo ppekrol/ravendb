@@ -2,6 +2,8 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
+using Raven.Client.Logging;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Logging;
@@ -13,7 +15,7 @@ namespace Raven.Client.ServerWide.Tcp
         public const int OutOfRangeStatus = -1;
         public const int DropStatus = -2;
 
-        private static readonly Logger Log = LoggingSource.Instance.GetLogger("TCP Negotiation", typeof(TcpNegotiation).FullName);
+        private static readonly Logger Log = RavenLogManager.Instance.GetLoggerForClient(typeof(TcpNegotiation));
 
         private static SyncTcpNegotiation _sync;
 
@@ -24,9 +26,9 @@ namespace Raven.Client.ServerWide.Tcp
 
         public static async ValueTask<TcpConnectionHeaderMessage.SupportedFeatures> NegotiateProtocolVersionAsync(JsonOperationContext context, Stream stream, AsyncTcpNegotiateParameters parameters)
         {
-            if (Log.IsInfoEnabled)
+            if (Log.IsDebugEnabled)
             {
-                Log.Info($"Start negotiation for {parameters.Operation} operation with {parameters.DestinationNodeTag ?? parameters.DestinationUrl}");
+                Log.Debug($"Start negotiation for {parameters.Operation} operation with {parameters.DestinationNodeTag ?? parameters.DestinationUrl}");
             }
 
             await using (var writer = new AsyncBlittableJsonTextWriter(context, stream))
@@ -43,9 +45,9 @@ namespace Raven.Client.ServerWide.Tcp
                     var version = response.Version;
                     dataCompression = response.LicensedFeatures?.DataCompression ?? false;
 
-                    if (Log.IsInfoEnabled)
+                    if (Log.IsDebugEnabled)
                     {
-                        Log.Info($"Read response from {parameters.SourceNodeTag ?? parameters.DestinationUrl} for '{parameters.Operation}', received version is '{version}'");
+                        Log.Debug($"Read response from {parameters.SourceNodeTag ?? parameters.DestinationUrl} for '{parameters.Operation}', received version is '{version}'");
                     }
 
                     if (version == current)
@@ -62,14 +64,14 @@ namespace Raven.Client.ServerWide.Tcp
                         await SendTcpVersionInfoAsync(context, writer, parameters, OutOfRangeStatus).ConfigureAwait(false);
                         throw new ArgumentException($"The {parameters.Operation} version {parameters.Version} is out of range, our lowest version is {current}");
                     }
-                    if (Log.IsInfoEnabled)
+                    if (Log.IsDebugEnabled)
                     {
-                        Log.Info($"The version {version} is {status}, will try to agree on '{current}' for {parameters.Operation} with {parameters.DestinationNodeTag ?? parameters.DestinationUrl}.");
+                        Log.Debug($"The version {version} is {status}, will try to agree on '{current}' for {parameters.Operation} with {parameters.DestinationNodeTag ?? parameters.DestinationUrl}.");
                     }
                 }
-                if (Log.IsInfoEnabled)
+                if (Log.IsDebugEnabled)
                 {
-                    Log.Info($"{parameters.DestinationNodeTag ?? parameters.DestinationUrl} agreed on version '{current}' for {parameters.Operation}.");
+                    Log.Debug($"{parameters.DestinationNodeTag ?? parameters.DestinationUrl} agreed on version '{current}' for {parameters.Operation}.");
                 }
 
                 var supportedFeatures = TcpConnectionHeaderMessage.GetSupportedFeaturesFor(parameters.Operation, current);
@@ -81,9 +83,9 @@ namespace Raven.Client.ServerWide.Tcp
 
         private static async ValueTask SendTcpVersionInfoAsync(JsonOperationContext context, AsyncBlittableJsonTextWriter writer, AsyncTcpNegotiateParameters parameters, int currentVersion)
         {
-            if (Log.IsInfoEnabled)
+            if (Log.IsDebugEnabled)
             {
-                Log.Info($"Send negotiation for {parameters.Operation} in version {currentVersion}");
+                Log.Debug($"Send negotiation for {parameters.Operation} in version {currentVersion}");
             }
 
             context.Write(writer, new DynamicJsonValue

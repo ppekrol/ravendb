@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Changes;
 using Raven.Client.Documents.Queries.Timings;
@@ -26,13 +27,13 @@ using Raven.Client.Properties;
 using Raven.Client.Util;
 using Raven.Server.Config;
 using Raven.Server.Exceptions;
+using Raven.Server.Logging;
 using Raven.Server.Rachis;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide;
 using Raven.Server.TrafficWatch;
 using Raven.Server.Utils;
 using Raven.Server.Web;
-using Sparrow;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Logging;
@@ -47,7 +48,7 @@ namespace Raven.Server
         private RequestRouter _router;
         private RavenServer _server;
         private long _requestId;
-        private readonly Logger _logger = LoggingSource.Instance.GetLogger<RavenServerStartup>("Server");
+        private readonly Logger _logger = RavenLogManager.Instance.GetLoggerForServer<RavenServerStartup>();
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
@@ -223,9 +224,9 @@ namespace Raven.Server
                 }
                 catch (Exception internalException)
                 {
-                    if (_logger.IsOperationsEnabled)
+                    if (_logger.IsErrorEnabled)
                     {
-                        _logger.Operations($"Error during error handling of a failed request. Original error: {e}", internalException);
+                        _logger.Error(internalException, $"Error during error handling of a failed request. Original error: {e}");
                     }
 
                     throw;
@@ -247,9 +248,9 @@ namespace Raven.Server
                     requestHandlerContext.DatabaseMetrics?.Requests.UpdateDuration(requestDuration);
                 }
 
-                if (_logger.IsInfoEnabled && SkipHttpLogging == false)
+                if (_logger.IsDebugEnabled && SkipHttpLogging == false)
                 {
-                    _logger.Info($"{context.Request.Method} {context.Request.Path.Value}{context.Request.QueryString.Value} - {context.Response.StatusCode} - {(sp?.ElapsedMilliseconds ?? 0):#,#;;0} ms", exception);
+                    _logger.Debug(exception, $"{context.Request.Method} {context.Request.Path.Value}{context.Request.QueryString.Value} - {context.Response.StatusCode} - {(sp?.ElapsedMilliseconds ?? 0):#,#;;0} ms");
                 }
             }
         }

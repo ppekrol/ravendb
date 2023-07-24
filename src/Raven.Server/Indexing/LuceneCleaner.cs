@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Threading;
 using Lucene.Net.Search;
 using Nito.AsyncEx;
+using NLog;
+using Raven.Server.Logging;
 using Sparrow;
 using Sparrow.Logging;
 using Sparrow.LowMemory;
@@ -13,7 +15,7 @@ namespace Raven.Server.Indexing;
 public class LuceneCleaner : ILowMemoryHandler
 {
     private readonly AsyncReaderWriterLock _runningQueryLock = new();
-    private static readonly Logger Logger = LoggingSource.Instance.GetLogger<LuceneCleaner>("Memory");
+    private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<LuceneCleaner>();
 
     public LuceneCleaner()
     {
@@ -57,7 +59,7 @@ public class LuceneCleaner : ILowMemoryHandler
 
         cacheToDispose.Dispose();
 
-        if (sp != null && sp.ElapsedMilliseconds > 100)
+        if (sp is { ElapsedMilliseconds: > 100 })
         {
             Logger.Info($"Purged Lucene caches, took: {sp.ElapsedMilliseconds}ms, " +
                         $"cleaned: {new Size(NativeMemory.TotalAllocatedMemoryByLucene - unmanagedUsedBeforeInBytes, SizeUnit.Bytes)}");

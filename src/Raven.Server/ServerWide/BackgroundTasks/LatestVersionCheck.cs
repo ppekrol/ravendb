@@ -2,9 +2,11 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Server.Config.Categories;
 using Sparrow.Logging;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.Utils;
@@ -18,7 +20,7 @@ namespace Raven.Server.ServerWide.BackgroundTasks
     {
         private const string ApiRavenDbNet = "https://api.ravendb.net";
 
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger("Server", typeof(LatestVersionCheck).FullName);
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<LatestVersionCheck>();
 
         public static LatestVersionCheck Instance = new LatestVersionCheck();
 
@@ -112,7 +114,7 @@ namespace Raven.Server.ServerWide.BackgroundTasks
             catch (Exception err)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Error getting latest version info.", err);
+                    Logger.Info(err, "Error getting latest version info.");
             }
             finally
             {
@@ -138,7 +140,7 @@ namespace Raven.Server.ServerWide.BackgroundTasks
                 catch (Exception err)
                 {
                     if (Logger.IsInfoEnabled)
-                        Logger.Info("Error adding latest version alert to notification center.", err);
+                        Logger.Info(err, "Error adding latest version alert to notification center.");
                 }
             }
         }

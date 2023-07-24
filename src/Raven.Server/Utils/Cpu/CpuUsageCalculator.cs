@@ -2,12 +2,11 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Raven.Server.Dashboard;
-using Raven.Server.Monitoring.Snmp.Objects.Server;
+using NLog;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter;
 using Sparrow.Json;
 using Sparrow.Logging;
-using Sparrow.Platform.Posix.macOS;
 using Sparrow.Server.Platform.Posix.macOS;
 using Sparrow.Utils;
 
@@ -37,12 +36,17 @@ namespace Raven.Server.Utils.Cpu
     
     internal abstract class CpuUsageCalculator<T> : ICpuUsageCalculator where T : ProcessInfo
     {
-        protected readonly Logger Logger = LoggingSource.Instance.GetLogger<MachineCpu>("Server");
+        protected readonly Logger Logger;
         private readonly object _locker = new object();
 
         protected  CpuUsageStats LastCpuUsage;
 
         protected T PreviousInfo;
+
+        protected CpuUsageCalculator()
+        {
+            Logger = RavenLogManager.Instance.GetLoggerForServer(GetType());
+        }
 
         public void Init()
         {

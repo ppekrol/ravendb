@@ -4,12 +4,10 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Sparrow;
-using Voron.Data.Tables;
 using Voron.Exceptions;
-using Voron.Global;
 using Voron.Impl;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Data.RawData
 {
@@ -20,7 +18,7 @@ namespace Voron.Data.RawData
 
         protected readonly LowLevelTransaction _llt;
 
-        public const int MaxItemSize = (Constants.Storage.PageSize - RawDataSmallPageHeader.SizeOf) / 2;
+        public const int MaxItemSize = (Global.Constants.Storage.PageSize - RawDataSmallPageHeader.SizeOf) / 2;
 
         protected RawDataSmallSectionPageHeader* _sectionHeader;
 

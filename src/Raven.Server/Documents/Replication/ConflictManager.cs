@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Raven.Client.Extensions;
+using NLog;
 using Raven.Client.ServerWide;
 using Raven.Server.Documents.Handlers;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
+using Sparrow.Global;
 using Sparrow.Json;
 using Sparrow.Logging;
 using Voron;
@@ -24,7 +26,7 @@ namespace Raven.Server.Documents.Replication
         {
             _conflictResolver = conflictResolver;
             _database = database;
-            _log = LoggingSource.Instance.GetLogger<ConflictManager>(_database.Name);
+            _log = RavenLogManager.Instance.GetLoggerForDatabase<ConflictManager>(database);
         }
 
         public unsafe void HandleConflictForDocument(

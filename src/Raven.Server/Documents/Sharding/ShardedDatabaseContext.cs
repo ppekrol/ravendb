@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Changes;
 using Raven.Client.Extensions;
@@ -14,6 +15,8 @@ using Raven.Server.Documents.Sharding.Executors;
 using Raven.Server.Documents.Sharding.NotificationCenter;
 using Raven.Server.Documents.Sharding.Queries;
 using Raven.Server.Documents.TcpHandlers;
+using Raven.Server.Logging;
+using Raven.Server.Monitoring.Snmp.Objects.Database;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
@@ -62,7 +65,7 @@ namespace Raven.Server.Documents.Sharding
 
             ServerStore = serverStore;
             _record = record;
-            _logger = LoggingSource.Instance.GetLogger<ShardedDatabaseContext>(DatabaseName);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<ShardedDatabaseContext>(this);
 
             _orchestratorStateChange = new DatabasesLandlord.StateChange(ServerStore, record.DatabaseName, _logger, OnDatabaseRecordChange, 0, _databaseShutdown.Token);
             _urlUpdateStateChange = new DatabasesLandlord.StateChange(ServerStore, record.DatabaseName, _logger, OnUrlChange, 0, _databaseShutdown.Token);

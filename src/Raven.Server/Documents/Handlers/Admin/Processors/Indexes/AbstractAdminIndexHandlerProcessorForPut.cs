@@ -10,6 +10,7 @@ using Raven.Client.Documents.Indexes;
 using Raven.Server.Documents.Handlers.Processors;
 using Raven.Server.Documents.Indexes;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.TrafficWatch;
 using Sparrow.Json;
 using Sparrow.Logging;
@@ -54,10 +55,10 @@ internal abstract class AbstractAdminIndexHandlerProcessorForPut<TRequestHandler
                     ? $"{ip} | {clientCert.Subject} [{clientCert.Thumbprint}]"
                     : $"{ip}";
 
-                if (LoggingSource.AuditLog.IsInfoEnabled)
+                if (RavenLogManager.Instance.IsAuditEnabled)
                 {
-                    var auditLog = LoggingSource.AuditLog.GetLogger(RequestHandler.DatabaseName, "Audit");
-                    auditLog.Info($"Index {indexDefinition.Name} PUT by {clientCert?.Subject} {clientCert?.Thumbprint} with definition: {indexToAdd} from {ip} at {DateTime.UtcNow}");
+                    var auditLog = RavenLogManager.Instance.GetAuditLoggerForDatabase(RequestHandler.DatabaseName);
+                    auditLog.Audit($"Index {indexDefinition.Name} PUT by {clientCert?.Subject} {clientCert?.Thumbprint} with definition: {indexToAdd} from {ip} at {DateTime.UtcNow}");
                 }
 
                 if (indexDefinition.Maps == null || indexDefinition.Maps.Count == 0)

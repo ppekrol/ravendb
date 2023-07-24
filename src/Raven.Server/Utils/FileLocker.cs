@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
-using Sparrow.Logging;
+using NLog;
 
 namespace Raven.Server.Utils
 {
@@ -92,7 +92,7 @@ namespace Raven.Server.Utils
                     // couldn't check, just ignore and raise the original error
                     if (logger.IsInfoEnabled)
                     {
-                        logger.Info($"Unable to query the drive type after failing to lock file: " + _lockFile, a);
+                        logger.Info(a, $"Unable to query the drive type after failing to lock file: " + _lockFile);
                     }
                 }
                 throw new InvalidOperationException($"Cannot open database because RavenDB was unable create file lock on: '{_lockFile}'. {additionalInfo}", e);

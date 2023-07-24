@@ -7,11 +7,11 @@ using System.Threading;
 using Corax;
 using Corax.Mappings;
 using Corax.Pipeline;
+using NLog;
 using Raven.Client.Documents.Queries.Suggestions;
 using Raven.Server.Documents.Queries;
 using Raven.Server.Documents.Queries.Suggestions;
 using Sparrow.Json;
-using Sparrow.Logging;
 using Voron.Impl;
 using Encoding = System.Text.Encoding;
 

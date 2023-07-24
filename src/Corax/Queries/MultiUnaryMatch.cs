@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
+using Corax.Global;
 using Corax.Mappings;
 using Corax.Utils;
 using Voron;
@@ -410,19 +410,19 @@ public struct MultiUnaryMatch<TInner> : IQueryMatch
                 {
                     if(reader.FieldRootPage != fieldsRootPage)
                         continue;
-                    var comparer = _comparers[comparerId];
+                var comparer = _comparers[comparerId];
                     if (IsAcceptedForIterator(comparer, in reader) == false)
-                    {
-                        goto NotMatch;
-                    }
-                }
-            }
-            matches[currentIdx++] = matches[i];
+                {
+                            goto NotMatch;
+                        }
+                                }
+                            }
+                matches[currentIdx++] = matches[i];
             NotMatch: ; // the ; so we have a label for the goto
-        }
+            }
 
         return currentIdx;
-        
+
         bool IsAcceptedForIterator(MultiUnaryItem comparer, in EntryTermsReader iterator) => comparer.Type switch
         {
             MultiUnaryItem.DataType.Slice => comparer.CompareLiteral(iterator.Current.Decoded()),

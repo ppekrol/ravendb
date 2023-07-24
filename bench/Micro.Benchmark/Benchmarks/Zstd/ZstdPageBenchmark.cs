@@ -12,6 +12,7 @@ using Sparrow.Server;
 using Sparrow.Threading;
 using Sparrow.Utils;
 using Voron.Global;
+using Constants = Voron.Global.Constants;
 using Platform = BenchmarkDotNet.Environments.Platform;
 
 namespace Micro.Benchmark.Benchmarks.LZ4

@@ -70,8 +70,8 @@ namespace Raven.Server.Documents.Handlers.Processors.OngoingTasks
                         }
                         catch (Exception e)
                         {
-                            if (Logger.IsOperationsEnabled)
-                                Logger.Operations($"Failed to run the backup thread: '{backupName}'", e);
+                            if (Logger.IsErrorEnabled)
+                                Logger.Error(e, $"Failed to run the backup thread: '{backupName}'");
 
                             tcs.SetException(e);
                         }

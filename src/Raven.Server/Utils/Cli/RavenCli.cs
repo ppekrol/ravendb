@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Raven.Client.ServerWide.Operations.Logs;
 
 #if !RVN
 using Jint;
-using Raven.Client;
 using Raven.Client.Documents;
 using Raven.Client.ServerWide;
 using Raven.Client.ServerWide.Operations;
@@ -20,11 +19,10 @@ using Raven.Client.ServerWide.Operations.Certificates;
 using Raven.Client.Util;
 #endif
 
-using Raven.Server.Config.Categories;
-
 #if !RVN
 using Raven.Server.Documents;
 using Raven.Server.Documents.Patch;
+using Raven.Server.Logging;
 #endif
 
 using Raven.Server.ServerWide;
@@ -41,7 +39,7 @@ using Sparrow.Json.Sync;
 using Sparrow.Logging;
 using Sparrow.LowMemory;
 using Sparrow.Platform;
-using Sparrow.Server.Json.Sync;
+using Sparrow.Server.LowMemory;
 using Sparrow.Server.Platform;
 using Sparrow.Utils;
 using Size = Sparrow.Size;
@@ -351,23 +349,23 @@ namespace Raven.Server.Utils.Cli
 
             Console.ResetColor();
 
-            LoggingSource.Instance.DisableConsoleLogging();
-            var prevLogMode = LoggingSource.Instance.LogMode;
-            SetupLogMode(LogMode.None, cli._server.Configuration.Logs);
+            RavenConsoleTarget.Disable();
+            
             Program.WriteServerStatsAndWaitForEsc(cli._server);
-            SetupLogMode(prevLogMode, cli._server.Configuration.Logs);
-            Console.WriteLine($"LogMode set back to {prevLogMode}.");
+
             return true;
         }
 
-        private static void SetupLogMode(LogMode logMode, LogsConfiguration configuration)
+        private static void SetupLogMode(LogLevel logMode)
         {
-            LoggingSource.Instance.SetupLogMode(
-                logMode,
-                configuration.Path.FullPath,
-                configuration.RetentionTime?.AsTimeSpan,
-                configuration.RetentionSize?.GetValue(SizeUnit.Bytes),
-                configuration.Compress);
+            RavenLogManager.Instance.ConfigureLogging(new SetLogsConfigurationOperation.Parameters
+            {
+                Logs = new SetLogsConfigurationOperation.LogsConfiguration
+                {
+                    MinLevel = logMode,
+                    MaxLevel = LogLevel.Fatal
+                }
+            });
         }
 
         private static bool CommandTopThreads(List<string> args, RavenCli cli)
@@ -417,12 +415,10 @@ namespace Raven.Server.Utils.Cli
 
             Console.ResetColor();
 
-            LoggingSource.Instance.DisableConsoleLogging();
-            var prevLogMode = LoggingSource.Instance.LogMode;
-            SetupLogMode(LogMode.None, cli._server.Configuration.Logs);
+            RavenConsoleTarget.Disable();
+
             Program.WriteThreadsInfoAndWaitForEsc(cli._server, maxTopThreads, updateIntervalInMs, cpuUsageThreshold);
-            SetupLogMode(prevLogMode, cli._server.Configuration.Logs);
-            Console.WriteLine($"LogMode set back to {prevLogMode}.");
+
             return true;
         }
 
@@ -535,22 +531,22 @@ namespace Raven.Server.Utils.Cli
                 case "on":
                 case "information":
                     if (withConsole)
-                        LoggingSource.Instance.EnableConsoleLogging();
-                    SetupLogMode(LogMode.Information, cli._server.Configuration.Logs);
+                        RavenConsoleTarget.Enable();
+                    SetupLogMode(LogLevel.Info);
                     WriteText("Logging set to ON (information)", ConsoleColor.Green, cli);
                     break;
 
                 case "off":
                 case "none":
-                    LoggingSource.Instance.DisableConsoleLogging();
-                    SetupLogMode(LogMode.None, cli._server.Configuration.Logs);
+                    RavenConsoleTarget.Disable();
+                    SetupLogMode(LogLevel.Off);
                     WriteText("Logging set to OFF (none)", ConsoleColor.DarkGreen, cli);
                     break;
 
                 case "operations":
                     if (withConsole)
-                        LoggingSource.Instance.EnableConsoleLogging();
-                    SetupLogMode(LogMode.None, cli._server.Configuration.Logs);
+                        RavenConsoleTarget.Enable();
+                    SetupLogMode(LogLevel.Off);
                     WriteText("Logging set to ON (operations)", ConsoleColor.DarkGreen, cli);
                     break;
 
@@ -1332,13 +1328,13 @@ namespace Raven.Server.Utils.Cli
                             return true;
 
                         case "log":
-                            LoggingSource.Instance.EnableConsoleLogging();
-                            SetupLogMode(LogMode.Information, _server.Configuration.Logs);
+                            RavenConsoleTarget.Enable();
+                            SetupLogMode(LogLevel.Info);
                             break;
 
                         case "logoff":
-                            LoggingSource.Instance.DisableConsoleLogging();
-                            SetupLogMode(LogMode.None, _server.Configuration.Logs);
+                            RavenConsoleTarget.Disable();
+                            SetupLogMode(LogLevel.Off);
                             break;
 
                         case "h":

@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Http;
-using Sparrow;
-using Sparrow.Logging;
 using Sparrow.Utils;
 
 namespace Raven.Server.Https
@@ -122,8 +118,8 @@ namespace Raven.Server.Https
             string errors = GetStdError();
 
             // Can have exit code 0 (success) but still get errors. We log the errors anyway.
-            if (log.IsOperationsEnabled)
-                log.Operations($"Executing '{_server.Configuration.Security.CertificateValidationExec} {args}' took {sw.ElapsedMilliseconds:#,#;;0} ms. Exit code: {process.ExitCode}{Environment.NewLine}Output: {output}{Environment.NewLine}Errors: {errors}{Environment.NewLine}");
+            if (log.IsInfoEnabled)
+                log.Info($"Executing '{_server.Configuration.Security.CertificateValidationExec} {args}' took {sw.ElapsedMilliseconds:#,#;;0} ms. Exit code: {process.ExitCode}{Environment.NewLine}Output: {output}{Environment.NewLine}Errors: {errors}{Environment.NewLine}");
 
             if (process.ExitCode != 0)
             {

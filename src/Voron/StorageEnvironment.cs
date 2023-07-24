@@ -35,8 +35,12 @@ using Constants = Voron.Global.Constants;
 using NativeMemory = Sparrow.Utils.NativeMemory;
 using Voron.Data.Fixed;
 using Voron.Data.Lookups;
-using System.Diagnostics.CodeAnalysis;using Voron.Data.RawData;using Voron.Data.PostingLists;
+using System.Diagnostics.CodeAnalysis;
+using NLog;
+using Voron.Data.RawData;using Voron.Data.PostingLists;
 using Container = Voron.Data.Containers.Container;
+using Voron.Logging;
+using Voron.Platform.Win32;
 
 namespace Voron
 {
@@ -134,7 +138,7 @@ namespace Voron
             {
                 SelfReference.Owner = this;
                 SelfReference.WeekReference = new WeakReference<StorageEnvironment>(this);
-                _log = LoggingSource.Instance.GetLogger<StorageEnvironment>(options.BasePath.FullPath);
+                _log = RavenLogManager.Instance.GetLoggerForVoron<StorageEnvironment>(options, options.BasePath.FullPath);
                 _options = options;
                 _dataPager = options.DataPager;
                 _freeSpaceHandling = new FreeSpaceHandling();
@@ -185,8 +189,8 @@ namespace Voron
 
         ~StorageEnvironment()
         {
-            if (_log.IsOperationsEnabled)
-                _log.Operations($"Finalizer of storage environment was called. Env: {this}");
+            if (_log.IsErrorEnabled)
+                _log.Error($"Finalizer of storage environment was called. Env: {this}");
 
             try
             {
@@ -194,8 +198,8 @@ namespace Voron
             }
             catch (Exception e)
             {
-                if (_log.IsOperationsEnabled) 
-                    _log.Operations($"Failed to dispose storage environment via finalizer. Env: {this}", e);
+                if (_log.IsErrorEnabled) 
+                    _log.Error($"Failed to dispose storage environment via finalizer. Env: {this}", e);
             }
         }
 
@@ -258,9 +262,9 @@ namespace Voron
 
                 string message = $"{nameof(IdleFlushTimer)} failed (numberOfFailures: {numberOfFailures}), unable to schedule flush / syncs of data file. Will be restarted on new write transaction";
 
-                if (env._log.IsOperationsEnabled)
+                if (env._log.IsErrorEnabled)
                 {
-                    env._log.Operations(message, e);
+                    env._log.Error(e, message);
                 }
 
                 try
@@ -1600,8 +1604,8 @@ namespace Voron
             {
                 var oldMode = Options.TransactionsMode;
 
-                if (_log.IsOperationsEnabled)
-                    _log.Operations($"Setting transaction mode to {mode}. Old mode is {oldMode}");
+                if (_log.IsInfoEnabled)
+                    _log.Info($"Setting transaction mode to {mode}. Old mode is {oldMode}");
 
                 if (oldMode == mode)
                     return TransactionsModeResult.ModeAlreadySet;

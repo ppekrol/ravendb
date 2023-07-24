@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Identity;
 using Raven.Client.Documents.Session;
 using Raven.Client.Http;
-using Sparrow.Logging;
 
 namespace Raven.Client.Documents.Subscriptions
 {

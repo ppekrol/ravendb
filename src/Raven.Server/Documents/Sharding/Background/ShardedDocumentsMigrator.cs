@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Commands.Sharding;
 using Raven.Server.ServerWide.Context;
+using Sparrow.Global;
 using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Sharding.Background
@@ -17,7 +20,7 @@ namespace Raven.Server.Documents.Sharding.Background
         {
             _database = database;
             _token = database.ShardedDocumentsStorage.DocumentDatabase.DatabaseShutdown;
-            _logger = LoggingSource.Instance.GetLogger(database.Name, GetType().FullName);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<ShardedDocumentsMigrator>(database);
         }
 
         internal async Task ExecuteMoveDocumentsAsync()
@@ -80,8 +83,8 @@ namespace Raven.Server.Documents.Sharding.Background
                 if (_token.IsCancellationRequested)
                     return;
 
-                if (_logger.IsOperationsEnabled)
-                    _logger.Operations($"Failed to execute documents migration for '{_database.Name}'", e);
+                if (_logger.IsErrorEnabled)
+                    _logger.Error(e, $"Failed to execute documents migration for '{_database.Name}'");
 
                 throw;
             }

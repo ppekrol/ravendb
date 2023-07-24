@@ -191,7 +191,7 @@ namespace Voron.Data.BTrees
             /// <returns></returns>
             private void AllocateNextPage()
             {
-                var overflowSize = (_numberOfPagesPerChunk * Constants.Storage.PageSize) - PageHeader.SizeOf;
+                var overflowSize = (_numberOfPagesPerChunk * Global.Constants.Storage.PageSize) - PageHeader.SizeOf;
                 var nextPage = _parent._tx.LowLevelTransaction.AllocateOverflowRawPage(overflowSize, out _, zeroPage: false);
                 if (_currentPage.Pointer != null)
                 {
@@ -206,7 +206,7 @@ namespace Voron.Data.BTrees
 
                 ((StreamPageHeader*)_currentPage.Pointer)->StreamNextPageNumber = 0;
                 ((StreamPageHeader*)_currentPage.Pointer)->ChunkSize = 0;
-                _writePosEnd = _currentPage.Pointer + (_numberOfPagesPerChunk * Constants.Storage.PageSize);
+                _writePosEnd = _currentPage.Pointer + (_numberOfPagesPerChunk * Global.Constants.Storage.PageSize);
                 _numberOfPagesPerChunk = Math.Min(_numberOfPagesPerChunk * 2, MaxNumberOfPagerPerChunk);
             }
         }

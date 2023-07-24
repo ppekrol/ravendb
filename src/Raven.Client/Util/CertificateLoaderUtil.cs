@@ -3,14 +3,16 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography.X509Certificates;
+using NLog;
+using Raven.Client.Logging;
 using Sparrow.Logging;
 
-namespace Raven.Client;
+namespace Raven.Client.Util;
 
 internal static class CertificateLoaderUtil
 {
-    private static readonly Logger Log = LoggingSource.Instance.GetLogger("Server", nameof(CertificateLoaderUtil));
-    
+    private static readonly Logger Log = RavenLogManager.Instance.GetLoggerForClient(typeof(CertificateLoaderUtil));
+
     private static bool FirstTime = true;
     public static X509KeyStorageFlags FlagsForExport => X509KeyStorageFlags.Exportable;
 
@@ -57,13 +59,13 @@ internal static class CertificateLoaderUtil
         {
             certificate = creator(f);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             exception = e;
             f = AddMachineKeySet(flag);
             certificate = creator(f);
         }
-        
+
         LogIfNeeded(nameof(CreateCertificate), f, exception);
 
         CertificateCleaner.RegisterForDisposalDuringFinalization(certificate);
@@ -89,22 +91,22 @@ internal static class CertificateLoaderUtil
 #endif
             X509KeyStorageFlags.UserKeySet |
             X509KeyStorageFlags.MachineKeySet;
-        
+
         Debug.Assert(flags.HasValue == false || (flags.Value & keyStorageFlags) == 0);
     }
-    
+
     private static void LogIfNeeded(string method, X509KeyStorageFlags flags, Exception exception)
     {
         if (FirstTime)
         {
             FirstTime = false;
-            if (Log.IsOperationsEnabled)
-                Log.Operations(CreateMsg(), exception);
+            if (Log.IsWarnEnabled)
+                Log.Warn(exception, CreateMsg());
         }
         else
         {
-            if (Log.IsInfoEnabled)
-                Log.Info(CreateMsg(), exception);
+            if (Log.IsDebugEnabled)
+                Log.Debug(exception, CreateMsg());
         }
 
         string CreateMsg()

@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Replication;
 using Raven.Client.Documents.Replication.Messages;
 using Raven.Client.Extensions;
@@ -19,9 +20,11 @@ using Raven.Server.Documents.Replication.ReplicationItems;
 using Raven.Server.Documents.Replication.Stats;
 using Raven.Server.Documents.TcpHandlers;
 using Raven.Server.Exceptions;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide;
 using Raven.Server.Utils;
 using Sparrow;
+using Sparrow.Global;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Json.Sync;
@@ -85,7 +88,7 @@ namespace Raven.Server.Documents.Replication.Incoming
             _databaseName = _parent.DatabaseName;
             _contextPool = _parent.ContextPool;
 
-            Logger = LoggingSource.Instance.GetLogger(_databaseName, GetType().FullName);
+            Logger = RavenLogManager.Instance.GetLoggerForDatabase(GetType(), _databaseName);
 
             ConnectionInfo = IncomingConnectionInfo.FromGetLatestEtag(replicatedLastEtag);
             SupportedFeatures = TcpConnectionHeaderMessage.GetSupportedFeaturesFor(tcpConnectionOptions.Operation, tcpConnectionOptions.ProtocolVersion);
@@ -124,7 +127,7 @@ namespace Raven.Server.Documents.Replication.Incoming
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Error in accepting replication request ({FromToString})", e);
+                    Logger.Info(e, $"Error in accepting replication request ({FromToString})");
             }
         }
 
@@ -202,7 +205,7 @@ namespace Raven.Server.Documents.Replication.Incoming
                                     //if we are disposing, do not notify about failure (not relevant)
                                     if (_cts.IsCancellationRequested == false)
                                         if (Logger.IsInfoEnabled)
-                                            Logger.Info("Received unexpected exception while receiving replication batch.", e);
+                                            Logger.Info(e, "Received unexpected exception while receiving replication batch.");
                                 }
                             }
 
@@ -212,7 +215,7 @@ namespace Raven.Server.Documents.Replication.Incoming
                         void HandleSocketException(SocketException e)
                         {
                             if (Logger.IsInfoEnabled)
-                                Logger.Info("Failed to read data from incoming connection. The incoming connection will be closed and re-created.", e);
+                                Logger.Info(e, "Failed to read data from incoming connection. The incoming connection will be closed and re-created.");
                         }
                     }
                 }
@@ -223,7 +226,7 @@ namespace Raven.Server.Documents.Replication.Incoming
                 if (_cts.IsCancellationRequested == false)
                 {
                     if (Logger.IsInfoEnabled)
-                        Logger.Info($"Connection error {FromToString}: an exception was thrown during receiving incoming document replication batch.", e);
+                        Logger.Info(e, $"Connection error {FromToString}: an exception was thrown during receiving incoming document replication batch.");
 
                     InvokeOnFailed(e);
                 }
@@ -296,8 +299,7 @@ namespace Raven.Server.Documents.Replication.Incoming
             catch (EndOfStreamException e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Received unexpected end of stream while receiving replication batches. " +
-                              "This might indicate an issue with network.", e);
+                    Logger.Info(e, "Received unexpected end of stream while receiving replication batches. This might indicate an issue with network.");
                 throw;
             }
             catch (Exception e)
@@ -325,7 +327,7 @@ namespace Raven.Server.Documents.Replication.Incoming
                 }
 
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Failed replicating documents {FromToString}.", e);
+                    Logger.Info(e, $"Failed replicating documents {FromToString}.");
 
                 //return negative ack
                 returnValue = new DynamicJsonValue
@@ -510,11 +512,11 @@ namespace Raven.Server.Documents.Replication.Incoming
                         //This is the case where we had a missing attachment, it is rare but expected.
                         if (e.ExtractSingleInnerException() is MissingAttachmentException mae)
                         {
-                            Logger.Info("Replication batch contained missing attachments will request the batch to be re-sent with those attachments.", mae);
+                            Logger.Info(mae, "Replication batch contained missing attachments will request the batch to be re-sent with those attachments.");
                         }
                         else
                         {
-                            Logger.Info("Failed to receive documents replication batch. This is not supposed to happen, and is likely a bug.", e);
+                            Logger.Info(e, "Failed to receive documents replication batch. This is not supposed to happen, and is likely a bug.");
                         }
                     }
                     throw;

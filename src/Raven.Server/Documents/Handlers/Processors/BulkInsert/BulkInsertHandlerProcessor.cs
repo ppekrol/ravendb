@@ -9,14 +9,12 @@ using Raven.Server.Documents.Handlers.Batches;
 using Raven.Server.Documents.Handlers.BulkInsert;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Json;
-using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Handlers.Processors.BulkInsert;
 
 internal class BulkInsertHandlerProcessor: AbstractBulkInsertHandlerProcessor<BatchRequestParser.CommandData, BulkInsertHandler, DocumentsOperationContext>
 {
     private readonly DocumentDatabase _database;
-    private readonly Logger _logger;
     private int _databaseChangeVectorSize;
 
     public BulkInsertHandlerProcessor([NotNull] BulkInsertHandler requestHandler,
@@ -24,7 +22,6 @@ internal class BulkInsertHandlerProcessor: AbstractBulkInsertHandlerProcessor<Ba
         : base(requestHandler, onProgress, skipOverwriteIfUnchanged, token)
     {
         _database = database;
-        _logger = LoggingSource.Instance.GetLogger<MergedInsertBulkCommand>(database.Name);
         _databaseChangeVectorSize = GetDatabaseChangeVectorSize();
     }
 
@@ -42,7 +39,7 @@ internal class BulkInsertHandlerProcessor: AbstractBulkInsertHandlerProcessor<Ba
                 Commands = array,
                 NumberOfCommands = numberOfCommands,
                 Database = _database,
-                Logger = _logger,
+                Logger = Logger,
                 TotalSize = totalSize,
                 SkipOverwriteIfUnchanged = SkipOverwriteIfUnchanged
             });

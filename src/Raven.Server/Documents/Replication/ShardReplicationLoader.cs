@@ -160,9 +160,9 @@ public class ShardReplicationLoader : ReplicationLoader
                         }
                         catch (Exception e)
                         {
-                            if (_logger.IsOperationsEnabled)
+                            if (_logger.IsErrorEnabled)
                             {
-                                _logger.Operations($"Failed to start migration replication to shard {migrationDestination.Shard} on node {migrationDestination.Node}", e);
+                                _logger.Error(e, $"Failed to start migration replication to shard {migrationDestination.Shard} on node {migrationDestination.Node}");
                             }
                         }
                     });

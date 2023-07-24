@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Raven.Client;
+using NLog;
 using Raven.Client.Documents.Changes;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Exceptions;
@@ -20,6 +20,7 @@ using Raven.Server.Documents.Replication.ReplicationItems;
 using Raven.Server.Documents.Revisions;
 using Raven.Server.Documents.Sharding;
 using Raven.Server.Documents.TimeSeries;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Storage.Layout;
 using Raven.Server.Storage.Schema;
@@ -29,8 +30,8 @@ using Sparrow.Binary;
 using Sparrow.Json;
 using Sparrow.Logging;
 using Sparrow.Server;
+using Sparrow.Server.Logging;
 using Sparrow.Server.Utils;
-using Sparrow.Utils;
 using Voron;
 using Voron.Data;
 using Voron.Data.Fixed;
@@ -40,6 +41,7 @@ using Voron.Impl;
 using static Raven.Server.Documents.Schemas.Collections;
 using static Raven.Server.Documents.Schemas.Documents;
 using static Raven.Server.Documents.Schemas.Tombstones;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents
 {
@@ -111,7 +113,7 @@ namespace Raven.Server.Documents
             DocumentDatabase = documentDatabase;
             SetDocumentsStorageSchemas();
             _name = DocumentDatabase.Name;
-            _logger = LoggingSource.Instance.GetLogger<DocumentsStorage>(documentDatabase.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase(GetType(), DocumentDatabase);
             _addToInitLog = addToInitLog;
         }
 
@@ -171,7 +173,7 @@ namespace Raven.Server.Documents
 
             }
 
-            var options = GetStorageEnvironmentOptionsFromConfiguration(DocumentDatabase.Configuration, DocumentDatabase.IoChanges, DocumentDatabase.CatastrophicFailureNotification);
+            var options = GetStorageEnvironmentOptionsFromConfiguration(DocumentDatabase.Configuration, DocumentDatabase.IoChanges, DocumentDatabase.CatastrophicFailureNotification, LoggingResource.Database(_name));
 
             options.OnNonDurableFileSystemError += DocumentDatabase.HandleNonDurableFileSystemError;
             options.OnRecoveryError += DocumentDatabase.HandleOnDatabaseRecoveryError;
@@ -210,22 +212,25 @@ namespace Raven.Server.Documents
             }
         }
 
-        public static StorageEnvironmentOptions GetStorageEnvironmentOptionsFromConfiguration(RavenConfiguration config, IoChangesNotifications ioChanges, CatastrophicFailureNotification catastrophicFailureNotification)
+        public static StorageEnvironmentOptions GetStorageEnvironmentOptionsFromConfiguration(RavenConfiguration config, IoChangesNotifications ioChanges, CatastrophicFailureNotification catastrophicFailureNotification, LoggingResource loggingResource)
         {
             if (config.Core.RunInMemory)
                 return StorageEnvironmentOptions.CreateMemoryOnly(
                     config.Core.DataDirectory.FullPath,
                     config.Storage.TempPath?.FullPath,
                     ioChanges,
-                    catastrophicFailureNotification);
+                    catastrophicFailureNotification,
+                    loggingResource,
+                    loggingComponent: null);
 
             return StorageEnvironmentOptions.ForPath(
                 config.Core.DataDirectory.FullPath,
                 config.Storage.TempPath?.FullPath,
                 null,
                 ioChanges,
-                catastrophicFailureNotification
-            );
+                catastrophicFailureNotification,
+                loggingResource,
+                loggingComponent: null);
         }
 
         private void Initialize(StorageEnvironmentOptions options)
@@ -285,8 +290,8 @@ namespace Raven.Server.Documents
             }
             catch (Exception e)
             {
-                if (_logger.IsOperationsEnabled)
-                    _logger.Operations($"Could not open documents store for '{_name}' ({options}).", e);
+                if (_logger.IsErrorEnabled)
+                    _logger.Error(e, $"Could not open documents store for '{_name}' ({options}).");
 
                 Dispose();
                 options.Dispose();
@@ -2611,7 +2616,7 @@ namespace Raven.Server.Documents
             context.LastDatabaseChangeVector = clone.Order;
             return true;
         }
-        
+
         private ChangeVector SetDocumentChangeVectorForLocalChange(DocumentsOperationContext context, Slice lowerId, ChangeVector oldChangeVector, long newEtag)
         {
             if (oldChangeVector != null)
@@ -2625,7 +2630,7 @@ namespace Raven.Server.Documents
 
         public DocumentFlags GetFlagsFromOldDocument(DocumentFlags newFlags, DocumentFlags oldFlags, NonPersistentDocumentFlags nonPersistentFlags)
         {
-            if (nonPersistentFlags.Contain(NonPersistentDocumentFlags.FromReplication)) 
+            if (nonPersistentFlags.Contain(NonPersistentDocumentFlags.FromReplication))
                 return newFlags;
 
             newFlags = newFlags.Strip(DocumentFlags.FromReplication);

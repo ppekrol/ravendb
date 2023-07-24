@@ -1,6 +1,8 @@
 using System;
 using DasMulli.Win32.ServiceUtils;
+using NLog;
 using Raven.Server.Config;
+using Raven.Server.Logging;
 using Raven.Server.Utils.Cli;
 using Sparrow.Logging;
 using Sparrow.Platform;
@@ -32,9 +34,9 @@ namespace Raven.Server.Utils
         }
     }
 
-    internal class RavenWin32Service : IWin32Service
+    internal sealed class RavenWin32Service : IWin32Service
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<RavenWin32Service>("Server");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<RavenWin32Service>();
 
         private RavenServer _ravenServer;
 
@@ -65,7 +67,7 @@ namespace Raven.Server.Utils
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Unable to OpenPipe. Admin Channel will not be available to the user", e);
+                    Logger.Info(e, "Unable to OpenPipe. Admin Channel will not be available to the user");
 
                 throw;
             }
@@ -77,7 +79,7 @@ namespace Raven.Server.Utils
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Error initializing the server", e);
+                    Logger.Info(e, "Error initializing the server");
 
                 throw;
             }
@@ -103,8 +105,8 @@ namespace Raven.Server.Utils
 
         public void Stop()
         {
-            if (Logger.IsOperationsEnabled)
-                Logger.OperationsWithWait($"Stopping RavenDB Windows Service: {ServiceName}.").Wait(TimeSpan.FromSeconds(15));
+            if (Logger.IsInfoEnabled)
+                Logger.Info($"Stopping RavenDB Windows Service: {ServiceName}.");
 
             _ravenServer.Dispose();
             _serviceStoppedCallback();

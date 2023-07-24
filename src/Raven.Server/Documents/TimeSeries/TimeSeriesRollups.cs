@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using NLog;
 using Raven.Client.Documents.Operations.TimeSeries;
 using Raven.Client.Documents.Queries.TimeSeries;
 using Raven.Server.Documents.Queries.AST;
 using Raven.Server.Documents.TransactionMerger.Commands;
+using Raven.Server.Logging;
+using Raven.Server.Monitoring.Snmp.Objects.Database;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
 using Sparrow;
 using Sparrow.Binary;
-using Sparrow.Json;
 using Sparrow.Logging;
 using Sparrow.Server;
 using Sparrow.Server.Utils;
@@ -87,7 +89,7 @@ namespace Raven.Server.Documents.TimeSeries
         public TimeSeriesRollups(DocumentDatabase database)
         {
             _database = database;
-            _logger = LoggingSource.Instance.GetLogger<TimeSeriesPolicyRunner>(database.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<TimeSeriesRollups>(database);
         }
 
         public unsafe void MarkForPolicy(DocumentsOperationContext context, TimeSeriesSliceHolder slicerHolder, TimeSeriesPolicy nextPolicy, DateTime timestamp)
@@ -253,7 +255,7 @@ namespace Raven.Server.Documents.TimeSeries
 
             protected override long ExecuteCmd(DocumentsOperationContext context)
             {
-                var logger = LoggingSource.Instance.GetLogger<TimeSeriesPolicyRunner>(context.DocumentDatabase.Name);
+                var logger = RavenLogManager.Instance.GetLoggerForDatabase<TimeSeriesRetentionCommand>(context.DocumentDatabase);
                 var request = new TimeSeriesStorage.DeletionRangeRequest
                 {
                     From = DateTime.MinValue,
@@ -399,13 +401,13 @@ namespace Raven.Server.Documents.TimeSeries
 
             public long RolledUp;
 
-            internal RollupTimeSeriesCommand(TimeSeriesConfiguration configuration, DateTime now, List<RollupState> states, bool isFirstInTopology)
+            internal RollupTimeSeriesCommand(string databaseName, TimeSeriesConfiguration configuration, DateTime now, List<RollupState> states, bool isFirstInTopology)
             {
                 _configuration = configuration;
                 _now = now;
                 _states = states;
                 _isFirstInTopology = isFirstInTopology;
-                _logger = LoggingSource.Instance.GetLogger<TimeSeriesRollups>(nameof(RollupTimeSeriesCommand));
+                _logger = RavenLogManager.Instance.GetLoggerForDatabase<RollupTimeSeriesCommand>(databaseName);
             }
 
             protected override long ExecuteCmd(DocumentsOperationContext context)
@@ -444,7 +446,7 @@ namespace Raven.Server.Documents.TimeSeries
                     catch (NanValueException e)
                     {
                         if (_logger.IsInfoEnabled)
-                            _logger.Info($"{item} failed", e);
+                            _logger.Info(e, $"{item} failed");
 
                         if (table.VerifyKeyExists(item.Key) == false)
                         {
@@ -482,7 +484,7 @@ namespace Raven.Server.Documents.TimeSeries
 
                         var msg = $"Rollup '{item.RollupPolicy}' for time-series '{name}' in document '{docId}' failed.";
                         if (_logger.IsInfoEnabled)
-                            _logger.Info(msg, e);
+                            _logger.Info(e, msg);
 
                         var alert = AlertRaised.Create(context.DocumentDatabase.Name, "Failed to perform rollup because the time-series has more than 5 values", msg,
                             AlertType.RollupExceedNumberOfValues, NotificationSeverity.Warning, $"{item.Collection}/{item.Name}", new ExceptionDetails(e));
@@ -647,7 +649,7 @@ namespace Raven.Server.Documents.TimeSeries
 
                 public RollupTimeSeriesCommand ToCommand(DocumentsOperationContext context, DocumentDatabase database)
                 {
-                    return new RollupTimeSeriesCommand(_configuration, _now, _states, _isFirstInTopology);
+                    return new RollupTimeSeriesCommand(database.Name, _configuration, _now, _states, _isFirstInTopology);
                 }
             }
         }

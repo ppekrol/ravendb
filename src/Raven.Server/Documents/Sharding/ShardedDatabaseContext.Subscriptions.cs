@@ -1,8 +1,10 @@
-﻿using Raven.Client.Documents.Subscriptions;
+﻿using NLog;
+using Raven.Client.Documents.Subscriptions;
 using Raven.Client.Exceptions.Documents.Subscriptions;
 using Raven.Client.ServerWide;
 using Raven.Server.Documents.Sharding.Subscriptions;
 using Raven.Server.Documents.Subscriptions;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Logging;
@@ -22,7 +24,7 @@ public partial class ShardedDatabaseContext
         {
             _context = context;
             _databaseName = _context.DatabaseName;
-            _logger = LoggingSource.Instance.GetLogger<ShardedSubscriptionsStorage>(_databaseName);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<ShardedSubscriptionsStorage>(context);
         }
 
         protected override void DropSubscriptionConnections(SubscriptionConnectionsStateOrchestrator state, SubscriptionException ex)

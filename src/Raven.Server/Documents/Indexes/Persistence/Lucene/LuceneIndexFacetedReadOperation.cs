@@ -7,6 +7,7 @@ using System.Threading;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
+using NLog;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Queries.Facets;
 using Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers;
@@ -16,8 +17,10 @@ using Raven.Server.Documents.Queries.Facets;
 using Raven.Server.Documents.Queries.Timings;
 using Raven.Server.Exceptions;
 using Raven.Server.Indexing;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Context;
 using Sparrow;
+using Sparrow.Global;
 using Sparrow.Logging;
 using Sparrow.LowMemory;
 using Voron.Impl;
@@ -40,7 +43,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             QueryBuilderFactories queryBuilderFactories,
             Transaction readTransaction,
             DocumentDatabase documentDatabase)
-            : base(index, queryBuilderFactories, LoggingSource.Instance.GetLogger<LuceneIndexFacetedReadOperation>(documentDatabase.Name))
+            : base(index, queryBuilderFactories, RavenLogManager.Instance.GetLoggerForDatabase<LuceneIndexFacetedReadOperation>(documentDatabase))
         {
             try
             {

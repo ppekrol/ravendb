@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Raven.Server.Documents.Indexes.Analysis;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Commands.Analyzers;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Json;
@@ -34,12 +35,12 @@ namespace Raven.Server.Documents.Handlers.Processors.Analyzers
                     var analyzerDefinition = JsonDeserializationServer.AnalyzerDefinition((BlittableJsonReaderObject)analyzerToAdd);
                     analyzerDefinition.Name = analyzerDefinition.Name?.Trim();
 
-                    if (LoggingSource.AuditLog.IsInfoEnabled)
+                    if (RavenLogManager.Instance.IsAuditEnabled)
                     {
                         var clientCert = RequestHandler.GetCurrentCertificate();
 
-                        var auditLog = LoggingSource.AuditLog.GetLogger(databaseName, "Audit");
-                        auditLog.Info($"Analyzer {analyzerDefinition.Name} PUT by {clientCert?.Subject} {clientCert?.Thumbprint} with definition: {analyzerToAdd}");
+                        var auditLog = RavenLogManager.Instance.GetAuditLoggerForDatabase(databaseName);
+                        auditLog.Audit($"Analyzer {analyzerDefinition.Name} PUT by {clientCert?.Subject} {clientCert?.Thumbprint} with definition: {analyzerToAdd}");
                     }
 
                     analyzerDefinition.Validate();

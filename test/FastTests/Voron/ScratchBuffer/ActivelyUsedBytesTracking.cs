@@ -20,7 +20,7 @@ namespace FastTests.Voron.ScratchBuffer
             var handle = NativeMemory.AllocateMemory(numberOfPages * Constants.Storage.PageSize);
 
 
-            using (var env = StorageEnvironmentOptions.CreateMemoryOnly())
+            using (var env = StorageEnvironmentOptions.CreateMemoryOnlyForTests())
             using (var pager = env.CreateScratchPager("temp", 65*1024))
             using (var file = new ScratchBufferFile(pager, 0))
             {

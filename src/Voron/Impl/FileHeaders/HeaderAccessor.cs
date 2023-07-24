@@ -12,10 +12,10 @@ using System.IO.Compression;
 using System.Threading;
 using Sparrow.Utils;
 using Voron.Exceptions;
-using Voron.Global;
 using Voron.Impl.Journal;
 using Voron.Schema;
 using Voron.Util;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Impl.FileHeaders
 {

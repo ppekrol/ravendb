@@ -5,7 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Raven.Server.Background;
+using Raven.Server.Documents.TimeSeries;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
+using Sparrow.Logging;
+using static Raven.Server.Utils.MetricCacher.Keys;
 
 namespace Raven.Server.NotificationCenter.BackgroundWork;
 
@@ -17,7 +21,7 @@ public abstract class AbstractDatabaseStatsSender : BackgroundWorkBase
     private NotificationCenterDatabaseStats _latest;
 
     protected AbstractDatabaseStatsSender([NotNull] string databaseName, AbstractDatabaseNotificationCenter notificationCenter, CancellationToken shutdown)
-        : base(databaseName, shutdown)
+        : base(databaseName, RavenLogManager.Instance.GetLoggerForDatabase<AbstractDatabaseStatsSender>(databaseName), shutdown)
     {
         _databaseName = databaseName ?? throw new ArgumentNullException(nameof(databaseName));
         _notificationCenter = notificationCenter;

@@ -11,9 +11,11 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using NLog;
 using Raven.Client;
 using Raven.Server.Config;
 using Raven.Server.Https;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide;
 using Raven.Server.Utils;
 using Sparrow.Logging;
@@ -23,7 +25,7 @@ namespace Raven.Server.Commercial.LetsEncrypt;
 
 public class LetsEncryptSimulationHelper
 {
-    internal static readonly Logger Logger = LoggingSource.Instance.GetLogger<LicenseManager>("Server");
+    internal static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<LetsEncryptSimulationHelper>();
 
     internal class UniqueResponseResponder : IStartup
     {

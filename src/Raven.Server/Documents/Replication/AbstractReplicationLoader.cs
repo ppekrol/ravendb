@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Operations.ETL;
 using Raven.Client.Documents.Operations.Replication;
@@ -14,11 +15,13 @@ using Raven.Client.Http;
 using Raven.Client.Json.Serialization;
 using Raven.Client.ServerWide;
 using Raven.Client.ServerWide.Tcp;
+using Raven.Client.Util;
 using Raven.Server.Documents.Replication.Incoming;
 using Raven.Server.Documents.Replication.Outgoing;
 using Raven.Server.Documents.Replication.Stats;
 using Raven.Server.Documents.TcpHandlers;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
@@ -28,6 +31,7 @@ using Sparrow.Json.Parsing;
 using Sparrow.Json.Sync;
 using Sparrow.Logging;
 using Sparrow.Server.Json.Sync;
+using Constants = Sparrow.Global.Constants;
 
 namespace Raven.Server.Documents.Replication
 {
@@ -62,7 +66,7 @@ namespace Raven.Server.Documents.Replication
             ContextPool = contextPool;
             Token = token;
             _server = serverStore;
-            _logger = LoggingSource.Instance.GetLogger(GetType().FullName, databaseName);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase(GetType(), databaseName);
         }
         
         internal TestingStuff ForTestingPurposes;
@@ -213,7 +217,7 @@ namespace Raven.Server.Documents.Replication
             catch (Exception e)
             {
                 if (_logger.IsInfoEnabled)
-                    _logger.Info($"Connection from [{connectionInfo}] is rejected.", e);
+                    _logger.Info(e, $"Connection from [{connectionInfo}] is rejected.");
 
                 throw;
             }

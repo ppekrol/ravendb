@@ -1,7 +1,7 @@
 using System.Diagnostics;
+using NLog;
 using Raven.Server.Documents.Indexes.MapReduce.Static;
 using Sparrow.Json;
-using Sparrow.Logging;
 using Voron.Impl;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Corax;

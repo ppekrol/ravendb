@@ -10,12 +10,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Sparrow.LowMemory;
 using Sparrow.Threading;
-using Voron.Global;
 using Voron.Impl.Paging;
 using Sparrow.Server.Utils;
 using System.Diagnostics.CodeAnalysis;
+using Sparrow.Server.LowMemory;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Impl.Scratch
 {

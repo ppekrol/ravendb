@@ -4,13 +4,15 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
+using Raven.Server.Logging;
 using Sparrow.Logging;
 
 namespace Raven.Server.Utils;
 
 internal static class EchoServer
 {
-    private static readonly Logger Logger = LoggingSource.Instance.GetLogger<RavenServer>("Server");
+    private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer(typeof(EchoServer));
 
     public static void StartEchoSockets(int? echoSocketPort)
     {
@@ -26,7 +28,7 @@ internal static class EchoServer
         {
             if (Logger.IsInfoEnabled)
             {
-                Logger.Info("Failed to start async echo socket on " + port, e);
+                Logger.Info(e, "Failed to start async echo socket on " + port);
             }
         }
 
@@ -38,7 +40,7 @@ internal static class EchoServer
         {
             if (Logger.IsInfoEnabled)
             {
-                Logger.Info("Failed to start sync echo socket on " + port + 1, e);
+                Logger.Info(e, "Failed to start sync echo socket on " + port + 1);
             }
         }
     }
@@ -60,7 +62,7 @@ internal static class EchoServer
         {
             if (Logger.IsInfoEnabled)
             {
-                Logger.Info("Error in listening to echo socket on " + port, e);
+                Logger.Info(e, "Error in listening to echo socket on " + port);
             }
         }
         finally
@@ -94,7 +96,7 @@ internal static class EchoServer
         {
             if (Logger.IsInfoEnabled)
             {
-                Logger.Info("Error in listening to echo socket on " + o, e);
+                Logger.Info(e, "Error in listening to echo socket on " + o);
             }
         }
         finally
@@ -132,7 +134,7 @@ internal static class EchoServer
         {
             if (Logger.IsInfoEnabled)
             {
-                Logger.Info("Error in async echo socket", e);
+                Logger.Info(e, "Error in async echo socket");
             }
         }
         finally
@@ -145,7 +147,7 @@ internal static class EchoServer
             {
                 if (Logger.IsInfoEnabled)
                 {
-                    Logger.Info("Error in disposing async echo socket", e);
+                    Logger.Info(e, "Error in disposing async echo socket");
                 }
             }
         }
@@ -174,7 +176,7 @@ internal static class EchoServer
         {
             if (Logger.IsInfoEnabled)
             {
-                Logger.Info("Error in sync echo socket", e);
+                Logger.Info(e, "Error in sync echo socket");
             }
         }
         finally
@@ -187,7 +189,7 @@ internal static class EchoServer
             {
                 if (Logger.IsInfoEnabled)
                 {
-                    Logger.Info("Error in disposing sync echo socket", e);
+                    Logger.Info(e, "Error in disposing sync echo socket");
                 }
             }
         }

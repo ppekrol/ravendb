@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client;
 using Raven.Client.Extensions;
 using Raven.Client.Http;
 using Raven.Server.Documents.Sharding.Executors;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
@@ -68,7 +70,7 @@ namespace Raven.Server.Documents.Sharding.Handlers
             DatabaseContext = context.DatabaseContext;
             //TODO - sharding: We probably want to put it in the ShardedDatabaseContext, not use the server one 
             ContextPool = context.RavenServer.ServerStore.ContextPool;
-            Logger = LoggingSource.Instance.GetLogger(DatabaseContext.DatabaseName, GetType().FullName);
+            Logger = RavenLogManager.Instance.GetLoggerForDatabase(GetType(), DatabaseContext);
 
             var request = HttpContext.Request;
             var url = context.RouteMatch.Url;

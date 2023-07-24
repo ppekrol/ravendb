@@ -4,16 +4,19 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client;
 using Raven.Client.ServerWide.Operations.OngoingTasks;
 using Raven.Client.Util;
 using Raven.Server.Background;
-using Raven.Server.Documents.TransactionMerger;
+using Raven.Server.Documents.TimeSeries;
 using Raven.Server.Documents.TransactionMerger.Commands;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Logging;
 using static Raven.Server.NotificationCenter.TombstoneNotifications;
+using static Raven.Server.Utils.MetricCacher.Keys;
 
 namespace Raven.Server.Documents
 {
@@ -33,8 +36,8 @@ namespace Raven.Server.Documents
 
         private readonly HashSet<ITombstoneAware> _subscriptions = new HashSet<ITombstoneAware>();
         private long? _maxTombstoneEtagToDelete;
-
-        public TombstoneCleaner(DocumentDatabase documentDatabase) : base(documentDatabase.Name, documentDatabase.DatabaseShutdown)
+        public TombstoneCleaner(DocumentDatabase documentDatabase) 
+            : base(documentDatabase.Name, RavenLogManager.Instance.GetLoggerForDatabase<TombstoneCleaner>(documentDatabase), documentDatabase.DatabaseShutdown)
         {
             _documentDatabase = documentDatabase;
             _numberOfTombstonesToDeleteInBatch = _documentDatabase.Is32Bits
@@ -116,7 +119,7 @@ namespace Raven.Server.Documents
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Failed to execute tombstone cleanup on {_documentDatabase.Name}", e);
+                    Logger.Info(e, $"Failed to execute tombstone cleanup on {_documentDatabase.Name}");
             }
 
             return numberOfTombstonesDeleted;
@@ -145,33 +148,33 @@ namespace Raven.Server.Documents
             Dictionary<string, HashSet<string>> disabledSubscribers,
             IDictionary<string, long> tombstonesCountsPerCollection,
             DocumentsOperationContext context)
-                    {
+        {
             foreach ((string source, HashSet<string> collections) in disabledSubscribers)
-                        {
+            {
                 detailsSet.AddRange(
-                    from collectionName in collections 
-                    let tombstonesCount = GetTombstonesCountForCollection(tombstonesCountsPerCollection, collectionName, context) 
-                    where tombstonesCount > 0 
+                    from collectionName in collections
+                    let tombstonesCount = GetTombstonesCountForCollection(tombstonesCountsPerCollection, collectionName, context)
+                    where tombstonesCount > 0
                     select new BlockingTombstoneDetails
-                            {
-                        Source = source, 
-                        Collection = collectionName, 
+                    {
+                        Source = source,
+                        Collection = collectionName,
                         NumberOfTombstones = tombstonesCount
                     });
-                            }
+            }
         }
 
         private long GetTombstonesCountForCollection(IDictionary<string, long> tombstonesCountsPerCollection, string collectionName, DocumentsOperationContext context)
-                            {
-            if (tombstonesCountsPerCollection.TryGetValue(collectionName, out var tombstonesCount)) 
+        {
+            if (tombstonesCountsPerCollection.TryGetValue(collectionName, out var tombstonesCount))
                 return tombstonesCount;
 
             tombstonesCount = _documentDatabase.DocumentsStorage.TombstonesCountForCollection(context, collectionName);
             tombstonesCountsPerCollection[collectionName] = tombstonesCount;
 
             return tombstonesCount;
-                            }
-            
+        }
+
         private void UpdateNotifications(List<BlockingTombstoneDetails> detailsSet)
         {
             if (detailsSet.Count > 0)
@@ -196,7 +199,7 @@ namespace Raven.Server.Documents
                 foreach (var tombstoneCollection in _documentDatabase.DocumentsStorage.GetTombstoneCollections(tx))
                 {
                     result.Tombstones[tombstoneCollection] = new StateHolder();
-            }
+                }
             }
 
             if (result.Tombstones.Count == 0)
@@ -252,11 +255,11 @@ namespace Raven.Server.Documents
                 try
                 {
                     RaiseBlockingTombstonesNotificationIfNecessary(result);
-            }
+                }
                 catch (Exception e)
                 {
-                    if (Logger.IsOperationsEnabled)
-                        Logger.Operations($"Failed to notify of blockage in tombstone deletion detected in database '{_documentDatabase.Name}'", e);
+                    if (Logger.IsWarnEnabled)
+                        Logger.Warn(e, $"Failed to notify of blockage in tombstone deletion detected in database '{_documentDatabase.Name}'");
                 }
             }
             finally
@@ -375,7 +378,7 @@ namespace Raven.Server.Documents
             }
         }
 
-		internal class DeleteTombstonesCommand : MergedTransactionCommand<DocumentsOperationContext, DocumentsTransaction>
+        internal class DeleteTombstonesCommand : MergedTransactionCommand<DocumentsOperationContext, DocumentsTransaction>
         {
             private readonly Dictionary<string, StateHolder> _tombstones;
             private readonly long _minAllDocsEtag;
@@ -436,7 +439,7 @@ namespace Raven.Server.Documents
                     catch (Exception e)
                     {
                         if (_logger.IsInfoEnabled)
-                            _logger.Info($"Could not delete tombstones for '{tombstone.Key}' collection before '{Math.Min(tombstone.Value.Documents.Etag, _minAllDocsEtag)}' etag for documents and '{Math.Min(tombstone.Value.TimeSeries.Etag, _minAllTimeSeriesEtag)}' etag for timeseries.", e);
+                            _logger.Info(e, $"Could not delete tombstones for '{tombstone.Key}' collection before '{Math.Min(tombstone.Value.Documents.Etag, _minAllDocsEtag)}' etag for documents and '{Math.Min(tombstone.Value.TimeSeries.Etag, _minAllTimeSeriesEtag)}' etag for timeseries.");
 
                         throw;
                     }
@@ -503,7 +506,7 @@ namespace Raven.Server.Documents
 
         public TombstoneCleaner.DeleteTombstonesCommand ToCommand(DocumentsOperationContext context, DocumentDatabase database)
         {
-            var log = LoggingSource.Instance.GetLogger<TombstoneCleaner.DeleteTombstonesCommand>(database.Name);
+            var log = RavenLogManager.Instance.GetLoggerForDatabase<DeleteTombstonesCommandDto>(database);
             var command = new TombstoneCleaner.DeleteTombstonesCommand(Tombstones, MinAllDocsEtag, MinAllTimeSeriesEtag, MinAllCountersEtag, NumberOfTombstonesToDeleteInBatch ?? long.MaxValue, database, log);
             return command;
         }

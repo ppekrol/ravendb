@@ -9,8 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NLog;
 using Raven.Server.Utils;
-using Sparrow.Logging;
 
 namespace Raven.Server.Commercial.LetsEncrypt;
 
@@ -258,8 +258,8 @@ public class RavenDnsRecordHelper
 
             var serializeObject = JsonConvert.SerializeObject(registrationInfo);
 
-            if (logger is { IsOperationsEnabled: true })
-                logger.Operations($"Start update process for certificate. License Id: {registrationInfo.License.Id}, " +
+            if (logger is { IsInfoEnabled: true })
+                logger.Info($"Start update process for certificate. License Id: {registrationInfo.License.Id}, " +
                                       $"License Name: {registrationInfo.License.Name}, " +
                                       $"Domain: {registrationInfo.Domain}, " +
                                       $"RootDomain: {registrationInfo.RootDomain}");

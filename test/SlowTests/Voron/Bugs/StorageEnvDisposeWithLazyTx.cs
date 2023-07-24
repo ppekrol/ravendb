@@ -20,7 +20,7 @@ namespace SlowTests.Voron.Bugs
         [Fact]
         public void CanDisposeStorageWithLazyTx()
         {
-            using (var env = new StorageEnvironment(StorageEnvironmentOptions.CreateMemoryOnly()))
+            using (var env = new StorageEnvironment(StorageEnvironmentOptions.CreateMemoryOnlyForTests()))
             {
                 using (var tx = env.WriteTransaction())
                 {

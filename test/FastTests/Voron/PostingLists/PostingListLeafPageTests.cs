@@ -23,7 +23,7 @@ namespace FastTests.Voron.Sets
 
         public PostingListLeafPageTests(ITestOutputHelper output) : base(output)
         {
-            _env = new StorageEnvironment(StorageEnvironmentOptions.CreateMemoryOnly());
+            _env = new StorageEnvironment(StorageEnvironmentOptions.CreateMemoryOnlyForTests());
             _tx = _env.WriteTransaction();
             _llt = _tx.LowLevelTransaction;
             _releaseStr = _tx.Allocator.Allocate(Constants.Storage.PageSize, out var bs);

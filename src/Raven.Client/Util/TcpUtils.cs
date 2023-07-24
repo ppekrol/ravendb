@@ -18,10 +18,10 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.ServerWide.Commands;
 using Raven.Client.ServerWide.Tcp;
 using Sparrow.Json;
-using Sparrow.Logging;
 
 namespace Raven.Client.Util
 {
@@ -77,36 +77,33 @@ namespace Raven.Client.Util
             }
             catch (AggregateException ae) when (ae.InnerException is SocketException)
             {
-                if (log.IsInfoEnabled)
-                    log.Info(
-                        $"Failed to connect to remote replication destination {connection.Url}. Socket Error Code = {((SocketException)ae.InnerException).SocketErrorCode}",
-                        ae.InnerException);
+                if (log.IsDebugEnabled)
+                    log.Debug(ae.InnerException,
+                        $"Failed to connect to remote replication destination {connection.Url}. Socket Error Code = {((SocketException)ae.InnerException).SocketErrorCode}");
                 throw;
             }
             catch (AggregateException ae) when (ae.InnerException is OperationCanceledException)
             {
-                if (log.IsInfoEnabled)
-                    log.Info(
+                if (log.IsDebugEnabled)
+                    log.Debug(ae.InnerException,
                         $@"Tried to connect to remote replication destination {connection.Url}, but the operation was aborted.
                             This is not necessarily an issue, it might be that replication destination document has changed at
-                            the same time we tried to connect. We will try to reconnect later.",
-                        ae.InnerException);
+                            the same time we tried to connect. We will try to reconnect later.");
                 throw;
             }
             catch (OperationCanceledException e)
             {
-                if (log.IsInfoEnabled)
-                    log.Info(
+                if (log.IsDebugEnabled)
+                    log.Debug(e, 
                         $@"Tried to connect to remote replication destination {connection.Url}, but the operation was aborted.
                             This is not necessarily an issue, it might be that replication destination document has changed at
-                            the same time we tried to connect. We will try to reconnect later.",
-                        e);
+                            the same time we tried to connect. We will try to reconnect later.");
                 throw;
             }
             catch (Exception e)
             {
-                if (log.IsInfoEnabled)
-                    log.Info($"Failed to connect to remote replication destination {connection.Url}", e);
+                if (log.IsWarnEnabled)
+                    log.Warn(e, $"Failed to connect to remote replication destination {connection.Url}");
                 throw;
             }
         }

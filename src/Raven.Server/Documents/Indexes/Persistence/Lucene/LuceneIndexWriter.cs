@@ -5,13 +5,14 @@
 // -----------------------------------------------------------------------
 
 using System;
-using System.IO;
 using System.Threading;
 using Lucene.Net.Analysis;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
+using NLog;
 using Raven.Server.Exceptions;
 using Raven.Server.Indexing;
+using Raven.Server.Logging;
 using Raven.Server.Utils;
 using Sparrow;
 using Sparrow.Logging;
@@ -51,7 +52,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             _indexReaderWarmer = indexReaderWarmer;
             _index = index;
 
-            _logger = LoggingSource.Instance.GetLogger<LuceneIndexWriter>(index.DocumentDatabase.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForIndex<LuceneIndexWriter>(index);
             RecreateIndexWriter(state);
         }
 
@@ -194,7 +195,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             catch (Exception e)
             {
                 if (_logger.IsInfoEnabled)
-                    _logger.Info("Error while closing the index (closing the analyzer failed)", e);
+                    _logger.Info(e, "Error while closing the index (closing the analyzer failed)");
             }
 
             try
@@ -204,7 +205,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             catch (Exception e)
             {
                 if (_logger.IsInfoEnabled)
-                    _logger.Info("Error when closing the index", e);
+                    _logger.Info(e, "Error when closing the index");
             }
         }
 

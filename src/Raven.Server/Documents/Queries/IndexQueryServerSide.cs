@@ -25,6 +25,7 @@ using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Server;
 using Voron;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Queries
 {

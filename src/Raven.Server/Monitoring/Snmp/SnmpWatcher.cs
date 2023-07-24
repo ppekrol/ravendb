@@ -15,10 +15,12 @@ using System.Threading.Tasks;
 using Lextm.SharpSnmpLib;
 using Lextm.SharpSnmpLib.Pipeline;
 using Lextm.SharpSnmpLib.Security;
+using NLog;
 using Raven.Client;
 using Raven.Client.Util;
 using Raven.Server.Config;
 using Raven.Server.Config.Categories;
+using Raven.Server.Logging;
 using Raven.Server.Monitoring.Snmp.Objects.Cluster;
 using Raven.Server.Monitoring.Snmp.Objects.Database;
 using Raven.Server.Monitoring.Snmp.Objects.Server;
@@ -28,6 +30,7 @@ using Raven.Server.ServerWide.Commands.Monitoring.Snmp;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Json;
 using Sparrow.Logging;
+using ILogger = Lextm.SharpSnmpLib.Pipeline.ILogger;
 using ServerVersion = Raven.Server.Monitoring.Snmp.Objects.Server.ServerVersion;
 using TimeoutException = System.TimeoutException;
 
@@ -39,7 +42,7 @@ namespace Raven.Server.Monitoring.Snmp
 
         private readonly SemaphoreSlim _locker = new SemaphoreSlim(1, 1);
 
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<SnmpWatcher>("Server");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<SnmpWatcher>();
 
         private readonly RavenServer _server;
 
@@ -169,8 +172,8 @@ namespace Raven.Server.Monitoring.Snmp
                 }
                 catch (Exception e)
                 {
-                    if (Logger.IsOperationsEnabled)
-                        Logger.Operations($"Failed to update the SNMP mapping for database: {databaseName}", e);
+                    if (Logger.IsErrorEnabled)
+                        Logger.Error(e, $"Failed to update the SNMP mapping for database: {databaseName}");
                 }
                 finally
                 {
@@ -246,8 +249,8 @@ namespace Raven.Server.Monitoring.Snmp
             engine.Listener.ExceptionRaised += (sender, e) =>
             {
                 // MessageFactoryException hides inner exception
-                if (Logger.IsOperationsEnabled)
-                    Logger.Operations($"SNMP error: {e.Exception.Message}. Inner: {e.Exception.InnerException}", e.Exception);
+                if (Logger.IsErrorEnabled)
+                    Logger.Warn(e.Exception, $"SNMP error: {e.Exception.Message}. Inner: {e.Exception.InnerException}");
             };
 
             return engine;
@@ -573,8 +576,8 @@ namespace Raven.Server.Monitoring.Snmp
                 if (missingDatabases?.Count > 0)
                     msg += $" missing databases: {string.Join(", ", missingDatabases)}";
 
-                if (Logger.IsOperationsEnabled)
-                    Logger.Operations(msg, e);
+                if (Logger.IsErrorEnabled)
+                    Logger.Error(e, msg);
             }
             finally
             {

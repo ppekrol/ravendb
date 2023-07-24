@@ -2,11 +2,11 @@
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
+using NLog;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Web;
 using Sparrow.Json;
-using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Handlers.Processors
 {

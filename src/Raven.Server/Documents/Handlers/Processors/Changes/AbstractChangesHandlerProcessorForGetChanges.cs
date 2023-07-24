@@ -48,13 +48,13 @@ internal abstract class AbstractChangesHandlerProcessorForGetChanges<TRequestHan
                 }
                 catch (TimeoutException e)
                 {
-                    if (Logger.IsOperationsEnabled)
-                        Logger.Operations("Timeout in changes handler", e);
+                    if (Logger.IsWarnEnabled)
+                        Logger.Warn(e, "Timeout in changes handler");
                 }
                 catch (Exception ex)
                 {
                     if (Logger.IsInfoEnabled)
-                        Logger.Info("Error encountered in changes handler", ex);
+                        Logger.Info(ex, "Error encountered in changes handler");
 
                     try
                     {
@@ -79,7 +79,7 @@ internal abstract class AbstractChangesHandlerProcessorForGetChanges<TRequestHan
                     catch (Exception exception)
                     {
                         if (Logger.IsInfoEnabled)
-                            Logger.Info("Failed to send the error in changes handler to the client", exception);
+                            Logger.Info(exception, "Failed to send the error in changes handler to the client");
                     }
                 }
             }
@@ -167,7 +167,7 @@ internal abstract class AbstractChangesHandlerProcessorForGetChanges<TRequestHan
             {
                 /* Client was disconnected, write to log */
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Client was disconnected", ex);
+                    Logger.Info(ex, "Client was disconnected");
             }
             catch (Exception ex)
             {

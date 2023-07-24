@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
-using Sparrow;
-using Sparrow.Collections;
+using NLog;
 using Sparrow.Logging;
-using Sparrow.Platform;
 using Sparrow.Utils;
+using Voron.Logging;
 using static Sparrow.Server.Platform.Pal;
 using static Sparrow.Server.Platform.PalDefinitions;
-using static Sparrow.Server.Platform.PalFlags;
 
 namespace Voron.Impl
 {
@@ -30,7 +26,7 @@ namespace Voron.Impl
             return prefetcher;
         });
 
-        private readonly Logger _log = LoggingSource.Instance.GetLogger<GlobalPrefetchingBehavior>("Global Prefetcher");
+        private static readonly Logger _log = RavenLogManager.Instance.GetLoggerForGlobalVoron<GlobalPrefetchingBehavior>();
          
         public readonly BlockingCollection<PrefetchRanges> CommandQueue = new BlockingCollection<PrefetchRanges>(128);
 
@@ -81,9 +77,9 @@ namespace Voron.Impl
             }
             catch (Exception e)
             {
-                if (_log.IsOperationsEnabled)
+                if (_log.IsErrorEnabled)
                 {
-                    _log.Operations("Catastrophic failure in Voron prefetcher ", e);
+                    _log.Error(e, "Catastrophic failure in Voron prefetcher ");
                 }
 
                 // Note that we intentionally don't have error handling here.

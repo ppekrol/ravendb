@@ -107,7 +107,7 @@ internal abstract class AbstractHandlerWebSocketProxyProcessor<TRequestHandler, 
         catch (Exception)
         {
             if (Logger.IsInfoEnabled)
-                Logger.Info("Failed to send the error in cluster dashboard handler to the client", ex);
+                Logger.Info(ex, "Failed to send the error in cluster dashboard handler to the client");
         }
     }
 }

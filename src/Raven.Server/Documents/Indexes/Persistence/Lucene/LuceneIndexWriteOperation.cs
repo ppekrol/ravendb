@@ -5,12 +5,14 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers;
 using Raven.Server.Documents.Indexes.Persistence.Lucene.Documents;
 using Raven.Server.Exceptions;
 using Raven.Server.Indexing;
+using Raven.Server.Logging;
 using Raven.Server.Utils;
 using Sparrow.Json;
 using Sparrow.Logging;
@@ -40,7 +42,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 
 
         public LuceneIndexWriteOperation(Index index, LuceneVoronDirectory directory, LuceneDocumentConverterBase converter, Transaction writeTransaction, LuceneIndexPersistence persistence)
-            : base(index, LoggingSource.Instance.GetLogger<LuceneIndexWriteOperation>(index._indexStorage.DocumentDatabase.Name))
+            : base(index, RavenLogManager.Instance.GetLoggerForIndex<LuceneIndexWriteOperation>(index))
         {
             _converter = converter;
 
@@ -218,8 +220,8 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             using (Stats.DeleteStats.Start())
                 _writer.DeleteDocuments(_reduceKeyHash.CreateTerm(reduceKeyHash), _state);
 
-            if (_logger.IsInfoEnabled)
-                _logger.Info($"Deleted document for '{_indexName}'. Reduce key hash: {reduceKeyHash}.");
+            if (_logger.IsDebugEnabled)
+                _logger.Debug($"Deleted document for '{_indexName}'. Reduce key hash: {reduceKeyHash}.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

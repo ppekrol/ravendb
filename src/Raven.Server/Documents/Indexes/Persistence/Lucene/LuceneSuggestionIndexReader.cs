@@ -6,11 +6,14 @@ using System.Threading;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
+using NLog;
 using Raven.Client.Documents.Queries.Suggestions;
 using Raven.Server.Documents.Indexes.Persistence.Lucene.Suggestions;
 using Raven.Server.Documents.Queries;
 using Raven.Server.Documents.Queries.Suggestions;
 using Raven.Server.Indexing;
+using Raven.Server.Logging;
+using Sparrow.Global;
 using Sparrow.Json;
 using Sparrow.Logging;
 using Voron.Impl;
@@ -26,7 +29,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
         private readonly IState _state;
 
         public LuceneSuggestionIndexReader(Index index, LuceneVoronDirectory directory, LuceneIndexSearcherHolder searcherHolder, Transaction readTransaction)
-            : base(index, LoggingSource.Instance.GetLogger<LuceneSuggestionIndexReader>(index._indexStorage.DocumentDatabase.Name))
+            : base(index, RavenLogManager.Instance.GetLoggerForIndex<LuceneSuggestionIndexReader>(index))
         {
             _releaseReadTransaction = directory.SetTransaction(readTransaction, out _state);
             _releaseSearcher = searcherHolder.GetSearcher(readTransaction, _state, out _searcher);
@@ -37,13 +40,13 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             var options = field.GetOptions(documentsContext, query.QueryParameters) ?? new SuggestionOptions();
             var terms = field.GetTerms(documentsContext, query.QueryParameters);
 
-            var result =  new SuggestionResult
+            var result = new SuggestionResult
             {
                 Name = field.Alias ?? field.Name
             };
 
-            var suggestions = terms.Count == 1 ? 
-                QueryOverSingleWord(field, terms[0], options) : 
+            var suggestions = terms.Count == 1 ?
+                QueryOverSingleWord(field, terms[0], options) :
                 QueryOverMultipleWords(field, terms, options);
 
             foreach (SuggestWord suggestion in suggestions)

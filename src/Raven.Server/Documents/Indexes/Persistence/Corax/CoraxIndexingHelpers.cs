@@ -115,7 +115,7 @@ public static class CoraxIndexingHelpers
             Slice.From(context, fieldName, out Slice fieldNameSlice);
             var fieldId = field.Id;
             
-            if (fieldId == global::Corax.Constants.IndexWriter.DynamicField)
+            if (fieldId == global::Corax.Global.Constants.IndexWriter.DynamicField)
                 continue;
             
             var hasSuggestions = field.HasSuggestions;

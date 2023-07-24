@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using NLog;
 using Raven.Client;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Logging;
 
@@ -11,7 +13,7 @@ namespace Raven.Server.Documents.Subscriptions
 
         protected SubscriptionFetcher(DocumentDatabase database, SubscriptionConnectionsState subscriptionConnectionsState, string collection) : base(database, subscriptionConnectionsState, collection)
         {
-            Logger = LoggingSource.Instance.GetLogger<SubscriptionFetcher<T>>(Database.Name);
+            Logger = RavenLogManager.Instance.GetLoggerForDatabase(GetType(), database);
         }
 
         protected abstract IEnumerable<T> FetchByEtag();

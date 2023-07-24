@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Session;
 using Raven.Client.Exceptions.Documents.Subscriptions;
 using Raven.Client.Http;
 using Raven.Client.Json;
 using Sparrow.Json;
-using Sparrow.Logging;
 
 namespace Raven.Client.Documents.Subscriptions;
 
@@ -87,9 +87,9 @@ public abstract class SubscriptionBatchBase<T>
             LastSentChangeVectorInBatch = changeVector;
             metadata.TryGet(Constants.Documents.Metadata.Projection, out bool projection);
 
-            if (_logger.IsInfoEnabled)
+            if (_logger.IsDebugEnabled)
             {
-                _logger.Info($"Got {id} (change vector: [{changeVector}], size {curDoc.Size}");
+                _logger.Debug($"Got {id} (change vector: [{changeVector}], size {curDoc.Size}");
             }
 
             var instance = default(T);

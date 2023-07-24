@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using NLog;
 using Sparrow.Logging;
 using Sparrow.Threading;
 
@@ -9,14 +10,14 @@ namespace Sparrow.Utils
 {
     public class NativeMemoryCleaner<TStack, TPooledItem> : IDisposable where TPooledItem : PooledItem where TStack : StackHeader<TPooledItem>
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<NativeMemoryCleaner<TStack, TPooledItem>>("Memory");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForSparrow(typeof(NativeMemoryCleaner<TStack, TPooledItem>));
 
         private readonly object _lock = new object();
         private readonly Func<object, ICollection<TStack>> _getContextsFromCleanupTarget;
         private readonly SharedMultipleUseFlag _lowMemoryFlag;
         private readonly TimeSpan _idleTime;
         private readonly Timer _timer;
-        private WeakReference _cleanupTargetWeakRef;
+        private readonly WeakReference _cleanupTargetWeakRef;
 
 #if NETSTANDARD1_3
         private bool _disposed;
@@ -26,7 +27,7 @@ namespace Sparrow.Utils
         {
             _cleanupTargetWeakRef = new WeakReference(cleanupTarget);
             _getContextsFromCleanupTarget = getContexts;
-            
+
             _lowMemoryFlag = lowMemoryFlag;
             _idleTime = idleTime;
             _timer = new Timer(CleanNativeMemory, null, period, period);
@@ -110,8 +111,8 @@ namespace Sparrow.Utils
             catch (Exception e)
             {
                 Debug.Assert(e is OutOfMemoryException, $"Expecting OutOfMemoryException but got: {e}");
-                if (Logger.IsOperationsEnabled)
-                    Logger.Operations("Error during cleanup.", e);
+                if (Logger.IsErrorEnabled)
+                    Logger.Error(e, "Error during cleanup.");
             }
             finally
             {

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.IO;
+using NLog;
 using Raven.Client.ServerWide.Tcp;
+using Raven.Server.Logging;
+using Raven.Server.ServerWide.BackgroundTasks;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Json.Sync;
@@ -10,7 +13,7 @@ namespace Raven.Server.ServerWide.Tcp.Sync
 {
     internal static class TcpNegotiationSyncExtensions
     {
-        private static readonly Logger Log = LoggingSource.Instance.GetLogger("TCP Negotiation", typeof(TcpNegotiation).FullName);
+        private static readonly Logger Log = RavenLogManager.Instance.GetLoggerForServer(typeof(TcpNegotiationSyncExtensions));
 
         internal static TcpConnectionHeaderMessage.SupportedFeatures NegotiateProtocolVersion(this TcpNegotiation.SyncTcpNegotiation syncTcpNegotiation, JsonOperationContext context, Stream stream, TcpNegotiateParameters parameters)
         {

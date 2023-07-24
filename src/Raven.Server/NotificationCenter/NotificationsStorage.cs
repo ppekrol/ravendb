@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using NLog;
 using Raven.Client.Util;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.ServerWide;
@@ -31,7 +33,9 @@ namespace Raven.Server.NotificationCenter
         {
             _tableName = GetTableName(resourceName);
 
-            Logger = LoggingSource.Instance.GetLogger<NotificationsStorage>(resourceName);
+            Logger = resourceName == null 
+                ? RavenLogManager.Instance.GetLoggerForServer(GetType()) 
+                : RavenLogManager.Instance.GetLoggerForDatabase(GetType(), resourceName);
         }
 
         public void Initialize(StorageEnvironment environment, TransactionContextPool contextPool)

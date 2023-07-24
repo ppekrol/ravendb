@@ -44,7 +44,7 @@ namespace Raven.Server.Documents.Handlers.Processors.Attachments
                 catch (ArgumentException e)
                 {
                     if (Logger.IsInfoEnabled)
-                        Logger.Info($"Skip Content-Disposition header because of not valid file name: {attachment.Name}", e);
+                        Logger.Info(e, $"Skip Content-Disposition header because of not valid file name: {attachment.Name}");
                 }
 
                 try
@@ -54,7 +54,7 @@ namespace Raven.Server.Documents.Handlers.Processors.Attachments
                 catch (InvalidOperationException e)
                 {
                     if (Logger.IsInfoEnabled)
-                        Logger.Info($"Skip Content-Type header because of not valid content type: {attachment.ContentType}", e);
+                        Logger.Info(e, $"Skip Content-Type header because of not valid content type: {attachment.ContentType}");
                     if (HttpContext.Response.Headers.ContainsKey(Constants.Headers.ContentType))
                         HttpContext.Response.Headers.Remove(Constants.Headers.ContentType);
                 }

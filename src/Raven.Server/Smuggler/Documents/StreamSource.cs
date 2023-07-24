@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Indexes.Analysis;
 using Raven.Client.Documents.Operations.Attachments;
@@ -27,6 +28,7 @@ using Raven.Server.Documents;
 using Raven.Server.Documents.Handlers;
 using Raven.Server.Documents.TimeSeries;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Commands;
 using Raven.Server.Smuggler.Documents.Data;
@@ -70,7 +72,7 @@ namespace Raven.Server.Smuggler.Documents
         {
             _peepingTomStream = new PeepingTomStream(stream, context);
             _context = context;
-            _log = LoggingSource.Instance.GetLogger<StreamSource>(databaseName);
+            _log = RavenLogManager.Instance.GetLoggerForDatabase<StreamSource>(databaseName);
             _options = options ?? new DatabaseSmugglerOptionsServerSide();
             _allocator = new ByteStringContext(SharedMultipleUseFlag.None);
         }
@@ -117,8 +119,8 @@ namespace Raven.Server.Smuggler.Documents
             while (dbItemType == DatabaseItemType.Unknown)
             {
                 var msg = $"You are trying to import items of type '{type}' which is unknown or not supported in {RavenVersionAttribute.Instance.Version}. Ignoring items.";
-                if (_log.IsOperationsEnabled)
-                    _log.Operations(msg);
+                if (_log.IsWarnEnabled)
+                    _log.Warn(msg);
                 _result.AddWarning(msg);
 
                 await SkipArrayAsync(onSkipped: null, MaySkipBlobAsync, CancellationToken.None);
@@ -144,7 +146,7 @@ namespace Raven.Server.Smuggler.Documents
                     catch (Exception e)
                     {
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the revisions configuration from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the revisions configuration from smuggler file. Skipping.");
                     }
                 }
 
@@ -158,7 +160,7 @@ namespace Raven.Server.Smuggler.Documents
                     catch (Exception e)
                     {
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the timeseries configuration from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the timeseries configuration from smuggler file. Skipping.");
                     }
                 }
 
@@ -172,7 +174,7 @@ namespace Raven.Server.Smuggler.Documents
                     catch (Exception e)
                     {
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the documents compression configuration from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the documents compression configuration from smuggler file. Skipping.");
                     }
                 }
 
@@ -186,7 +188,7 @@ namespace Raven.Server.Smuggler.Documents
                     catch (Exception e)
                     {
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the expiration configuration from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the expiration configuration from smuggler file. Skipping.");
                     }
                 }
 
@@ -200,7 +202,7 @@ namespace Raven.Server.Smuggler.Documents
                     catch (Exception e)
                     {
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the refresh configuration from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the refresh configuration from smuggler file. Skipping.");
                     }
                 }
 
@@ -214,7 +216,7 @@ namespace Raven.Server.Smuggler.Documents
                     catch (Exception e)
                     {
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the Conflict Solver Config configuration from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the Conflict Solver Config configuration from smuggler file. Skipping.");
                     }
                 }
 
@@ -232,7 +234,7 @@ namespace Raven.Server.Smuggler.Documents
                         catch (Exception e)
                         {
                             if (_log.IsInfoEnabled)
-                                _log.Info("Wasn't able to import the periodic Backup configuration from smuggler file. Skipping.", e);
+                                _log.Info(e, "Wasn't able to import the periodic Backup configuration from smuggler file. Skipping.");
                         }
                     }
                 }
@@ -252,7 +254,7 @@ namespace Raven.Server.Smuggler.Documents
                         catch (Exception e)
                         {
                             if (_log.IsInfoEnabled)
-                                _log.Info("Wasn't able to import the settings configuration from smuggler file. Skipping.", e);
+                                _log.Info(e, "Wasn't able to import the settings configuration from smuggler file. Skipping.");
                         }
                     }
                 }
@@ -281,7 +283,7 @@ namespace Raven.Server.Smuggler.Documents
                         catch (Exception e)
                         {
                             if (_log.IsInfoEnabled)
-                                _log.Info("Wasn't able to import the External Replication configuration from smuggler file. Skipping.", e);
+                                _log.Info(e, "Wasn't able to import the External Replication configuration from smuggler file. Skipping.");
                         }
                     }
                 }
@@ -309,7 +311,7 @@ namespace Raven.Server.Smuggler.Documents
                     catch (Exception e)
                     {
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the sorters configuration from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the sorters configuration from smuggler file. Skipping.");
                     }
                 }
 
@@ -336,7 +338,7 @@ namespace Raven.Server.Smuggler.Documents
                     catch (Exception e)
                     {
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the analyzers configuration from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the analyzers configuration from smuggler file. Skipping.");
                     }
                 }
 
@@ -354,7 +356,7 @@ namespace Raven.Server.Smuggler.Documents
                         catch (Exception e)
                         {
                             if (_log.IsInfoEnabled)
-                                _log.Info("Wasn't able to import sink pull replication configuration from smuggler file. Skipping.", e);
+                                _log.Info(e, "Wasn't able to import sink pull replication configuration from smuggler file. Skipping.");
                         }
                     }
                 }
@@ -373,7 +375,7 @@ namespace Raven.Server.Smuggler.Documents
                         catch (Exception e)
                         {
                             if (_log.IsInfoEnabled)
-                                _log.Info($"Wasn't able to import the pull replication configuration from smuggler file. Skipping.", e);
+                                _log.Info(e, $"Wasn't able to import the pull replication configuration from smuggler file. Skipping.");
                         }
                     }
                 }
@@ -391,7 +393,7 @@ namespace Raven.Server.Smuggler.Documents
                         catch (Exception e)
                         {
                             if (_log.IsInfoEnabled)
-                                _log.Info("Wasn't able to import the Raven Etls configuration from smuggler file. Skipping.", e);
+                                _log.Info(e, "Wasn't able to import the Raven Etls configuration from smuggler file. Skipping.");
                         }
                     }
                 }
@@ -409,7 +411,7 @@ namespace Raven.Server.Smuggler.Documents
                         catch (Exception e)
                         {
                             if (_log.IsInfoEnabled)
-                                _log.Info("Wasn't able to import the Raven SQL Etls configuration from smuggler file. Skipping.", e);
+                                _log.Info(e, "Wasn't able to import the Raven SQL Etls configuration from smuggler file. Skipping.");
                         }
                     }
                 }
@@ -437,7 +439,7 @@ namespace Raven.Server.Smuggler.Documents
                     {
                         databaseRecord.RavenConnectionStrings.Clear();
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the RavenDB connection strings from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the RavenDB connection strings from smuggler file. Skipping.");
                     }
                 }
 
@@ -464,7 +466,7 @@ namespace Raven.Server.Smuggler.Documents
                     {
                         databaseRecord.SqlConnectionStrings.Clear();
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the SQL connection strings from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the SQL connection strings from smuggler file. Skipping.");
                     }
                 }
 
@@ -478,7 +480,7 @@ namespace Raven.Server.Smuggler.Documents
                     catch (Exception e)
                     {
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the client configuration from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the client configuration from smuggler file. Skipping.");
                     }
                 }
 
@@ -491,7 +493,7 @@ namespace Raven.Server.Smuggler.Documents
                     catch (Exception e)
                     {
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the database lock mode from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the database lock mode from smuggler file. Skipping.");
                     }
                 }
 
@@ -508,7 +510,7 @@ namespace Raven.Server.Smuggler.Documents
                         catch (Exception e)
                         {
                             if (_log.IsInfoEnabled)
-                                _log.Info("Wasn't able to import the OLAP ETLs configuration from smuggler file. Skipping.", e);
+                                _log.Info(e, "Wasn't able to import the OLAP ETLs configuration from smuggler file. Skipping.");
                         }
                     }
                 }
@@ -536,7 +538,7 @@ namespace Raven.Server.Smuggler.Documents
                     {
                         databaseRecord.OlapConnectionStrings.Clear();
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the OLAP connection strings from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the OLAP connection strings from smuggler file. Skipping.");
                     }
                 }
 
@@ -553,7 +555,7 @@ namespace Raven.Server.Smuggler.Documents
                         catch (Exception e)
                         {
                             if (_log.IsInfoEnabled)
-                                _log.Info("Wasn't able to import the Elastic Search ETLs configuration from smuggler file. Skipping.", e);
+                                _log.Info(e, "Wasn't able to import the Elastic Search ETLs configuration from smuggler file. Skipping.");
                         }
                     }
                 }
@@ -581,7 +583,7 @@ namespace Raven.Server.Smuggler.Documents
                     {
                         databaseRecord.ElasticSearchConnectionStrings.Clear();
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the Elastic Search connection strings from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the Elastic Search connection strings from smuggler file. Skipping.");
                     }
                 }
 
@@ -598,7 +600,7 @@ namespace Raven.Server.Smuggler.Documents
                         catch (Exception e)
                         {
                             if (_log.IsInfoEnabled)
-                                _log.Info("Wasn't able to import the Queue ETLs configuration from smuggler file. Skipping.", e);
+                                _log.Info(e, "Wasn't able to import the Queue ETLs configuration from smuggler file. Skipping.");
                         }
                     }
                 }
@@ -626,7 +628,7 @@ namespace Raven.Server.Smuggler.Documents
                     {
                         databaseRecord.QueueConnectionStrings.Clear();
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the Queue connection strings from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the Queue connection strings from smuggler file. Skipping.");
                     }
                 }
 
@@ -645,7 +647,7 @@ namespace Raven.Server.Smuggler.Documents
                     catch (Exception e)
                     {
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the PostgreSQL configuration from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the PostgreSQL configuration from smuggler file. Skipping.");
                     }
                 }
 
@@ -676,7 +678,7 @@ namespace Raven.Server.Smuggler.Documents
                     {
                         databaseRecord.IndexesHistory = null; // skip when we hit a error.
                         if (_log.IsInfoEnabled)
-                            _log.Info("Wasn't able to import the IndexesHistory from smuggler file. Skipping.", e);
+                            _log.Info(e, "Wasn't able to import the IndexesHistory from smuggler file. Skipping.");
                     }
                 }
 
@@ -693,7 +695,7 @@ namespace Raven.Server.Smuggler.Documents
 
                         if (_log.IsInfoEnabled)
                         {
-                            _log.Info(errorMessage, e);
+                            _log.Info(e, errorMessage);
                         }
 
                         throw new InvalidDataException(errorMessage, e);
@@ -1554,8 +1556,8 @@ namespace Raven.Server.Smuggler.Documents
                             if (type != DocumentItem.ExportDocumentType.Attachment)
                             {
                                 var msg = $"Ignoring an item of type `{type}`. " + data;
-                                if (_log.IsOperationsEnabled)
-                                    _log.Operations(msg);
+                                if (_log.IsWarnEnabled)
+                                    _log.Warn(msg);
                                 _result.AddWarning(msg);
                                 continue;
                             }
@@ -1677,8 +1679,8 @@ namespace Raven.Server.Smuggler.Documents
                         if (Enum.TryParse<Tombstone.TombstoneType>(type, out var tombstoneType) == false)
                         {
                             var msg = $"Ignoring a tombstone of type `{type}` which is not supported in 4.0. ";
-                            if (_log.IsOperationsEnabled)
-                                _log.Operations(msg);
+                            if (_log.IsWarnEnabled)
+                                _log.Warn(msg);
 
                             _result.Tombstones.ErroredCount++;
                             _result.AddWarning(msg);
@@ -1692,8 +1694,8 @@ namespace Raven.Server.Smuggler.Documents
                             if (Enum.TryParse<DocumentFlags>(flags, out var tombstoneFlags) == false)
                             {
                                 var msg = $"Ignoring a tombstone because it couldn't parse its flags: {flags}";
-                                if (_log.IsOperationsEnabled)
-                                    _log.Operations(msg);
+                                if (_log.IsWarnEnabled)
+                                    _log.Warn(msg);
 
                                 _result.Tombstones.ErroredCount++;
                                 _result.AddWarning(msg);
@@ -1719,8 +1721,8 @@ namespace Raven.Server.Smuggler.Documents
             void SkipEntry(BlittableJsonReaderObject data)
             {
                 var msg = "Ignoring an invalid tombstone which you try to import. " + data;
-                if (_log.IsOperationsEnabled)
-                    _log.Operations(msg);
+                if (_log.IsWarnEnabled)
+                    _log.Warn(msg);
 
                 _result.Tombstones.ErroredCount++;
                 _result.AddWarning(msg);
@@ -1807,8 +1809,8 @@ namespace Raven.Server.Smuggler.Documents
             void SkipEntry(BlittableJsonReaderObject data)
             {
                 var msg = "Ignoring an invalid conflict which you try to import. " + data;
-                if (_log.IsOperationsEnabled)
-                    _log.Operations(msg);
+                if (_log.IsWarnEnabled)
+                    _log.Warn(msg);
 
                 _result.Conflicts.ErroredCount++;
                 _result.AddWarning(msg);

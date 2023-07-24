@@ -3,24 +3,24 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using NLog;
 using Sparrow.Collections;
 using Sparrow.Logging;
+using Sparrow.LowMemory;
 using Sparrow.Platform;
-using Sparrow.Platform.Posix;
-using Sparrow.Platform.Posix.macOS;
 using Sparrow.Server.Platform.Posix;
+using Sparrow.Server.Platform.Posix.macOS;
 using Sparrow.Server.Utils;
 using Sparrow.Utils;
 using NativeMemory = Sparrow.Utils.NativeMemory;
 
-namespace Sparrow.LowMemory
+namespace Sparrow.Server.LowMemory
 {
     public static class MemoryInformation
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<MemoryInfoResult>("Server");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForSparrow(typeof(MemoryInformation));
 
         private static readonly ConcurrentQueue<Tuple<long, DateTime>> MemByTime = new ConcurrentQueue<Tuple<long, DateTime>>();
         private static DateTime _memoryRecordsSet;
@@ -305,7 +305,7 @@ namespace Sparrow.LowMemory
             catch (Exception ex)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Failed to read value from {path}", ex);
+                    Logger.Info(ex, $"Failed to read value from {path}");
                 return (-1, -1);
             }
         }
@@ -392,7 +392,7 @@ namespace Sparrow.LowMemory
             catch (Exception ex)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Failed to read value from {path}", ex);
+                    Logger.Info(ex, $"Failed to read value from {path}");
 
                 return false;
             }
@@ -430,7 +430,7 @@ namespace Sparrow.LowMemory
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Error while trying to get available memory, will stop trying and report that there is 256MB free only from now on", e);
+                    Logger.Info(e, "Error while trying to get available memory, will stop trying and report that there is 256MB free only from now on");
                 _failedToGetAvailablePhysicalMemory = true;
                 return FailedResult;
             }

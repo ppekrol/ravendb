@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using NLog;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Util;
 using Raven.Server.Config;
 using Raven.Server.Documents.Indexes.Static;
 using Raven.Server.Exceptions;
 using Raven.Server.Indexing;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Binary;
@@ -75,7 +77,7 @@ namespace Raven.Server.Documents.Indexes
             _index = index;
             _contextPool = contextPool;
             DocumentDatabase = database;
-            _logger = LoggingSource.Instance.GetLogger<IndexStorage>(DocumentDatabase.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForIndex<IndexStorage>(index);
 
             var referencedCollections = index.GetReferencedCollections();
             if (referencedCollections != null)
@@ -789,8 +791,8 @@ namespace Raven.Server.Documents.Indexes
             if (SimulateIndexWriteException != null)
                 SimulateIndexWriteError(SimulateIndexWriteException);
 
-            if (_logger.IsInfoEnabled)
-                _logger.Info($"Writing last etag for '{_index.Name}'. Tree: {tree}. Collection: {collection}. Etag: {etag}.");
+            if (_logger.IsDebugEnabled)
+                _logger.Debug($"Writing last etag for '{_index.Name}'. Tree: {tree}. Collection: {collection}. Etag: {etag}.");
 
             var statsTree = tx.InnerTransaction.CreateTree(tree);
             using (Slice.External(tx.InnerTransaction.Allocator, (byte*)&etag, sizeof(long), out Slice etagSlice))
@@ -835,8 +837,8 @@ namespace Raven.Server.Documents.Indexes
 
         public unsafe IndexFailureInformation UpdateStats(DateTime indexingTime, IndexingRunStats stats)
         {
-            if (_logger.IsInfoEnabled)
-                _logger.Info($"Updating statistics for '{_index.Name}'. Stats: {stats}.");
+            if (_logger.IsDebugEnabled)
+                _logger.Debug($"Updating statistics for '{_index.Name}'. Stats: {stats}.");
 
             using (_contextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (var tx = context.OpenWriteTransaction())

@@ -4,16 +4,18 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Threading;
+using NLog;
 using Raven.Client.Documents.Operations.Backups;
 using Raven.Client.Documents.Smuggler;
 using Raven.Server.Documents.PeriodicBackup.Restore;
+using Raven.Server.Logging;
 using Sparrow.Logging;
 
 namespace Raven.Server.Documents.PeriodicBackup.Retention
 {
     public abstract class RetentionPolicyRunnerBase
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<RetentionPolicyRunnerBase>("BackupTask");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<RetentionPolicyRunnerBase>();
 
         private readonly RetentionPolicy _retentionPolicy;
         private readonly string _databaseName;
@@ -120,7 +122,7 @@ namespace Raven.Server.Documents.PeriodicBackup.Retention
                 _onProgress.Invoke($"{message}. Error: {e.Message}");
 
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Failed to run Retention Policy for {Name}", e);
+                    Logger.Info(e, $"Failed to run Retention Policy for {Name}");
             }
         }
 

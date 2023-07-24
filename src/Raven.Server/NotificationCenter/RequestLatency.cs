@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading;
 using JetBrains.Annotations;
+using NLog;
 using Raven.Client.Documents.Conventions;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Sparrow.Json;
@@ -9,7 +11,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.NotificationCenter
 {
-    public class RequestLatency : IDisposable
+    public sealed class RequestLatency : IDisposable
     {
         private static readonly string QueryRequestLatenciesId = $"{NotificationType.PerformanceHint}/{PerformanceHintType.RequestLatency}/Query";
         private readonly object _locker = new();
@@ -26,7 +28,7 @@ namespace Raven.Server.NotificationCenter
         {
             _notificationCenter = notificationCenter ?? throw new ArgumentNullException(nameof(notificationCenter));
 
-            _logger = LoggingSource.Instance.GetLogger(notificationCenter.Database, GetType().FullName);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<RequestLatency>(notificationCenter.Database);
         }
 
         public void AddHint(long duration, string action, string query)
@@ -64,7 +66,7 @@ namespace Raven.Server.NotificationCenter
             catch (Exception e)
             {
                 if (_logger.IsInfoEnabled)
-                    _logger.Info("Error in a request latency timer", e);
+                    _logger.Info(e, "Error in a request latency timer");
             }
         }
 

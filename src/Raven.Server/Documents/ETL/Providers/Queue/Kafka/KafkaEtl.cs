@@ -55,9 +55,9 @@ public class KafkaEtl : QueueEtl<KafkaItem>
                              $"- transaction.state.log.replication.factor: 1 {Environment.NewLine}" +
                              "- transaction.state.log.min.isr: 1";
 
-                if (Logger.IsOperationsEnabled)
+                if (Logger.IsErrorEnabled)
                 {
-                    Logger.Operations(msg, e);
+                    Logger.Error(msg, e);
                 }
 
                 throw new QueueLoadException(msg, e);
@@ -74,8 +74,8 @@ public class KafkaEtl : QueueEtl<KafkaItem>
             }
             else
             {
-                if (Logger.IsOperationsEnabled)
-                    Logger.Operations($"Failed to deliver message: {report.Error.Reason}");
+                if (Logger.IsErrorEnabled)
+                    Logger.Error($"Failed to deliver message: {report.Error.Reason}");
 
                 try
                 {
@@ -83,9 +83,8 @@ public class KafkaEtl : QueueEtl<KafkaItem>
                 }
                 catch (Exception e)
                 {
-                    if (Logger.IsOperationsEnabled)
-                        Logger.Operations(
-                            $"ETL process: {Name}. Aborting Kafka transaction failed after getting deliver report with error.", e);
+                    if (Logger.IsErrorEnabled)
+                        Logger.Error(e, $"ETL process: {Name}. Aborting Kafka transaction failed after getting deliver report with error.");
                 }
             }
         }
@@ -119,8 +118,8 @@ public class KafkaEtl : QueueEtl<KafkaItem>
             }
             catch (Exception e)
             {
-                if (Logger.IsOperationsEnabled)
-                    Logger.Operations($" ETL process: {Name}. Aborting Kafka transaction failed.", e);
+                if (Logger.IsErrorEnabled)
+                    Logger.Error($" ETL process: {Name}. Aborting Kafka transaction failed.", e);
             }
 
             throw new QueueLoadException(ex.Message, ex);

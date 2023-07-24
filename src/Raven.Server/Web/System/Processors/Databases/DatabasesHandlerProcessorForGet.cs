@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations.Replication;
@@ -17,6 +18,7 @@ using Raven.Client.Util;
 using Raven.Server.Documents;
 using Raven.Server.Extensions;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Json;
@@ -27,7 +29,7 @@ namespace Raven.Server.Web.System.Processors.Databases;
 
 internal class DatabasesHandlerProcessorForGet : AbstractDatabasesHandlerProcessorForAllowedDatabases<DatabasesInfo>
 {
-    private static readonly Logger Logger = LoggingSource.Instance.GetLogger<DatabasesHandler>("Server");
+    private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<DatabasesHandlerProcessorForGet>();
 
     public DatabasesHandlerProcessorForGet([NotNull] RequestHandler requestHandler) : base(requestHandler)
     {
@@ -240,7 +242,7 @@ internal class DatabasesHandlerProcessorForGet : AbstractDatabasesHandlerProcess
         catch (Exception e)
         {
             if (Logger.IsInfoEnabled)
-                Logger.Info($"Failed to get database info for: {databaseName}", e);
+                Logger.Info(e, $"Failed to get database info for: {databaseName}");
 
             WriteFaultedDatabaseInfo(databaseName, nodesTopology, e, context, writer);
         }

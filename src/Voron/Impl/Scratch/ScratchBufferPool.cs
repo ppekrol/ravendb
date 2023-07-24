@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Sparrow.Logging;
 using Sparrow.LowMemory;
 using Sparrow.Server;
 using Sparrow.Server.Exceptions;
@@ -15,6 +14,11 @@ using Voron.Impl.Paging;
 using Voron.Util;
 using Constants = Voron.Global.Constants;
 using System.Diagnostics.CodeAnalysis;
+using NLog;
+using Sparrow.Logging;
+using Sparrow.Server.LowMemory;
+using Voron.Impl.Journal;
+using Voron.Logging;
 
 namespace Voron.Impl.Scratch
 {
@@ -58,7 +62,7 @@ namespace Voron.Impl.Scratch
 
         public ScratchBufferPool(StorageEnvironment env)
         {
-            _logger = LoggingSource.Instance.GetLogger<ScratchBufferPool>(Path.GetFileName(env.ToString()));
+            _logger = RavenLogManager.Instance.GetLoggerForVoron<ScratchBufferPool>(env.Options, env.ToString());
 
             _disposeOnceRunner = new DisposeOnce<ExceptionRetry>(() =>
             {

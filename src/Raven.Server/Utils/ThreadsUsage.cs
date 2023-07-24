@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using NLog;
 using Raven.Server.Dashboard;
-using Raven.Server.Monitoring.Snmp.Objects.Server;
+using Raven.Server.Logging;
 using Raven.Server.Utils.Cpu;
 using Sparrow.Logging;
-using Sparrow.Platform;
 using Sparrow.Server.Utils;
 using Sparrow.Utils;
 
 namespace Raven.Server.Utils
 {
-    public class ThreadsUsage
+    public sealed class ThreadsUsage
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<MachineCpu>("ThreadsUsage");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<ThreadsUsage>();
         private (long TotalProcessorTimeTicks, long TimeTicks) _processTimes;
         private Dictionary<int, long> _threadTimesInfo = new Dictionary<int, long>();
 
@@ -153,7 +153,7 @@ namespace Raven.Server.Utils
                         catch (Exception e)
                         {
                             if (Logger.IsInfoEnabled)
-                                Logger.Info("Failed to get thread info", e);
+                                Logger.Info(e, "Failed to get thread info");
                         }
                     }
                 }

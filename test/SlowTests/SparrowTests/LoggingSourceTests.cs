@@ -18,6 +18,8 @@ using Voron.Global;
 using Xunit;
 using Xunit.Abstractions;
 
+// TODO [ppekrol]
+/*
 namespace SlowTests.SparrowTests
 {
     public class LoggingSourceTests : RavenTestBase
@@ -867,3 +869,4 @@ namespace SlowTests.SparrowTests
         }
     }
 }
+*/

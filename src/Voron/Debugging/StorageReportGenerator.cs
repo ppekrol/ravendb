@@ -19,12 +19,12 @@ using Voron.Data.Lookups;
 using Voron.Data.PostingLists;
 using Voron.Data.Tables;
 using Voron.Exceptions;
-using Voron.Global;
 using Voron.Impl;
 using Voron.Impl.Journal;
 using Voron.Impl.Paging;
 using Voron.Impl.Scratch;
 using Voron.Util.Settings;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Debugging
 {

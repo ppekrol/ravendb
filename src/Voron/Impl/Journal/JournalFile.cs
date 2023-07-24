@@ -10,16 +10,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.ExceptionServices;
-using Sparrow.Logging;
 using System.Threading;
+using NLog;
 using Sparrow.Collections;
+using Sparrow.Logging;
 using Sparrow.Server;
+using Voron.Logging;
 using Voron.Util;
 using Constants = Voron.Global.Constants;
 
 namespace Voron.Impl.Journal
 {
-    public unsafe class JournalFile : IDisposable
+    public sealed unsafe class JournalFile : IDisposable
     {
         private readonly StorageEnvironment _env;
         private IJournalWriter _journalWriter;
@@ -33,7 +35,7 @@ namespace Voron.Impl.Journal
 
         private readonly FastList<PagePosition> _unusedPages;
         private readonly ContentionLoggingLocker _locker2;
-        private Logger _logger;
+        private readonly Logger _logger;
 
         public JournalFile(StorageEnvironment env, IJournalWriter journalWriter, long journalNumber)
         {
@@ -43,7 +45,7 @@ namespace Voron.Impl.Journal
             _journalWriter = journalWriter;
             _writePosIn4Kb = 0;
             _unusedPages = new FastList<PagePosition>();
-            _logger = LoggingSource.Instance.GetLogger<JournalFile>(JournalWriter.FileName.FullPath);
+            _logger = RavenLogManager.Instance.GetLoggerForVoron<JournalFile>(_env.Options, JournalWriter.FileName.FullPath);
             _locker2 = new ContentionLoggingLocker(_logger, JournalWriter.FileName.FullPath);
         }
 
@@ -366,16 +368,16 @@ namespace Voron.Impl.Journal
                 totalFreed++;
             }
 
-            if (_logger.IsInfoEnabled)
+            if (_logger.IsDebugEnabled)
             {
-                _logger.Info($"Freed {totalFreed} scratch pages used by journal that will be available after transaction {availableForAllocationAfterTx}. There were {unusedPages.Count} unused pages and {unusedAndFree.Count} unused and free.");
+                _logger.Debug($"Freed {totalFreed} scratch pages used by journal that will be available after transaction {availableForAllocationAfterTx}. There were {unusedPages.Count} unused pages and {unusedAndFree.Count} unused and free.");
             }
 
             _scratchPagesPositionsPool.Free(unusedPages);
             _scratchPagesPositionsPool.Free(unusedAndFree);
         }
 
-        public struct UpdatePageTranslationTableAndUnusedPagesAction
+        public readonly struct UpdatePageTranslationTableAndUnusedPagesAction
         {
             private readonly JournalFile _parent;
             private readonly LowLevelTransaction _tx;

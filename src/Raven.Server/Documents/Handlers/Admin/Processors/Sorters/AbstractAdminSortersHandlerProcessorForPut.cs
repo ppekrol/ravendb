@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using Raven.Server.Documents.Handlers.Processors;
 using Raven.Server.Documents.Indexes.Sorting;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Commands.Sorters;
 using Raven.Server.Web;
 using Sparrow.Json;
@@ -34,12 +35,12 @@ internal abstract class AbstractAdminSortersHandlerProcessorForPut<TRequestHandl
                 var sorterDefinition = JsonDeserializationServer.SorterDefinition((BlittableJsonReaderObject)sorterToAdd);
                 sorterDefinition.Name = sorterDefinition.Name?.Trim();
 
-                if (LoggingSource.AuditLog.IsInfoEnabled)
+                if (RavenLogManager.Instance.IsAuditEnabled)
                 {
                     var clientCert = RequestHandler.GetCurrentCertificate();
 
-                    var auditLog = LoggingSource.AuditLog.GetLogger(databaseName, "Audit");
-                    auditLog.Info($"Sorter {sorterDefinition.Name} PUT by {clientCert?.Subject} {clientCert?.Thumbprint} with definition: {sorterToAdd}");
+                    var auditLog = RavenLogManager.Instance.GetAuditLoggerForDatabase(databaseName);
+                    auditLog.Audit($"Sorter {sorterDefinition.Name} PUT by {clientCert?.Subject} {clientCert?.Thumbprint} with definition: {sorterToAdd}");
                 }
 
                 sorterDefinition.Validate();

@@ -6,9 +6,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Http;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
@@ -21,9 +23,9 @@ using Sparrow.Server.Utils;
 
 namespace Raven.Server.Web.Studio
 {
-    public class DataDirectoryInfo
+    public sealed class DataDirectoryInfo
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<DataDirectoryInfo>("DataDirectoryInfo");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<DataDirectoryInfo>();
 
         private readonly ServerStore _serverStore;
         private readonly string _path;
@@ -207,7 +209,7 @@ namespace Raven.Server.Web.Studio
                 catch (Exception e)
                 {
                     if (Logger.IsInfoEnabled)
-                        Logger.Info($"Failed to get directory info result from: {serverUrl}", e);
+                        Logger.Info(e, $"Failed to get directory info result from: {serverUrl}");
 
                     return null;
                 }

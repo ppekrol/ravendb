@@ -6,11 +6,13 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using NLog;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Operations.Revisions;
 using Raven.Client.ServerWide;
 using Raven.Client.Util;
 using Raven.Server.Documents.TransactionMerger.Commands;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.ServerWide;
@@ -65,7 +67,7 @@ namespace Raven.Server.Documents.Revisions
             RevisionsSchema = revisionsSchema ?? throw new ArgumentNullException(nameof(revisionsSchema));
             CompressedRevisionsSchema = compressedRevisionsSchema ?? throw new ArgumentNullException(nameof(compressedRevisionsSchema));
 
-            _logger = LoggingSource.Instance.GetLogger<RevisionsStorage>(database.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<RevisionsStorage>(database);
             Operations = new RevisionsOperations(_database);
             ConflictConfiguration = new RevisionsConfiguration
             {
@@ -150,8 +152,8 @@ namespace Raven.Server.Documents.Revisions
                     _database.Name,
                     details: new ExceptionDetails(e)));
 
-                if (_logger.IsOperationsEnabled)
-                    _logger.Operations(message, e);
+                if (_logger.IsErrorEnabled)
+                    _logger.Error(e, message);
             }
         }
 

@@ -22,7 +22,7 @@ namespace SlowTests.Voron.Storage
         [Fact]
         public void ByDefaultAllFilesShouldBeStoredInOneDirectory()
         {
-            var options = (StorageEnvironmentOptions.DirectoryStorageEnvironmentOptions)StorageEnvironmentOptions.ForPath(DataDir);
+            var options = (StorageEnvironmentOptions.DirectoryStorageEnvironmentOptions)StorageEnvironmentOptions.ForPathForTests(DataDir);
 
             Assert.Equal(DataDir, options.BasePath.FullPath);
             Assert.True(options.TempPath.FullPath.StartsWith(options.BasePath.FullPath));
@@ -40,7 +40,7 @@ namespace SlowTests.Voron.Storage
         [Fact]
         public void DefaultScratchLocation()
         {
-            var options = (StorageEnvironmentOptions.DirectoryStorageEnvironmentOptions)StorageEnvironmentOptions.ForPath(DataDir);
+            var options = (StorageEnvironmentOptions.DirectoryStorageEnvironmentOptions)StorageEnvironmentOptions.ForPathForTests(DataDir);
             using (var env = new StorageEnvironment(options))
             {
                 var scratchFile = Path.Combine(env.Options.TempPath.FullPath, StorageEnvironmentOptions.ScratchBufferName(0));

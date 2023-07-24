@@ -231,7 +231,7 @@ public abstract class CoraxJintDocumentConverterBase : CoraxDocumentConverterBas
     {
         if (_fields.TryGetValue(propertyAsString, out var field) == false)
         {
-            int currentId = CoraxLib.Constants.IndexWriter.DynamicField;
+            int currentId = CoraxLib.Global.Constants.IndexWriter.DynamicField;
             if (KnownFieldsForWriter.TryGetByFieldName(Allocator, propertyAsString, out var binding))
                 currentId = binding.FieldId;
 
@@ -278,7 +278,7 @@ public abstract class CoraxJintDocumentConverterBase : CoraxDocumentConverterBas
                 throw new ArgumentException($"Dynamic field {property} is expected to have a string {JavaScriptFieldName.NamePropertyName} property but got {fieldNameObj}");
 
             field.Name = fieldNameObj.AsString();
-            field.Id = CoraxLib.Constants.IndexWriter.DynamicField;
+            field.Id = CoraxLib.Global.Constants.IndexWriter.DynamicField;
         }
         else
         {

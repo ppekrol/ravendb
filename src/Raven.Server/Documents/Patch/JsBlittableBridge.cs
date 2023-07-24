@@ -21,6 +21,7 @@ using Sparrow;
 using Sparrow.Extensions;
 using Sparrow.Json;
 using Sparrow.Utils;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Patch
 {

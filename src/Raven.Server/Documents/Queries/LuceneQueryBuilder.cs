@@ -32,6 +32,7 @@ using Term = Lucene.Net.Index.Term;
 using TermQuery = Lucene.Net.Search.TermQuery;
 using TermRangeQuery = Lucene.Net.Search.TermRangeQuery;
 using Version = Lucene.Net.Util.Version;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Queries
 {

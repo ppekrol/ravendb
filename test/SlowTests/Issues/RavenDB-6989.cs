@@ -1,4 +1,5 @@
 ﻿using FastTests;
+using NLog;
 using Raven.Client.Documents.Indexes;
 using Raven.Server.Documents.Indexes;
 using Raven.Server.Documents.Indexes.Static;
@@ -28,7 +29,7 @@ namespace SlowTests.Issues
                 },
                 Type = IndexType.Map
             }, database))
-            using (var contextPool = new TransactionContextPool(database.DocumentsStorage.Environment))
+            using (var contextPool = new TransactionContextPool(LogManager.CreateNullLogger(), database.DocumentsStorage.Environment))
             {
                 new IndexStorage(index, contextPool, database);
             }

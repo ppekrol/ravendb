@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using NLog;
 using Raven.Client.Documents.Changes;
 using Raven.Client.Documents.Operations.ConnectionStrings;
 using Raven.Client.Documents.Operations.Counters;
@@ -33,6 +34,7 @@ using Raven.Server.Documents.ETL.Stats;
 using Raven.Server.Documents.ETL.Test;
 using Raven.Server.Documents.Replication.ReplicationItems;
 using Raven.Server.Documents.TimeSeries;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.ServerWide;
@@ -41,6 +43,7 @@ using Raven.Server.ServerWide.Context;
 using Raven.Server.ServerWide.Memory;
 using Raven.Server.Utils;
 using Sparrow;
+using Sparrow.Global;
 using Sparrow.Logging;
 using Sparrow.LowMemory;
 using Sparrow.Server.Utils;
@@ -161,7 +164,7 @@ namespace Raven.Server.Documents.ETL
             ConfigurationName = Configuration.Name;
             TransformationName = Transformation.Name;
             Name = $"{Configuration.Name}/{Transformation.Name}";
-            Logger = LoggingSource.Instance.GetLogger(database.Name, GetType().FullName);
+            Logger = RavenLogManager.Instance.GetLoggerForDatabase<EtlProcess>(database);
             Database = database;
             _serverStore = serverStore;
             Statistics = new EtlProcessStatistics(Tag, Name, Database.NotificationCenter);
@@ -415,8 +418,8 @@ namespace Raven.Server.Documents.ETL
 
                             stats.RecordTransformationError();
 
-                            if (Logger.IsOperationsEnabled)
-                                Logger.Operations($"Could not process ETL script for '{Name}', skipping document: {item.DocumentId}", e);
+                            if (Logger.IsWarnEnabled)
+                                Logger.Warn(e, $"Could not process ETL script for '{Name}', skipping document: {item.DocumentId}");
                         }
                     }
                 }
@@ -436,8 +439,8 @@ namespace Raven.Server.Documents.ETL
         {
             var message = $"[{Name}] Could not parse transformation script. Stopping ETL process.";
 
-            if (Logger.IsOperationsEnabled)
-                Logger.Operations(message, e);
+            if (Logger.IsWarnEnabled)
+                Logger.Warn(e, message);
 
             var key = $"{Tag}/{Name}";
             var details = new EtlErrorsDetails();
@@ -483,9 +486,9 @@ namespace Raven.Server.Documents.ETL
                     {
                         string msg = $"Failed to load transformed data for '{Name}'";
 
-                        if (Logger.IsOperationsEnabled)
+                        if (Logger.IsWarnEnabled)
                         {
-                            Logger.Operations(msg, e);
+                            Logger.Warn(e, msg);
                         }
 
                         stats.RecordLoadFailure();
@@ -685,13 +688,13 @@ namespace Raven.Server.Documents.ETL
                 }
                 catch (Exception e)
                 {
-                    if (Logger.IsOperationsEnabled)
-                        Logger.Operations($"Failed to run ETL {Name}", e);
+                    if (Logger.IsErrorEnabled)
+                        Logger.Error(e, $"Failed to run ETL {Name}");
                 }
             }, null, ThreadNames.ForEtlProcess(threadName, Tag, Name));
 
-            if (Logger.IsOperationsEnabled)
-                Logger.Operations($"Starting {Tag} process: '{Name}'.");
+            if (Logger.IsInfoEnabled)
+                Logger.Warn($"Starting {Tag} process: '{Name}'.");
 
         }
 
@@ -702,9 +705,9 @@ namespace Raven.Server.Documents.ETL
 
             string msg = $"Stopping {Tag} process: '{Name}'. Reason: {reason}";
 
-            if (Logger.IsOperationsEnabled)
+            if (Logger.IsInfoEnabled)
             {
-                Logger.Operations(msg);
+                Logger.Info(msg);
             }
 
             if (_lastStats?.Completed == false)
@@ -828,8 +831,8 @@ namespace Raven.Server.Documents.ETL
                             {
                                 var message = $"{Tag} Exception in ETL process '{Name}'";
 
-                                if (Logger.IsOperationsEnabled)
-                                    Logger.Operations(message, e);
+                                if (Logger.IsWarnEnabled)
+                                    Logger.Warn(e, message);
 
                                 stats.RecordBatchStopReason($"{message} : {e}");
                             }
@@ -849,8 +852,8 @@ namespace Raven.Server.Documents.ETL
                         {
                             if (CancellationToken.IsCancellationRequested == false)
                             {
-                                if (Logger.IsOperationsEnabled) 
-                                    Logger.Operations($"{Tag} Failed to update state of ETL process '{Name}'", e);
+                                if (Logger.IsWarnEnabled) 
+                                    Logger.Warn(e, $"{Tag} Failed to update state of ETL process '{Name}'");
                             }
                         }
 
@@ -902,9 +905,9 @@ namespace Raven.Server.Documents.ETL
                 {
                     var msg = $"Unexpected error in {Tag} process: '{Name}'";
 
-                    if (Logger.IsOperationsEnabled)
+                    if (Logger.IsErrorEnabled)
                     {
-                        Logger.Operations(msg, e);
+                        Logger.Error(e, msg);
                     }
 
                     ReportStopReasonToStats($"{msg} : {e}");

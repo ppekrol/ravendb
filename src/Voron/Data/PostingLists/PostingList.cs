@@ -5,11 +5,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Sparrow;
 using Sparrow.Server;
-using Sparrow.Server.Utils.VxSort;
 using Voron.Debugging;
-using Voron.Global;
 using Voron.Impl;
 using Voron.Util.PFor;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Data.PostingLists
 {

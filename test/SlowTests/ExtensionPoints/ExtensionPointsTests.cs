@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using FastTests;
 using Raven.Client;
 using Raven.Client.Documents.Smuggler;
+using Raven.Client.Util;
 using Raven.Server.Config;
 using Raven.Server.ServerWide;
 using Raven.Server.Utils;
@@ -65,7 +66,7 @@ exit 0";
             UseNewLocalServer(customSettings: customSettings);
 
             // Creating dummy storage env options, so we can tell all the different paths
-            using (var options = StorageEnvironmentOptions.CreateMemoryOnly())
+            using (var options = StorageEnvironmentOptions.CreateMemoryOnlyForTests())
             {
                 using (var store = GetDocumentStore())
                 {

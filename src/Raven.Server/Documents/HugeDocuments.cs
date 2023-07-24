@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading;
 using JetBrains.Annotations;
+using NLog;
 using Raven.Client.Documents.Conventions;
 using Raven.Server.Config;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
@@ -34,7 +36,7 @@ namespace Raven.Server.Documents
             _notificationCenter = notificationCenter ?? throw new ArgumentNullException(nameof(notificationCenter));
             _maxWarnSize = maxWarnSize;
             _hugeDocs = new SizeLimitedConcurrentDictionary<Tuple<string, DateTime>, long>(maxCollectionSize);
-            _logger = LoggingSource.Instance.GetLogger(notificationCenter.Database, GetType().FullName);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<HugeDocuments>(notificationCenter.Database);
         }
 
         public void AddIfDocIsHuge(Document doc)
@@ -89,7 +91,7 @@ namespace Raven.Server.Documents
             catch (Exception e)
             {
                 if (_logger.IsInfoEnabled)
-                    _logger.Info("Error in a huge documents timer", e);
+                    _logger.Info(e, "Error in a huge documents timer");
             }
         }
 

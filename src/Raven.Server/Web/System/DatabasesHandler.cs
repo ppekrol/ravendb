@@ -11,6 +11,7 @@ using Raven.Client.ServerWide.Commands;
 using Raven.Client.ServerWide.Operations;
 using Raven.Client.Util;
 using Raven.Server.Extensions;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide;
@@ -60,12 +61,12 @@ namespace Raven.Server.Web.System
                     clusterTopology = ServerStore.GetClusterTopology(context);
                 }
 
-                if (LoggingSource.AuditLog.IsInfoEnabled)
+                if (RavenLogManager.Instance.IsAuditEnabled)
                 {
                     var clientCert = GetCurrentCertificate();
 
-                    var auditLog = LoggingSource.AuditLog.GetLogger("DbMgmt", "Audit");
-                    auditLog.Info($"Database \'{dbName}\' topology is being modified by {clientCert?.Subject} ({clientCert?.Thumbprint})," +
+                    var auditLog = RavenLogManager.Instance.GetAuditLoggerForServer();
+                    auditLog.Audit($"Database \'{dbName}\' topology is being modified by {clientCert?.Subject} ({clientCert?.Thumbprint})," +
                                   $"Old topology: {databaseRecord.Topology} " +
                                   $"New topology: {databaseTopology}.");
                 }

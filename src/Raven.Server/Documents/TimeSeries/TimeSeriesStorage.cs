@@ -8,11 +8,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Changes;
 using Raven.Client.Documents.Operations.TimeSeries;
 using Raven.Server.Documents.Handlers.Processors.TimeSeries;
 using Raven.Server.Documents.Replication.ReplicationItems;
+using Raven.Server.Logging;
+using Raven.Server.Monitoring.Snmp.Objects.Database;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Smuggler.Documents;
@@ -31,6 +34,7 @@ using Voron.Data.Tables;
 using Voron.Impl;
 using static Raven.Server.Documents.Schemas.DeletedRanges;
 using static Raven.Server.Documents.Schemas.TimeSeries;
+using static Raven.Server.Documents.TimeSeries.TimeSeriesRollups;
 
 namespace Raven.Server.Documents.TimeSeries
 {
@@ -64,7 +68,7 @@ namespace Raven.Server.Documents.TimeSeries
 
             Stats = new TimeSeriesStats(this, tx);
             Rollups = new TimeSeriesRollups(_documentDatabase);
-            _logger = LoggingSource.Instance.GetLogger<TimeSeriesStorage>(documentDatabase.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<TimeSeriesStorage>(documentDatabase);
         }
 
         public long PurgeSegmentsAndDeletedRanges(DocumentsOperationContext context, string collection, long upto, long numberOfEntriesToDelete)
@@ -2294,7 +2298,7 @@ namespace Raven.Server.Documents.TimeSeries
             {
                 var error = $"Unable to locate the original time-series '{tsName}' of document '{docId}'";
                 if (_logger.IsInfoEnabled)
-                    _logger.Info(error, e);
+                    _logger.Info(e, error);
             }
 
             return tsName;

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using NLog;
+using Raven.Server.Logging;
 using Sparrow;
 using Sparrow.Logging;
 using Sparrow.Server;
@@ -11,7 +14,13 @@ namespace Raven.Server.Documents.Indexes.MapReduce
 {
     public class MapReduceIndexingContext : IDisposable
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<MapReduceResultsStore>("MapReduceIndexingContext");
+        private readonly Index _index;
+        private Logger _logger;
+
+        private Logger Logger
+        {
+            get => _logger ??= RavenLogManager.Instance.GetLoggerForIndex<MapReduceIndexingContext>(_index);
+        }
 
         internal static Slice LastMapResultIdKey;
 
@@ -34,6 +43,11 @@ namespace Raven.Server.Documents.Indexes.MapReduce
             {
                 Slice.From(ctx, "__raven/map-reduce/#next-map-result-id", ByteStringType.Immutable, out LastMapResultIdKey);
             }
+        }
+
+        public MapReduceIndexingContext([NotNull] Index index)
+        {
+            _index = index ?? throw new ArgumentNullException(nameof(index));
         }
 
         public void Dispose()
@@ -60,8 +74,8 @@ namespace Raven.Server.Documents.Indexes.MapReduce
             }
             catch (Exception e)
             {
-                if (Logger.IsInfoEnabled)
-                    Logger.Info("Failed to store next map result id", e);
+                if (Logger.IsDebugEnabled)
+                    Logger.Debug(e, "Failed to store next map result id");
 
                 throw;
             }

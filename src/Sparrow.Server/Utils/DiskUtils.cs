@@ -3,6 +3,7 @@ using System.Buffers;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using NLog;
 using Sparrow.Logging;
 using Sparrow.Platform;
 using Sparrow.Server.Platform;
@@ -12,7 +13,7 @@ namespace Sparrow.Server.Utils
 {
     public static class DiskUtils
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger("Server", typeof(DiskUtils).FullName);
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForSparrow(typeof(DiskUtils));
 
         // from https://github.com/dotnet/corefx/blob/9c06da6a34fcefa6fb37776ac57b80730e37387c/src/Common/src/System/IO/PathInternal.Windows.cs#L52
         public const short WindowsMaxPath = short.MaxValue;
@@ -91,7 +92,7 @@ namespace Sparrow.Server.Utils
             {
                 // failing here will prevent us from starting the storage environment
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Failed to get the real path for: {path}", e);
+                    Logger.Info(e, $"Failed to get the real path for: {path}");
 
                 realPath = path;
                 return path;

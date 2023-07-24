@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using NLog;
 using Raven.Client.Documents.Operations.OngoingTasks;
 using Raven.Client.Documents.Subscriptions;
 using Raven.Client.Exceptions.Documents.Subscriptions;
@@ -169,7 +170,7 @@ public abstract class AbstractSubscriptionStorage<TState> : AbstractSubscription
         DropSubscriptionConnections(state, ex);
 
         if (_logger.IsInfoEnabled)
-            _logger.Info($"Subscription with id '{subscriptionId}' and name '{state.SubscriptionName}' connections were dropped.", ex);
+            _logger.Info(ex, $"Subscription with id '{subscriptionId}' and name '{state.SubscriptionName}' connections were dropped.");
 
         return true;
     }
@@ -184,7 +185,7 @@ public abstract class AbstractSubscriptionStorage<TState> : AbstractSubscription
         state.Dispose();
 
         if (_logger.IsInfoEnabled)
-            _logger.Info($"Subscription with id '{subscriptionId}' and name '{state.SubscriptionName}' was deleted and connections were dropped.", ex);
+            _logger.Info(ex, $"Subscription with id '{subscriptionId}' and name '{state.SubscriptionName}' was deleted and connections were dropped.");
 
         return true;
     }

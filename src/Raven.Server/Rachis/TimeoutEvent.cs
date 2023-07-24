@@ -1,6 +1,8 @@
 using System;
 using System.Threading;
+using NLog;
 using Raven.Client.Exceptions;
+using Sparrow.Global;
 using Sparrow.Logging;
 using Sparrow.LowMemory;
 using Sparrow.Threading;
@@ -23,7 +25,7 @@ namespace Raven.Server.Rachis
             _singleShot = singleShot;
             _lastDeferredTicks = DateTime.UtcNow.Ticks;
             _timer = new Timer(Callback, null, Timeout.Infinite, Timeout.Infinite);
-            _logger = LoggingSource.Instance.GetLogger<TimeoutEvent>(name);
+            _logger = LogManager.GetCurrentClassLogger().WithProperty(Constants.Logging.Properties.Resource, name);
             LowMemoryNotification.Instance?.RegisterLowMemoryHandler(this);
         }
 
@@ -74,7 +76,7 @@ namespace Raven.Server.Rachis
                 {
                     if (_logger.IsInfoEnabled)
                     {
-                        _logger.Info("Failed to execute timeout callback, will retry again", e);
+                        _logger.Info(e, "Failed to execute timeout callback, will retry again");
                     }
 
                     lock (this)

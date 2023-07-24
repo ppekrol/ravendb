@@ -3,15 +3,13 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using System.Xml;
 using Sparrow.Binary;
 using Sparrow.Collections;
-using Sparrow.Extensions;
+using Sparrow.Global;
 using Sparrow.Json;
 using Sparrow.LowMemory;
 using Sparrow.Platform;
@@ -314,7 +312,7 @@ namespace Sparrow.Server
         {
             Memory.Set(Ptr, 0, Length);
         }
-        
+
         public void CopyTo(int from, byte[] dest, int offset, int count)
         {
             Debug.Assert(HasValue, "ByteString.HasValue");
@@ -702,10 +700,10 @@ namespace Sparrow.Server
         { }
     }
 
-    public unsafe class ByteStringContext<TAllocator> : IDisposable 
+    public unsafe class ByteStringContext<TAllocator> : IDisposable
         where TAllocator : struct, IByteStringAllocator
     {
-        private static readonly long DefragmentationSegmentsThresholdInBytes = (PlatformDetails.Is32Bits ? 32 : 128) * Sparrow.Global.Constants.Size.Megabyte;
+        private static readonly long DefragmentationSegmentsThresholdInBytes = (PlatformDetails.Is32Bits ? 32 : 128) * Constants.Size.Megabyte;
 
         private static readonly int MinNumberOfSegmentsToDefragment = PlatformDetails.Is32Bits ? 512 : 1024;
 
@@ -893,10 +891,10 @@ namespace Sparrow.Server
                 return;
 
             segments.Sort((x, y) => ((long)x.Start).CompareTo((long)y.Start));
-            
+
             byte* currentStart = segments[0].Start, currentEnd = segments[0].End;
             var currentIdx = 0;
-            
+
             for (int i = 1; i < segments.Count; i++)
             {
                 if (currentEnd == segments[i].Start)
@@ -922,8 +920,8 @@ namespace Sparrow.Server
             str = newStr;
             scope = newScope;
             return newStr.Length;
-        }        
-        
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public InternalScope Allocate<T>(int length, out Span<T> output)
             where T : unmanaged
@@ -1065,7 +1063,7 @@ namespace Sparrow.Server
             {
                 if (_externalCurrentLeft == 0)
                 {
-                    var tmp = Math.Min(2 * Sparrow.Global.Constants.Size.Megabyte, _allocationBlockSize * 2);
+                    var tmp = Math.Min(2 * Constants.Size.Megabyte, _allocationBlockSize * 2);
                     AllocateExternalSegment(tmp);
                     _allocationBlockSize = tmp;
                 }
@@ -1089,7 +1087,8 @@ namespace Sparrow.Server
         {
             if (_disposed)
                 ThrowObjectDisposed();
-            if (length < 0) throw new ArgumentOutOfRangeException(nameof(length));
+            if (length < 0)
+                throw new ArgumentOutOfRangeException(nameof(length));
 
             Debug.Assert((type & ByteStringType.External) == 0, "This allocation routine is only for use with internal storage byte strings.");
             type &= ~ByteStringType.External; // We are allocating internal, so we will force it (even if we are checking for it in debug).
@@ -1210,7 +1209,7 @@ namespace Sparrow.Server
             }
             else
             {
-                _allocationBlockSize = Math.Min(2 * Sparrow.Global.Constants.Size.Megabyte, _allocationBlockSize * 2);
+                _allocationBlockSize = Math.Min(2 * Constants.Size.Megabyte, _allocationBlockSize * 2);
                 var toAllocate = Math.Max(_allocationBlockSize, allocationUnit);
                 _internalCurrent = AllocateSegment(toAllocate);
                 Debug.Assert(_internalCurrent.SizeLeft >= allocationUnit, $"{_internalCurrent.SizeLeft} >= {allocationUnit}");
@@ -1623,7 +1622,7 @@ namespace Sparrow.Server
             Debug.Assert(value != null, $"{nameof(value)} cant be null.");
 
             str = AllocateInternal(size, type);
-            value.Slice(0,size).CopyTo(new Span<byte>(str._pointer->Ptr, size));
+            value.Slice(0, size).CopyTo(new Span<byte>(str._pointer->Ptr, size));
 
             RegisterForValidation(str);
             return new InternalScope(this, str);

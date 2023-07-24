@@ -30,7 +30,7 @@ namespace FastTests.Sparrow
         [RavenMultiplatformFact(RavenTestCategory.Voron | RavenTestCategory.Encryption, RavenPlatform.Windows | RavenPlatform.Linux)]
         public unsafe void WriteAndReadPageUsingCryptoPager()
         {
-            using (var options = StorageEnvironmentOptions.ForPath(DataDir))
+            using (var options = StorageEnvironmentOptions.ForPathForTests(DataDir))
             {
                 options.Encryption.MasterKey = Sodium.GenerateRandomBuffer((int)Sodium.crypto_aead_xchacha20poly1305_ietf_keybytes());
 
@@ -69,7 +69,7 @@ namespace FastTests.Sparrow
         [InlineDataWithRandomSeed]
         public unsafe void WriteSeekAndReadInTempCryptoStream(int seed)
         {
-            using (var options = StorageEnvironmentOptions.ForPath(DataDir))
+            using (var options = StorageEnvironmentOptions.ForPathForTests(DataDir))
             using (var file = SafeFileStream.Create(Path.Combine(DataDir, "EncryptedTempFile"), FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose))
             using (var stream = new TempCryptoStream(file))
             {
@@ -114,7 +114,7 @@ namespace FastTests.Sparrow
         [RavenMultiplatformFact(RavenTestCategory.Voron | RavenTestCategory.Encryption, RavenPlatform.Windows | RavenPlatform.Linux)]
         public unsafe void StreamsTempFile_With_Encryption_ShouldNotThrow_When_NotAllStreamsWereRead()
         {
-            using (var options = StorageEnvironmentOptions.ForPath(DataDir))
+            using (var options = StorageEnvironmentOptions.ForPathForTests(DataDir))
             {
                 options.Encryption.MasterKey = Sodium.GenerateRandomBuffer((int)Sodium.crypto_aead_xchacha20poly1305_ietf_keybytes());
                 using (var environment = new StorageEnvironment(options))
@@ -155,7 +155,7 @@ namespace FastTests.Sparrow
         [RavenMultiplatformFact(RavenTestCategory.Voron | RavenTestCategory.Encryption, RavenPlatform.Windows | RavenPlatform.Linux)]
         public unsafe void StreamsTempFile_With_Encryption_ShouldThrow_When_SeekAndWrite_AreMixed_Without_ExecutingReset()
         {
-            using (var options = StorageEnvironmentOptions.ForPath(DataDir))
+            using (var options = StorageEnvironmentOptions.ForPathForTests(DataDir))
             {
                 options.Encryption.MasterKey = Sodium.GenerateRandomBuffer((int)Sodium.crypto_aead_xchacha20poly1305_ietf_keybytes());
                 using (var environment = new StorageEnvironment(options))
@@ -193,7 +193,7 @@ namespace FastTests.Sparrow
         [RavenMultiplatformFact(RavenTestCategory.Voron | RavenTestCategory.Encryption, RavenPlatform.Windows | RavenPlatform.Linux)]
         public unsafe void RavenDB_15975()
         {
-            using (var options = StorageEnvironmentOptions.ForPath(DataDir))
+            using (var options = StorageEnvironmentOptions.ForPathForTests(DataDir))
             {
                 options.Encryption.MasterKey = Sodium.GenerateRandomBuffer((int)Sodium.crypto_aead_xchacha20poly1305_ietf_keybytes());
 
@@ -235,7 +235,7 @@ namespace FastTests.Sparrow
         [RavenMultiplatformFact(RavenTestCategory.Encryption | RavenTestCategory.Voron, RavenPlatform.Windows | RavenPlatform.Linux)]
         public unsafe void RavenDB_159751()
         {
-            using (var options = StorageEnvironmentOptions.ForPath(DataDir))
+            using (var options = StorageEnvironmentOptions.ForPathForTests(DataDir))
             {
                 options.Encryption.MasterKey = Sodium.GenerateRandomBuffer((int)Sodium.crypto_aead_xchacha20poly1305_ietf_keybytes());
 

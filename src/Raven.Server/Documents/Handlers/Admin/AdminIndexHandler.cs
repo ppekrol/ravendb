@@ -249,8 +249,8 @@ namespace Raven.Server.Documents.Handlers.Admin
                         }
                         catch (Exception e)
                         {
-                            if (Logger.IsOperationsEnabled)
-                                Logger.Operations("Optimize process failed", e);
+                            if (Logger.IsErrorEnabled)
+                                Logger.Error(e, "Optimize process failed");
 
                             throw;
                         }

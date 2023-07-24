@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using NLog;
 using Raven.Client.Util;
 using Raven.Server.Config;
 using Raven.Server.ServerWide;
@@ -476,7 +477,7 @@ namespace Raven.Server.Rachis
                     {
                         if (_log.IsInfoEnabled)
                         {
-                            _log.Info($"failed to generate the exception dynamically for guid {uniqueRequestId}", e);
+                            _log.Info(e, $"failed to generate the exception dynamically for guid {uniqueRequestId}");
                         }
 
                         exception = new Exception($"failed to generate the exception dynamically, but the original exception message is:" +

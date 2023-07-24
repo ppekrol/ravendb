@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Operations.TimeSeries;
 using Raven.Client.Exceptions.Commercial;
 using Raven.Client.ServerWide;
 using Raven.Server.Background;
+using Raven.Server.Documents.Expiration;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.ServerWide.Context;
@@ -25,7 +28,8 @@ namespace Raven.Server.Documents.TimeSeries
 
         private readonly TimeSpan _checkFrequency;
 
-        public TimeSeriesPolicyRunner(DocumentDatabase database, TimeSeriesConfiguration configuration) : base(database.Name, database.DatabaseShutdown)
+        public TimeSeriesPolicyRunner(DocumentDatabase database, TimeSeriesConfiguration configuration) 
+            : base(database.Name, RavenLogManager.Instance.GetLoggerForDatabase<TimeSeriesPolicyRunner>(database), database.DatabaseShutdown)
         {
             _database = database;
             Configuration = configuration;
@@ -79,9 +83,9 @@ namespace Raven.Server.Documents.TimeSeries
                         AlertType.RevisionsConfigurationNotValid, NotificationSeverity.Error, database.Name));
                 }
 
-                var logger = LoggingSource.Instance.GetLogger<TimeSeriesPolicyRunner>(database.Name);
-                if (logger.IsOperationsEnabled)
-                    logger.Operations(msg, e);
+                var logger = RavenLogManager.Instance.GetLoggerForDatabase<TimeSeriesPolicyRunner>(database);
+                if (logger.IsErrorEnabled)
+                    logger.Error(e, msg);
 
                 try
                 {
@@ -89,8 +93,8 @@ namespace Raven.Server.Documents.TimeSeries
                 }
                 catch (Exception ex)
                 {
-                    if (logger.IsOperationsEnabled)
-                        logger.Operations("Failed to dispose previous time-series policy runner", ex);
+                    if (logger.IsWarnEnabled)
+                        logger.Warn(ex, "Failed to dispose previous time-series policy runner");
                 }
 
                 return null;
@@ -299,7 +303,7 @@ namespace Raven.Server.Documents.TimeSeries
 
                         explanations?.Add($"RollupTimeSeriesCommand({now.GetDefaultRavenFormat()}, {isFirstInTopology})");
 
-                        var command = new TimeSeriesRollups.RollupTimeSeriesCommand(Configuration, now, states, isFirstInTopology);
+                        var command = new TimeSeriesRollups.RollupTimeSeriesCommand(_database.Name, Configuration, now, states, isFirstInTopology);
                         await _database.TxMerger.Enqueue(command);
                         
                         if (command.RolledUp > 0)
@@ -323,8 +327,8 @@ namespace Raven.Server.Documents.TimeSeries
             }
             catch (Exception e)
             {
-                if (Logger.IsOperationsEnabled)
-                    Logger.Operations($"Failed to roll-up time series for '{_database.Name}' which are older than {now}", e);
+                if (Logger.IsErrorEnabled)
+                    Logger.Error(e, $"Failed to roll-up time series for '{_database.Name}' which are older than {now}");
 
                 if (propagateException)
                     throw;
@@ -375,8 +379,8 @@ namespace Raven.Server.Documents.TimeSeries
             }
             catch (Exception e)
             {
-                if (Logger.IsOperationsEnabled)
-                    Logger.Operations($"Failed to execute time series retention for database '{_database.Name}'", e);
+                if (Logger.IsErrorEnabled)
+                    Logger.Error(e, $"Failed to execute time series retention for database '{_database.Name}'");
 
                 if (propagateException)
                     throw;

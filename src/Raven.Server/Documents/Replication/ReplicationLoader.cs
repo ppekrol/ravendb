@@ -500,7 +500,7 @@ namespace Raven.Server.Documents.Replication
                         instance.DocumentsReceived -= OnIncomingReceiveSucceeded;
                         instance.AttachmentStreamsReceived -= OnAttachmentStreamsReceived;
                         if (_logger.IsInfoEnabled)
-                            _logger.Info($"Pull replication Sink handler has thrown an unhandled exception. ({instance.FromToString})", e);
+                            _logger.Info(e, $"Pull replication Sink handler has thrown an unhandled exception. ({instance.FromToString})");
                     }
 
                     // if the stream closed, it is our duty to reconnect
@@ -533,7 +533,7 @@ namespace Raven.Server.Documents.Replication
             {
                 if (_logger.IsInfoEnabled)
                 {
-                    _logger.Info("you can't add two identical connections.", new InvalidOperationException("you can't add two identical connections."));
+                    _logger.Info(new InvalidOperationException("you can't add two identical connections."), "you can't add two identical connections.");
                 }
                 newIncoming.Dispose();
             }
@@ -911,18 +911,18 @@ namespace Raven.Server.Documents.Replication
                     }
                     catch (Exception e)
                     {
-                        if (_logger.IsOperationsEnabled)
+                        if (_logger.IsErrorEnabled)
                         {
-                            _logger.Operations($"Failed to start outgoing replication to {failure.Node}", e);
+                            _logger.Error(e, $"Failed to start outgoing replication to {failure.Node}");
                         }
                     }
                 }
             }
             catch (Exception e)
             {
-                if (_logger.IsOperationsEnabled)
+                if (_logger.IsErrorEnabled)
                 {
-                    _logger.Operations("Unexpected exception during ForceTryReconnectAll", e);
+                    _logger.Error(e, "Unexpected exception during ForceTryReconnectAll");
                 }
             }
             finally
@@ -994,15 +994,15 @@ namespace Raven.Server.Documents.Replication
                             switch (instance)
                             {
                                 case DatabaseOutgoingReplicationHandler outHandler:
-                                    _logger.Info($"Failed to dispose outgoing replication to {outHandler.DestinationFormatted}", e);
+                                    _logger.Info(e, $"Failed to dispose outgoing replication to {outHandler.DestinationFormatted}");
                                     break;
 
                                 case IncomingReplicationHandler inHandler:
-                                    _logger.Info($"Failed to dispose incoming replication to {inHandler.SourceFormatted}", e);
+                                    _logger.Info(e, $"Failed to dispose incoming replication to {inHandler.SourceFormatted}");
                                     break;
 
                                 default:
-                                    _logger.Info($"Failed to dispose an unknown type '{instance?.GetType().FullName}", e);
+                                    _logger.Info(e, $"Failed to dispose an unknown type '{instance?.GetType().FullName}");
                                     break;
                             }
                         }
@@ -1086,8 +1086,8 @@ namespace Raven.Server.Documents.Replication
                     }
                     catch (Exception e)
                     {
-                        if (_logger.IsOperationsEnabled)
-                            _logger.Operations($"Failed to start the outgoing connections to {newDestinations.Count} new destinations", e);
+                        if (_logger.IsErrorEnabled)
+                            _logger.Error(e, $"Failed to start the outgoing connections to {newDestinations.Count} new destinations");
                     }
                 });
             }
@@ -1182,9 +1182,9 @@ namespace Raven.Server.Documents.Replication
                             }
                             catch (Exception e)
                             {
-                                if (_logger.IsOperationsEnabled)
+                                if (_logger.IsErrorEnabled)
                                 {
-                                    _logger.Operations("Unexpected error during database deletion from replication loader", e);
+                                    _logger.Error(e, "Unexpected error during database deletion from replication loader");
                                 }
                             }
                         }
@@ -1230,8 +1230,8 @@ namespace Raven.Server.Documents.Replication
                     }
                     catch (Exception e)
                     {
-                        if (_logger.IsOperationsEnabled)
-                            _logger.Operations($"Failed to start the outgoing connections to {added.Count} new destinations", e);
+                        if (_logger.IsErrorEnabled)
+                            _logger.Error(e, $"Failed to start the outgoing connections to {added.Count} new destinations");
                     }
                 });
             }
@@ -1353,7 +1353,7 @@ namespace Raven.Server.Documents.Replication
                     }
                     else
                     {
-                        _logger.Info($"Failed to fetch tcp connection information for the destination '{node.FromString()}' , the connection will be retried later.", e);
+                        _logger.Info(e, $"Failed to fetch tcp connection information for the destination '{node.FromString()}' , the connection will be retried later.");
                     }
                 }
 
@@ -1460,7 +1460,7 @@ namespace Raven.Server.Documents.Replication
                     catch (Exception e)
                     {
                         if (_logger.IsInfoEnabled)
-                            _logger.Info($"Failed to execute {nameof(GetRemoteTaskTopologyCommand)} for {pullReplicationAsSink.Name}", e);
+                            _logger.Info(e, $"Failed to execute {nameof(GetRemoteTaskTopologyCommand)} for {pullReplicationAsSink.Name}");
 
                         // failed to connect, will retry later
                         throw;
@@ -1562,7 +1562,7 @@ namespace Raven.Server.Documents.Replication
                 instance.AttachmentStreamsReceived -= OnAttachmentStreamsReceived;
 
                 if (_logger.IsInfoEnabled)
-                    _logger.Info($"Incoming replication handler has thrown an unhandled exception. ({instance.FromToString})", e);
+                    _logger.Info(e, $"Incoming replication handler has thrown an unhandled exception. ({instance.FromToString})");
             }
         }
 
@@ -1590,7 +1590,7 @@ namespace Raven.Server.Documents.Replication
                 failureInfo.LastHeartbeatTicks = instance.LastHeartbeatTicks;
 
                 if (_logger.IsInfoEnabled)
-                    _logger.Info($"Document replication connection ({instance.Node}) failed {failureInfo.RetriesCount} times, the connection will be retried on {failureInfo.RetryOn}.", e);
+                    _logger.Info(e, $"Document replication connection ({instance.Node}) failed {failureInfo.RetriesCount} times, the connection will be retried on {failureInfo.RetryOn}.");
 
                 _reconnectQueue.Add(failureInfo);
             }
@@ -1768,7 +1768,7 @@ namespace Raven.Server.Documents.Replication
                 TombstoneCleaner.AssignTombstonesToDisabledConfigs(dict, rawDatabase?.ExternalReplications, tombstoneCollections);
                 TombstoneCleaner.AssignTombstonesToDisabledConfigs(dict, rawDatabase?.HubPullReplications, tombstoneCollections);
                 TombstoneCleaner.AssignTombstonesToDisabledConfigs(dict, rawDatabase?.SinkPullReplications, tombstoneCollections);
-                        }
+            }
 
             return dict;
         }
@@ -1809,9 +1809,9 @@ namespace Raven.Server.Documents.Replication
                 catch (OperationCanceledException e)
                 {
                     if (_logger.IsInfoEnabled)
-                        _logger.Info($"Get exception while trying to get write assurance on a database with {numberOfReplicasToWaitFor} servers. " +
+                        _logger.Info(e, $"Get exception while trying to get write assurance on a database with {numberOfReplicasToWaitFor} servers. " +
                                   $"Written so far to {past} servers only. " +
-                                  $"LastChangeVector is: {lastChangeVector}.", e);
+                                  $"LastChangeVector is: {lastChangeVector}.");
                     return ReplicatedPastInternalDestinations(context, internalDestinations, lastChangeVector);
                 }
             }

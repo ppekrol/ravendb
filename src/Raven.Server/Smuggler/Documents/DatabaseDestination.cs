@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Attachments;
 using Raven.Client.Documents.Operations.Attachments;
 using Raven.Client.Documents.Operations.Counters;
@@ -19,6 +19,7 @@ using Raven.Server.Documents.Handlers;
 using Raven.Server.Documents.PeriodicBackup;
 using Raven.Server.Documents.Replication.ReplicationItems;
 using Raven.Server.Documents.TransactionMerger.Commands;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Smuggler.Documents.Actions;
 using Raven.Server.Smuggler.Documents.Data;
@@ -50,7 +51,7 @@ namespace Raven.Server.Smuggler.Documents
         {
             _database = database;
             _token = token;
-            _log = LoggingSource.Instance.GetLogger<DatabaseDestination>(database.Name);
+            _log = RavenLogManager.Instance.GetLoggerForDatabase<DatabaseDestination>(database);
             _duplicateDocsHandler = new DuplicateDocsHandler(_database);
         }
 
@@ -922,7 +923,7 @@ namespace Raven.Server.Smuggler.Documents
 
             public MergedBatchPutCommand ToCommand(DocumentsOperationContext context, DocumentDatabase database)
             {
-                var log = LoggingSource.Instance.GetLogger<DatabaseDestination>(database.Name);
+                var log = RavenLogManager.Instance.GetLoggerForDatabase<MergedBatchPutCommandDto>(database);
                 var command = new MergedBatchPutCommand(database, BuildType, log)
                 {
                     IsRevision = IsRevision
@@ -1074,7 +1075,7 @@ namespace Raven.Server.Smuggler.Documents
 
                 public MergedBatchFixDocumentMetadataCommand ToCommand(DocumentsOperationContext context, DocumentDatabase database)
                 {
-                    var log = LoggingSource.Instance.GetLogger<DatabaseDestination>(database.Name);
+                    var log = RavenLogManager.Instance.GetLoggerForDatabase<MergedBatchFixDocumentMetadataCommandDto>(database);
                     var command = new MergedBatchFixDocumentMetadataCommand(database, log);
 
                     foreach (var id in Ids)
@@ -1157,7 +1158,7 @@ namespace Raven.Server.Smuggler.Documents
 
             public MergedBatchDeleteRevisionCommand ToCommand(DocumentsOperationContext context, DocumentDatabase database)
             {
-                var log = LoggingSource.Instance.GetLogger<DatabaseDestination>(database.Name);
+                var log = RavenLogManager.Instance.GetLoggerForDatabase<MergedBatchDeleteRevisionCommandDto>(database);
                 var command = new MergedBatchDeleteRevisionCommand(database, log);
 
                 foreach (var id in Ids)

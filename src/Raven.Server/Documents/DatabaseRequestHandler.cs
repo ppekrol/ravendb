@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client;
 using Raven.Client.Http;
 using Raven.Client.ServerWide;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
@@ -28,7 +30,7 @@ namespace Raven.Server.Documents
         {
             Database = context.Database;
             ContextPool = Database.DocumentsStorage.ContextPool;
-            Logger = LoggingSource.Instance.GetLogger(Database.Name, GetType().FullName);
+            Logger = RavenLogManager.Instance.GetLoggerForDatabase(GetType(), Database);
 
             base.Init(context);
         }

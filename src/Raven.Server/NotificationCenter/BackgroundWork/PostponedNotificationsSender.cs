@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Util;
 using Raven.Server.Background;
 using Raven.Server.NotificationCenter.Notifications;
@@ -17,8 +18,8 @@ namespace Raven.Server.NotificationCenter.BackgroundWork
         private AsyncManualResetEvent _event;
 
         public PostponedNotificationsSender(string resourceName, NotificationsStorage notificationsStorage,
-            ConcurrentSet<ConnectedWatcher> watchers, CancellationToken shutdown)
-            : base(resourceName, shutdown)
+            ConcurrentSet<ConnectedWatcher> watchers, Logger logger,  CancellationToken shutdown)
+            : base(resourceName, logger, shutdown)
         {
             _notificationsStorage = notificationsStorage;
             _watchers = watchers;

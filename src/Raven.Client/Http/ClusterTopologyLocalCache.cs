@@ -2,8 +2,10 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Json.Serialization;
+using Raven.Client.Logging;
 using Sparrow;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
@@ -14,7 +16,7 @@ namespace Raven.Client.Http
 {
     internal static class ClusterTopologyLocalCache
     {
-        private static readonly Logger _logger = LoggingSource.Instance.GetLogger("Client", typeof(ClusterTopologyLocalCache).FullName);
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForClient(typeof(ClusterTopologyLocalCache));
 
         private static void Clear(string path)
         {
@@ -27,8 +29,8 @@ namespace Raven.Client.Http
             }
             catch (Exception e)
             {
-                if (_logger.IsInfoEnabled)
-                    _logger.Info("Could not clear the persisted cluster topology", e);
+                if (Logger.IsWarnEnabled)
+                    Logger.Warn(e, "Could not clear the persisted cluster topology");
             }
         }
 
@@ -56,8 +58,8 @@ namespace Raven.Client.Http
             }
             catch (Exception e)
             {
-                if (_logger.IsInfoEnabled)
-                    _logger.Info("Could not understand the persisted cluster topology", e);
+                if (Logger.IsWarnEnabled)
+                    Logger.Warn(e, "Could not understand the persisted cluster topology");
                 return null;
             }
         }
@@ -94,8 +96,8 @@ namespace Raven.Client.Http
             }
             catch (Exception e)
             {
-                if (_logger.IsInfoEnabled)
-                    _logger.Info("Could not persist the cluster topology", e);
+                if (Logger.IsWarnEnabled)
+                    Logger.Warn(e, "Could not persist the cluster topology");
             }
         }
     }

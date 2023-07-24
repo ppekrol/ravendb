@@ -1,21 +1,17 @@
 using System;
-using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text;
-using Sparrow.Server.Compression;
 using Voron;
 using Voron.Impl;
 using Voron.Data.Containers;
 using Sparrow;
 using System.Runtime.Intrinsics.X86;
+using Corax.Global;
 using Corax.Mappings;
 using Corax.Pipeline;
 using Corax.Queries;
 using Corax.Utils;
-using Sparrow.Compression;
 using Sparrow.Server;
 using Voron.Data;
 using Voron.Data.BTrees;
@@ -105,7 +101,7 @@ public sealed unsafe partial class IndexSearcher : IDisposable
             _fieldMapping = fieldsMapping;
         }
     }
-    
+
     public EntryTermsReader GetEntryTermsReader(long id, ref Page p)
     {
         if (_entryIdToLocation.TryGetValue(id, out var loc) == false)
@@ -114,7 +110,7 @@ public sealed unsafe partial class IndexSearcher : IDisposable
         return new EntryTermsReader(_transaction.LowLevelTransaction, item.Address, item.Length, _dictionaryId);
     }
 
-
+        
     internal Slice EncodeAndApplyAnalyzer(in FieldMetadata binding, ReadOnlySpan<char> term, bool canReturnEmptySlice = false)
     {
         if (term.Length == 0 || term.SequenceEqual(Constants.EmptyStringCharSpan.Span))
@@ -420,7 +416,7 @@ public sealed unsafe partial class IndexSearcher : IDisposable
     {
         using var _ = Slice.From(Allocator, fieldName, out var slice);
         return HasMultipleTermsInField(slice);
-    }
+}
 
     private bool HasMultipleTermsInField(Slice fieldName)
     {

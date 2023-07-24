@@ -1,8 +1,8 @@
 ﻿using System;
-using Sparrow.Global;
 using System.Runtime.InteropServices;
 using Sparrow.Binary;
 using System.Runtime.CompilerServices;
+using Sparrow.Global;
 
 namespace Sparrow.Compression
 {

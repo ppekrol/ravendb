@@ -2,9 +2,8 @@
 using System.Diagnostics.CodeAnalysis;
 using Sparrow;
 using Voron.Data.BTrees;
-using Voron.Global;
 using Voron.Impl;
-using Voron.Impl.Paging;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Data.Compression
 {

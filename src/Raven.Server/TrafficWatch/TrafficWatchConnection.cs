@@ -4,7 +4,9 @@ using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Changes;
+using Raven.Server.Logging;
 using Raven.Server.Utils;
 using Sparrow.Json;
 using Sparrow.Logging;
@@ -12,10 +14,9 @@ using Sparrow.Server;
 
 namespace Raven.Server.TrafficWatch
 {
-
-    internal class TrafficWatchConnection
+    internal sealed class TrafficWatchConnection
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<TrafficWatchConnection>("Server");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<TrafficWatchConnection>();
 
         private readonly WebSocket _webSocket;
         private readonly JsonOperationContext _context;
@@ -81,7 +82,7 @@ namespace Raven.Server.TrafficWatch
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Error when handling web socket connection", e);
+                    Logger.Info(e, "Error when handling web socket connection");
             }
             finally
             {

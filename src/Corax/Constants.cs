@@ -2,7 +2,7 @@ using System;
 using Sparrow.Server;
 using Voron;
 
-namespace Corax
+namespace Corax.Global
 {
     public static class Constants
     {

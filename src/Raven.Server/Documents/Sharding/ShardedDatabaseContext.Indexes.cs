@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using NLog;
 using Raven.Client.Documents.Indexes;
 using Raven.Server.Documents.Indexes;
 using Raven.Server.Documents.Indexes.Analysis;
@@ -8,6 +9,7 @@ using Raven.Server.Documents.Indexes.MapReduce.Static;
 using Raven.Server.Documents.Indexes.Sharding;
 using Raven.Server.Documents.Indexes.Static;
 using Raven.Server.Documents.Patch;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide;
 using Sparrow.Logging;
 using Sparrow.Utils;
@@ -43,7 +45,7 @@ public partial class ShardedDatabaseContext
         public ShardedIndexesContext([NotNull] ShardedDatabaseContext context, ServerStore serverStore)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
-            _logger = LoggingSource.Instance.GetLogger<ShardedIndexesContext>(context.DatabaseName);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<ShardedIndexesContext>(context);
 
             LockMode = new ShardedIndexLockModeController(context, serverStore);
             Priority = new ShardedIndexPriorityController(context, serverStore);
@@ -154,7 +156,7 @@ public partial class ShardedDatabaseContext
             {
                 _context.RachisLogIndexNotifications.NotifyListenersAbout(index, e);
                 if (_logger.IsInfoEnabled)
-                    _logger.Info($"Could not update analyzers", e);
+                    _logger.Info(e, $"Could not update analyzers");
             }
         }
     }

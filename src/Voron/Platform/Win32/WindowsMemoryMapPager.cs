@@ -1,22 +1,24 @@
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
+using NLog;
 using Sparrow;
 using Sparrow.Logging;
 using Sparrow.Server.Meters;
 using Sparrow.Server.Platform;
 using Sparrow.Server.Platform.Win32;
 using Sparrow.Utils;
-using Voron.Global;
 using Voron.Impl;
+using Voron.Impl.Journal;
 using Voron.Impl.Paging;
+using Voron.Logging;
 using Voron.Util.Settings;
 using static Voron.Platform.Win32.Win32NativeMethods;
+using Constants = Voron.Global.Constants;
 using NativeMemory = Sparrow.Utils.NativeMemory;
 
 namespace Voron.Platform.Win32
@@ -53,12 +55,11 @@ namespace Voron.Platform.Win32
             Win32NativeFileAttributes fileAttributes = Win32NativeFileAttributes.Normal,
             Win32NativeFileAccess access = Win32NativeFileAccess.GenericRead | Win32NativeFileAccess.GenericWrite,
             bool usePageProtection = false)
-            : base(options, !fileAttributes.HasFlag(Win32NativeFileAttributes.Temporary), usePageProtection)
+            : base(RavenLogManager.Instance.GetLoggerForVoron<WindowsMemoryMapPager>(options, file?.FullPath), options, !fileAttributes.HasFlag(Win32NativeFileAttributes.Temporary), usePageProtection)
         {
-            SYSTEM_INFO systemInfo;
-            GetSystemInfo(out systemInfo);
+            GetSystemInfo(out SYSTEM_INFO _);
             FileName = file;
-            _logger = LoggingSource.Instance.GetLogger<StorageEnvironment>($"Pager-{file}");
+            _logger = RavenLogManager.Instance.GetLoggerForVoron<WindowsMemoryMapPager>(options, file?.ToString());
 
             _access = access;
             _copyOnWriteMode = Options.CopyOnWriteMode && FileName.FullPath.EndsWith(Constants.DatabaseFilename);
@@ -96,14 +97,14 @@ namespace Voron.Platform.Win32
                     if (PhysicalDrivePerMountCache.TryGetValue(drive, out UniquePhysicalDriveId) == false)
                         UniquePhysicalDriveId = GetPhysicalDriveId(drive);
 
-                    if (_logger.IsInfoEnabled)
-                        _logger.Info($"Physical drive '{drive}' unique id = '{UniquePhysicalDriveId}' for file '{file}'");
+                    if (_logger.IsDebugEnabled)
+                        _logger.Debug($"Physical drive '{drive}' unique id = '{UniquePhysicalDriveId}' for file '{file}'");
                 }
                 catch (Exception ex)
                 {
                     UniquePhysicalDriveId = 0;
-                    if (_logger.IsInfoEnabled)
-                        _logger.Info($"Failed to determine physical drive Id for drive letter '{drive}', file='{file}'", ex);
+                    if (_logger.IsWarnEnabled)
+                        _logger.Warn(ex, $"Failed to determine physical drive Id for drive letter '{drive}', file='{file}'");
                 }
 
                 var streamAccessType = _access == Win32NativeFileAccess.GenericRead
@@ -167,7 +168,7 @@ namespace Voron.Platform.Win32
                     GlobalPrefetchingBehavior.GlobalPrefetcher.Value.CommandQueue.TryAdd(command, 0);
                 }
             }
-           
+
             return base.AcquirePagePointer(tx, pageNumber, state);
         }
 

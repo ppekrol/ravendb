@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using NLog;
 using Raven.Client;
-using Raven.Client.ServerWide.Sharding;
 using Raven.Client.ServerWide.Tcp;
 using Raven.Client.Util;
 using Raven.Server.Documents;
@@ -16,10 +16,12 @@ using Raven.Server.Utils;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Json.Sync;
-using Sparrow.Logging;
 using Index = Raven.Server.Documents.Indexes.Index;
 using Sparrow.LowMemory;
 using Sparrow.Server.Utils;
+using Raven.Server.Logging;
+using Sparrow.Logging;
+using Sparrow.Server.Logging;
 
 namespace Raven.Server.ServerWide.Maintenance
 {
@@ -47,8 +49,8 @@ namespace Raven.Server.ServerWide.Maintenance
             _cts = CancellationTokenSource.CreateLinkedTokenSource(externalToken);
             _token = _cts.Token;
             _server = serverStore;
-            _logger = LoggingSource.Instance.GetLogger<ClusterMaintenanceWorker>(serverStore.NodeTag);
-            _name = $"Heartbeats worker connection to leader {leader} in term {term}";
+            _name = $"Heartbeats worker connection from {serverStore.NodeTag} to leader {leader} in term {term}";
+            _logger = RavenLogManager.Instance.GetLoggerForCluster<ClusterMaintenanceWorker>(LoggingComponent.Name(_name));
             _temporaryDirtyMemoryAllowedPercentage = _server.Server.ServerStore.Configuration.Memory.TemporaryDirtyMemoryAllowedPercentage;
             _leader = leader;
             _term = term;
@@ -78,7 +80,7 @@ namespace Raven.Server.ServerWide.Maintenance
                 {
                     if (_logger.IsInfoEnabled)
                     {
-                        _logger.Info($"Exception occurred while collecting info from {_server.NodeTag}. Task is closed.", e);
+                        _logger.Info(e, $"Exception occurred while collecting info from {_server.NodeTag}. Task is closed.");
                     }
                     // we don't want to crash the process so we don't propagate this exception.
                 }
@@ -127,7 +129,7 @@ namespace Raven.Server.ServerWide.Maintenance
                     }
                     if (_logger.IsInfoEnabled)
                     {
-                        _logger.Info($"Exception occurred while collecting info from {_server.NodeTag}", e);
+                        _logger.Info(e, $"Exception occurred while collecting info from {_server.NodeTag}");
                     }
                 }
                 finally

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using JetBrains.Annotations;
+using NLog;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Smuggler;
 using Raven.Client.ServerWide;

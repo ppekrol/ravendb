@@ -10,10 +10,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Documents.Operations.Indexes;
 using Raven.Client.Exceptions.Documents.Compilation;
 using Raven.Client.Extensions;
+using Raven.Client.Logging;
 using Raven.Client.Util;
 using Sparrow.Logging;
 
@@ -24,7 +26,7 @@ namespace Raven.Client.Documents.Indexes
     /// </summary>
     public static class IndexCreation
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger("Client", typeof(IndexCreation).FullName);
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForClient(typeof(IndexCreation));
 
         /// <summary>
         /// Creates the indexes found in the specified assembly.
@@ -67,9 +69,9 @@ namespace Raven.Client.Documents.Indexes
             // For old servers that don't have the new endpoint for executing multiple indexes
             catch (Exception ex)
             {
-                if (Logger.IsInfoEnabled)
+                if (Logger.IsDebugEnabled)
                 {
-                    Logger.Info("Could not create indexes in one shot (maybe using older version of RavenDB ?)", ex);
+                    Logger.Debug(ex, "Could not create indexes in one shot (maybe using older version of RavenDB ?)");
                 }
 
                 foreach (var task in indexesList)

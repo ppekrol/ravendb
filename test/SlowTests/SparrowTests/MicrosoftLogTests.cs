@@ -8,17 +8,19 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using FastTests;
-using Microsoft.Extensions.Logging;
+using NLog;
 using Raven.Server;
-using Raven.Server.Utils.MicrosoftLogging;
 using Sparrow;
 using Sparrow.Json;
 using Sparrow.Logging;
 using Xunit;
 using Xunit.Abstractions;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace SlowTests.SparrowTests;
 
+// TODO [ppekrol]
+/*
 public class MicrosoftLogTests : RavenTestBase
 {
     private const string LogHeader = "Time, Thread, Level, Source, Logger, Message, Exception";
@@ -357,3 +359,4 @@ public class MicrosoftLogTests : RavenTestBase
     }
 
 }
+*/

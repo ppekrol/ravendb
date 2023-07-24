@@ -2,9 +2,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Raven.Server.Background;
+using Raven.Server.Dashboard.Cluster;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter;
 using Raven.Server.Utils;
 using Sparrow.Collections;
+using Sparrow.Logging;
 
 namespace Raven.Server.Dashboard;
 
@@ -17,7 +20,7 @@ public class ThreadsInfoNotificationSender : BackgroundWorkBase
 
     public ThreadsInfoNotificationSender(string resourceName,
         ConcurrentSet<ConnectedWatcher> watchers, TimeSpan notificationsThrottle, CancellationToken shutdown)
-        : base(resourceName, shutdown)
+        : base(resourceName, RavenLogManager.Instance.GetLoggerForServer<ThreadsInfoNotificationSender>(), shutdown)
     {
         _watchers = watchers;
         _notificationsThrottle = notificationsThrottle;

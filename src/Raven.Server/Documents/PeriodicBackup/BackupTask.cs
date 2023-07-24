@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Operations.Backups;
@@ -230,8 +231,8 @@ namespace Raven.Server.Documents.PeriodicBackup
                     At = DateTime.UtcNow
                 };
 
-                if (_logger.IsOperationsEnabled)
-                    _logger.Operations(message, e);
+                if (_logger.IsErrorEnabled)
+                    _logger.Error(e, message);
 
                 _database.NotificationCenter.Add(AlertRaised.Create(
                     _database.Name,
@@ -675,7 +676,7 @@ namespace Raven.Server.Documents.PeriodicBackup
             catch (Exception e)
             {
                 if (_logger.IsInfoEnabled)
-                    _logger.Info($"Failed to delete file: {path}", e);
+                    _logger.Info(e, $"Failed to delete file: {path}");
             }
         }
 

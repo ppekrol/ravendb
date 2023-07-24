@@ -5,13 +5,13 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Corax;
 using Corax.Mappings;
+using NLog;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Linq;
 using Raven.Server.Documents.Indexes.Static;
 using Raven.Server.Exceptions;
 using Raven.Server.Utils;
 using Sparrow.Json;
-using Sparrow.Logging;
 using Sparrow.Server;
 using Voron;
 using Voron.Impl;
@@ -181,8 +181,8 @@ namespace Raven.Server.Documents.Indexes.Persistence.Corax
         {
             DeleteByField(Constants.Documents.Indexing.Fields.ReduceKeyHashFieldName, reduceKeyHash, stats);
             
-            if (_logger.IsInfoEnabled)
-                _logger.Info($"Deleted document for '{_indexName}'. Reduce key hash: {reduceKeyHash}.");
+            if (_logger.IsDebugEnabled)
+                _logger.Debug($"Deleted document for '{_indexName}'. Reduce key hash: {reduceKeyHash}.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

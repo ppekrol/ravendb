@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using BenchmarkDotNet.Analysers;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Environments;
-using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Validators;
 using Sparrow;
 using Sparrow.Server;
 using Sparrow.Threading;
 using Sparrow.Utils;
-using Voron.Global;
+using Constants = Voron.Global.Constants;
 using Platform = BenchmarkDotNet.Environments.Platform;
 
 namespace Micro.Benchmark.Benchmarks.LZ4

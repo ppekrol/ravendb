@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using NLog;
 using Raven.Server.Config.Categories;
 using Raven.Server.Documents.Indexes.Persistence;
-using Raven.Server.Documents.Indexes.Persistence.Lucene;
 using Raven.Server.Documents.Indexes.Static;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
 using Sparrow.Json;
@@ -87,8 +88,7 @@ namespace Raven.Server.Documents.Indexes.Workers
             _configuration = configuration;
             _indexStorage = indexStorage;
             _referencesStorage = referencesStorage;
-            _logger = LoggingSource.Instance
-                .GetLogger<HandleReferences>(_indexStorage.DocumentDatabase.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForIndex(GetType(), index);
         }
 
         public string Name => "References";
@@ -273,7 +273,7 @@ namespace Raven.Server.Documents.Indexes.Workers
 
                                                     collectionStats.RecordMapReferenceError();
                                                     if (_logger.IsInfoEnabled)
-                                                        _logger.Info($"Failed to execute mapping function on '{current.Id}' for '{_index.Name}'.", e);
+                                                        _logger.Info(e, $"Failed to execute mapping function on '{current.Id}' for '{_index.Name}'.");
 
                                                     collectionStats.AddMapReferenceError(current.Id,
                                                         $"Failed to execute mapping function on {current.Id}. Exception: {e}");
@@ -336,8 +336,8 @@ namespace Raven.Server.Documents.Indexes.Workers
 
                         moreWorkFound = true;
 
-                        if (_logger.IsInfoEnabled)
-                            _logger.Info($"Executed handle references for '{_index.Name}' index and '{referencedCollection.Name}' collection. " +
+                        if (_logger.IsDebugEnabled)
+                            _logger.Debug($"Executed handle references for '{_index.Name}' index and '{referencedCollection.Name}' collection. " +
                                          $"Got {resultsCount:#,#;;0} map results in {collectionStats.Duration.TotalMilliseconds:#,#;;0} ms.");
 
                         switch (actionType)

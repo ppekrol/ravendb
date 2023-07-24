@@ -1,10 +1,10 @@
 ﻿using System;
 using Sparrow;
-using Voron.Global;
 using Voron.Impl;
 using Sparrow.Binary;
 using Sparrow.Compression;
 using Voron.Data.Compression;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Data.BTrees
 {
@@ -26,7 +26,7 @@ namespace Voron.Data.BTrees
 
             var pageToCompress = page;
 
-            if (alreadyCompressed) 
+            if (alreadyCompressed)
                 pageToCompress = DecompressPage(page, usage: DecompressionUsage.Write, skipCache: false); // no need to dispose, it's going to be cached anyway
 
             using (LeafPageCompressor.TryGetCompressedTempPage(_llt, pageToCompress, out CompressionResult result, defrag: alreadyCompressed == false))

@@ -4,17 +4,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Corax.Global;
 using Corax.Mappings;
 using Corax.Pipeline;
-using Corax.Utils;
 using Sparrow;
 using Sparrow.Collections;
-using Sparrow.Server;
 using Sparrow.Server.Strings;
 
 using Voron;
-using Voron.Data.CompactTrees;
-using static Corax.Constants;
 
 namespace Corax.Queries
 {
@@ -178,7 +175,7 @@ namespace Corax.Queries
                 Slice.From(allocator, $"__Suggestion_{fieldId}", out var treeName);
                 var tree = provider._searcher.Transaction.CompactTreeFor(treeName);
 
-                using var gramTable = new SuggestionsNGramTable(Suggestions.DefaultNGramSize);
+                using var gramTable = new SuggestionsNGramTable(Constants.Suggestions.DefaultNGramSize);
                 gramTable.Generate(provider._term.AsSpan());
 
                 // We initialize the iterator and store it in the stack memory.
@@ -197,7 +194,7 @@ namespace Corax.Queries
                         if (gramKey[ngram.Length - 1] > lastByte)
                             break;
 
-                        var key = gramKey.Slice(Suggestions.DefaultNGramSize);
+                        var key = gramKey.Slice(Constants.Suggestions.DefaultNGramSize);
                         uint keyHash = Hashing.XXHash32.CalculateInline(key);
 
                         if (dictionary.TryGetValue(keyHash, out int location) == false)
@@ -244,8 +241,8 @@ namespace Corax.Queries
                     if (termKey.Length > 1 && termKey[^1] == '\0')
                         termKey = termKey.Slice(0, termKey.Length - 1);
 
-                    if (termKey.Length > Suggestions.DefaultNGramSize)
-                        termKey = termKey.Slice(Suggestions.DefaultNGramSize);
+                    if (termKey.Length > Constants.Suggestions.DefaultNGramSize)
+                        termKey = termKey.Slice(Constants.Suggestions.DefaultNGramSize);
 
                     if (termKey.Length >= auxTerms.Length)
                         break; // No enough space to put it here. 

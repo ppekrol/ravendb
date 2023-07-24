@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client;
 using Raven.Client.Documents.Changes;
 using Raven.Client.Documents.Indexes;
@@ -33,6 +34,7 @@ using Raven.Server.Documents.Indexes.Static.Counters;
 using Raven.Server.Documents.Indexes.Static.TimeSeries;
 using Raven.Server.Documents.Indexes.Test;
 using Raven.Server.Documents.Queries.Dynamic;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.ServerWide;
@@ -41,6 +43,7 @@ using Raven.Server.Utils;
 using Sparrow.Collections;
 using Sparrow.Logging;
 using Sparrow.Threading;
+using static Raven.Server.Utils.MetricCacher.Keys;
 
 namespace Raven.Server.Documents.Indexes
 {
@@ -122,7 +125,7 @@ namespace Raven.Server.Documents.Indexes
             Delete = delete;
             HasChanged = hasChanged;
             IndexReadOperationFactory = indexReadOperationFactory;
-            Logger = LoggingSource.Instance.GetLogger<IndexStore>(_documentDatabase.Name);
+            Logger = RavenLogManager.Instance.GetLoggerForDatabase<IndexStore>(_documentDatabase);
 
             var stoppedConcurrentIndexBatches = _documentDatabase.Configuration.Indexing.NumberOfConcurrentStoppedBatchesIfRunningLowOnMemory;
             StoppedConcurrentIndexBatches = new SemaphoreSlim(stoppedConcurrentIndexBatches);
@@ -186,7 +189,7 @@ namespace Raven.Server.Documents.Indexes
 
                                 _documentDatabase.RachisLogIndexNotifications.NotifyListenersAbout(raftIndex, e);
                                 if (Logger.IsInfoEnabled)
-                                    Logger.Info($"Could not start index '{index.Name}'", e);
+                                    Logger.Info(e, $"Could not start index '{index.Name}'");
                             }
                             finally
                             {
@@ -257,7 +260,7 @@ namespace Raven.Server.Documents.Indexes
             {
                 _documentDatabase.RachisLogIndexNotifications.NotifyListenersAbout(index, e);
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Could not update sorters", e);
+                    Logger.Info(e, $"Could not update sorters");
             }
         }
 
@@ -271,7 +274,7 @@ namespace Raven.Server.Documents.Indexes
             {
                 _documentDatabase.RachisLogIndexNotifications.NotifyListenersAbout(index, e);
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Could not update analyzers", e);
+                    Logger.Info(e, "Could not update analyzers");
             }
         }
 
@@ -298,7 +301,7 @@ namespace Raven.Server.Documents.Indexes
                 {
                     _documentDatabase.RachisLogIndexNotifications.NotifyListenersAbout(index, e);
                     if (Logger.IsInfoEnabled)
-                        Logger.Info($"Could not create auto index {name}", e);
+                        Logger.Info(e, $"Could not create auto index {name}");
                 }
             }
         }
@@ -459,8 +462,8 @@ namespace Raven.Server.Documents.Indexes
                     if (exception is OperationCanceledException)
                         return;
 
-                    if (Logger.IsOperationsEnabled)
-                        Logger.Operations($"Could not update static index {name}", exception);
+                    if (Logger.IsErrorEnabled)
+                        Logger.Error($"Could not update static index {name}", exception);
 
                     //If we don't have the index in memory this means that it is corrupted when trying to load it
                     //If we do have the index and it is not faulted this means that this is the replacement index that is faulty
@@ -827,7 +830,7 @@ namespace Raven.Server.Documents.Indexes
                 {
                     _documentDatabase.RachisLogIndexNotifications.NotifyListenersAbout(raftLogIndex, e);
                     if (Logger.IsInfoEnabled)
-                        Logger.Info($"Could not delete index {index.Name}", e);
+                        Logger.Info(e, $"Could not delete index {index.Name}");
                 }
             }
         }
@@ -1179,7 +1182,7 @@ namespace Raven.Server.Documents.Indexes
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Could not dispose index '{index.Name}'.", e);
+                    Logger.Info(e, $"Could not dispose index '{index.Name}'.");
             }
 
             if (raiseNotification)
@@ -1224,7 +1227,7 @@ namespace Raven.Server.Documents.Indexes
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Failed to delete the index {name} directory", e);
+                    Logger.Info(e, $"Failed to delete the index {name} directory");
                 throw;
             }
 
@@ -1711,8 +1714,8 @@ namespace Raven.Server.Documents.Indexes
 
                 var message = $"Could not open index at '{indexPath}'. Created in-memory, fake instance: {faultyIndex.Name}";
 
-                if (Logger.IsOperationsEnabled)
-                    Logger.Operations(message, e);
+                if (Logger.IsErrorEnabled)
+                    Logger.Error(e, message);
 
                 _indexes.Add(faultyIndex);
 
@@ -1727,8 +1730,8 @@ namespace Raven.Server.Documents.Indexes
                             }
                             catch (Exception ex)
                             {
-                                if (Logger.IsOperationsEnabled)
-                                    Logger.Operations($"Failed to reset and start faulty index '{faultyIndex.Name}' at '{indexPath}'", ex);
+                                if (Logger.IsErrorEnabled)
+                                    Logger.Error(ex, $"Failed to reset and start faulty index '{faultyIndex.Name}' at '{indexPath}'");
 
                                 // make sure that if this fail, faulty index will be on the list of indexes
                                 _indexes.Add(faultyIndex);
@@ -1875,8 +1878,8 @@ namespace Raven.Server.Documents.Indexes
                 }
                 catch (Exception e)
                 {
-                    if (Logger.IsOperationsEnabled)
-                        Logger.Operations($"Could not create extended index '{definition.Name}'.", e);
+                    if (Logger.IsErrorEnabled)
+                        Logger.Error(e, $"Could not create extended index '{definition.Name}'.");
 
                     moreWork = true;
                 }
@@ -1892,8 +1895,8 @@ namespace Raven.Server.Documents.Indexes
                 }
                 catch (Exception e)
                 {
-                    if (Logger.IsOperationsEnabled)
-                        Logger.Operations($"Could not delete surpassed index '{indexName}'.", e);
+                    if (Logger.IsErrorEnabled)
+                        Logger.Error(e, $"Could not delete surpassed index '{indexName}'.");
 
                     moreWork = true;
                 }
@@ -1989,8 +1992,8 @@ namespace Raven.Server.Documents.Indexes
                     }
                     catch (Exception e)
                     {
-                        if (Logger.IsOperationsEnabled)
-                            Logger.Operations($"Failed to rename index '{replacementIndexName}' to '{oldIndexName}' during replacement. Retrying ... ", e);
+                        if (Logger.IsErrorEnabled)
+                            Logger.Error(e, $"Failed to rename index '{replacementIndexName}' to '{oldIndexName}' during replacement. Retrying ... ");
 
                         if (_documentDatabase.DatabaseShutdown.IsCancellationRequested)
                             throw; // nothing we can do here
@@ -2026,16 +2029,16 @@ namespace Raven.Server.Documents.Indexes
                             }
                             catch (Exception e)
                             {
-                                if (Logger.IsOperationsEnabled)
-                                    Logger.Operations($"Failed to dispose old index '{oldIndexName}' on its deletion during replacement.", e);
+                                if (Logger.IsErrorEnabled)
+                                    Logger.Error(e, $"Failed to dispose old index '{oldIndexName}' on its deletion during replacement.");
                             }
 
                             throw;
                         }
                         catch (Exception e)
                         {
-                            if (Logger.IsOperationsEnabled)
-                                Logger.Operations($"Failed to delete old index '{oldIndexName}' during replacement. Retrying ... ", e);
+                            if (Logger.IsErrorEnabled)
+                                Logger.Error(e, $"Failed to delete old index '{oldIndexName}' during replacement. Retrying ... ");
 
                             if (_documentDatabase.DatabaseShutdown.IsCancellationRequested)
                                 throw; // nothing we can do here
@@ -2081,8 +2084,8 @@ namespace Raven.Server.Documents.Indexes
                         }
                         catch (Exception e)
                         {
-                            if (Logger.IsOperationsEnabled)
-                                Logger.Operations($"Failed to move directory of replacements index '{newIndex.Name}' during replacement. Retrying ... ", e);
+                            if (Logger.IsErrorEnabled)
+                                Logger.Error($"Failed to move directory of replacements index '{newIndex.Name}' during replacement. Retrying ... ", e);
 
                             if (_documentDatabase.DatabaseShutdown.IsCancellationRequested)
                                 throw; // nothing we can do here
@@ -2120,8 +2123,8 @@ namespace Raven.Server.Documents.Indexes
                 }
                 catch (Exception e)
                 {
-                    if (Logger.IsOperationsEnabled)
-                        Logger.Operations("Error during index replacement in the new index stop before renaming", e);
+                    if (Logger.IsErrorEnabled)
+                        Logger.Error(e, "Error during index replacement in the new index stop before renaming");
 
                     throw;
                 }

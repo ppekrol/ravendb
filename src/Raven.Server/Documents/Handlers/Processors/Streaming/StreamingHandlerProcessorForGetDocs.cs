@@ -3,14 +3,15 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Raven.Client;
 using Raven.Server.Documents.Handlers.Streaming;
 using Raven.Server.Extensions;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
 using Raven.Server.Utils.Enumerators;
+using Sparrow;
 using Sparrow.Json;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Handlers.Processors.Streaming
 {

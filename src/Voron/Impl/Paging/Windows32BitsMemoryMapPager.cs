@@ -11,10 +11,13 @@ using System.Threading;
 using Microsoft.Win32.SafeHandles;
 using Sparrow;
 using Sparrow.Collections;
+using Sparrow.Logging;
 using Sparrow.Platform;
 using Sparrow.Server.Meters;
 using Sparrow.Utils;
 using Voron.Data;
+using Voron.Logging;
+using Voron.Platform.Posix;
 using Voron.Platform.Win32;
 using Voron.Util.Settings;
 using static Voron.Platform.Win32.Win32MemoryMapNativeMethods;
@@ -67,11 +70,13 @@ namespace Voron.Impl.Paging
         private IntPtr _hFileMappingObject;
         private long _fileStreamLength;
 
-        public Windows32BitsMemoryMapPager(StorageEnvironmentOptions options, VoronPathSetting file, long? initialFileSize = null,
+        public Windows32BitsMemoryMapPager(
+            StorageEnvironmentOptions options,
+            VoronPathSetting file,
+            long? initialFileSize = null,
             Win32NativeFileAttributes fileAttributes = Win32NativeFileAttributes.Normal,
             Win32NativeFileAccess access = Win32NativeFileAccess.GenericRead | Win32NativeFileAccess.GenericWrite,
-            bool usePageProtection = false)
-            : base(options, canPrefetchAhead: false, usePageProtection: usePageProtection)
+            bool usePageProtection = false) : base(RavenLogManager.Instance.GetLoggerForVoron<Windows32BitsMemoryMapPager>(options, file?.FullPath), options, canPrefetchAhead: false, usePageProtection: usePageProtection)
         {
             _memoryMappedFileAccess = access == Win32NativeFileAccess.GenericRead
               ? MemoryMappedFileAccess.Read
@@ -276,7 +281,7 @@ namespace Voron.Impl.Paging
             catch (Exception e)
             {
                 throw new InvalidOperationException("Failed to unlock memory in 32-bit mode", e);
-            }            
+            }
         }
 
         public override I4KbBatchWrites BatchWriter()
@@ -284,9 +289,9 @@ namespace Voron.Impl.Paging
             return new Windows32Bit4KbBatchWrites(this);
         }
 
-        public override void DiscardPages(long pageNumber, int numberOfPages) {}
+        public override void DiscardPages(long pageNumber, int numberOfPages) { }
 
-        public override void DiscardWholeFile() {}
+        public override void DiscardWholeFile() { }
 
         public override byte* AcquirePagePointerForNewPage(IPagerLevelTransactionState tx, long pageNumber, int numberOfPages, PagerState pagerState = null)
         {
@@ -345,7 +350,7 @@ namespace Voron.Impl.Paging
                     // an access denied error, but this is already handled in higher level of the code, since we aren't just
                     // handing out access to the full range we are mapping immediately.
                     if ((long)offset.Value < _fileStreamLength)
-                        size = _fileStreamLength - (long) offset.Value;
+                        size = _fileStreamLength - (long)offset.Value;
                     else
                         ThrowInvalidMappingRequested(startPage, size);
                 }
@@ -373,7 +378,7 @@ namespace Voron.Impl.Paging
                         throw new Win32Exception(
                             $"Unable to map {size / Constants.Size.Kilobyte:#,#0} kb starting at {startPage} on {FileName} (lastWin32Error={lastWin32Error})",
                             new Win32Exception(lastWin32Error));
-                    }                    
+                    }
                 }
 
                 if (LockMemory && size > 0)

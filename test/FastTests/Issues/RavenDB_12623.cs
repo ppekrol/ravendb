@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using NLog;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Json;
 using Voron;
@@ -17,8 +18,8 @@ namespace FastTests.Issues
         [Fact]
         public void ContextPoolsShouldNotLeakThreadIdData()
         {            
-            var p1 = new TransactionContextPool(new StorageEnvironment(StorageEnvironmentOptions.CreateMemoryOnly()));
-            var p2 = new TransactionContextPool(new StorageEnvironment(StorageEnvironmentOptions.CreateMemoryOnly()));
+            var p1 = new TransactionContextPool(LogManager.CreateNullLogger(), new StorageEnvironment(StorageEnvironmentOptions.CreateMemoryOnlyForTests()));
+            var p2 = new TransactionContextPool(LogManager.CreateNullLogger(), new StorageEnvironment(StorageEnvironmentOptions.CreateMemoryOnlyForTests()));
 
             p1.AllocateOperationContext(out JsonOperationContext ctx);
 

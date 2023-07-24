@@ -5,6 +5,8 @@ using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
+using Raven.Server.Logging;
 using Sparrow.Json;
 using Sparrow.Logging;
 using Sparrow.Server.Collections;
@@ -19,9 +21,11 @@ namespace Raven.Server.Utils.Stats
 
         protected readonly Logger Logger;
 
-        protected LivePerformanceCollector(CancellationToken parentCts, string loggingSource)
+        protected LivePerformanceCollector(CancellationToken parentCts, string resource)
         {
-            Logger = LoggingSource.Instance.GetLogger(loggingSource, GetType().FullName);
+            Logger = resource == null 
+                ? RavenLogManager.Instance.GetLoggerForServer(GetType()) 
+                : RavenLogManager.Instance.GetLoggerForDatabase(GetType(), resource);
 
             _cts = CancellationTokenSource.CreateLinkedTokenSource(parentCts);
         }

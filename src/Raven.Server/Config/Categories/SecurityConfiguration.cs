@@ -23,29 +23,28 @@ namespace Raven.Server.Config.Categories
         [ConfigurationEntry("Security.DisableHsts", ConfigurationEntryScope.ServerWideOnly)]
         public bool DisableHsts { get; set; }
 
-        [Description("The path to a folder where RavenDB will store the access audit logs")]
         [DefaultValue(null)]
-        [ConfigurationEntry("Security.AuditLog.FolderPath", ConfigurationEntryScope.ServerWideOnly)]
+        [ConfigurationEntry("Logs.AuditLog.Path", ConfigurationEntryScope.ServerWideOnly)]
         public PathSetting AuditLogPath { get; set; }
 
-        [Description("How far back we should retain audit log entries")]
-        [DefaultValue(365 * 24)]
-        [TimeUnit(TimeUnit.Hours)]
-        [ConfigurationEntry("Security.AuditLog.RetentionTimeInHours", ConfigurationEntryScope.ServerWideOnly)]
-        [ConfigurationEntry("Security.AuditLog.RetentionTimeInHrs", ConfigurationEntryScope.ServerWideOnly)]
-        public TimeSetting AuditLogRetentionTime { get; set; }
-
-        [Description("The maximum size of the audit log after which the old files will be deleted")]
-        [DefaultValue(null)]
-        [MinValue(256)]
+        [DefaultValue(128)]
+        [MinValue(16)]
         [SizeUnit(SizeUnit.Megabytes)]
-        [ConfigurationEntry("Security.AuditLog.RetentionSizeInMb", ConfigurationEntryScope.ServerWideOnly)]
-        public Size? AuditLogRetentionSize { get; set; }
+        [ConfigurationEntry("Logs.AuditLog.ArchiveAboveSizeInMb", ConfigurationEntryScope.ServerWideOnly)]
+        public Size AuditLogArchiveAboveSize { get; set; }
 
-        [Description("Will determine whether to compress the audit log files")]
+        [DefaultValue(3)]
+        [ConfigurationEntry("Logs.AuditLog.MaxArchiveDays", ConfigurationEntryScope.ServerWideOnly)]
+        public int? AuditLogMaxArchiveDays { get; set; }
+
+        [DefaultValue(null)]
+        [MinValue(0)]
+        [ConfigurationEntry("Logs.AuditLog.MaxArchiveFiles", ConfigurationEntryScope.ServerWideOnly)]
+        public int? AuditLogMaxArchiveFiles { get; set; }
+
         [DefaultValue(false)]
-        [ConfigurationEntry("Security.AuditLog.Compress", ConfigurationEntryScope.ServerWideOnly)]
-        public bool AuditLogCompress { get; set; }
+        [ConfigurationEntry("Logs.AuditLog.EnableArchiveFileCompression", ConfigurationEntryScope.ServerWideOnly)]
+        public bool AuditLogEnableArchiveFileCompression { get; set; }
 
         [Description("The path to .pfx certificate file. If specified, RavenDB will use HTTPS/SSL for all network activities. Certificate setting priority order: 1) Path 2) Executable")]
         [DefaultValue(null)]

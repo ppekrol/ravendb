@@ -15,12 +15,12 @@ using System.Threading;
 using Sparrow;
 using Sparrow.Utils;
 using Voron.Data.Tables;
-using Voron.Global;
 using Voron.Impl.FileHeaders;
 using Voron.Impl.Journal;
 using Voron.Impl.Paging;
 using Voron.Util;
 using Voron.Util.Settings;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Impl.Backup
 {

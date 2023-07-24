@@ -1,4 +1,5 @@
 using System;
+using NLog;
 using Raven.Client.Documents.Operations.Backups;
 using Raven.Server.Commercial;
 using Sparrow.Logging;
@@ -78,8 +79,8 @@ namespace Raven.Server.Documents.PeriodicBackup
                 _concurrentBackups--;
             }
 
-            if (logger.IsOperationsEnabled)
-                logger.Operations($"Starting backup task '{backupName}'");
+            if (logger.IsInfoEnabled)
+                logger.Info($"Starting backup task '{backupName}'");
         }
 
         public void FinishBackup(string backupName, PeriodicBackupStatus backupStatus, TimeSpan? elapsed, Logger logger)
@@ -89,7 +90,7 @@ namespace Raven.Server.Documents.PeriodicBackup
                 _concurrentBackups++;
             }
 
-            if (logger.IsOperationsEnabled)
+            if (logger.IsInfoEnabled)
             {
                 string backupTypeString = "backup";
                 string extendedBackupTimings = string.Empty;
@@ -127,7 +128,7 @@ namespace Raven.Server.Documents.PeriodicBackup
 
                 message += $" {extendedBackupTimings}";
 
-                logger.Operations(message);
+                logger.Info(message);
             }
         }
 

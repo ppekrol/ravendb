@@ -7,6 +7,7 @@ using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Raven.Server.Utils;
 using Constants = Raven.Client.Constants;
+using Sparrow.Server;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Corax;
 
@@ -47,46 +48,46 @@ public abstract class AnonymousCoraxDocumentConverterBase : CoraxDocumentConvert
         var knownFields = GetKnownFieldsForWriter();
 
         // We prepare for the next entry.
-        if (boostedValue != null)
+            if (boostedValue != null)
             builder.Boost(boostedValue.Boost);
 
         bool hasFields = false;
-        foreach (var property in accessor.GetProperties(documentToProcess))
-        {
-            var value = property.Value;
+            foreach (var property in accessor.GetProperties(documentToProcess))
+            {
+                var value = property.Value;
 
-            if (_fields.TryGetValue(property.Key, out var field) == false)
-                throw new InvalidOperationException($"Field '{property.Key}' is not defined. Available fields: {string.Join(", ", _fields.Keys)}.");
+                if (_fields.TryGetValue(property.Key, out var field) == false)
+                    throw new InvalidOperationException($"Field '{property.Key}' is not defined. Available fields: {string.Join(", ", _fields.Keys)}.");
 
                 
             InsertRegularField(field, value, indexContext, builder, sourceDocument, out var innerShouldSkip);
             hasFields |= innerShouldSkip == false;
                 
-            if (storedValue is not null && innerShouldSkip == false)
-            {
-                //Notice: we are always saving values inside Corax index. This method is explicitly for MapReduce because we have to have JSON as the last item.
-                var blittableValue = TypeConverter.ToBlittableSupportedType(value, out TypeConverter.BlittableSupportedReturnType returnType, flattenArrays: true);
+                if (storedValue is not null && innerShouldSkip == false)
+                {
+                    //Notice: we are always saving values inside Corax index. This method is explicitly for MapReduce because we have to have JSON as the last item.
+                    var blittableValue = TypeConverter.ToBlittableSupportedType(value, out TypeConverter.BlittableSupportedReturnType returnType, flattenArrays: true);
 
-                if (returnType != TypeConverter.BlittableSupportedReturnType.Ignored)
-                    storedValue[property.Key] = blittableValue;
+                    if (returnType != TypeConverter.BlittableSupportedReturnType.Ignored)
+                        storedValue[property.Key] = blittableValue;
+                }
             }
-        }
 
         if (hasFields is false && _indexEmptyEntries is false)
             return false;
-
-        if (storedValue is not null)
-        {
+            
+            if (storedValue is not null)
+            {
             using var bjo = indexContext.ReadObject(storedValue, "corax field as json");
             builder.Store(bjo);
-        }
+            }
             
         var id = key ?? throw new InvalidParameterException("Cannot find any identifier of the document.");
-        if (sourceDocumentId != null && knownFields.TryGetByFieldName(Constants.Documents.Indexing.Fields.SourceDocumentIdFieldName, out var documentSourceField))
+            if (sourceDocumentId != null && knownFields.TryGetByFieldName(Constants.Documents.Indexing.Fields.SourceDocumentIdFieldName, out var documentSourceField))
             builder.Write(documentSourceField.FieldId, string.Empty, sourceDocumentId.AsSpan());
-
+            
         builder.Write(0, string.Empty, id.AsSpan());
         
         return true;
-    }
-}
+        }
+        }

@@ -1,4 +1,5 @@
-﻿using Raven.Client.ServerWide;
+﻿using NLog;
+using Raven.Client.ServerWide;
 using Raven.Server.Documents.Sharding;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Logging;

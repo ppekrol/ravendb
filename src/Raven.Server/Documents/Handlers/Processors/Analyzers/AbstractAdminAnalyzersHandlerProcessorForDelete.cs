@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Raven.Server.ServerWide;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Commands.Analyzers;
 using Sparrow.Json;
 using Sparrow.Logging;
@@ -20,12 +20,12 @@ namespace Raven.Server.Documents.Handlers.Processors.Analyzers
             var name = RequestHandler.GetQueryStringValueAndAssertIfSingleAndNotEmpty("name");
             var databaseName = RequestHandler.DatabaseName;
 
-            if (LoggingSource.AuditLog.IsInfoEnabled)
+            if (RavenLogManager.Instance.IsAuditEnabled)
             {
                 var clientCert = RequestHandler.GetCurrentCertificate();
 
-                var auditLog = LoggingSource.AuditLog.GetLogger(databaseName, "Audit");
-                auditLog.Info($"Analyzer {name} DELETE by {clientCert?.Subject} {clientCert?.Thumbprint}");
+                var auditLog = RavenLogManager.Instance.GetAuditLoggerForDatabase(databaseName);
+                auditLog.Audit($"Analyzer {name} DELETE by {clientCert?.Subject} {clientCert?.Thumbprint}");
             }
 
             var command = new DeleteAnalyzerCommand(name, databaseName, RequestHandler.GetRaftRequestIdFromQuery());

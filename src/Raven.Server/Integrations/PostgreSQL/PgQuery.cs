@@ -4,18 +4,20 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Server.Documents;
 using Raven.Server.Integrations.PostgreSQL.Exceptions;
 using Raven.Server.Integrations.PostgreSQL.Messages;
 using Raven.Server.Integrations.PostgreSQL.PowerBI;
 using Raven.Server.Integrations.PostgreSQL.Types;
+using Raven.Server.Logging;
 using Sparrow.Logging;
 
 namespace Raven.Server.Integrations.PostgreSQL
 {
     public abstract class PgQuery : IDisposable
     {
-        private static Logger _log = LoggingSource.Instance.GetLogger<PgQuery>("Postgres Server");
+        private static Logger _log = RavenLogManager.Instance.GetLoggerForServer<PgQuery>();
 
         protected readonly string QueryString;
         public readonly int[] ParametersDataTypes;
@@ -64,7 +66,7 @@ namespace Raven.Server.Integrations.PostgreSQL
             catch (Exception e)
             {
                 if (_log.IsInfoEnabled)
-                    _log.Info($"Failed to create instance of {nameof(PgQuery)}:{Environment.NewLine}{queryText}", e);
+                    _log.Info(e, $"Failed to create instance of {nameof(PgQuery)}:{Environment.NewLine}{queryText}");
 
                 throw;
             }

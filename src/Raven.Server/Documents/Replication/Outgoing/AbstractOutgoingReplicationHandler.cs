@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Documents.Operations.Replication;
 using Raven.Client.Documents.Replication;
 using Raven.Client.Documents.Replication.Messages;
@@ -23,6 +24,7 @@ using Raven.Server.Documents.Sharding.Handlers;
 using Raven.Server.Documents.TcpHandlers;
 using Raven.Server.Exceptions;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
@@ -30,6 +32,7 @@ using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.ServerWide.Tcp.Sync;
 using Raven.Server.Utils;
+using Sparrow.Global;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Json.Sync;
@@ -67,7 +70,7 @@ namespace Raven.Server.Documents.Replication.Outgoing
         protected readonly ConcurrentQueue<OutgoingReplicationStatsAggregator> _lastReplicationStats = new ConcurrentQueue<OutgoingReplicationStatsAggregator>();
         protected InterruptibleRead<TContextPool, TOperationContext> _interruptibleRead;
         protected OutgoingReplicationStatsAggregator _lastStats;
-        protected Logger Logger;
+        protected NLog.Logger Logger;
 
         public ServerStore Server => _server;
         public long LastSentDocumentEtag => _lastSentDocumentEtag;
@@ -105,7 +108,7 @@ namespace Raven.Server.Documents.Replication.Outgoing
             _cts = CancellationTokenSource.CreateLinkedTokenSource(token);
             _connectionDisposed = new AsyncManualResetEvent(token);
 
-            Logger = LoggingSource.Instance.GetLogger(_databaseName, GetType().FullName);
+            Logger = RavenLogManager.Instance.GetLoggerForDatabase(GetType(), _databaseName);
             Destination = node;
         }
 
@@ -505,7 +508,7 @@ namespace Raven.Server.Documents.Replication.Outgoing
                 if (young)
                     msg += "This can happen if the other node wasn't yet notified about being assigned this database and should be resolved shortly.";
                 if (Logger.IsInfoEnabled)
-                    Logger.Info(msg, e);
+                    Logger.Info(e, msg);
 
                 AddReplicationPulse(ReplicationPulseDirection.OutgoingInitiateError, msg);
 
@@ -522,7 +525,7 @@ namespace Raven.Server.Documents.Replication.Outgoing
                 const string msg = "Got operation canceled notification while opening outgoing replication channel. " +
                                    "Aborting and closing the channel.";
                 if (Logger.IsInfoEnabled)
-                    Logger.Info(msg, e);
+                    Logger.Info(e, msg);
                 AddReplicationPulse(ReplicationPulseDirection.OutgoingInitiateError, msg);
                 throw;
             }
@@ -530,7 +533,7 @@ namespace Raven.Server.Documents.Replication.Outgoing
             {
                 var msg = $"{OutgoingReplicationThreadName} got an unexpected exception during initial handshake";
                 if (Logger.IsInfoEnabled)
-                    Logger.Info(msg, e);
+                    Logger.Info(e, msg);
 
                 AddReplicationPulse(ReplicationPulseDirection.OutgoingInitiateError, msg);
                 AddAlertOnFailureToReachOtherSide(msg, e);
@@ -565,7 +568,7 @@ namespace Raven.Server.Documents.Replication.Outgoing
                 catch (Exception e)
                 {
                     if (Logger.IsInfoEnabled)
-                        Logger.Info($"Sending heartbeat failed. ({FromToString})", e);
+                        Logger.Info(e, $"Sending heartbeat failed. ({FromToString})");
                     AddReplicationPulse(ReplicationPulseDirection.OutgoingHeartbeatError, "Sending heartbeat failed.");
                     throw;
                 }
@@ -587,7 +590,7 @@ namespace Raven.Server.Documents.Replication.Outgoing
                 {
                     const string msg = "Parsing heartbeat result failed.";
                     if (Logger.IsInfoEnabled)
-                        Logger.Info($"{msg} ({FromToString})", e);
+                        Logger.Info(e, $"{msg} ({FromToString})");
                     AddReplicationPulse(ReplicationPulseDirection.OutgoingHeartbeatAcknowledgeError, msg);
                     throw;
                 }
@@ -735,10 +738,10 @@ namespace Raven.Server.Documents.Replication.Outgoing
                 if (Logger.IsInfoEnabled)
                 {
                     if (e.InnerException is SocketException)
-                        Logger.Info($"SocketException was thrown from the connection to remote node ({FromToString}). " +
-                                    $"This might mean that the remote node is done or there is a network issue.", e);
+                        Logger.Info(e, $"SocketException was thrown from the connection to remote node ({FromToString}). " +
+                                    $"This might mean that the remote node is done or there is a network issue.");
                     else
-                        Logger.Info($"IOException was thrown from the connection to remote node ({FromToString}).", e);
+                        Logger.Info(e, $"IOException was thrown from the connection to remote node ({FromToString}).");
                 }
                 OnFailed(e);
             }
@@ -746,16 +749,16 @@ namespace Raven.Server.Documents.Replication.Outgoing
             void HandleLegacyReplicationViolationException(LegacyReplicationViolationException e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"LegacyReplicationViolationException occurred on replication thread ({FromToString}). " +
-                                "Replication is stopped and will not continue until the violation is resolved. ", e);
+                    Logger.Info(e, $"LegacyReplicationViolationException occurred on replication thread ({FromToString}). " +
+                                "Replication is stopped and will not continue until the violation is resolved. ");
                 OnFailed(e);
             }
 
             void HandleException(Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Unexpected exception occurred on replication thread ({FromToString}). " +
-                                $"Replication stopped (will be retried later).", e);
+                    Logger.Info(e, $"Unexpected exception occurred on replication thread ({FromToString}). " +
+                                $"Replication stopped (will be retried later).");
                 OnFailed(e);
             }
         }

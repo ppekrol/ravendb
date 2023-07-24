@@ -6,17 +6,14 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Corax;
-using Corax.Mappings;
-using Corax.Pipeline;
 using Corax.Queries;
-using Lucene.Net.Support;
 using Lucene.Net.Util;
 using Raven.Client.Exceptions.Corax;
 using Raven.Server.Documents.Indexes.Persistence.Corax;
+using Sparrow;
 using Sparrow.Json;
 using Sparrow.Server;
 using Voron;
-using CoraxProj = global::Corax;
 
 /*
  * This code is adaptation of `MoreLikeThis` functionality from Lucene for Corax. Original code is shared on licence:

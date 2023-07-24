@@ -7,6 +7,7 @@ using System.Threading;
 using Corax;
 using Corax.Mappings;
 using Corax.Utils;
+using NLog;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Queries.Facets;
 using Raven.Server.Documents.Indexes.Static.Spatial;

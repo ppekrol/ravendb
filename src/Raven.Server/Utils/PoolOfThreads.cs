@@ -4,9 +4,12 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using NLog;
+using Raven.Server.Logging;
 using Sparrow.Logging;
 using Sparrow.LowMemory;
 using Sparrow.Platform;
+using Sparrow.Server.LowMemory;
 using Sparrow.Server.Utils;
 using Sparrow.Threading;
 using Sparrow.Utils;
@@ -25,13 +28,10 @@ namespace Raven.Server.Utils
     /// </summary>
     public class PoolOfThreads : IDisposable, ILowMemoryHandler
     {
-        private static readonly Lazy<PoolOfThreads> _globalRavenThreadPool = new Lazy<PoolOfThreads>(() =>
-        {
-            return new PoolOfThreads();
-        });
+        private static readonly Lazy<PoolOfThreads> _globalRavenThreadPool = new(() => new PoolOfThreads());
 
         public static PoolOfThreads GlobalRavenThreadPool => _globalRavenThreadPool.Value;
-        private static Logger _log = LoggingSource.Instance.GetLogger<PoolOfThreads>("Server");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<PoolOfThreads>();
 
         public int TotalNumberOfThreads;
 
@@ -224,9 +224,9 @@ namespace Raven.Server.Utils
                 }
                 catch (Exception e)
                 {
-                    if (_log.IsOperationsEnabled)
+                    if (Logger.IsFatalEnabled)
                     {
-                        _log.Operations($"An uncaught exception occurred in '{_threadInfo.FullName}' and killed the process", e);
+                        Logger.Fatal(e, $"An uncaught exception occurred in '{_threadInfo.FullName}' and killed the process");
                     }
 
                     throw;
@@ -283,12 +283,12 @@ namespace Raven.Server.Utils
                 var currentPriority = ThreadHelper.GetThreadPriority();
                 if (currentPriority != ThreadPriority.Normal)
                 {
-                    if (ThreadHelper.TrySetThreadPriority(ThreadPriority.Normal, null, _log) == false)
+                    if (ThreadHelper.TrySetThreadPriority(ThreadPriority.Normal, null, Logger) == false)
                     {
                         // if we can't reset it, better just kill it
-                        if (_log.IsInfoEnabled)
+                        if (Logger.IsInfoEnabled)
                         {
-                            _log.Info($"Unable to set this thread priority to normal, since we don't want its priority of {currentPriority}, we'll let it exit");
+                            Logger.Info($"Unable to set this thread priority to normal, since we don't want its priority of {currentPriority}, we'll let it exit");
                         }
 
                         return false;

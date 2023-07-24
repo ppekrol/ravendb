@@ -3,16 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Json.Serialization;
 using Raven.Client.ServerWide;
 using Raven.Client.Util;
 using Raven.Server.Documents.Patch;
 using Raven.Server.Documents.TransactionMerger.Commands;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Smuggler.Documents;
 using Raven.Server.Utils;
+using Sparrow.Global;
 using Sparrow.Json;
 using Sparrow.Logging;
 using Sparrow.Utils;
@@ -93,7 +96,7 @@ namespace Raven.Server.Documents.Replication
             catch (Exception e)
             {
                 if (_log.IsInfoEnabled)
-                    _log.Info("Failed to wait for a previous task of automatic conflict resolution", e);
+                    _log.Info(e, "Failed to wait for a previous task of automatic conflict resolution");
             }
         }
 
@@ -166,7 +169,7 @@ namespace Raven.Server.Documents.Replication
             catch (Exception e)
             {
                 if (_log.IsInfoEnabled)
-                    _log.Info("Failed to run automatic conflict resolution", e);
+                    _log.Info(e, "Failed to run automatic conflict resolution");
             }
         }
 
@@ -437,7 +440,7 @@ namespace Raven.Server.Documents.Replication
             {
                 var msg = $"Script failed to resolve the conflict in doc: {updatedConflict?.Id} because exception was raised in it.";
                 if (_log.IsInfoEnabled)
-                    _log.Info(msg, e);
+                    _log.Info(e, msg);
 
                 var alert = AlertRaised.Create(
                     _database.Name,
@@ -543,7 +546,7 @@ namespace Raven.Server.Documents.Replication
         {
             var resolver = new ResolveConflictOnReplicationConfigurationChange(
                 database.ReplicationLoader,
-                LoggingSource.Instance.GetLogger<DatabaseDestination>(database.Name));
+                RavenLogManager.Instance.GetLoggerForDatabase<PutResolvedConflictsCommandDto>(database));
 
             return new ResolveConflictOnReplicationConfigurationChange.PutResolvedConflictsCommand(
                 database.DocumentsStorage.ConflictsStorage,

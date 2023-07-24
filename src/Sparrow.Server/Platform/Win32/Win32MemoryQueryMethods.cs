@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using NLog;
 using Sparrow.Exceptions;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
+using Sparrow.Logging;
 using Sparrow.Utils;
 
 // ReSharper disable InconsistentNaming
@@ -13,6 +15,8 @@ namespace Sparrow.Server.Platform.Win32
 {
     public static unsafe class Win32MemoryQueryMethods
     {
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForSparrow(typeof(Win32MemoryQueryMethods));
+
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr GetCurrentProcess();
 
@@ -86,7 +90,7 @@ namespace Sparrow.Server.Platform.Win32
             Encoding.ASCII.GetBytes(".buffers")
         };
 
-        private static readonly UnmanagedBuffersPool BuffersPool = new UnmanagedBuffersPool("AddressWillCauseHardPageFault");
+        private static readonly UnmanagedBuffersPool BuffersPool = new UnmanagedBuffersPool(Logger, "AddressWillCauseHardPageFault");
 
         private static uint? _pageSize;
 

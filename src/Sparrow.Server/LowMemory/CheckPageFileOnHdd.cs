@@ -11,15 +11,17 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using NLog;
 using Sparrow.Logging;
-using Sparrow.Platform.Posix;
+using Sparrow.Server.Platform.Posix;
 using Sparrow.Server.Platform.Win32;
+using Sparrow.Server.Utils;
 
 namespace Sparrow.Server.LowMemory
 {
     public static class CheckPageFileOnHdd
     {
-        private static readonly Logger Log = LoggingSource.Instance.GetLogger("Server", typeof(CheckPageFileOnHdd).FullName);
+        private static readonly Logger Log = RavenLogManager.Instance.GetLoggerForSparrow(typeof(CheckPageFileOnHdd));
 
         private const string PageFileName = "pagefile.sys";
 
@@ -52,8 +54,8 @@ namespace Sparrow.Server.LowMemory
                             break;
 
                         case RavenDriveType.Unknown:
-                            if (Log.IsOperationsEnabled)
-                                Log.Operations($"Failed to determine if drive {currentDriveLetter} is SSD or HDD");
+                            if (Log.IsWarnEnabled)
+                                Log.Warn($"Failed to determine if drive {currentDriveLetter} is SSD or HDD");
                             //we can't figure out the drive type
                             continue;
                         default:
@@ -88,7 +90,7 @@ namespace Sparrow.Server.LowMemory
             catch (Exception e)
             {
                 if (Log.IsInfoEnabled)
-                    Log.Info("Failed to determine page file that is located on HDD", e);
+                    Log.Info(e, "Failed to determine page file that is located on HDD");
                 return null;
             }
         }
@@ -425,8 +427,8 @@ namespace Sparrow.Server.LowMemory
                         foundRotationalDiskDrive = filename;
                     else if (isHdd != 0)
                     {
-                        if (Log.IsOperationsEnabled)
-                            Log.Operations($"Got invalid value (not 0 or 1) from {filename} = {isHdd}, assumes this is not a rotational disk");
+                        if (Log.IsWarnEnabled)
+                            Log.Warn($"Got invalid value (not 0 or 1) from {filename} = {isHdd}, assumes this is not a rotational disk");
                         foundRotationalDiskDrive = null;
                     }
                 }
@@ -482,7 +484,7 @@ namespace Sparrow.Server.LowMemory
             }
             catch (Exception ex)
             {
-                Log.Info("Error while trying to determine if hdd swaps instead of ssd on linux, ignoring this check and assuming no hddswap", ex);
+                Log.Info(ex, "Error while trying to determine if hdd swaps instead of ssd on linux, ignoring this check and assuming no hddswap");
                 // ignore
                 return null;
             }

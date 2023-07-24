@@ -19,6 +19,7 @@ using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Server;
 using Index = Raven.Server.Documents.Indexes.Index;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Handlers.Processors.Batches;
 

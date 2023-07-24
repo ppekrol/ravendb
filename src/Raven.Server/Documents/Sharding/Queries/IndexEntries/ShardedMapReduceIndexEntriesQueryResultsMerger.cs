@@ -20,12 +20,12 @@ public class ShardedMapReduceIndexEntriesQueryResultsMerger : ShardedMapReduceQu
 
     public ShardedMapReduceIndexEntriesQueryResultsMerger(
         List<BlittableJsonReaderObject> currentResults,
-        ShardedDatabaseContext.ShardedIndexesContext indexesContext,
+        ShardedDatabaseContext databaseContext,
         string indexName,
         bool isAutoMapReduceQuery,
         TransactionOperationContext context,
         CancellationToken token)
-        : base(currentResults, indexesContext, indexName, isAutoMapReduceQuery, context, token)
+        : base(currentResults, databaseContext, indexName, isAutoMapReduceQuery, context, token)
     {
     }
 

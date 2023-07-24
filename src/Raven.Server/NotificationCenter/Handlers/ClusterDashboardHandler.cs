@@ -8,24 +8,25 @@ using System;
 using System.IO;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Http;
 using Raven.Client.ServerWide.Operations.Certificates;
 using Raven.Server.Dashboard;
 using Raven.Server.Dashboard.Cluster;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Json.Sync;
 using Sparrow.Logging;
-using Sparrow.Server.Json.Sync;
 
 namespace Raven.Server.NotificationCenter.Handlers
 {
     public class ClusterDashboardHandler : ServerNotificationHandlerBase
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<ClusterDashboardHandler>("Server");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<ClusterDashboardHandler>();
 
         [RavenAction("/cluster-dashboard/watch", "GET", AuthorizationStatus.ValidUser, EndpointType.Read, SkipUsagesCount = true)]
         public async Task Watch()
@@ -148,7 +149,7 @@ namespace Raven.Server.NotificationCenter.Handlers
         private async Task HandleException(Exception ex, WebSocket webSocket)
         {
             if (Logger.IsInfoEnabled)
-                Logger.Info("Error encountered in cluster dashboard handler", ex);
+                Logger.Info(ex, "Error encountered in cluster dashboard handler");
 
             try
             {
@@ -167,7 +168,7 @@ namespace Raven.Server.NotificationCenter.Handlers
             catch (Exception)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Failed to send the error in cluster dashboard handler to the client", ex);
+                    Logger.Info(ex, "Failed to send the error in cluster dashboard handler to the client");
             }
         }
     }

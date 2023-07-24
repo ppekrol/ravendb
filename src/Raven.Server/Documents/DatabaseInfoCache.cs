@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
+using NLog;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
@@ -10,10 +11,9 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Documents
 {
-    public class DatabaseInfoCache
+    public sealed class DatabaseInfoCache
     {
-
-        protected readonly Logger Logger;
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer<DatabaseInfoCache>();
 
         private StorageEnvironment _environment;
 
@@ -23,7 +23,6 @@ namespace Raven.Server.Documents
 
         public DatabaseInfoCache()
         {
-            Logger = LoggingSource.Instance.GetLogger<DatabaseInfoCache>("Server");
             _databaseInfoSchema.DefineKey(new TableSchema.IndexDef
             {
                 StartIndex = 0,
@@ -112,8 +111,8 @@ namespace Raven.Server.Documents
         /// <param name="databaseName">The database name as a slice</param>
         private void DeleteInternal(TransactionOperationContext ctx, Slice databaseName)
         {
-            if (Logger.IsInfoEnabled)
-                Logger.Info($"Deleting database info for '{databaseName}'.");
+            if (Logger.IsDebugEnabled)
+                Logger.Debug($"Deleting database info for '{databaseName}'.");
             var table = ctx.Transaction.InnerTransaction.OpenTable(_databaseInfoSchema, DatabaseInfoSchema.DatabaseInfoTree);
             table.DeleteByKey(databaseName);
         }

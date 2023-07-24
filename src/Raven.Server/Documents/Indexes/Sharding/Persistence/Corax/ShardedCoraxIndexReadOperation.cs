@@ -1,8 +1,9 @@
 ﻿using System.Text;
-using Corax;
+using Corax.Global;
 using Corax.Mappings;
 using Corax.Utils;
 using Corax.Utils.Spatial;
+using NLog;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Exceptions.Sharding;
 using Raven.Server.Config;
@@ -12,7 +13,6 @@ using Raven.Server.Documents.Queries.AST;
 using Raven.Server.Documents.Sharding.Queries;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
-using Sparrow.Logging;
 using Sparrow.Utils;
 using Voron.Impl;
 

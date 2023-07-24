@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
+using NLog;
 using Raven.Client.Util;
 using Raven.Server.Config.Categories;
-using Raven.Server.Monitoring.Snmp.Objects.Server;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter;
 using Sparrow.Binary;
 using Sparrow.Json;
@@ -14,7 +15,7 @@ namespace Raven.Server.Utils.Cpu
 {
     public static class CpuHelper
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<MachineCpu>("Server");
+        private static readonly Logger Logger = RavenLogManager.Instance.GetLoggerForServer(typeof(CpuHelper));
 
         internal static ICpuUsageCalculator GetOSCpuUsageCalculator()
         {
@@ -66,7 +67,7 @@ namespace Raven.Server.Utils.Cpu
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info("Failure to get the number of active cores", e);
+                    Logger.Info(e, "Failure to get the number of active cores");
 
                 return ProcessorInfo.ProcessorCount;
             }
@@ -87,7 +88,7 @@ namespace Raven.Server.Utils.Cpu
             catch (Exception e)
             {
                 if (Logger.IsInfoEnabled)
-                    Logger.Info($"Failure to get process times, error: {e.Message}", e);
+                    Logger.Info(e, $"Failure to get process times, error: {e.Message}");
 
                 return (0, 0);
             }

@@ -1,4 +1,5 @@
 ﻿using Corax.Mappings;
+using NLog;
 using Raven.Server.Documents.Indexes.Persistence;
 using Raven.Server.Documents.Indexes.Persistence.Corax;
 using Raven.Server.Documents.Indexes.Persistence.Lucene;

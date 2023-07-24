@@ -41,6 +41,10 @@ using Voron.Impl;
 using Sparrow.Threading;
 using Size = Sparrow.Size;
 using System.Diagnostics.CodeAnalysis;
+using NLog;
+using Raven.Server.Logging;
+using Sparrow.Global;
+using Sparrow.Server.Logging;
 
 namespace Raven.Server.Rachis
 {
@@ -462,7 +466,7 @@ namespace Raven.Server.Rachis
 
                     RequestSnapshot = GetSnapshotRequest(context);
 
-                    Log = LoggingSource.Instance.GetLogger<RachisConsensus>(_tag);
+                    Log = RavenLogManager.Instance.GetLoggerForCluster(typeof(RachisConsensus), LoggingComponent.NodeTag(_tag));
                     LogsTable.Create(tx.InnerTransaction, EntriesSlice, 16);
 
                     CurrentTerm = ReadTerm(context);
@@ -939,7 +943,7 @@ namespace Raven.Server.Rachis
                     {
                         if (Log.IsInfoEnabled)
                         {
-                            Log.Info("Before state change invocation function failed.", e);
+                            Log.Info(e, "Before state change invocation function failed.");
                         }
                     }
 
@@ -951,7 +955,7 @@ namespace Raven.Server.Rachis
                     {
                         if (Log.IsInfoEnabled)
                         {
-                            Log.Info("State change invocation function failed.", e);
+                            Log.Info(e, "State change invocation function failed.");
                         }
                     }
 
@@ -976,9 +980,9 @@ namespace Raven.Server.Rachis
                     var elapsed = sp.Elapsed;
                     if (elapsed > ElectionTimeout / 2)
                     {
-                        if (Log.IsOperationsEnabled)
+                        if (Log.IsWarnEnabled)
                         {
-                            Log.Operations($"Took way too much time ({elapsed}) to change the state to {rachisState} in term {expectedTerm:#,#;;0}. (Election timeout:{ElectionTimeout})");
+                            Log.Warn($"Took way too much time ({elapsed}) to change the state to {rachisState} in term {expectedTerm:#,#;;0}. (Election timeout:{ElectionTimeout})");
                         }
                     }
                 }
@@ -1004,7 +1008,7 @@ namespace Raven.Server.Rachis
                 {
                     if (Log.IsInfoEnabled)
                     {
-                        Log.Info("Failed to dispose during new rachis state transition", e);
+                        Log.Info(e, "Failed to dispose during new rachis state transition");
                     }
                 }
             });
@@ -1151,7 +1155,7 @@ namespace Raven.Server.Rachis
             {
                 if (Log.IsInfoEnabled)
                 {
-                    Log.Info($"An error occurred during switching to candidate state in term {currentTerm:#,#;;0}.", e);
+                    Log.Info(e, $"An error occurred during switching to candidate state in term {currentTerm:#,#;;0}.");
                 }
 
                 Timeout.Start(SwitchToCandidateStateOnTimeout);
@@ -1362,7 +1366,7 @@ namespace Raven.Server.Rachis
             {
                 if (Log.IsInfoEnabled)
                 {
-                    Log.Info("Failed to process incoming connection", e);
+                    Log.Info(e, "Failed to process incoming connection");
                 }
 
                 DisposeRemoteConnection(remoteConnection);
@@ -1703,9 +1707,9 @@ namespace Raven.Server.Rachis
                 $"FATAL ERROR: got an append entries request with index={firstEntry.Index:#,#;;0} term={firstEntry.Term:#,#;;0} " +
                 $"while my term for this index is {myTermForTheIndex:#,#;;0}. " +
                 $"(last commit index={lastCommitIndex:#,#;;0} with term={lastCommitTerm:#,#;;0}), this means something went wrong badly.";
-            if (Log.IsOperationsEnabled)
+            if (Log.IsFatalEnabled)
             {
-                Log.Operations(message);
+                Log.Fatal(message);
             }
             RachisInvalidOperationException.Throw(message);
         }
@@ -2019,7 +2023,7 @@ namespace Raven.Server.Rachis
                 {
                     if (Log.IsInfoEnabled)
                     {
-                        Log.Info($"Failed to shut down leader after voting in term {term:#,#;;0} for {votedFor}", e);
+                        Log.Info(e, $"Failed to shut down leader after voting in term {term:#,#;;0} for {votedFor}");
                     }
                 }
             }, null);

@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Sparrow.Logging;
+using NLog;
 
 namespace Sparrow.Server
 {
@@ -19,7 +19,7 @@ namespace Sparrow.Server
             _name = name;
         }
 
-        public struct Release : IDisposable
+        public readonly struct Release : IDisposable
         {
             private readonly ContentionLoggingLocker _parent;
 

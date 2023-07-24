@@ -1,8 +1,8 @@
 ﻿using System.IO;
+using Corax.Global;
 using Corax.Mappings;
 using Corax.Queries;
 using Sparrow.Server.Strings;
-using static Corax.Constants;
 
 namespace Corax;
 
@@ -16,7 +16,7 @@ public enum StringDistanceAlgorithm
 public partial class IndexSearcher
 {
     public IRawTermProvider Suggest(FieldMetadata field, string term, bool sortByPopularity, StringDistanceAlgorithm algorithm, 
-        float accuracy = Suggestions.DefaultAccuracy,
+        float accuracy = Constants.Suggestions.DefaultAccuracy,
         int take = Constants.IndexSearcher.TakeAll) => algorithm switch
     {
         StringDistanceAlgorithm.None => Suggest<NoStringDistance>(field, term, sortByPopularity, accuracy, take),
@@ -26,7 +26,7 @@ public partial class IndexSearcher
         _ => Suggest<LevenshteinDistance>(field, term, sortByPopularity, accuracy, take)
     };
 
-    private SuggestionTermProvider<TDistanceProvider> Suggest<TDistanceProvider>(FieldMetadata field, string term, bool sortByPopularity, float accuracy = Suggestions.DefaultAccuracy, int take = Constants.IndexSearcher.TakeAll)
+    private SuggestionTermProvider<TDistanceProvider> Suggest<TDistanceProvider>(FieldMetadata field, string term, bool sortByPopularity, float accuracy = Constants.Suggestions.DefaultAccuracy, int take = Constants.IndexSearcher.TakeAll)
         where TDistanceProvider : IStringDistance
     {
         var termSlice = EncodeAndApplyAnalyzer(field, term);

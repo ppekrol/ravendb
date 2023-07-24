@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Raven.Server.Documents.Handlers.Processors;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Commands.Sorters;
-using Raven.Server.Web;
 using Sparrow.Json;
 using Sparrow.Logging;
 
@@ -23,12 +23,12 @@ internal abstract class AbstractAdminSortersHandlerProcessorForDelete<TRequestHa
 
         var databaseName = RequestHandler.DatabaseName;
 
-        if (LoggingSource.AuditLog.IsInfoEnabled)
+        if (RavenLogManager.Instance.IsAuditEnabled)
         {
             var clientCert = RequestHandler.GetCurrentCertificate();
 
-            var auditLog = LoggingSource.AuditLog.GetLogger(databaseName, "Audit");
-            auditLog.Info($"Sorter {name} DELETE by {clientCert?.Subject} {clientCert?.Thumbprint}");
+            var auditLog = RavenLogManager.Instance.GetAuditLoggerForDatabase(databaseName);
+            auditLog.Audit($"Sorter {name} DELETE by {clientCert?.Subject} {clientCert?.Thumbprint}");
         }
 
         var command = new DeleteSorterCommand(name, databaseName, RequestHandler.GetRaftRequestIdFromQuery());

@@ -578,7 +578,7 @@ public static class QueryBuilderHelper
             var mode = shouldTurnOffAnalyzersForTime || exact
                 ? FieldIndexingMode.Exact
                 : FieldIndexingMode.Normal;
-            metadata = FieldMetadata.Build(allocator, fieldName, Corax.Constants.IndexWriter.DynamicField, mode, indexMapping.DefaultAnalyzer, hasBoost: hasBoost);
+            metadata = FieldMetadata.Build(allocator, fieldName, Corax.Global.Constants.IndexWriter.DynamicField, mode, indexMapping.DefaultAnalyzer, hasBoost: hasBoost);
         }
 
         return metadata;
@@ -633,7 +633,7 @@ public static class QueryBuilderHelper
         string s => s,
         long l => l.ToString(CultureInfo.InvariantCulture),
         double d => d.ToString(CultureInfo.InvariantCulture),
-        null => Corax.Constants.NullValue,
+        null => Corax.Global.Constants.NullValue,
         _ => value?.ToString()
     };
 

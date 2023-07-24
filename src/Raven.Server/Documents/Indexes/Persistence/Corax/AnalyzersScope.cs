@@ -4,12 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Corax;
+using Corax.Global;
 using Corax.Mappings;
 using Corax.Pipeline;
-using Microsoft.CodeAnalysis;
 using Sparrow.Server;
 using Voron;
-using static Raven.Server.Documents.Indexes.MapReduce.ReduceKeyProcessor;
 
 internal unsafe class AnalyzersScope : IDisposable
 {

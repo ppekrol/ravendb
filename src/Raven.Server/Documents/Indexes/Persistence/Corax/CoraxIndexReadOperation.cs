@@ -11,6 +11,7 @@ using Corax.Mappings;
 using Corax.Queries;
 using Corax.Queries.SortingMatches;
 using Corax.Utils;
+using NLog;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Queries.Explanation;
 using Raven.Client.Documents.Queries.MoreLikeThis;
@@ -26,12 +27,11 @@ using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
 using Sparrow;
 using Sparrow.Json;
-using Sparrow.Logging;
 using Sparrow.Server;
 using Voron;
 using Voron.Impl;
 using Constants = Raven.Client.Constants;
-using CoraxConstants = Corax.Constants;
+using CoraxConstants = Corax.Global.Constants;
 using IndexSearcher = Corax.IndexSearcher;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Corax

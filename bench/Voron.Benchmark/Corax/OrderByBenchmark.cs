@@ -96,7 +96,7 @@ namespace Voron.Benchmark.Corax
 
             if (!DeleteBeforeEachBenchmark)
             {
-                Env = new StorageEnvironment(StorageEnvironmentOptions.ForPath(Path));
+                Env = new StorageEnvironment(StorageEnvironmentOptions.ForPathForTests(Path));
                 GenerateData(Env);
             }
         }
@@ -173,7 +173,7 @@ namespace Voron.Benchmark.Corax
             if (DeleteBeforeEachBenchmark)
             {
                 DeleteStorage();
-                Env = new StorageEnvironment(StorageEnvironmentOptions.ForPath(Path));
+                Env = new StorageEnvironment(StorageEnvironmentOptions.ForPathForTests(Path));
                 GenerateData(Env);
             }
 

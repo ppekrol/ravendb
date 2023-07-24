@@ -101,7 +101,7 @@ public class SubscriptionConnectionForShard : SubscriptionConnection
             // we canceled this batch and wait for migration to complete 
             if (_logger.IsInfoEnabled)
             {
-                _logger.Info($"Got '{nameof(DocumentUnderActiveMigrationException)}' on shard '{ShardName}' will roll back the change vector from '{LastSentChangeVectorInThisConnection}' to '{cvBeforeRecordBatch}', and wait for migration to complete.", e);
+                _logger.Info(e, $"Got '{nameof(DocumentUnderActiveMigrationException)}' on shard '{ShardName}' will roll back the change vector from '{LastSentChangeVectorInThisConnection}' to '{cvBeforeRecordBatch}', and wait for migration to complete.");
             }
             LastSentChangeVectorInThisConnection = cvBeforeRecordBatch;
             return SubscriptionBatchStatus.ActiveMigration;

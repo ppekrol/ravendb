@@ -22,6 +22,7 @@ using static Raven.Server.Documents.Schemas.Collections;
 using static Raven.Server.Documents.Schemas.Counters;
 using static Raven.Server.Documents.Schemas.Documents;
 using static Raven.Server.Documents.Schemas.Revisions;
+using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Storage.Schema.Updates.Documents
 {

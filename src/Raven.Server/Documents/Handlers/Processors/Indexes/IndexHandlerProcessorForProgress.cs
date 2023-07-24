@@ -58,8 +58,8 @@ internal class IndexHandlerProcessorForProgress : AbstractIndexHandlerProcessorF
                 }
                 catch (Exception e)
                 {
-                    if (RequestHandler.Logger.IsOperationsEnabled)
-                        RequestHandler.Logger.Operations($"Failed to get index progress for index name: {index.Name}", e);
+                    if (Logger.IsErrorEnabled)
+                        Logger.Error(e, $"Failed to get index progress for index name: {index.Name}");
                 }
 
                 if (indexProgress == null)

@@ -5,18 +5,21 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 using Raven.Client.Exceptions.Security;
 using Raven.Client.ServerWide.Commands;
 using Raven.Client.ServerWide.Tcp;
 using Raven.Client.Util;
 using Raven.Server.Config.Categories;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.Rachis;
 using Raven.Server.Utils;
 using Sparrow.Json;
 using Sparrow.Json.Parsing;
 using Sparrow.Logging;
 using Sparrow.Server.Json.Sync;
+using Sparrow.Server.Logging;
 using Sparrow.Server.Utils;
 using Sparrow.Utils;
 
@@ -24,6 +27,8 @@ namespace Raven.Server.ServerWide.Maintenance
 {
     public class ClusterMaintenanceSupervisor : IDisposable
     {
+        private readonly Logger Logger = RavenLogManager.Instance.GetLoggerForCluster<ClusterMaintenanceSupervisor>();
+
         private readonly string _leaderClusterTag;
 
         //maintenance handler is valid for specific term, otherwise it's requests will be rejected by nodes
@@ -105,7 +110,7 @@ namespace Raven.Server.ServerWide.Maintenance
             _leaderClusterTag = leaderClusterTag;
             _term = term;
             _server = server;
-            _contextPool = new JsonContextPool(server.Configuration.Memory.MaxContextSizeToKeep);
+            _contextPool = new JsonContextPool(server.Configuration.Memory.MaxContextSizeToKeep, Logger);
             Config = server.Configuration.Cluster;
         }
 
@@ -206,7 +211,7 @@ namespace Raven.Server.ServerWide.Maintenance
                 _token = _cts.Token;
                 _readStatusUpdateDebugString = $"ClusterMaintenanceServer/{ClusterTag}/UpdateState/Read-Response in term {term}";
                 _name = $"Heartbeats supervisor from {_parent._server.NodeTag} to {ClusterTag} in term {term}";
-                _log = LoggingSource.Instance.GetLogger<ClusterNode>(_name);
+                _log = RavenLogManager.Instance.GetLoggerForCluster<ClusterNode>(LoggingComponent.Name(_name));
                 _term = term;
             }
 
@@ -230,7 +235,7 @@ namespace Raven.Server.ServerWide.Maintenance
                     {
                         if (_log.IsInfoEnabled)
                         {
-                            _log.Info($"Exception occurred while collecting info from {ClusterTag}. Task is closed.", e);
+                            _log.Info(e, $"Exception occurred while collecting info from {ClusterTag}. Task is closed.");
                         }
                         // we don't want to crash the process so we don't propagate this exception.
                     }
@@ -312,7 +317,7 @@ namespace Raven.Server.ServerWide.Maintenance
 
                                     if (_log.IsInfoEnabled)
                                     {
-                                        _log.Info("Exception occurred while reading the report from the connection", e);
+                                        _log.Info(e, "Exception occurred while reading the report from the connection");
                                     }
 
                                     ReceivedReport = new ClusterNodeStatusReport(new ServerReport(), new Dictionary<string, DatabaseStatusReport>(),
@@ -345,7 +350,7 @@ namespace Raven.Server.ServerWide.Maintenance
 
                         if (_log.IsInfoEnabled)
                         {
-                            _log.Info($"Exception was thrown while collecting info from {ClusterTag}", e);
+                            _log.Info(e, $"Exception was thrown while collecting info from {ClusterTag}");
                         }
 
                         ReceivedReport = new ClusterNodeStatusReport(new ServerReport(), new Dictionary<string, DatabaseStatusReport>(),

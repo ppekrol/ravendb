@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 using Sparrow;
 using Sparrow.Compression;
 using Sparrow.Server;
-using Voron.Global;
 using Voron.Impl;
+using Constants = Voron.Global.Constants;
 
 namespace Voron.Data.PostingLists
 {

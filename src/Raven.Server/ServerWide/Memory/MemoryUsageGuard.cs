@@ -1,7 +1,8 @@
-﻿using Raven.Server.Utils;
+﻿using NLog;
+using Raven.Server.Utils;
 using Sparrow;
-using Sparrow.Logging;
 using Sparrow.LowMemory;
+using Sparrow.Server.LowMemory;
 using Sparrow.Utils;
 
 namespace Raven.Server.ServerWide.Memory

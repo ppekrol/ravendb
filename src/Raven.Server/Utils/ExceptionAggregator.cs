@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using NLog;
 using Sparrow.Collections;
-using Sparrow.Logging;
 
 namespace Raven.Server.Utils
 {
@@ -85,8 +85,8 @@ namespace Raven.Server.Utils
 
             var aggregateException = GetAggregateException();
 
-            if (_logger != null && _logger.IsInfoEnabled)
-                _logger.Info(_errorMsg, aggregateException);
+            if (_logger is { IsInfoEnabled: true })
+                _logger.Info(aggregateException, _errorMsg);
 
             throw aggregateException;
         }

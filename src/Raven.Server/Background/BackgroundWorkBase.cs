@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
+using Sparrow.Global;
 using Sparrow.Logging;
 using Sparrow.Utils;
 
@@ -14,10 +16,10 @@ namespace Raven.Server.Background
         private Task _currentTask;
         protected readonly Logger Logger;
 
-        protected BackgroundWorkBase(string resourceName, CancellationToken shutdown)
+        protected BackgroundWorkBase(string resourceName, Logger logger, CancellationToken shutdown)
         {
             _shutdown = shutdown;
-            Logger = LoggingSource.Instance.GetLogger(resourceName ?? "Server", GetType().FullName);
+            Logger = logger;
             Cts = CancellationTokenSource.CreateLinkedTokenSource(_shutdown);
         }
 
@@ -75,7 +77,7 @@ namespace Raven.Server.Background
                 if (e.InnerException is OperationCanceledException == false)
                 {
                     if (Logger.IsInfoEnabled)
-                        Logger.Info("Background worker of the notification center failed to stop", e);
+                        Logger.Info(e, "Background worker of the notification center failed to stop");
                 }
             }
 
@@ -102,8 +104,8 @@ namespace Raven.Server.Background
             {
                 // can happen if there is an invalid timespan
 
-                if (Logger.IsOperationsEnabled && e is ObjectDisposedException == false)
-                    Logger.Operations($"Error in the background worker when {nameof(WaitOrThrowOperationCanceled)} was called", e);
+                if (Logger.IsErrorEnabled && e is ObjectDisposedException == false)
+                    Logger.Error(e, $"Error in the background worker when {nameof(WaitOrThrowOperationCanceled)} was called");
 
                 throw new OperationCanceledException(); // throw OperationCanceled so we stop the work
             }
@@ -137,7 +139,7 @@ namespace Raven.Server.Background
                             return;
 
                         if (Logger.IsInfoEnabled)
-                            Logger.Info("Error in the background worker", e);
+                            Logger.Info(e, "Error in the background worker");
                     }
                 }
             }

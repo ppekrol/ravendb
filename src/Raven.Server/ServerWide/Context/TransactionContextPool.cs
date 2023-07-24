@@ -4,6 +4,7 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
+using NLog;
 using Sparrow;
 using Sparrow.Json;
 using Voron;
@@ -14,7 +15,8 @@ namespace Raven.Server.ServerWide.Context
     {
         private StorageEnvironment _storageEnvironment;
 
-        public TransactionContextPool(StorageEnvironment storageEnvironment, Size? maxContextSizeToKeepInMb = null) : base(maxContextSizeToKeepInMb)
+        public TransactionContextPool(Logger logger, StorageEnvironment storageEnvironment, Size? maxContextSizeToKeepInMb = null) 
+            : base(maxContextSizeToKeepInMb, logger)
         {
             _storageEnvironment = storageEnvironment;
         }
