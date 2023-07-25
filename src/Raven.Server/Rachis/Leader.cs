@@ -700,10 +700,7 @@ namespace Raven.Server.Rachis
                         if (await waitAsync == false)
                         {
                             if (rachisMergedCommand.Consumed.Raise())
-                            {
-                                GetConvertResult(command)?.AboutToTimeout();
                                 throw new TimeoutException($"Waited for {timeout} but the command was not applied in this time.");
-                            }
 
                             // if the command is already dequeued we must let it continue to keep its context valid.
                             await rachisMergedCommand.Tcs.Task;
@@ -720,14 +717,31 @@ namespace Raven.Server.Rachis
                 }
             }
 
-            var inner = await rachisMergedCommand.Tcs.Task;
-            if (await inner.WaitWithTimeout(timeout) == false)
-            {
-                GetConvertResult(command)?.AboutToTimeout();
+            var commitCommandTask = await rachisMergedCommand.Tcs.Task;
+            if (await commitCommandTask.WaitWithTimeout(timeout) == false)
                 throw new TimeoutException($"Waited for {timeout} but the command was not applied in this time.");
-            }
 
-            return await inner;
+            var (index, result) = await commitCommandTask;
+            result = HandleContextResultCommand(command, result);
+            return (index, result);
+        }
+
+        private static object HandleContextResultCommand(CommandBase command, object result)
+        {
+            if (command is not IContextResultCommand contextResultCommand) 
+                return result;
+            
+            if (result is not ConcurrentQueue<ResultContext> resultContexts)
+                //If we get the result from the history logs they are not wrap in ResultContext since we write them directly on the command context
+                return result;
+
+            if (resultContexts.TryDequeue(out var resultContext) == false)
+                throw new InvalidOperationException("Should have enough contexts to handle all command. It is a bug and should not happen");
+
+            using (resultContext)
+            {
+                return contextResultCommand.CloneResult(contextResultCommand.ContextToWriteResult, resultContext.Result);
+            }
         }
 
         private void EmptyQueue()
@@ -777,10 +791,8 @@ namespace Raven.Server.Rachis
                                     }
                                     else
                                     {
-                                        if (result != null)
-                                        {
-                                            result = GetConvertResult(cmd.Command)?.Apply(result) ?? cmd.Command.FromRemote(result);
-                                        }
+                                        if (result != null && cmd.Command is IContextResultCommand ctxResultCommand)
+                                            result = ctxResultCommand.CloneResult(ctxResultCommand.ContextToWriteResult, result);
 
                                         cmd.Tcs.TrySetResult(Task.FromResult<(long, object)>((index, result)));
                                     }
@@ -793,25 +805,25 @@ namespace Raven.Server.Rachis
                                 index = _engine.InsertToLeaderLog(context, Term, cmdJson, RachisEntryFlags.StateMachineCommand);
                             }
 
-                            if (_entries.TryGetValue(index, out var state))
-                            {
-                                tasks.Add(state.TaskCompletionSource.Task);
-                            }
-                            else
+                            if (_entries.TryGetValue(index, out var state) == false)
                             {
                                 var tcs = new TaskCompletionSource<(long, object)>(TaskCreationOptions.RunContinuationsAsynchronously);
-                                tasks.Add(tcs.Task);
-                                state = new
-                                    CommandState
+                                state = new CommandState
                                 // we need to add entry inside write tx lock to avoid
                                 // a situation when command will be applied (and state set)
                                 // before it is added to the entries list
                                 {
                                     CommandIndex = index,
                                     TaskCompletionSource = tcs,
-                                    ConvertResult = GetConvertResult(cmd.Command),
                                 };
                                 _entries[index] = state;
+                            }
+                            tasks.Add(state.TaskCompletionSource.Task);
+
+                            if(cmd.Command is IContextResultCommand contextResultCommand)
+                            {
+                                state.ResultContexts ??= new ConcurrentQueue<ResultContext>();
+                                state.ResultContexts.Enqueue(new ResultContext(_engine.ContextPool, contextResultCommand.CloneResult));
                             }
                         }
                         context.Transaction.Commit();
@@ -838,35 +850,6 @@ namespace Raven.Server.Rachis
 
                     _errorOccurred.TrySetException(e);
                 }
-            }
-        }
-
-        internal static ConvertResultAction GetConvertResult(CommandBase cmd)
-        {
-            ConvertResultAction action;
-            switch (cmd)
-            {
-                case AddOrUpdateCompareExchangeBatchCommand batchCmpExchangeCommand:
-                    action = batchCmpExchangeCommand.ConvertResultAction;
-                    if (action != null)
-                        return action;
-
-                    action = new ConvertResultAction(batchCmpExchangeCommand.ContextToWriteResult, CompareExchangeCommandBase.ConvertResult);
-                    Interlocked.CompareExchange(ref batchCmpExchangeCommand.ConvertResultAction, action, null);
-                    return batchCmpExchangeCommand.ConvertResultAction;
-
-                case CompareExchangeCommandBase cmpExchange:
-
-                    action = cmpExchange.ConvertResultAction;
-                    if (action != null)
-                        return action;
-
-                    action = new ConvertResultAction(cmpExchange.ContextToWriteResult, CompareExchangeCommandBase.ConvertResult);
-                    Interlocked.CompareExchange(ref cmpExchange.ConvertResultAction, action, null);
-                    return cmpExchange.ConvertResultAction;
-
-                default:
-                    return null;
             }
         }
 
@@ -1172,17 +1155,21 @@ namespace Raven.Server.Rachis
 
         public void SetStateOf(long index, object result)
         {
-            if (_entries.TryGetValue(index, out CommandState state))
+            if (_entries.TryGetValue(index, out CommandState state) == false)
+                return;
+            
+            if (state.ResultContexts == null)
             {
-                if (state.ConvertResult == null)
+                ValidateUsableReturnType(result);
+                state.Result = result;
+            }
+            else
+            {
+                foreach (var resultContext in state.ResultContexts)
                 {
-                    ValidateUsableReturnType(result);
-                    state.Result = result;
+                    resultContext.Copy(result);
                 }
-                else
-                {
-                    state.Result = state.ConvertResult.Apply(result);
-                }
+                state.Result = state.ResultContexts;
             }
         }
 
@@ -1205,11 +1192,44 @@ namespace Raven.Server.Rachis
         {
             public long CommandIndex;
             public object Result;
-            public ConvertResultAction ConvertResult;
+            public ConcurrentQueue<ResultContext> ResultContexts;
             public TaskCompletionSource<(long, object)> TaskCompletionSource;
             public Action<TaskCompletionSource<(long, object)>> OnNotify;
         }
 
+        public class ResultContext : IDisposable
+        {
+            private readonly JsonOperationContext _context;
+            private readonly IDisposable _disposable;
+            private bool _isDisposed;
+            private readonly Func<JsonOperationContext, object, object> _copyAction;
+
+            public object Result { get; private set; }
+            
+            public ResultContext(ClusterContextPool contextPool, Func<JsonOperationContext, object, object> copyAction)
+            {
+                _copyAction = copyAction;
+                _disposable = contextPool.AllocateOperationContext(out _context);
+            }
+            
+            ~ResultContext() => Dispose();
+
+            public void Dispose()
+            {
+                if (_isDisposed) 
+                    return;
+                
+                GC.SuppressFinalize(this);
+                _disposable.Dispose();
+                _isDisposed = true;
+            }
+
+            public void Copy(object result)
+            {
+                Result = _copyAction.Invoke(_context, result);
+            }
+        }
+        
         public class ConvertResultAction
         {
             private readonly JsonOperationContext _contextToWriteBlittableResult;

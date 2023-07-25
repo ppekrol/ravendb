@@ -15,7 +15,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public abstract class CompareExchangeCommandBase : CommandBase
+    public abstract class CompareExchangeCommandBase : CommandBase, IContextResultCommand
     {
         public string Key;
         public string Database;
@@ -27,11 +27,22 @@ namespace Raven.Server.ServerWide.Commands
         public long Index;
 
         [JsonDeserializationIgnore]
-        public JsonOperationContext ContextToWriteResult;
+        public JsonOperationContext ContextToWriteResult { get; set; }
 
-        [JsonDeserializationIgnore]
-        public Leader.ConvertResultAction ConvertResultAction;
+        object IContextResultCommand.CloneResult(JsonOperationContext context, object result)
+        {
+            var compareExchangeResult =  result switch
+            {
+                CompareExchangeResult obj => new CompareExchangeResult{Index = obj.Index, Value = obj.Value},
+                //If the result comes from the history logs they are blittable
+                BlittableJsonReaderObject blittable => JsonDeserializationCluster.CompareExchangeResult(blittable),
+                _ => throw new RachisApplyException("Unable to convert result type: " + result?.GetType()?.FullName + ", " + result)
+            };
+            if (compareExchangeResult.Value is BlittableJsonReaderObject val)
+                compareExchangeResult.Value = context.ReadObject(val, "cmpXchg result clone");
 
+            return compareExchangeResult;
+        }
 
         protected CompareExchangeCommandBase() { }
 
