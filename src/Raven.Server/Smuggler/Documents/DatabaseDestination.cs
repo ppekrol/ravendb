@@ -672,8 +672,7 @@ namespace Raven.Server.Smuggler.Documents
                 }
                 else
                 {
-                    _compareExchangeAddOrUpdateCommands.Add(new AddOrUpdateCompareExchangeCommand(_database.Name, key, value, 0, _context, RaftIdGenerator.DontCareId,
-                        fromBackup: true));
+                    _compareExchangeAddOrUpdateCommands.Add(new AddOrUpdateCompareExchangeCommand(_database.Name, key, value, 0, RaftIdGenerator.DontCareId, fromBackup: true));
 
                     _compareExchangeValuesSize.Add(value.Size, SizeUnit.Bytes);
                 }
@@ -682,7 +681,7 @@ namespace Raven.Server.Smuggler.Documents
             public async ValueTask WriteTombstoneKeyAsync(string key)
             {
                 var index = _database.ServerStore.LastRaftCommitIndex;
-                _compareExchangeRemoveCommands.Add(new RemoveCompareExchangeCommand(_database.Name, key, index, _context, RaftIdGenerator.DontCareId, fromBackup: true));
+                _compareExchangeRemoveCommands.Add(new RemoveCompareExchangeCommand(_database.Name, key, index, RaftIdGenerator.DontCareId, fromBackup: true));
 
                 if (_compareExchangeRemoveCommands.Count < BatchSize)
                     return;
@@ -759,7 +758,7 @@ namespace Raven.Server.Smuggler.Documents
                 if (_compareExchangeAddOrUpdateCommands.Count == 0)
                     return;
 
-                var addOrUpdateResult = await _database.ServerStore.SendToLeaderAsync(context, new AddOrUpdateCompareExchangeBatchCommand(_compareExchangeAddOrUpdateCommands, context, RaftIdGenerator.DontCareId));
+                var addOrUpdateResult = await _database.ServerStore.SendToLeaderAsync(new AddOrUpdateCompareExchangeBatchCommand(_compareExchangeAddOrUpdateCommands, context, RaftIdGenerator.DontCareId));
                 foreach (var command in _compareExchangeAddOrUpdateCommands)
                 {
                     command.Value.Dispose();
@@ -773,7 +772,7 @@ namespace Raven.Server.Smuggler.Documents
             {
                 if (_compareExchangeRemoveCommands.Count == 0)
                     return;
-                var addOrUpdateResult = await _database.ServerStore.SendToLeaderAsync(context, new AddOrUpdateCompareExchangeBatchCommand(_compareExchangeRemoveCommands, context, RaftIdGenerator.DontCareId));
+                var addOrUpdateResult = await _database.ServerStore.SendToLeaderAsync(new AddOrUpdateCompareExchangeBatchCommand(_compareExchangeRemoveCommands, context, RaftIdGenerator.DontCareId));
                 _compareExchangeRemoveCommands.Clear();
 
                 _lastAddOrUpdateOrRemoveResultIndex = addOrUpdateResult.Index;

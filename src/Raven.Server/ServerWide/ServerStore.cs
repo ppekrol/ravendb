@@ -2855,9 +2855,9 @@ namespace Raven.Server.ServerWide
 
         //this is needed for cases where Result or any of its fields are blittable json.
         //(for example, this is needed for use with AddOrUpdateCompareExchangeCommand, since it returns BlittableJsonReaderObject as result)
-        public Task<(long Index, object Result)> SendToLeaderAsync(JsonOperationContext context, CommandBase cmd)
+        public Task<(long Index, object Result)> SendToLeaderAsync(TransactionOperationContext context, CommandBase cmd)
         {
-            return SendToLeaderAsyncInternal(cmd);
+            return SendToLeaderAsyncInternal(context, cmd);
         }
 
         public DynamicJsonArray GetClusterErrors()

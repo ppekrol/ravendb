@@ -237,7 +237,7 @@ namespace Raven.Server.ServerWide.Commands
                 switch (clusterCommand.Type)
                 {
                     case CommandType.CompareExchangePUT:
-                        var put = new AddOrUpdateCompareExchangeCommand(DatabaseName, clusterCommand.Id, clusterCommand.Document, clusterCommand.Index, context, null);
+                        var put = new AddOrUpdateCompareExchangeCommand(DatabaseName, clusterCommand.Id, clusterCommand.Document, clusterCommand.Index, null);
                         put.CurrentTicks = CommandCreationTicks;
                         if (put.Validate(context, items, clusterCommand.Index, out current) == false)
                         {
@@ -247,7 +247,7 @@ namespace Raven.Server.ServerWide.Commands
                         toExecute.Add(put);
                         break;
                     case CommandType.CompareExchangeDELETE:
-                        var delete = new RemoveCompareExchangeCommand(DatabaseName, clusterCommand.Id, clusterCommand.Index, context, null);
+                        var delete = new RemoveCompareExchangeCommand(DatabaseName, clusterCommand.Id, clusterCommand.Index, null);
                         if (delete.Validate(context, items, clusterCommand.Index, out current) == false)
                         {
                             errors.Add(GenerateErrorInfo(clusterCommand, current, delete: true));

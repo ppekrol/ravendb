@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Sparrow.Binary;
 using Sparrow.Global;
+using Sparrow.Logging;
 using Sparrow.Platform;
 using Sparrow.Threading;
 
@@ -21,7 +22,8 @@ namespace Sparrow.Json
     {
         internal const int MaxArenaSize = 1024 * 1024 * 1024;
         private static readonly int? SingleAllocationSizeLimit = PlatformDetails.Is32Bits ? 8 * Constants.Size.Megabyte : (int?)null;
-
+        private Logger _logger = LoggingSource.Instance.GetLogger<ArenaMemoryAllocator>(nameof(ArenaMemoryAllocator));
+        
         private byte* _ptrStart;
         private byte* _ptrCurrent;
 
@@ -40,7 +42,7 @@ namespace Sparrow.Json
 
         private readonly FreeSection*[] _freed = new FreeSection*[32];
 
-        private readonly SingleUseFlag _isDisposed = new SingleUseFlag();
+        public readonly SingleUseFlag _isDisposed = new SingleUseFlag();
         private NativeMemory.ThreadStats _allocatingThread;
         private readonly int _initialSize;
 
@@ -331,6 +333,8 @@ namespace Sparrow.Json
 
         public void Dispose()
         {
+            // if(_logger.IsOperationsEnabled)
+            //     _logger.Operations($"ArenaMemoryAllocator disposed {GetHashCode()} : {Environment.StackTrace}");
             Dispose(true);
         }
 
@@ -339,6 +343,9 @@ namespace Sparrow.Json
             if (!_isDisposed?.Raise() ?? true)
                 return;
 
+            if(_logger.IsOperationsEnabled)
+                _logger.Operations($"ArenaMemoryAllocator disposed {GetHashCode()} {disposing}: {Environment.StackTrace}");
+            
             if (disposing)
                 Monitor.Enter(this);
 

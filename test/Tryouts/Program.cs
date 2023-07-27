@@ -6,6 +6,7 @@ using FastTests.Client;
 using RachisTests;
 using SlowTests.Client.Attachments;
 using SlowTests.Client.TimeSeries.Replication;
+using SlowTests.Cluster;
 using SlowTests.Issues;
 using SlowTests.MailingList;
 using SlowTests.Rolling;
@@ -24,15 +25,16 @@ namespace Tryouts
         public static async Task Main(string[] args)
         {
             Console.WriteLine(Process.GetCurrentProcess().Id);
-            for (int i = 0; i < 10_000; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Console.WriteLine($"Starting to run {i}");
                 try
                 {
                     using (var testOutputHelper = new ConsoleTestOutputHelper())
-                    using (var test = new AttachmentsReplication(testOutputHelper))
+                    using (var test = new MultipleAttemptsRachisCommandTests(testOutputHelper))
                     {
-                        await test.ConflictOfAttachmentAndDocument3StoresDifferentLastModifiedOrder_RevisionsDisabled_MissingAttachmentLoop();
+                        // await test.AddOrUpdateCompareExchangeCommand_WhenCommandSentTwice_SecondAttemptShouldNotReturnNull();
+                        await test.TestCase();
                     }
                 }
                 catch (Exception e)

@@ -12,9 +12,6 @@ namespace Raven.Server.ServerWide.Commands
         [JsonDeserializationIgnore]
         public JsonOperationContext ContextToWriteResult;
 
-        [JsonDeserializationIgnore]
-        public Leader.ConvertResultAction ConvertResultAction;
-
         public AddOrUpdateCompareExchangeBatchCommand()
         {
         }

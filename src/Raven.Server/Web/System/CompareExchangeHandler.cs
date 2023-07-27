@@ -133,14 +133,15 @@ namespace Raven.Server.Web.System
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
                 var updateJson = await context.ReadForMemoryAsync(RequestBodyStream(), "read-unique-value");
-                var command = new AddOrUpdateCompareExchangeCommand(Database.Name, key, updateJson, index, context, raftRequestId);
+                var command = new AddOrUpdateCompareExchangeCommand(Database.Name, key, updateJson, index, raftRequestId);
+                ServerStore.ForTestingPurposes?.ModifyCompareExchangeTimeout?.Invoke(command);
+                var ( raftIndex, response) = await ServerStore.SendToLeaderAsync(context, command);
+                using (var resultContext = (ContextResult)response)
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    ServerStore.ForTestingPurposes?.ModifyCompareExchangeTimeout?.Invoke(command);
-                    (var raftIndex, var response) = await ServerStore.SendToLeaderAsync(context, command);
                     await ServerStore.Cluster.WaitForIndexNotification(raftIndex);
 
-                    var result = (CompareExchangeCommandBase.CompareExchangeResult)response;
+                    var result = (CompareExchangeCommandBase.CompareExchangeResult)resultContext.Result;
                     context.Write(writer, new DynamicJsonValue
                     {
                         [nameof(CompareExchangeResult<object>.Index)] = result.Index,
@@ -164,13 +165,15 @@ namespace Raven.Server.Web.System
 
             using (ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             {
-                var command = new RemoveCompareExchangeCommand(Database.Name, key, index, context, raftRequestId);
+                var command = new RemoveCompareExchangeCommand(Database.Name, key, index, raftRequestId);
+                
+                var (raftIndex, response) = await ServerStore.SendToLeaderAsync(command);
+                using (var resultContext = (ContextResult)response)
                 await using (var writer = new AsyncBlittableJsonTextWriter(context, ResponseBodyStream()))
                 {
-                    (var raftIndex, var response) = await ServerStore.SendToLeaderAsync(context, command);
                     await ServerStore.Cluster.WaitForIndexNotification(raftIndex);
 
-                    var result = (CompareExchangeCommandBase.CompareExchangeResult)response;
+                    var result = (CompareExchangeCommandBase.CompareExchangeResult)resultContext.Result;
                     context.Write(writer, new DynamicJsonValue
                     {
                         [nameof(CompareExchangeResult<object>.Index)] = result.Index,

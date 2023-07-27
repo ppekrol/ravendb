@@ -1,9 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
-using Raven.Client;
 using Raven.Client.Exceptions;
-using Raven.Client.Util;
 using Raven.Server.Rachis;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Binary;
@@ -26,9 +25,6 @@ namespace Raven.Server.ServerWide.Commands
 
         public long Index;
 
-        [JsonDeserializationIgnore]
-        public JsonOperationContext ContextToWriteResult { get; set; }
-
         object IContextResultCommand.CloneResult(JsonOperationContext context, object result)
         {
             var compareExchangeResult =  result switch
@@ -38,6 +34,7 @@ namespace Raven.Server.ServerWide.Commands
                 BlittableJsonReaderObject blittable => JsonDeserializationCluster.CompareExchangeResult(blittable),
                 _ => throw new RachisApplyException("Unable to convert result type: " + result?.GetType()?.FullName + ", " + result)
             };
+            Debug.Assert(compareExchangeResult.Value is BlittableJsonReaderObject);
             if (compareExchangeResult.Value is BlittableJsonReaderObject val)
                 compareExchangeResult.Value = context.ReadObject(val, "cmpXchg result clone");
 
@@ -46,7 +43,7 @@ namespace Raven.Server.ServerWide.Commands
 
         protected CompareExchangeCommandBase() { }
 
-        protected CompareExchangeCommandBase(string database, string key, long index, JsonOperationContext context, string uniqueRequestId, bool fromBackup) : base(uniqueRequestId)
+        protected CompareExchangeCommandBase(string database, string key, long index, string uniqueRequestId, bool fromBackup) : base(uniqueRequestId)
         {
             if (string.IsNullOrEmpty(key))
                 throw new ArgumentNullException(nameof(key), "The key argument must have value");
@@ -58,7 +55,6 @@ namespace Raven.Server.ServerWide.Commands
             Key = key;
             Index = index;
             Database = database;
-            ContextToWriteResult = context;
             FromBackup = fromBackup;
         }
 
@@ -184,7 +180,8 @@ namespace Raven.Server.ServerWide.Commands
 
         public override object FromRemote(object remoteResult)
         {
-            return JsonDeserializationCluster.CompareExchangeResult(((BlittableJsonReaderObject)remoteResult).Clone(ContextToWriteResult));
+            var result = JsonDeserializationCluster.CompareExchangeResult((BlittableJsonReaderObject)remoteResult);
+            return new ContextResult(result);
         }
 
         public class CompareExchangeResult : IDynamicJsonValueConvertible
@@ -248,8 +245,8 @@ namespace Raven.Server.ServerWide.Commands
     {
         public RemoveCompareExchangeCommand() { }
 
-        public RemoveCompareExchangeCommand(string database, string key, long index, JsonOperationContext contextToReturnResult, string uniqueRequestId, bool fromBackup = false) : base(database, key,
-            index, contextToReturnResult, uniqueRequestId, fromBackup)
+        public RemoveCompareExchangeCommand(string database, string key, long index, string uniqueRequestId, bool fromBackup = false) 
+            : base(database, key, index, uniqueRequestId, fromBackup)
         {
         }
 
@@ -342,8 +339,8 @@ namespace Raven.Server.ServerWide.Commands
 
         public AddOrUpdateCompareExchangeCommand() { }
 
-        public AddOrUpdateCompareExchangeCommand(string database, string key, BlittableJsonReaderObject value, long index, JsonOperationContext contextToReturnResult, string uniqueRequestId, bool fromBackup = false)
-            : base(database, key, index, contextToReturnResult, uniqueRequestId, fromBackup)
+        public AddOrUpdateCompareExchangeCommand(string database, string key, BlittableJsonReaderObject value, long index, string uniqueRequestId, bool fromBackup = false)
+            : base(database, key, index, uniqueRequestId, fromBackup)
         {
             if (key.Length > MaxNumberOfCompareExchangeKeyBytes || Encoding.GetByteCount(key) > MaxNumberOfCompareExchangeKeyBytes)
                 ThrowCompareExchangeKeyTooBig(key);

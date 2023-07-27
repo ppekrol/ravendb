@@ -71,6 +71,7 @@ namespace Sparrow.Json
             // currently we have nothing to do here
         }
 
+        private Logger _logger = LoggingSource.Instance.GetLogger("JsonContextPoolBase", "JsonContextPoolBase");
         public IDisposable AllocateOperationContext(out T context)
         {
             _cts.Token.ThrowIfCancellationRequested();
@@ -82,6 +83,8 @@ namespace Sparrow.Json
                 // This what ensures that we work correctly with races from other threads
                 // if there is a context switch at the wrong time
                 context.Renew();
+                if(_logger.IsOperationsEnabled)
+                    _logger.Operations($"1 {context.GetHashCode()} {context._arenaAllocator.GetHashCode()}");
                 return new ReturnRequestContext
                 {
                     Parent = this,
@@ -91,6 +94,9 @@ namespace Sparrow.Json
 
             if (TryGetFromStack(_globalStack, out context))
             {
+                if(_logger.IsOperationsEnabled)
+                    _logger.Operations($"2 {context.GetHashCode()} {context._arenaAllocator.GetHashCode()}");
+
                 return new ReturnRequestContext
                 {
                     Parent = this,
@@ -101,6 +107,8 @@ namespace Sparrow.Json
             // no choice, got to create it
             context = CreateContext();
             context.PoolGeneration = _generation;
+            if(_logger.IsOperationsEnabled)
+                _logger.Operations($"3 {context.GetHashCode()} {context._arenaAllocator.GetHashCode()}");
             return new ReturnRequestContext
             {
                 Parent = this,

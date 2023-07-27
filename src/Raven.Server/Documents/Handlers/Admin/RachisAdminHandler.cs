@@ -51,9 +51,7 @@ namespace Raven.Server.Documents.Handlers.Admin
                 try
                 {
                     var command = CommandBase.CreateFrom(commandJson);
-                    if (command is IContextResultCommand contextResultCommand)
-                        contextResultCommand.ContextToWriteResult = context;
-
+                    
                     if (TrafficWatchManager.HasRegisteredClients)
                         AddStringToHttpContext(commandJson.ToString(), TrafficWatchChangeType.ClusterCommands);
 
@@ -61,6 +59,10 @@ namespace Raven.Server.Documents.Handlers.Admin
                     command.VerifyCanExecuteCommand(ServerStore, context, isClusterAdmin);
 
                     var (etag, result) = await ServerStore.Engine.PutAsync(command);
+                    using var resultContext = result as ContextResult;
+                    if (resultContext != null)
+                        result = resultContext.Result;
+
                     HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
                     var ms = context.CheckoutMemoryStream();
                     try

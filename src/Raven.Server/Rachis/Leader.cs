@@ -728,20 +728,20 @@ namespace Raven.Server.Rachis
 
         private static object HandleContextResultCommand(CommandBase command, object result)
         {
-            if (command is not IContextResultCommand contextResultCommand) 
+            if (command is not IContextResultCommand) 
                 return result;
+
+            if (result is ContextResult contextResult)
+                //Result was read from history logs
+                return contextResult;
             
-            if (result is not ConcurrentQueue<ResultContext> resultContexts)
-                //If we get the result from the history logs they are not wrap in ResultContext since we write them directly on the command context
-                return result;
+            if (result is not ConcurrentQueue<ContextResult> contextResults)
+                throw new InvalidOperationException($"Result should be of type {nameof(ContextResult)} or {nameof(ConcurrentQueue<ContextResult>)} but got {result}. It is a bug and should not happen");
 
-            if (resultContexts.TryDequeue(out var resultContext) == false)
-                throw new InvalidOperationException("Should have enough contexts to handle all command. It is a bug and should not happen");
+            if (contextResults.TryDequeue(out var resultContext) == false)
+                throw new InvalidOperationException("Should have enough contexts to handle all commands. It is a bug and should not happen");
 
-            using (resultContext)
-            {
-                return contextResultCommand.CloneResult(contextResultCommand.ContextToWriteResult, resultContext.Result);
-            }
+            return resultContext;
         }
 
         private void EmptyQueue()
@@ -791,8 +791,12 @@ namespace Raven.Server.Rachis
                                     }
                                     else
                                     {
-                                        if (result != null && cmd.Command is IContextResultCommand ctxResultCommand)
-                                            result = ctxResultCommand.CloneResult(ctxResultCommand.ContextToWriteResult, result);
+                                        if (cmd.Command is IContextResultCommand ctxResultCommand)
+                                        {
+                                            var resultContext = ContextResult.CreateContextResult(_engine.ServerStore.ContextPool, ctxResultCommand.CloneResult);
+                                            resultContext.Copy(result);
+                                            result = resultContext;
+                                        }
 
                                         cmd.Tcs.TrySetResult(Task.FromResult<(long, object)>((index, result)));
                                     }
@@ -822,8 +826,8 @@ namespace Raven.Server.Rachis
 
                             if(cmd.Command is IContextResultCommand contextResultCommand)
                             {
-                                state.ResultContexts ??= new ConcurrentQueue<ResultContext>();
-                                state.ResultContexts.Enqueue(new ResultContext(_engine.ContextPool, contextResultCommand.CloneResult));
+                                state.ContextResults ??= new ConcurrentQueue<ContextResult>();
+                                state.ContextResults.Enqueue(ContextResult.CreateContextResult(_engine.ServerStore.ContextPool, contextResultCommand.CloneResult));
                             }
                         }
                         context.Transaction.Commit();
@@ -1158,18 +1162,26 @@ namespace Raven.Server.Rachis
             if (_entries.TryGetValue(index, out CommandState state) == false)
                 return;
             
-            if (state.ResultContexts == null)
+            if (state.ContextResults == null)
             {
                 ValidateUsableReturnType(result);
                 state.Result = result;
             }
             else
             {
-                foreach (var resultContext in state.ResultContexts)
+                foreach (var resultContext in state.ContextResults)
                 {
-                    resultContext.Copy(result);
+                    try
+                    {
+                        resultContext.Copy(result);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
                 }
-                state.Result = state.ResultContexts;
+                state.Result = state.ContextResults;
             }
         }
 
@@ -1192,74 +1204,9 @@ namespace Raven.Server.Rachis
         {
             public long CommandIndex;
             public object Result;
-            public ConcurrentQueue<ResultContext> ResultContexts;
+            public ConcurrentQueue<ContextResult> ContextResults;
             public TaskCompletionSource<(long, object)> TaskCompletionSource;
             public Action<TaskCompletionSource<(long, object)>> OnNotify;
-        }
-
-        public class ResultContext : IDisposable
-        {
-            private readonly JsonOperationContext _context;
-            private readonly IDisposable _disposable;
-            private bool _isDisposed;
-            private readonly Func<JsonOperationContext, object, object> _copyAction;
-
-            public object Result { get; private set; }
-            
-            public ResultContext(ClusterContextPool contextPool, Func<JsonOperationContext, object, object> copyAction)
-            {
-                _copyAction = copyAction;
-                _disposable = contextPool.AllocateOperationContext(out _context);
-            }
-            
-            ~ResultContext() => Dispose();
-
-            public void Dispose()
-            {
-                if (_isDisposed) 
-                    return;
-                
-                GC.SuppressFinalize(this);
-                _disposable.Dispose();
-                _isDisposed = true;
-            }
-
-            public void Copy(object result)
-            {
-                Result = _copyAction.Invoke(_context, result);
-            }
-        }
-        
-        public class ConvertResultAction
-        {
-            private readonly JsonOperationContext _contextToWriteBlittableResult;
-            private readonly ConvertResultFromLeader _action;
-            private readonly SingleUseFlag _timeout = new SingleUseFlag();
-
-            public ConvertResultAction(JsonOperationContext contextToWriteBlittableResult, ConvertResultFromLeader action)
-            {
-                _contextToWriteBlittableResult = contextToWriteBlittableResult ?? throw new ArgumentNullException(nameof(contextToWriteBlittableResult));
-                _action = action ?? throw new ArgumentNullException(nameof(action));
-            }
-
-            public object Apply(object result)
-            {
-                lock (this)
-                {
-                    if (_timeout.IsRaised())
-                        return null;
-
-                    return _action(_contextToWriteBlittableResult, result);
-                }
-            }
-
-            public void AboutToTimeout()
-            {
-                lock (this)
-                {
-                    _timeout.Raise();
-                }
-            }
         }
     }
 }

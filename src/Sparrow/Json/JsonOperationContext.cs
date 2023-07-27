@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Sparrow.Collections;
 using Sparrow.Global;
 using Sparrow.Json.Parsing;
+using Sparrow.Logging;
 using Sparrow.Threading;
 using Sparrow.Utils;
 
@@ -33,7 +34,7 @@ namespace Sparrow.Json
         private readonly int _initialSize;
         private readonly int _longLivedSize;
         private readonly int _maxNumberOfAllocatedStringValues;
-        protected readonly ArenaMemoryAllocator _arenaAllocator;
+        public readonly ArenaMemoryAllocator _arenaAllocator;
         private ArenaMemoryAllocator _arenaAllocatorForLongLivedValues;
         private AllocatedMemoryData _tempBuffer;
 
@@ -94,6 +95,7 @@ namespace Sparrow.Json
         {
             return new JsonOperationContext(4096, 1024, 8 * 1024, SharedMultipleUseFlag.None);
         }
+        private Logger _logger = LoggingSource.Instance.GetLogger<JsonOperationContext>(nameof(JsonOperationContext));
 
         public JsonOperationContext(int initialSize, int longLivedSize, int maxNumberOfAllocatedStringValues, SharedMultipleUseFlag lowMemoryFlag)
         {
@@ -419,6 +421,10 @@ namespace Sparrow.Json
 
         public override void Dispose()
         {
+            // if(_disposeOnceRunner.Disposed == false)
+            //     if(_logger.IsOperationsEnabled)
+            //         _logger.Operations($"JsonOperationContext disposed {GetHashCode()} : {Environment.StackTrace}");
+            
             _disposeOnceRunner.Dispose();
         }
 
