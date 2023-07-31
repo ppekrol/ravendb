@@ -44,6 +44,7 @@ namespace Sparrow.Json
 
         public readonly SingleUseFlag _isDisposed = new SingleUseFlag();
         private NativeMemory.ThreadStats _allocatingThread;
+        private readonly JsonOperationContext _parent;
         private readonly int _initialSize;
 
         public long TotalUsed;
@@ -68,8 +69,9 @@ namespace Sparrow.Json
             }
         }
 
-        public ArenaMemoryAllocator(SharedMultipleUseFlag lowMemoryFlag, int initialSize = 1024 * 1024)
+        public ArenaMemoryAllocator(JsonOperationContext parent, SharedMultipleUseFlag lowMemoryFlag, int initialSize = 1024 * 1024)
         {
+            _parent = parent;
             _initialSize = initialSize;
             _ptrStart = _ptrCurrent = NativeMemory.AllocateMemory(initialSize, out _allocatingThread);
             _allocated = initialSize;
@@ -257,6 +259,8 @@ namespace Sparrow.Json
             TotalUsed = 0;
         }
 
+        public Guid Id = Guid.NewGuid();
+
         public void ResetArena()
         {
             // Reset current arena buffer
@@ -339,12 +343,14 @@ namespace Sparrow.Json
         }
 
         public void Dispose(bool disposing)
-        {
+        { 
+            GC.SuppressFinalize(this);
+
             if (!_isDisposed?.Raise() ?? true)
                 return;
 
             if(_logger.IsOperationsEnabled)
-                _logger.Operations($"ArenaMemoryAllocator disposed {GetHashCode()} {disposing}: {Environment.StackTrace}");
+                _logger.Operations($"ArenaMemoryAllocator disposed {Id} {disposing}: {Environment.StackTrace}");
             
             if (disposing)
                 Monitor.Enter(this);

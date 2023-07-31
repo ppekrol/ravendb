@@ -31,7 +31,7 @@ public class MultipleAttemptsRachisCommandTests : ClusterTestBase
     {
         try
         {
-            LoggingSource.Instance.SetupLogMode(LogMode.Information, "/home/haludi/work/ravendb/RavenDB-20762/logs", null, null, false);
+            LoggingSource.Instance.SetupLogMode(LogMode.Information, "D:\\temp\\logzz\\", null, null, false);
 
             var customSettings = new Dictionary<string, string>
             {

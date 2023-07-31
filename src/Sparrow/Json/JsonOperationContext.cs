@@ -34,7 +34,7 @@ namespace Sparrow.Json
         private readonly int _initialSize;
         private readonly int _longLivedSize;
         private readonly int _maxNumberOfAllocatedStringValues;
-        public readonly ArenaMemoryAllocator _arenaAllocator;
+        public ArenaMemoryAllocator _arenaAllocator;
         private ArenaMemoryAllocator _arenaAllocatorForLongLivedValues;
         private AllocatedMemoryData _tempBuffer;
 
@@ -152,8 +152,8 @@ namespace Sparrow.Json
             _initialSize = initialSize;
             _longLivedSize = longLivedSize;
             _maxNumberOfAllocatedStringValues = maxNumberOfAllocatedStringValues;
-            _arenaAllocator = new ArenaMemoryAllocator(lowMemoryFlag, initialSize);
-            _arenaAllocatorForLongLivedValues = new ArenaMemoryAllocator(lowMemoryFlag, longLivedSize);
+            _arenaAllocator = new ArenaMemoryAllocator(this, lowMemoryFlag, initialSize);
+            _arenaAllocatorForLongLivedValues = new ArenaMemoryAllocator(this, lowMemoryFlag, longLivedSize);
             CachedProperties = new CachedProperties(this);
             _jsonParserState = new JsonParserState();
             _objectJsonParser = new ObjectJsonParser(_jsonParserState, this);
@@ -424,7 +424,7 @@ namespace Sparrow.Json
             // if(_disposeOnceRunner.Disposed == false)
             //     if(_logger.IsOperationsEnabled)
             //         _logger.Operations($"JsonOperationContext disposed {GetHashCode()} : {Environment.StackTrace}");
-            
+
             _disposeOnceRunner.Dispose();
         }
 
@@ -881,7 +881,7 @@ namespace Sparrow.Json
             _arenaAllocator.RenewArena();
             if (_arenaAllocatorForLongLivedValues == null)
             {
-                _arenaAllocatorForLongLivedValues = new ArenaMemoryAllocator(LowMemoryFlag, _longLivedSize);
+                _arenaAllocatorForLongLivedValues = new ArenaMemoryAllocator(this, LowMemoryFlag, _longLivedSize);
                 CachedProperties = new CachedProperties(this);
             }
             else

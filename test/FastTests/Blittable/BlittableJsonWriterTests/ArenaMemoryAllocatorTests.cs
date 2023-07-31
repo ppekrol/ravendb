@@ -16,7 +16,7 @@ public class ArenaMemoryAllocatorTests : NoDisposalNeeded
     [Fact]
     public void ShouldUseFragmentedMemorySegment()
     {
-        using (var arena = new ArenaMemoryAllocator(SharedMultipleUseFlag.None))
+        using (var arena = new ArenaMemoryAllocator(null, SharedMultipleUseFlag.None))
         {
             const int baseAllocationSize = 4096;
 

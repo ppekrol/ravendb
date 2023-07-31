@@ -27,7 +27,11 @@ public class ContextResult : IDisposable
     {
         var returnContext = contextPool.AllocateOperationContext(out JsonOperationContext context);
         if(context._arenaAllocator._isDisposed.IsRaised())
+        {
+            Debugger.Launch();
+            Debugger.Break();
             Console.WriteLine();
+        }
         return new ContextResult(context, returnContext, copyAction);
     }
     
