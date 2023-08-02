@@ -283,7 +283,7 @@ public partial class RavenTestBase
             throw new TimeoutException(message);
         }
 
-        public string CollectLogsFromNodes(List<RavenServer> nodes)
+        internal string CollectLogsFromNodes(List<RavenServer> nodes)
         {
             var message = "";
             for (var i = 0; i < nodes.Count; i++)

@@ -35,12 +35,12 @@ public partial class RavenTestBase
             _parent = parent ?? throw new ArgumentNullException(nameof(parent));
         }
 
-        public X509Certificate2 RegisterClientCertificate(TestCertificatesHolder certificates, Dictionary<string, DatabaseAccess> permissions, SecurityClearance clearance = SecurityClearance.ValidUser, RavenServer server = null)
+        internal X509Certificate2 RegisterClientCertificate(TestCertificatesHolder certificates, Dictionary<string, DatabaseAccess> permissions, SecurityClearance clearance = SecurityClearance.ValidUser, RavenServer server = null)
         {
             return RegisterClientCertificate(certificates.ServerCertificate.Value, certificates.ClientCertificate1.Value, permissions, clearance, server);
         }
 
-        public X509Certificate2 RegisterClientCertificate(
+        internal X509Certificate2 RegisterClientCertificate(
             X509Certificate2 serverCertificate,
             X509Certificate2 clientCertificate,
             Dictionary<string, DatabaseAccess> permissions,

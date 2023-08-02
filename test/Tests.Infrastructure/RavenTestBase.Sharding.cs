@@ -75,7 +75,7 @@ public partial class RavenTestBase
             return _parent.GetDocumentStore(shardedOptions, caller);
         }
 
-        public Options GetOptionsForCluster(RavenServer leader, int shards, int shardReplicationFactor, int orchestratorReplicationFactor, bool dynamicNodeDistribution = false)
+        internal Options GetOptionsForCluster(RavenServer leader, int shards, int shardReplicationFactor, int orchestratorReplicationFactor, bool dynamicNodeDistribution = false)
         {
             var options = new Options
             {

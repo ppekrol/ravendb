@@ -31,7 +31,7 @@ public class MicrosoftLogTests : RavenTestBase
     }
 
     private Func<RavenServer> _serverFactory;
-    protected override RavenServer GetNewServer(ServerCreationOptions options = null, string caller = null)
+    internal override RavenServer GetNewServer(ServerCreationOptions options = null, string caller = null)
     {
         return _serverFactory != null
             ? _serverFactory.Invoke()

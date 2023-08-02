@@ -60,10 +60,10 @@ public partial class RavenTestBase
             }
         }
 
-        public Task<List<OngoingTask>> GetOngoingTasks(string database, RavenServer server) =>
+        internal Task<List<OngoingTask>> GetOngoingTasks(string database, RavenServer server) =>
             GetOngoingTasks(database, new List<RavenServer>(capacity: 1) { server });
 
-        public async Task<List<OngoingTask>> GetOngoingTasks(string database, List<RavenServer> servers)
+        internal async Task<List<OngoingTask>> GetOngoingTasks(string database, List<RavenServer> servers)
         {
             var tasks = new Dictionary<long, OngoingTask>();
             foreach (var server in servers)

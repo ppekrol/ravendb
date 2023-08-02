@@ -17,4 +17,4 @@
 [assembly: InternalsVisibleTo("BenchmarkTests")]
 [assembly: InternalsVisibleTo("ServerStoreTxMerger.Benchmark")]
 [assembly: InternalsVisibleTo("Voron.Benchmark")]
-
+[assembly: InternalsVisibleTo("SubscriptionFailover.Benchmark")]

@@ -50,7 +50,7 @@ namespace SlowTests.Server.Integrations.PostgreSQL
             return dt;
         }
 
-        protected async Task<DataTable> Act(DocumentStore store, string query, RavenServer server, bool? forceSslMode = null,
+        internal async Task<DataTable> Act(DocumentStore store, string query, RavenServer server, bool? forceSslMode = null,
             Dictionary<string, (NpgsqlDbType, object)> parameters = null, bool prepareExecute = false)
         {
             var connectionString = GetConnectionString(store, server, forceSslMode);

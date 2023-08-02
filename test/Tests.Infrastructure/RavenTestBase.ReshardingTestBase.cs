@@ -23,7 +23,7 @@ public partial class RavenTestBase
             _parent = parent;
         }
 
-        public async Task<int> StartMovingShardForId(IDocumentStore store, string id, int? toShard = null, List<RavenServer> servers = null)
+        internal async Task<int> StartMovingShardForId(IDocumentStore store, string id, int? toShard = null, List<RavenServer> servers = null)
         {
             servers ??= _parent.GetServers();
 
@@ -81,7 +81,7 @@ public partial class RavenTestBase
             }
         }
 
-        public async Task MoveShardForId(IDocumentStore store, string id, int? toShard = null, List<RavenServer> servers = null)
+        internal async Task MoveShardForId(IDocumentStore store, string id, int? toShard = null, List<RavenServer> servers = null)
         {
             try
             {

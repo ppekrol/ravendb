@@ -1108,7 +1108,7 @@ namespace SlowTests.Rolling
             }
         }
 
-        public static async Task WaitForRollingIndex(string database, string name, List<RavenServer> servers)
+        internal static async Task WaitForRollingIndex(string database, string name, List<RavenServer> servers)
         {
             foreach (var server in servers)
             {
