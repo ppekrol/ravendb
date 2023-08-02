@@ -34,19 +34,19 @@ public partial class RavenTestBase
             _parent = parent ?? throw new ArgumentNullException(nameof(parent));
         }
 
-        public async Task WaitForRaftCommandToBeAppliedInClusterAsync(RavenServer leader, string commandType)
+        internal async Task WaitForRaftCommandToBeAppliedInClusterAsync(RavenServer leader, string commandType)
         {
             var updateIndex = LastRaftIndexForCommand(leader, commandType);
             await WaitForRaftIndexToBeAppliedInClusterAsync(updateIndex, TimeSpan.FromSeconds(10));
         }
 
-        public async Task WaitForRaftCommandToBeAppliedInLocalServerAsync(string commandType)
+        internal async Task WaitForRaftCommandToBeAppliedInLocalServerAsync(string commandType)
         {
             var updateIndex = LastRaftIndexForCommand(_parent.Server, commandType);
             await _parent.Server.ServerStore.Cluster.WaitForIndexNotification(updateIndex, TimeSpan.FromSeconds(10));
         }
 
-        public async Task<long> WaitForRaftCommandToBeAppendedInClusterAsync(List<RavenServer> nodes, string commandType, int timeout = 15_000, int interval = 100)
+        internal async Task<long> WaitForRaftCommandToBeAppendedInClusterAsync(List<RavenServer> nodes, string commandType, int timeout = 15_000, int interval = 100)
         {
             // Assuming that I have only 1 command of this type (commandType) in the raft log
             var tasks = new List<Task<bool>>();
@@ -72,7 +72,7 @@ public partial class RavenTestBase
             return index;
         }
 
-        public async Task CreateIndexInClusterAsync(IDocumentStore store, AbstractIndexCreationTask index, List<RavenServer> nodes = null)
+        internal async Task CreateIndexInClusterAsync(IDocumentStore store, AbstractIndexCreationTask index, List<RavenServer> nodes = null)
         {
             var results = (await store.Maintenance.ForDatabase(store.Database)
                                         .SendAsync(new PutIndexesOperation(index.CreateIndexDefinition())))
@@ -155,14 +155,14 @@ public partial class RavenTestBase
             return null;
         }
 
-        public long LastRaftIndexForCommand(RavenServer server, string commandType)
+        internal long LastRaftIndexForCommand(RavenServer server, string commandType)
         {
             var commandFound = TryGetLastRaftIndexForCommand(server, commandType, out var updateIndex);
             Assert.True(commandFound, $"{commandType} wasn't found in the log.");
             return updateIndex;
         }
 
-        public bool TryGetLastRaftIndexForCommand(RavenServer server, string commandType, out long updateIndex)
+        internal bool TryGetLastRaftIndexForCommand(RavenServer server, string commandType, out long updateIndex)
         {
             updateIndex = 0L;
             using (server.ServerStore.Engine.ContextPool.AllocateOperationContext(out ClusterOperationContext context))
@@ -181,7 +181,7 @@ public partial class RavenTestBase
             return updateIndex > 0L;
         }
 
-        public IEnumerable<DynamicJsonValue> GetRaftCommands(RavenServer server, string commandType = null)
+        internal IEnumerable<DynamicJsonValue> GetRaftCommands(RavenServer server, string commandType = null)
         {
             using (server.ServerStore.Engine.ContextPool.AllocateOperationContext(out ClusterOperationContext context))
             using (context.OpenReadTransaction())
@@ -195,7 +195,7 @@ public partial class RavenTestBase
             }
         }
 
-        public string GetRaftHistory(RavenServer server)
+        internal string GetRaftHistory(RavenServer server)
         {
             var sb = new StringBuilder();
 
@@ -211,12 +211,12 @@ public partial class RavenTestBase
             return sb.ToString();
         }
 
-        public async Task WaitForRaftIndexToBeAppliedInClusterAsync(long index, TimeSpan? timeout = null, List<RavenServer> nodes = null)
+        internal async Task WaitForRaftIndexToBeAppliedInClusterAsync(long index, TimeSpan? timeout = null, List<RavenServer> nodes = null)
         {
             await WaitForRaftIndexToBeAppliedOnClusterNodesAsync(index, nodes ?? _parent.Servers, timeout);
         }
 
-        public async Task WaitForRaftIndexToBeAppliedInClusterWithNodesValidationAsync(long index, TimeSpan? timeout = null, List<RavenServer> nodes = null)
+        internal async Task WaitForRaftIndexToBeAppliedInClusterWithNodesValidationAsync(long index, TimeSpan? timeout = null, List<RavenServer> nodes = null)
         {
             var servers = nodes ?? _parent.Servers;
             var notDisposed = servers.Count(s => s.ServerStore.Disposed == false);
@@ -228,7 +228,7 @@ public partial class RavenTestBase
             await WaitForRaftIndexToBeAppliedOnClusterNodesAsync(index, servers, timeout);
         }
 
-        public async Task WaitForRaftIndexToBeAppliedOnClusterNodesAsync(long index, List<RavenServer> nodes, TimeSpan? timeout = null)
+        internal async Task WaitForRaftIndexToBeAppliedOnClusterNodesAsync(long index, List<RavenServer> nodes, TimeSpan? timeout = null)
         {
             if (nodes.Count == 0)
                 throw new InvalidOperationException("Cannot wait for raft index to be applied when the cluster is empty. Make sure you are using the right server.");
@@ -247,7 +247,7 @@ public partial class RavenTestBase
             ThrowTimeoutException(nodes, tasks, index, timeout.Value);
         }
 
-        public void WaitForFirstCompareExchangeTombstonesClean(RavenServer server)
+        internal void WaitForFirstCompareExchangeTombstonesClean(RavenServer server)
         {
             Assert.True(WaitForValue(() =>
             {
@@ -326,7 +326,7 @@ public partial class RavenTestBase
             return string.Join(Environment.NewLine, states.OrderBy(x => x.transition.When).Select(x => $"State for {x.tag}-term{x.Item2.CurrentTerm}:{Environment.NewLine}{x.Item2.From}=>{x.Item2.To} at {x.Item2.When:o} {Environment.NewLine}because {x.Item2.Reason}"));
         }
 
-        public void SuspendObserver(RavenServer server)
+        internal void SuspendObserver(RavenServer server)
         {
             // observer is set in the background task, hence we are waiting for it to not be null
             WaitForValue(() => server.ServerStore.Observer != null, true);

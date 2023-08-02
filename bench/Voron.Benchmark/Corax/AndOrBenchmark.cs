@@ -181,7 +181,7 @@ namespace Voron.Benchmark.Corax
             _ids = new long[BufferSize];
         }
 
-        protected QueryDefinition _queryDefinition;
+        internal QueryDefinition _queryDefinition;
 
         [GlobalCleanup]
         public virtual void Cleanup()

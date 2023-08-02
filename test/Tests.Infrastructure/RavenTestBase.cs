@@ -947,7 +947,7 @@ namespace FastTests
                 }
             }
 
-            public RavenServer Server
+            internal RavenServer Server
             {
                 get => _server;
                 set

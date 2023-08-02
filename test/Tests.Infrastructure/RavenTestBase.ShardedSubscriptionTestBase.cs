@@ -80,7 +80,7 @@ public partial class RavenTestBase
             }
         }
 
-        public async Task AssertNoOpenSubscriptionConnectionsAsync(IDocumentStore store, string subscriptionId, RavenServer server)
+        internal async Task AssertNoOpenSubscriptionConnectionsAsync(IDocumentStore store, string subscriptionId, RavenServer server)
         {
             Assert.Equal(0, await WaitForValueAsync(async () =>
             {

@@ -96,7 +96,7 @@ public partial class RavenTestBase
             return null;
         }
 
-        public async Task EnsureNoReplicationLoopAsync(RavenServer server, string database)
+        internal async Task EnsureNoReplicationLoopAsync(RavenServer server, string database)
         {
             var replication = await ReplicationInstance.GetReplicationInstanceAsync(server, database, new ReplicationManager.ReplicationOptions
             {
@@ -127,7 +127,7 @@ public partial class RavenTestBase
             }
         }
         
-        public Task EnsureNoReplicationLoopAsync(RavenDatabaseMode mode, RavenServer server, string database)
+        internal Task EnsureNoReplicationLoopAsync(RavenDatabaseMode mode, RavenServer server, string database)
         {
             if (mode == RavenDatabaseMode.Single)
                 return EnsureNoReplicationLoopAsync(server, database);
@@ -138,7 +138,7 @@ public partial class RavenTestBase
             throw new ArgumentOutOfRangeException($"{mode} is unsupported");
         }
 
-        public Options AdjustOptionsToClusterSize(Options options, RavenServer leader, int clusterSize)
+        internal Options AdjustOptionsToClusterSize(Options options, RavenServer leader, int clusterSize)
         {
             if (options.DatabaseMode == RavenDatabaseMode.Sharded)
             {
@@ -155,7 +155,7 @@ public partial class RavenTestBase
 
         public Task<string> GetErrorsAsync(IDocumentStore store) => GetErrorsForClusterAsync(new List<RavenServer> { _parent.Server }, store.Database);
 
-        public async Task<string> GetErrorsForClusterAsync(IEnumerable<RavenServer> servers, string database)
+        internal async Task<string> GetErrorsForClusterAsync(IEnumerable<RavenServer> servers, string database)
         {
             var sb = new StringBuilder();
             foreach (var server in servers)

@@ -30,7 +30,7 @@ public partial class ClusterTestBase
             _parent = parent ?? throw new ArgumentNullException(nameof(parent));
         }
 
-        public Task<(long Index, List<RavenServer> Servers)> CreateShardedDatabaseInCluster(string databaseName, int replicationFactor, (List<RavenServer> Nodes, RavenServer Leader) tuple, int shards = 3, X509Certificate2 certificate = null)
+        internal Task<(long Index, List<RavenServer> Servers)> CreateShardedDatabaseInCluster(string databaseName, int replicationFactor, (List<RavenServer> Nodes, RavenServer Leader) tuple, int shards = 3, X509Certificate2 certificate = null)
         {
             var tags = tuple.Nodes.Select(x => x.ServerStore.NodeTag).ToList();
 
@@ -95,12 +95,12 @@ public partial class ClusterTestBase
             return dbs;
         }
 
-        public bool WaitForShardedChangeVectorInCluster(List<RavenServer> nodes, string database, int replicationFactor, int timeout = 15000)
+        internal bool WaitForShardedChangeVectorInCluster(List<RavenServer> nodes, string database, int replicationFactor, int timeout = 15000)
         {
             return AsyncHelpers.RunSync(() => WaitForShardedChangeVectorInClusterAsync(nodes, database, replicationFactor, timeout));
         }
 
-        public async Task<bool> WaitForShardedChangeVectorInClusterAsync(List<RavenServer> nodes, string database, int replicationFactor, int timeout = 15000)
+        internal async Task<bool> WaitForShardedChangeVectorInClusterAsync(List<RavenServer> nodes, string database, int replicationFactor, int timeout = 15000)
         {
             return await WaitForValueAsync(async () =>
             {
@@ -150,6 +150,6 @@ public partial class ClusterTestBase
             return record.Sharding?.Shards;
         }
 
-        public Task EnsureNoReplicationLoopForSharding(RavenServer server, string database) => _parent.Sharding.EnsureNoReplicationLoopForShardingAsync(server, database);
+        internal Task EnsureNoReplicationLoopForSharding(RavenServer server, string database) => _parent.Sharding.EnsureNoReplicationLoopForShardingAsync(server, database);
     }
 }

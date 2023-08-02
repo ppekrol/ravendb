@@ -1523,8 +1523,8 @@ namespace Raven.Server.Documents.Indexes
             bool startIndex = false;
             switch (_documentDatabase.Configuration.Indexing.IndexStartupBehavior)
             {
-                case IndexingConfiguration.IndexStartupBehaviorType.Default:
-                case IndexingConfiguration.IndexStartupBehaviorType.Immediate:
+                case IndexStartupBehaviorType.Default:
+                case IndexStartupBehaviorType.Immediate:
                     startIndex = true;
                     break;
             }
@@ -1577,7 +1577,7 @@ namespace Raven.Server.Documents.Indexes
 
             switch (_documentDatabase.Configuration.Indexing.IndexStartupBehavior)
             {
-                case IndexingConfiguration.IndexStartupBehaviorType.Delay:
+                case IndexStartupBehaviorType.Delay:
 
                     ExecuteForIndexes(GetIndexes(), index =>
                     {
@@ -1603,7 +1603,7 @@ namespace Raven.Server.Documents.Indexes
             var startIndexSp = Stopwatch.StartNew();
 
             addToInitLog("Starting new indexes");
-            startIndex = _documentDatabase.Configuration.Indexing.IndexStartupBehavior != IndexingConfiguration.IndexStartupBehaviorType.Pause;
+            startIndex = _documentDatabase.Configuration.Indexing.IndexStartupBehavior != IndexStartupBehaviorType.Pause;
             var startedIndexes = HandleDatabaseRecordChange(record, raftIndex, startIndex);
 
             addToInitLog($"Started {startedIndexes} new index{(startedIndexes > 1 ? "es" : string.Empty)}, took: {startIndexSp.ElapsedMilliseconds}ms");

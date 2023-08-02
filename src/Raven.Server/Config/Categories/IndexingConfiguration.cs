@@ -523,13 +523,13 @@ namespace Raven.Server.Config.Categories
             Start,
             ResetAndStart
         }
+    }
 
-        public enum IndexStartupBehaviorType
-        {
-            Default,
-            Immediate,
-            Pause,
-            Delay
-        }
+    public enum IndexStartupBehaviorType
+    {
+        Default,
+        Immediate,
+        Pause,
+        Delay
     }
 }

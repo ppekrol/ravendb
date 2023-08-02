@@ -55,7 +55,7 @@ namespace Tests.Infrastructure
             }
         }
 
-        public ValueTask<IReplicationManager> GetReplicationManagerAsync(IDocumentStore store, string databaseName, RavenDatabaseMode mode, bool breakReplication = false, List<RavenServer> servers = null)
+        internal ValueTask<IReplicationManager> GetReplicationManagerAsync(IDocumentStore store, string databaseName, RavenDatabaseMode mode, bool breakReplication = false, List<RavenServer> servers = null)
         {
             var options = new ReplicationManager.ReplicationOptions
             {
@@ -307,7 +307,7 @@ namespace Tests.Infrastructure
             return await store.Maintenance.Server.SendAsync(op);
         }
 
-        public async ValueTask<IReplicationManager> SetupReplicationAndGetManagerAsync(IDocumentStore fromStore, RavenDatabaseMode mode, bool breakReplication = false, List<RavenServer> servers = null, params IDocumentStore[] toStores)
+        internal async ValueTask<IReplicationManager> SetupReplicationAndGetManagerAsync(IDocumentStore fromStore, RavenDatabaseMode mode, bool breakReplication = false, List<RavenServer> servers = null, params IDocumentStore[] toStores)
         {
             var replication = await GetReplicationManagerAsync(fromStore, fromStore.Database, mode, breakReplication, servers);
             await SetupReplicationAsync(fromStore, responsibleNode: null, toStores);

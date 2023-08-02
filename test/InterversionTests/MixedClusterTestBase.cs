@@ -28,7 +28,7 @@ namespace InterversionTests
         {
         }
 
-        protected override RavenServer GetNewServer(ServerCreationOptions options = null, [CallerMemberName]string caller = null)
+        internal override RavenServer GetNewServer(ServerCreationOptions options = null, [CallerMemberName]string caller = null)
         {
             if (options == null)
             {
@@ -76,7 +76,7 @@ namespace InterversionTests
             return processes;
         }
 
-        protected async Task<(RavenServer Leader, List<ProcessNode> Peers, List<RavenServer> LocalPeers)> CreateMixedCluster(
+        internal async Task<(RavenServer Leader, List<ProcessNode> Peers, List<RavenServer> LocalPeers)> CreateMixedCluster(
             string[] peers, int localPeers = 0, IDictionary<string, string> customSettings = null, X509Certificate2 certificate = null, bool watcherCluster = true)
         {
             var leaderServer = GetNewServer(new ServerCreationOptions { CustomSettings = customSettings });
@@ -160,7 +160,7 @@ namespace InterversionTests
             }), stores);
         }
 
-        protected async Task<(IDisposable Disposable, List<DocumentStore> Stores)> GetStores(RavenServer leader, List<ProcessNode> peers,
+        internal async Task<(IDisposable Disposable, List<DocumentStore> Stores)> GetStores(RavenServer leader, List<ProcessNode> peers,
             List<RavenServer> local = null, Action<DocumentStore> modifyDocumentStore = null)
         {
             if (modifyDocumentStore == null)

@@ -20,11 +20,11 @@ namespace SlowTests.Issues
         }
 
         [Theory]
-        [InlineData(IndexingConfiguration.IndexStartupBehaviorType.Default)]
-        [InlineData(IndexingConfiguration.IndexStartupBehaviorType.Delay)]
-        [InlineData(IndexingConfiguration.IndexStartupBehaviorType.Immediate)]
-        [InlineData(IndexingConfiguration.IndexStartupBehaviorType.Pause)]
-        public void IndexStartupBehaviorType_Should_Work_Correctly(IndexingConfiguration.IndexStartupBehaviorType type)
+        [InlineData(IndexStartupBehaviorType.Default)]
+        [InlineData(IndexStartupBehaviorType.Delay)]
+        [InlineData(IndexStartupBehaviorType.Immediate)]
+        [InlineData(IndexStartupBehaviorType.Pause)]
+        public void IndexStartupBehaviorType_Should_Work_Correctly(IndexStartupBehaviorType type)
         {
             DoNotReuseServer();
 
@@ -58,7 +58,7 @@ namespace SlowTests.Issues
 
                 Server.ServerStore.DatabasesLandlord.UnloadDirectly(store.Database);
 
-                if (type == IndexingConfiguration.IndexStartupBehaviorType.Delay)
+                if (type == IndexStartupBehaviorType.Delay)
                 {
                     Server.ServerStore.DatabasesLandlord.ForTestingPurposesOnly().OnBeforeDocumentDatabaseInitialization = database =>
                     {
@@ -73,12 +73,12 @@ namespace SlowTests.Issues
                 IndexRunningStatus expectedStatus;
                 switch (type)
                 {
-                    case IndexingConfiguration.IndexStartupBehaviorType.Default:
-                    case IndexingConfiguration.IndexStartupBehaviorType.Immediate:
-                    case IndexingConfiguration.IndexStartupBehaviorType.Delay:
+                    case IndexStartupBehaviorType.Default:
+                    case IndexStartupBehaviorType.Immediate:
+                    case IndexStartupBehaviorType.Delay:
                         expectedStatus = IndexRunningStatus.Running;
                         break;
-                    case IndexingConfiguration.IndexStartupBehaviorType.Pause:
+                    case IndexStartupBehaviorType.Pause:
                         expectedStatus = IndexRunningStatus.Paused;
                         break;
                     default:

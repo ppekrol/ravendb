@@ -225,7 +225,7 @@ namespace SlowTests.Issues
 
         }
 
-        public async Task AssertRaftIndexToBeUpdatedOnNodesAsync(long index, List<RavenServer> nodes, int timeout = 15000, int interval = 100)
+        internal async Task AssertRaftIndexToBeUpdatedOnNodesAsync(long index, List<RavenServer> nodes, int timeout = 15000, int interval = 100)
         {
             var sw = Stopwatch.StartNew();
 

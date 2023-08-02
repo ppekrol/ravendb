@@ -75,7 +75,7 @@ using DateTime = System.DateTime;
 
 namespace Raven.Server
 {
-    public sealed class RavenServer : IDisposable
+    internal sealed class RavenServer : IDisposable
     {
         static RavenServer()
         {

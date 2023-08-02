@@ -103,7 +103,7 @@ namespace SlowTests.Issues
             }
         }
 
-        protected async Task<List<RavenServer>> CreateMyCluster()
+        internal async Task<List<RavenServer>> CreateMyCluster()
         {
             var customSettingsList = new List<IDictionary<string, string>>() {
                 new Dictionary<string, string>(DefaultClusterSettings)

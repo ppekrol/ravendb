@@ -55,19 +55,19 @@ namespace FastTests
 
         private static RavenServer _globalServer;
 
-        protected static bool IsGlobalServer(RavenServer server)
+        internal static bool IsGlobalServer(RavenServer server)
         {
             return _globalServer == server;
         }
 
         private RavenServer _localServer;
 
-        protected bool IsGlobalOrLocalServer(RavenServer server)
+        internal bool IsGlobalOrLocalServer(RavenServer server)
         {
             return _globalServer == server || _localServer == server;
         }
 
-        protected List<RavenServer> Servers = new();
+        internal List<RavenServer> Servers = new();
 
         private static readonly object ServerLocker = new();
 
@@ -196,7 +196,7 @@ namespace FastTests
             return database;
         }
 
-        public RavenServer Server
+        internal RavenServer Server
         {
             get
             {
@@ -244,7 +244,7 @@ namespace FastTests
             }
         }
 
-        public List<RavenServer> GetServers()
+        internal List<RavenServer> GetServers()
         {
             if (Servers.Count > 0)
             {
@@ -254,7 +254,7 @@ namespace FastTests
             return new List<RavenServer> { _localServer ?? _globalServer ?? throw new ArgumentNullException(nameof(Server))};
         }
 
-        public IEnumerable<RavenServer> GetServersInCluster(RavenServer server)
+        internal IEnumerable<RavenServer> GetServersInCluster(RavenServer server)
         {
             var topology = server.ServerStore.GetClusterTopology().TopologyId;
             foreach (var s in Servers)
@@ -370,7 +370,7 @@ namespace FastTests
         }
 
         private readonly object _getNewServerSync = new();
-        protected List<RavenServer> ServersForDisposal = new();
+        internal List<RavenServer> ServersForDisposal = new();
 
         public class ServerCreationOptions
         {
@@ -479,7 +479,7 @@ namespace FastTests
 
         private static readonly ConcurrentDictionary<RavenServer, string> LeakedServers = new();
 
-        protected virtual RavenServer GetNewServer(ServerCreationOptions options = null, [CallerMemberName] string caller = null)
+        internal virtual RavenServer GetNewServer(ServerCreationOptions options = null, [CallerMemberName] string caller = null)
         {
             if (options == null)
             {
@@ -585,7 +585,7 @@ namespace FastTests
             return new[] { UseFiddlerUrl(url) };
         }
 
-        protected string[] GetUrls(RavenServer serverToUse, bool disableTopologyUpdates = false)
+        internal string[] GetUrls(RavenServer serverToUse, bool disableTopologyUpdates = false)
         {
             if (disableTopologyUpdates || Servers.Count == 0 || Servers.Contains(serverToUse) == false)
                 return UseFiddler(serverToUse.WebUrl);
@@ -691,7 +691,7 @@ namespace FastTests
             _disposeTimeout = timeout;
         }
 
-        protected static void DisposeServer(RavenServer server, int timeoutInMs = 60_000)
+        internal static void DisposeServer(RavenServer server, int timeoutInMs = 60_000)
         {
             if (server == null)
                 return;
@@ -716,7 +716,7 @@ namespace FastTests
             }
         }
 
-        protected static async Task DisposeServerAsync(RavenServer server, int timeoutInMs = 60_000)
+        internal static async Task DisposeServerAsync(RavenServer server, int timeoutInMs = 60_000)
         {
             if (server == null)
                 return;

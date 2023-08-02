@@ -209,7 +209,7 @@ namespace Tests.Infrastructure
             return false;
         }
 
-        public async Task RemoveDatabaseNode(List<RavenServer> cluster, string database, string toDeleteTag)
+        internal async Task RemoveDatabaseNode(List<RavenServer> cluster, string database, string toDeleteTag)
         {
             var deleted = cluster.Single(n => n.ServerStore.NodeTag == toDeleteTag);
             var nonDeleted = cluster.Where(n => n != deleted).ToArray();
@@ -269,7 +269,7 @@ namespace Tests.Infrastructure
             }
         }
 
-        public Task EnsureNoReplicationLoop(RavenServer server, string database) => Replication.EnsureNoReplicationLoopAsync(server, database);
+        internal Task EnsureNoReplicationLoop(RavenServer server, string database) => Replication.EnsureNoReplicationLoopAsync(server, database);
 
         private class GetDatabaseDocumentTestCommand : RavenCommand<DatabaseRecord>
         {
@@ -317,7 +317,7 @@ namespace Tests.Infrastructure
             }
         }
 
-        protected Task<RavenServer> ActionWithLeader(Action<RavenServer> act, List<RavenServer> servers = null)
+        internal Task<RavenServer> ActionWithLeader(Action<RavenServer> act, List<RavenServer> servers = null)
         {
             return ActionWithLeader(l =>
             {
@@ -326,7 +326,7 @@ namespace Tests.Infrastructure
             }, servers);
         }
 
-        protected async Task<RavenServer> ActionWithLeader(Func<RavenServer, Task> act, List<RavenServer> servers = null)
+        internal async Task<RavenServer> ActionWithLeader(Func<RavenServer, Task> act, List<RavenServer> servers = null)
         {
             var retries = 5;
             Exception err = null;
@@ -406,12 +406,12 @@ namespace Tests.Infrastructure
             throw new Exception($"Not all node in the group have the expected value of {expected}. {otherValues}");
         }
 
-        protected bool WaitForChangeVectorInCluster(List<RavenServer> nodes, string database, int timeout = 15000)
+        internal bool WaitForChangeVectorInCluster(List<RavenServer> nodes, string database, int timeout = 15000)
         {
             return AsyncHelpers.RunSync(() => WaitForChangeVectorInClusterAsync(nodes, database, timeout));
         }
 
-        protected async Task<bool> WaitForChangeVectorInClusterAsync(List<RavenServer> nodes, string database, int timeout = 15000)
+        internal async Task<bool> WaitForChangeVectorInClusterAsync(List<RavenServer> nodes, string database, int timeout = 15000)
         {
             return await WaitForValueAsync(async () =>
             {
@@ -430,7 +430,7 @@ namespace Tests.Infrastructure
             }, true, timeout: timeout, interval: 333);
         }
 
-        protected async Task<bool> WaitForChangeVectorInClusterForModeAsync(List<RavenServer> nodes, string database, RavenDatabaseMode mode, int replicationFactor = 3, int timeout = 15000)
+        internal async Task<bool> WaitForChangeVectorInClusterForModeAsync(List<RavenServer> nodes, string database, RavenDatabaseMode mode, int replicationFactor = 3, int timeout = 15000)
         {
             if (mode == RavenDatabaseMode.Single)
                 return await WaitForChangeVectorInClusterAsync(nodes, database, timeout);
@@ -438,7 +438,7 @@ namespace Tests.Infrastructure
             return await ShardingCluster.WaitForShardedChangeVectorInClusterAsync(nodes, database, replicationFactor, timeout);
         }
 
-        protected async Task<bool> WaitForDocumentInClusterAsync<T>(DocumentSession session, string docId, Func<T, bool> predicate, TimeSpan timeout, X509Certificate2 certificate = null)
+        internal async Task<bool> WaitForDocumentInClusterAsync<T>(DocumentSession session, string docId, Func<T, bool> predicate, TimeSpan timeout, X509Certificate2 certificate = null)
         {
             var nodes = session.RequestExecutor.TopologyNodes;
             var stores = GetDocumentStores(nodes, disableTopologyUpdates: true, certificate: certificate);
@@ -464,7 +464,7 @@ namespace Tests.Infrastructure
             return await WaitForDocumentInClusterAsyncInternal(docId, predicate, timeout, stores);
         }
 
-        protected async Task<bool> WaitForDocumentInClusterAsync<T>(List<RavenServer> nodes, string database, string docId, Func<T, bool> predicate, TimeSpan timeout, X509Certificate2 certificate = null)
+        internal async Task<bool> WaitForDocumentInClusterAsync<T>(List<RavenServer> nodes, string database, string docId, Func<T, bool> predicate, TimeSpan timeout, X509Certificate2 certificate = null)
         {
             var stores = GetDocumentStores(nodes, database, disableTopologyUpdates: true, certificate: certificate);
             return await WaitForDocumentInClusterAsyncInternal(docId, predicate, timeout, stores);
@@ -506,7 +506,7 @@ namespace Tests.Infrastructure
             return stores;
         }
 
-        public List<DocumentStore> GetDocumentStores(List<RavenServer> nodes, string database, bool disableTopologyUpdates, X509Certificate2 certificate = null)
+        internal List<DocumentStore> GetDocumentStores(List<RavenServer> nodes, string database, bool disableTopologyUpdates, X509Certificate2 certificate = null)
         {
             var stores = new List<DocumentStore>();
             foreach (var node in nodes)
@@ -539,7 +539,7 @@ namespace Tests.Infrastructure
 
 
 
-        public async Task<T[]> AssertClusterWaitForNotNull<T>(
+        internal async Task<T[]> AssertClusterWaitForNotNull<T>(
             List<RavenServer> nodes,
             string database,
             Func<IDocumentStore, Task<T>> act,
@@ -548,7 +548,7 @@ namespace Tests.Infrastructure
         {
             return await ClusterWaitFor(nodes, database, s => AssertWaitForNotNullAsync(() => act(s), timeout, interval));
         }
-        public async Task<T[]> ClusterWaitForNotNull<T>(
+        internal async Task<T[]> ClusterWaitForNotNull<T>(
             List<RavenServer> nodes,
             string database,
             Func<IDocumentStore, Task<T>> act,
@@ -558,7 +558,7 @@ namespace Tests.Infrastructure
             return await ClusterWaitFor(nodes, database, s => WaitForNotNullAsync(() => act(s), timeout, interval));
         }
 
-        public async Task<T[]> AssertClusterWaitForValue<T>(
+        internal async Task<T[]> AssertClusterWaitForValue<T>(
             List<RavenServer> nodes,
             string database,
             Func<IDocumentStore, Task<T>> act,
@@ -569,7 +569,7 @@ namespace Tests.Infrastructure
             return await ClusterWaitFor(nodes, database, s => AssertWaitForValueAsync(() => act(s), expectedVal, timeout, interval));
         }
 
-        public async Task<T[]> ClusterWaitFor<T>(
+        internal async Task<T[]> ClusterWaitFor<T>(
             List<RavenServer> nodes,
             string database,
             Func<IDocumentStore, Task<T>> waitFunc)
@@ -599,7 +599,7 @@ namespace Tests.Infrastructure
             }
         }
 
-        protected async Task<RavenServer> ReviveNodeAsync((string DataDirectory, string Url, string NodeTag) info, ServerCreationOptions options = default)
+        internal async Task<RavenServer> ReviveNodeAsync((string DataDirectory, string Url, string NodeTag) info, ServerCreationOptions options = default)
         {
             options ??= new ServerCreationOptions
             {
@@ -620,7 +620,7 @@ namespace Tests.Infrastructure
             return server;
         }
 
-        protected static (string DataDirectory, string Url, string NodeTag) DisposeServerAndWaitForFinishOfDisposal(RavenServer serverToDispose)
+        internal static (string DataDirectory, string Url, string NodeTag) DisposeServerAndWaitForFinishOfDisposal(RavenServer serverToDispose)
         {
             var dataDirectory = serverToDispose.Configuration.Core.DataDirectory.FullPath;
             var url = serverToDispose.WebUrl;
@@ -631,7 +631,7 @@ namespace Tests.Infrastructure
             return (dataDirectory, url, nodeTag);
         }
 
-        protected static async Task<(string DataDirectory, string Url, string NodeTag)> DisposeServerAndWaitForFinishOfDisposalAsync(RavenServer serverToDispose)
+        internal static async Task<(string DataDirectory, string Url, string NodeTag)> DisposeServerAndWaitForFinishOfDisposalAsync(RavenServer serverToDispose)
         {
             var dataDirectory = serverToDispose.Configuration.Core.DataDirectory.FullPath;
             var url = serverToDispose.WebUrl;
@@ -642,7 +642,7 @@ namespace Tests.Infrastructure
             return (dataDirectory, url, nodeTag);
         }
 
-        protected async Task DisposeAndRemoveServer(RavenServer serverToDispose)
+        internal async Task DisposeAndRemoveServer(RavenServer serverToDispose)
         {
             await DisposeServerAndWaitForFinishOfDisposalAsync(serverToDispose);
             Servers.Remove(serverToDispose);
@@ -655,7 +655,7 @@ namespace Tests.Infrastructure
             [RavenConfiguration.GetKey(x => x.Cluster.StabilizationTime)] = "1",
         };
 
-        protected async Task<(List<RavenServer> Nodes, RavenServer Leader)> CreateRaftCluster(
+        internal async Task<(List<RavenServer> Nodes, RavenServer Leader)> CreateRaftCluster(
             int numberOfNodes,
             bool? shouldRunInMemory = null,
             int? leaderIndex = null,
@@ -668,7 +668,7 @@ namespace Tests.Infrastructure
             return (result.Nodes, result.Leader);
         }
 
-        protected Task<(List<RavenServer> Nodes, RavenServer Leader, TestCertificatesHolder Certificates)> CreateRaftClusterWithSsl(
+        internal Task<(List<RavenServer> Nodes, RavenServer Leader, TestCertificatesHolder Certificates)> CreateRaftClusterWithSsl(
             int numberOfNodes,
             bool shouldRunInMemory = true,
             int? leaderIndex = null,
@@ -679,14 +679,14 @@ namespace Tests.Infrastructure
             return CreateRaftClusterInternalAsync(numberOfNodes, shouldRunInMemory, leaderIndex, useSsl: true, customSettings, customSettingsList, watcherCluster);
         }
 
-        protected async Task<(RavenServer Leader, Dictionary<RavenServer, ProxyServer> Proxies)> CreateRaftClusterWithProxiesAsync(
+        internal async Task<(RavenServer Leader, Dictionary<RavenServer, ProxyServer> Proxies)> CreateRaftClusterWithProxiesAsync(
             int numberOfNodes, bool shouldRunInMemory = true, int? leaderIndex = null, int delay = 0, [CallerMemberName] string caller = null)
         {
             var result = await CreateRaftClusterWithProxiesAndGetLeaderInternalAsync(numberOfNodes, shouldRunInMemory, leaderIndex, useSsl: false, delay, caller);
             return (result.Leader, result.Proxies);
         }
 
-        protected async Task<(RavenServer Leader, Dictionary<RavenServer, ProxyServer> Proxies, TestCertificatesHolder Certificates)> CreateRaftClusterWithSslAndProxiesAsync(
+        internal async Task<(RavenServer Leader, Dictionary<RavenServer, ProxyServer> Proxies, TestCertificatesHolder Certificates)> CreateRaftClusterWithSslAndProxiesAsync(
             int numberOfNodes, bool shouldRunInMemory = true, int? leaderIndex = null, int delay = 0, [CallerMemberName] string caller = null)
         {
             var result = await CreateRaftClusterWithProxiesAndGetLeaderInternalAsync(numberOfNodes, shouldRunInMemory, leaderIndex, useSsl: true, delay, caller);
@@ -752,7 +752,7 @@ namespace Tests.Infrastructure
             return (leader, serversToProxies, certificates);
         }
 
-        protected async Task<(List<RavenServer> Nodes, RavenServer Leader, TestCertificatesHolder Certificates)> CreateRaftClusterInternalAsync(
+        internal async Task<(List<RavenServer> Nodes, RavenServer Leader, TestCertificatesHolder Certificates)> CreateRaftClusterInternalAsync(
             int numberOfNodes,
             bool? shouldRunInMemory = null,
             int? leaderIndex = null,
@@ -970,13 +970,13 @@ namespace Tests.Infrastructure
                 throw new TimeoutException(Cluster.GetLastStatesFromAllServersOrderedByTime());
         }
 
-        public async Task<(long Index, List<RavenServer> Servers)> CreateDatabaseInCluster(DatabaseRecord record, int replicationFactor, string leadersUrl, X509Certificate2 certificate = null)
+        internal async Task<(long Index, List<RavenServer> Servers)> CreateDatabaseInCluster(DatabaseRecord record, int replicationFactor, string leadersUrl, X509Certificate2 certificate = null)
         {
             var tuple = await CreateDatabaseInClusterInner(record, replicationFactor, leadersUrl, certificate);
             return (tuple.Result.RaftCommandIndex, tuple.Servers);
         }
 
-        public async Task<(DatabasePutResult Result, List<RavenServer> Servers)> CreateDatabaseInClusterInner(DatabaseRecord record, int replicationFactor, string leadersUrl, X509Certificate2 certificate)
+        internal async Task<(DatabasePutResult Result, List<RavenServer> Servers)> CreateDatabaseInClusterInner(DatabaseRecord record, int replicationFactor, string leadersUrl, X509Certificate2 certificate)
         {
             var serverCount = Servers.Count(s => s.Disposed == false);
             if (serverCount < replicationFactor)
@@ -1066,12 +1066,12 @@ namespace Tests.Infrastructure
             return urls;
         }
 
-        public Task<(long Index, List<RavenServer> Servers)> CreateDatabaseInCluster(string databaseName, int replicationFactor, string leadersUrl, X509Certificate2 certificate = null)
+        internal Task<(long Index, List<RavenServer> Servers)> CreateDatabaseInCluster(string databaseName, int replicationFactor, string leadersUrl, X509Certificate2 certificate = null)
         {
             return CreateDatabaseInCluster(new DatabaseRecord(databaseName), replicationFactor, leadersUrl, certificate);
         }
 
-        public Task<(long Index, List<RavenServer> Servers)> CreateDatabaseInClusterForMode(string databaseName, int replicationFactor, (List<RavenServer> Nodes, RavenServer Leader) tuple, RavenDatabaseMode mode, int shards = 3, X509Certificate2 certificate = null)
+        internal Task<(long Index, List<RavenServer> Servers)> CreateDatabaseInClusterForMode(string databaseName, int replicationFactor, (List<RavenServer> Nodes, RavenServer Leader) tuple, RavenDatabaseMode mode, int shards = 3, X509Certificate2 certificate = null)
         {
             if (mode == RavenDatabaseMode.Single)
                 return CreateDatabaseInCluster(databaseName, replicationFactor, tuple.Leader.WebUrl, certificate);

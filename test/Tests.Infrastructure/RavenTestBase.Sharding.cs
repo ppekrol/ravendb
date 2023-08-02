@@ -371,7 +371,7 @@ public partial class RavenTestBase
             return new ShardedOngoingTasksHandlerProcessorForGetOngoingTasks(handler);
         }
 
-        public async Task<bool> AllShardHaveDocsAsync(RavenServer server, string databaseName, long count = 1L)
+        internal async Task<bool> AllShardHaveDocsAsync(RavenServer server, string databaseName, long count = 1L)
         {
             var databases = server.ServerStore.DatabasesLandlord.TryGetOrCreateShardedResourcesStore(databaseName);
             foreach (var task in databases)
@@ -389,7 +389,7 @@ public partial class RavenTestBase
             return true;
         }
 
-        public async Task<Dictionary<int, string>> GetOneDocIdForEachShardAsync(RavenServer server, string databaseName)
+        internal async Task<Dictionary<int, string>> GetOneDocIdForEachShardAsync(RavenServer server, string databaseName)
         {
             var docIdPerShard = new Dictionary<int, string>();
             var databases = server.ServerStore.DatabasesLandlord.TryGetOrCreateShardedResourcesStore(databaseName);
@@ -415,7 +415,7 @@ public partial class RavenTestBase
         }
 
         
-        public async Task EnsureNoReplicationLoopForShardingAsync(RavenServer server, string database)
+        internal async Task EnsureNoReplicationLoopForShardingAsync(RavenServer server, string database)
         {
             // wait for the replication ping-pong to settle down
             await Task.Delay(TimeSpan.FromSeconds(3));

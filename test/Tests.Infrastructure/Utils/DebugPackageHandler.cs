@@ -11,7 +11,7 @@ namespace Tests.Infrastructure.Utils
     {
         private const string DestinationDirectory = "debug_packages";
 
-        public static void DownloadAndSave(RavenServer ravenServer, Context testContext)
+        internal static void DownloadAndSave(RavenServer ravenServer, Context testContext)
         {
             using (var documentStore = InitDocumentStore(ravenServer))
             {

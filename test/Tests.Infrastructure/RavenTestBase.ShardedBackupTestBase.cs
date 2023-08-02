@@ -330,7 +330,7 @@ public partial class RavenTestBase
             return waitHandles.ToArray();
         }
 
-        public async Task<WaitHandle[]> WaitForBackupsToComplete(List<RavenServer> nodes, string database)
+        internal async Task<WaitHandle[]> WaitForBackupsToComplete(List<RavenServer> nodes, string database)
         {
             var waitHandles = new List<WaitHandle>();
 
@@ -342,12 +342,12 @@ public partial class RavenTestBase
             return waitHandles.ToArray();
         }
 
-        public Task<long> UpdateConfigurationAndRunBackupAsync(RavenServer server, IDocumentStore store, PeriodicBackupConfiguration config, bool isFullBackup = false)
+        internal Task<long> UpdateConfigurationAndRunBackupAsync(RavenServer server, IDocumentStore store, PeriodicBackupConfiguration config, bool isFullBackup = false)
         {
             return UpdateConfigurationAndRunBackupAsync(new List<RavenServer> { server }, store, config, isFullBackup);
         }
 
-        public async Task<long> UpdateConfigurationAndRunBackupAsync(List<RavenServer> servers, IDocumentStore store, PeriodicBackupConfiguration config, bool isFullBackup = false)
+        internal async Task<long> UpdateConfigurationAndRunBackupAsync(List<RavenServer> servers, IDocumentStore store, PeriodicBackupConfiguration config, bool isFullBackup = false)
         {
             var result = await store.Maintenance.SendAsync(new UpdatePeriodicBackupOperation(config));
 
@@ -356,7 +356,7 @@ public partial class RavenTestBase
             return result.TaskId;
         }
 
-        public async Task RunBackupAsync(string database, long taskId, bool isFullBackup, List<RavenServer> servers = null)
+        internal async Task RunBackupAsync(string database, long taskId, bool isFullBackup, List<RavenServer> servers = null)
         {
             var time = SystemTime.UtcNow;
             await foreach (var documentDatabase in _parent.Sharding.GetShardsDocumentDatabaseInstancesFor(database, servers))

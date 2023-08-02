@@ -64,7 +64,7 @@ namespace SlowTests.Server.Integrations.PostgreSQL
             return result;
         }
 
-        protected string GetConnectionString(DocumentStore store, RavenServer server, bool? forceSslMode = null)
+        internal string GetConnectionString(DocumentStore store, RavenServer server, bool? forceSslMode = null)
         {
             var uri = new Uri(store.Urls.First());
 

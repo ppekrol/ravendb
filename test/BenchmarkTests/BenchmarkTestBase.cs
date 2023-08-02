@@ -26,7 +26,7 @@ namespace BenchmarkTests
 
         public abstract Task InitAsync(DocumentStore store);
 
-        protected override RavenServer GetNewServer(ServerCreationOptions options = null, [CallerMemberName]
+        internal override RavenServer GetNewServer(ServerCreationOptions options = null, [CallerMemberName]
             string caller = null)
         {
             var customSettings = new Dictionary<string, string>

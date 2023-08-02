@@ -61,7 +61,7 @@ public partial class RavenTestBase
             return Convert.ToBase64String(buffer);
         }
 
-        public void EncryptedCluster(List<RavenServer> nodes, TestCertificatesHolder certificates, out string databaseName)
+        internal void EncryptedCluster(List<RavenServer> nodes, TestCertificatesHolder certificates, out string databaseName)
         {
             databaseName = _parent.GetDatabaseName();
 
@@ -80,7 +80,7 @@ public partial class RavenTestBase
             }
         }
 
-        public void PutSecretKeyForDatabaseInServerStore(string databaseName, RavenServer server)
+        internal void PutSecretKeyForDatabaseInServerStore(string databaseName, RavenServer server)
         {
             var base64key = CreateMasterKey(out _);
             var base64KeyClone = new string(base64key.ToCharArray());
@@ -95,7 +95,7 @@ public partial class RavenTestBase
             _serverDatabaseToMasterKey.Add((server, databaseName), base64KeyClone);
         }
 
-        public void DeleteSecretKeyForDatabaseFromServerStore(string databaseName, RavenServer server)
+        internal void DeleteSecretKeyForDatabaseFromServerStore(string databaseName, RavenServer server)
         {
             server.ServerStore.DeleteSecretKey(databaseName);
         }
@@ -121,7 +121,7 @@ public partial class RavenTestBase
             return dbName;
         }
 
-        public string SetupEncryptedDatabaseInCluster(List<RavenServer> nodes, TestCertificatesHolder certificates, out string databaseName)
+        internal string SetupEncryptedDatabaseInCluster(List<RavenServer> nodes, TestCertificatesHolder certificates, out string databaseName)
         {
             databaseName = _parent.GetDatabaseName();
             var base64Key = CreateMasterKey(out _);
