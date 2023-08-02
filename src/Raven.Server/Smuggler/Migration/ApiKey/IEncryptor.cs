@@ -1,6 +1,6 @@
 ﻿namespace Raven.Server.Smuggler.Migration.ApiKey
 {
-    public interface IEncryptor
+    internal interface IEncryptor
     {
         IHashEncryptor Hash { get; }
 

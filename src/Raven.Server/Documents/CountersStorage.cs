@@ -28,7 +28,7 @@ using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents
 {
-    public unsafe partial class CountersStorage
+    internal unsafe partial class CountersStorage
     {
         public const int DbIdAsBase64Size = 22;
         public const int MaxCounterDocumentSize = 2048;

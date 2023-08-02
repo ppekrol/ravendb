@@ -44,7 +44,7 @@ using Sparrow.Threading;
 
 namespace Raven.Server.Documents.Indexes
 {
-    interal class IndexStore : IDisposable
+    internal class IndexStore : IDisposable
     {
         private readonly DocumentDatabase _documentDatabase;
         private readonly ServerStore _serverStore;

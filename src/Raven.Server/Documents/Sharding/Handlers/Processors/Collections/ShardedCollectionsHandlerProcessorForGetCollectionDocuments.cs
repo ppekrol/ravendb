@@ -71,7 +71,7 @@ namespace Raven.Server.Documents.Sharding.Handlers.Processors.Collections
         public string ContinuationToken;
     }
 
-    public readonly struct ShardedStreamDocumentsCollectionOperation : IShardedStreamableOperation
+    internal readonly struct ShardedStreamDocumentsCollectionOperation : IShardedStreamableOperation
     {
         private readonly HttpContext _httpContext;
         private readonly string _collectionName;

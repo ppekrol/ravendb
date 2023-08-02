@@ -9,7 +9,7 @@ using static Raven.Server.Documents.Schemas.Revisions;
 
 namespace Raven.Server.Documents.Revisions
 {
-    public partial class RevisionsStorage
+    internal partial class RevisionsStorage
     {
         public IEnumerable<Document> GetRevisionsByBucketFrom(DocumentsOperationContext context, int bucket, long etag)
         {

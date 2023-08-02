@@ -105,7 +105,7 @@ public partial class RavenTestBase
             await replication.EnsureNoReplicationLoopAsync();
         }
 
-        public async Task EnsureNoReplicationLoopAsync(DocumentDatabase storage)
+        internal async Task EnsureNoReplicationLoopAsync(DocumentDatabase storage)
         {
             using (var collector = new LiveReplicationPulsesCollector(storage))
             {

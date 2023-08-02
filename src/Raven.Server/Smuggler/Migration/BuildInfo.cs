@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Smuggler.Migration
 {
-    interal class BuildInfo
+    internal class BuildInfo
     {
         public int BuildVersion { get; set; }
 

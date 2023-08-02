@@ -164,12 +164,12 @@ namespace FastTests
                 return getConflictsCommand.Result.Results;
             }
 
-            public DynamicBlittableJson Get(string id, bool metadataOnly = false)
+            internal DynamicBlittableJson Get(string id, bool metadataOnly = false)
             {
                 return AsyncHelpers.RunSync(() => GetAsync(id, metadataOnly));
             }
 
-            public async Task<DynamicBlittableJson> GetAsync(string id, bool metadataOnly = false)
+            internal async Task<DynamicBlittableJson> GetAsync(string id, bool metadataOnly = false)
             {
                 if (id == null)
                     throw new ArgumentNullException(nameof(id));
@@ -185,12 +185,12 @@ namespace FastTests
                 return new DynamicBlittableJson(json);
             }
 
-            public DynamicArray GetRevisionsBinEntries(int etag, int? pageSize = null)
+            internal DynamicArray GetRevisionsBinEntries(int etag, int? pageSize = null)
             {
                 return AsyncHelpers.RunSync(() => GetRevisionsBinEntriesAsync(etag, pageSize));
             }
 
-            public async Task<DynamicArray> GetRevisionsBinEntriesAsync(int etag, int? pageSize = null)
+            internal async Task<DynamicArray> GetRevisionsBinEntriesAsync(int etag, int? pageSize = null)
             {
                 var command = new GetRevisionsBinEntryCommand(etag, pageSize);
                 await RequestExecutor.ExecuteAsync(command, Context);
@@ -226,7 +226,7 @@ namespace FastTests
                 return (list, command.Result.ContinuationToken);
             }
 
-            public async Task<DynamicArray> GetAsync(string[] ids)
+            internal async Task<DynamicArray> GetAsync(string[] ids)
             {
                 if (ids == null)
                     throw new ArgumentNullException(nameof(ids));
@@ -238,7 +238,7 @@ namespace FastTests
                 return new DynamicArray(command.Result.Results);
             }
 
-            public async Task<DynamicArray> GetAsync(int start, int pageSize)
+            internal async Task<DynamicArray> GetAsync(int start, int pageSize)
             {
                 var command = new GetDocumentsCommand(start, pageSize);
 

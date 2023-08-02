@@ -7,7 +7,7 @@ using Raven.Server.Documents.TimeSeries;
 
 namespace Raven.Server.Documents.Queries.Results.TimeSeries
 {
-    public interface ITimeSeriesAggregation
+    internal interface ITimeSeriesAggregation
     {
         public void Segment(Span<StatefulTimestampValue> values, bool isRaw);
 

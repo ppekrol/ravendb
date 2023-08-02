@@ -20,7 +20,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Rachis;
 
-public partial class Follower
+internal partial class Follower
 {
     internal sealed class FollowerReadAndCommitSnapshotCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
     {

@@ -9,7 +9,7 @@ using static Raven.Server.Documents.Schemas.Conflicts;
 
 namespace Raven.Server.Documents
 {
-    public partial class ConflictsStorage
+    internal partial class ConflictsStorage
     {
         public IEnumerable<DocumentConflict> GetConflictsByBucketFrom(DocumentsOperationContext context, int bucket, long etag)
         {

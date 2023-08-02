@@ -12,7 +12,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Rachis
 {
-    public partial class Leader
+    internal partial class Leader
     {
         internal sealed class RachisMergedCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
         {

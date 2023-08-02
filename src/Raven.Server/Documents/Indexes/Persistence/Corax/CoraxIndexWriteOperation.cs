@@ -19,7 +19,7 @@ using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Corax
 {
-    interal class CoraxIndexWriteOperation : IndexWriteOperationBase
+    internal class CoraxIndexWriteOperation : IndexWriteOperationBase
     {
         public const int MaximumPersistedCapacityOfCoraxWriter = 512;
         private readonly IndexWriter _indexWriter;

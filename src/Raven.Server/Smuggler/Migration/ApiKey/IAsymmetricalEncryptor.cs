@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 namespace Raven.Server.Smuggler.Migration.ApiKey
 {
-    public interface IAsymmetricalEncryptor : IDisposable
+    internal interface IAsymmetricalEncryptor : IDisposable
     {
         int KeySize { get; set; }
 

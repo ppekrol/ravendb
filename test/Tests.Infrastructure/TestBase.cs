@@ -172,12 +172,12 @@ namespace FastTests
             return tmp;
         }
 
-        public async Task<DocumentDatabase> GetDatabase(string databaseName)
+        internal async Task<DocumentDatabase> GetDatabase(string databaseName)
         {
             return await GetDatabase(Server, databaseName);
         }
 
-        protected static async Task<DocumentDatabase> GetDatabase(RavenServer ravenServer, string databaseName)
+        internal static async Task<DocumentDatabase> GetDatabase(RavenServer ravenServer, string databaseName)
         {
             var database = await ravenServer.ServerStore.DatabasesLandlord.TryGetOrCreateResourceStore(databaseName).ConfigureAwait(false);
             if (database == null)
@@ -474,7 +474,7 @@ namespace FastTests
             private static readonly Lazy<ServerCreationOptions> _default = new(() => new ServerCreationOptions(frozen: true));
             public static ServerCreationOptions Default => _default.Value;
 
-            public Action<ServerStore> BeforeDatabasesStartup;
+            internal Action<ServerStore> BeforeDatabasesStartup;
         }
 
         private static readonly ConcurrentDictionary<RavenServer, string> LeakedServers = new();
@@ -624,7 +624,7 @@ namespace FastTests
             return path;
         }
 
-        protected abstract void Dispose(ExceptionAggregator exceptionAggregator);
+        internal abstract void Dispose(ExceptionAggregator exceptionAggregator);
 
         public override void Dispose()
         {

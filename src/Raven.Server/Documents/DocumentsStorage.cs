@@ -42,7 +42,7 @@ using static Raven.Server.Documents.Schemas.Tombstones;
 
 namespace Raven.Server.Documents
 {
-    public unsafe class DocumentsStorage : IDisposable
+    internal unsafe class DocumentsStorage : IDisposable
     {
         public TableSchema DocsSchema;
         public TableSchema CompressedDocsSchema;

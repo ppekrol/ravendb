@@ -526,7 +526,7 @@ namespace RachisTests
             }
         }
 
-        public long AppendToLog(RachisConsensus<CountingStateMachine> engine, CommandBase cmd, long term)
+        internal long AppendToLog(RachisConsensus<CountingStateMachine> engine, CommandBase cmd, long term)
         {
             // using (engine.ContextPool.AllocateOperationContext(out ClusterOperationContext context))
             // {

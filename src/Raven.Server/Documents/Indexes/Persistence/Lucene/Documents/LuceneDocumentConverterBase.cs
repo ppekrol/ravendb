@@ -23,7 +23,7 @@ using LuceneDocument = Lucene.Net.Documents.Document;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
 {
-    public interface ILuceneDocumentWrapper
+    internal interface ILuceneDocumentWrapper
     {
         void Add(AbstractField field);
 
@@ -541,7 +541,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
             return new ReduceMultipleValuesScope(this);
         }
 
-        public readonly struct ReduceMultipleValuesScope : IDisposable
+        internal readonly struct ReduceMultipleValuesScope : IDisposable
         {
             private readonly LuceneDocumentConverterBase _parent;
 

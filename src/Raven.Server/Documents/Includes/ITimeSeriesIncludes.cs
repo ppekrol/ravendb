@@ -4,7 +4,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Includes;
 
-public interface ITimeSeriesIncludes
+internal interface ITimeSeriesIncludes
 {
     ValueTask<int> WriteIncludesAsync(AsyncBlittableJsonTextWriter writer, JsonOperationContext context, CancellationToken token);
 

@@ -41,7 +41,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Web
 {
-    public abstract partial class RequestHandler
+    internal abstract partial class RequestHandler
     {
         public const string StartParameter = "start";
 

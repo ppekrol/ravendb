@@ -1,6 +1,6 @@
 ﻿namespace Raven.Server.Documents.Indexes.Static
 {
-    public interface IIndexItemFilterBehavior
+    internal interface IIndexItemFilterBehavior
     {
         bool ShouldFilter(IndexItem item);
     }

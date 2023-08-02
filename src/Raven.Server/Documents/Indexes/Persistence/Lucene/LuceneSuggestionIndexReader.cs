@@ -17,7 +17,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 {
-    interal class LuceneSuggestionIndexReader : SuggestionIndexReaderBase
+    internal class LuceneSuggestionIndexReader : SuggestionIndexReaderBase
     {
         private readonly IndexSearcher _searcher;
         private readonly IDisposable _releaseSearcher;

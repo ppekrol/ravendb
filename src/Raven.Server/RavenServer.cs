@@ -75,7 +75,7 @@ using DateTime = System.DateTime;
 
 namespace Raven.Server
 {
-    internal sealed class RavenServer : IDisposable
+    public sealed class RavenServer : IDisposable
     {
         static RavenServer()
         {
@@ -87,13 +87,13 @@ namespace Raven.Server
         private readonly Logger _authAuditLog = LoggingSource.AuditLog.GetLogger("AuthenticateCertificate", "Audit");
         internal TestingStuff _forTestingPurposes;
 
-        public readonly RavenConfiguration Configuration;
+        internal readonly RavenConfiguration Configuration;
 
         public Timer ServerMaintenanceTimer;
 
         public SystemTime Time = new SystemTime();
 
-        public readonly ServerStore ServerStore;
+        internal readonly ServerStore ServerStore;
 
         private IWebHost _webHost;
 
@@ -105,11 +105,11 @@ namespace Raven.Server
 
         public event Action AfterDisposal;
 
-        public readonly ServerStatistics Statistics;
+        internal readonly ServerStatistics Statistics;
 
         public event EventHandler ServerCertificateChanged;
 
-        public ICpuUsageCalculator CpuUsageCalculator;
+        internal ICpuUsageCalculator CpuUsageCalculator;
 
         public IDiskStatsGetter DiskStatsGetter;
 
@@ -127,7 +127,7 @@ namespace Raven.Server
 
         internal CipherSuitesPolicy CipherSuitesPolicy => _httpsConnectionMiddleware?.CipherSuitesPolicy;
 
-        public RavenServer(RavenConfiguration configuration)
+        internal RavenServer(RavenConfiguration configuration)
         {
             JsonDeserializationValidator.Validate();
 
@@ -151,7 +151,7 @@ namespace Raven.Server
             _tcpContextPool = new JsonContextPool(Configuration.Memory.MaxContextSizeToKeep);
         }
 
-        public TcpListenerStatus GetTcpServerStatus()
+        internal TcpListenerStatus GetTcpServerStatus()
         {
             return _tcpListenerStatus;
         }
@@ -476,7 +476,7 @@ namespace Raven.Server
             CpuCreditsBalance.ForceSync = true;
         }
 
-        public readonly CpuCreditsState CpuCreditsBalance = new CpuCreditsState();
+        internal readonly CpuCreditsState CpuCreditsBalance = new CpuCreditsState();
 
         internal sealed class CpuCreditsState : IDynamicJson
         {
@@ -1191,7 +1191,7 @@ namespace Raven.Server
             return newCertBytes;
         }
 
-        public (bool ShouldRenew, DateTime RenewalDate) CalculateRenewalDate(CertificateUtils.CertificateHolder currentCertificate, bool forceRenew)
+        internal (bool ShouldRenew, DateTime RenewalDate) CalculateRenewalDate(CertificateUtils.CertificateHolder currentCertificate, bool forceRenew)
         {
             // we want to setup all the renewals for Saturdays, 30 days before expiration. This is done to reduce the amount of cert renewals that are counted against our renewals
             // but if we have less than 20 days or user asked to force-renew, we'll try anyway.
@@ -1787,7 +1787,7 @@ namespace Raven.Server
             PostgresServer.Execute();
         }
 
-        public TcpListenerStatus StartTcpListener(Action<TcpListener> listenToNewTcpConnection, int? customPort = null)
+        internal TcpListenerStatus StartTcpListener(Action<TcpListener> listenToNewTcpConnection, int? customPort = null)
         {
             var port = 0;
             var status = new TcpListenerStatus();
@@ -2334,15 +2334,15 @@ namespace Raven.Server
         private ClusterMaintenanceWorker _clusterMaintenanceWorker;
 
         // This is used for admin scripts only
-        public readonly ScriptRunnerCache AdminScripts;
+        internal readonly ScriptRunnerCache AdminScripts;
 
         private TcpListenerStatus _tcpListenerStatus;
-        public SnmpWatcher SnmpWatcher;
-        public PgServer PostgresServer;
+        internal SnmpWatcher SnmpWatcher;
+        internal PgServer PostgresServer;
         private Timer _refreshClusterCertificate;
         private HttpsConnectionMiddleware _httpsConnectionMiddleware;
         private PoolOfThreads.LongRunningWork _cpuCreditsMonitoring;
-        public readonly ServerMetricCacher MetricCacher;
+        internal readonly ServerMetricCacher MetricCacher;
 
         public (IPAddress[] Addresses, int Port) ListenEndpoints { get; private set; }
 
@@ -2740,8 +2740,8 @@ namespace Raven.Server
             TrafficWatchManager.DispatchMessage(twn);
         }
 
-        public RequestRouter Router { get; private set; }
-        public MetricCounters Metrics { get; }
+        internal RequestRouter Router { get; private set; }
+        internal MetricCounters Metrics { get; }
 
         public bool Disposed { get; private set; }
 

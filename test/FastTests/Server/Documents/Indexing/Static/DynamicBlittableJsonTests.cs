@@ -74,7 +74,7 @@ namespace FastTests.Server.Documents.Indexing.Static
             }
         }
 
-        public Document create_doc(DynamicJsonValue document, string id)
+        internal Document create_doc(DynamicJsonValue document, string id)
         {
             var data = _ctx.ReadObject(document, id);
 

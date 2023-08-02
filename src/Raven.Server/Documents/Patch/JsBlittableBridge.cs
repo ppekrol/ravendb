@@ -540,7 +540,7 @@ namespace Raven.Server.Documents.Patch
             }
         }
 
-        public interface IResultModifier
+        internal interface IResultModifier
         {
             void Modify(ObjectInstance json);
         }

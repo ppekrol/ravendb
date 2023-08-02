@@ -12,7 +12,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Sharding.Operations
 {
-    public readonly struct ShardedBatchOperation : IShardedOperation<BlittableJsonReaderObject, DynamicJsonArray>
+    internal readonly struct ShardedBatchOperation : IShardedOperation<BlittableJsonReaderObject, DynamicJsonArray>
     {
         private readonly HttpContext _httpContext;
         private readonly JsonOperationContext _resultContext;

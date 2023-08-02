@@ -52,7 +52,7 @@ namespace FastTests
 
             private DocumentStore _src;
 
-            public static readonly BackupConfiguration DefaultBackupConfiguration;
+            internal static readonly BackupConfiguration DefaultBackupConfiguration;
 
             static EtlTestBase()
             {
@@ -135,7 +135,7 @@ namespace FastTests
                 return (_src, dest, result);
             }
 
-            public ManualResetEventSlim WaitForEtlToComplete(DocumentStore store, Func<string, EtlProcessStatistics, bool> predicate = null, int numOfProcessesToWaitFor = 1)
+            internal ManualResetEventSlim WaitForEtlToComplete(DocumentStore store, Func<string, EtlProcessStatistics, bool> predicate = null, int numOfProcessesToWaitFor = 1)
             {
                 predicate ??= (n, statistics) => statistics.LoadSuccesses > 0;
                 var record = store.Maintenance.Server.Send(new GetDatabaseRecordOperation(store.Database));
@@ -169,7 +169,7 @@ namespace FastTests
                 return mre;
             }
 
-            public async Task<(string, string, EtlProcessStatistics)> WaitForEtlAsync(DocumentStore store, Func<string, EtlProcessStatistics, bool> predicate, TimeSpan timeout)
+            internal async Task<(string, string, EtlProcessStatistics)> WaitForEtlAsync(DocumentStore store, Func<string, EtlProcessStatistics, bool> predicate, TimeSpan timeout)
             {
                 var database = await _parent.GetDatabase(store.Database);
 
@@ -232,7 +232,7 @@ namespace FastTests
                 });
             }
 
-            public bool TryGetLoadError<T>(string databaseName, EtlConfiguration<T> config, out EtlErrorInfo error) where T : ConnectionString
+            internal bool TryGetLoadError<T>(string databaseName, EtlConfiguration<T> config, out EtlErrorInfo error) where T : ConnectionString
             {
                 var database = _parent.GetDatabase(databaseName).Result;
 
@@ -264,7 +264,7 @@ namespace FastTests
                 return false;
             }
 
-            public bool TryGetTransformationError<T>(string databaseName, EtlConfiguration<T> config, out EtlErrorInfo error) where T : ConnectionString
+            internal bool TryGetTransformationError<T>(string databaseName, EtlConfiguration<T> config, out EtlErrorInfo error) where T : ConnectionString
             {
                 var database = _parent.GetDatabase(databaseName).Result;
 
@@ -296,7 +296,7 @@ namespace FastTests
                 return false;
             }
 
-            public async Task<DocumentDatabase> GetDatabaseFor(IDocumentStore store, string docId)
+            internal async Task<DocumentDatabase> GetDatabaseFor(IDocumentStore store, string docId)
             {
                 var databaseName = store.Database;
                 var record = store.Maintenance.Server.Send(new GetDatabaseRecordOperation(databaseName));
@@ -325,7 +325,7 @@ namespace FastTests
                 return sb.ToString();
             }
 
-            public string GetEtlPerformanceStatsForDatabase(DocumentDatabase database)
+            internal string GetEtlPerformanceStatsForDatabase(DocumentDatabase database)
             {
                 var process = database.EtlLoader.Processes.First();
                 var stats = process.GetPerformanceStats();

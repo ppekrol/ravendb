@@ -13,7 +13,7 @@ using LuceneAnalyzer = Lucene.Net.Analysis.Analyzer;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Corax
 {
-    public sealed unsafe class LuceneAnalyzerAdapter : Analyzer
+    internal sealed unsafe class LuceneAnalyzerAdapter : Analyzer
     {
         private static readonly ITransformer[] NoTransformers = new ITransformer[0];
 

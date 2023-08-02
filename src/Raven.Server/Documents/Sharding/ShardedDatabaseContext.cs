@@ -27,7 +27,7 @@ using DictionaryExtensions = Raven.Server.Extensions.DictionaryExtensions;
 
 namespace Raven.Server.Documents.Sharding
 {
-    public partial class ShardedDatabaseContext : IDisposable
+    internal partial class ShardedDatabaseContext : IDisposable
     {
         private readonly CancellationTokenSource _databaseShutdown = new CancellationTokenSource();
         public CancellationToken DatabaseShutdown => _databaseShutdown.Token;

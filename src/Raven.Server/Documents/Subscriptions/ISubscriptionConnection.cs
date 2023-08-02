@@ -8,7 +8,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Subscriptions;
 
-public interface ISubscriptionConnection : IDisposable
+internal interface ISubscriptionConnection : IDisposable
 {
     public const long NonExistentBatch = -1;
     public static readonly StringSegment TypeSegment = new StringSegment("Type");

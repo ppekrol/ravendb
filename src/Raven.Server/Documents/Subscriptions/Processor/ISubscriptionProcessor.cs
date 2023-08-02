@@ -7,7 +7,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.Subscriptions.Processor;
 
-public interface ISubscriptionProcessor<TIncludesCommand> : IDisposable
+internal interface ISubscriptionProcessor<TIncludesCommand> : IDisposable
     where TIncludesCommand : AbstractIncludesCommand
 {
     IDisposable InitializeForNewBatch(ClusterOperationContext clusterContext, out TIncludesCommand includesCommands);

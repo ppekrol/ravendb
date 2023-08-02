@@ -5,7 +5,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.ServerWide
 {
-    public sealed unsafe class TempCryptoStream : Stream
+    internal sealed unsafe class TempCryptoStream : Stream
     {
         private bool _ignoreSetLength;
         private readonly Stream _stream;

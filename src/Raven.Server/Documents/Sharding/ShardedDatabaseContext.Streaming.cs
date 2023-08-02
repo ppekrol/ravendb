@@ -16,7 +16,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Sharding
 {
-    public partial class ShardedDatabaseContext
+    internal partial class ShardedDatabaseContext
     {
         public ShardedStreaming Streaming;
 

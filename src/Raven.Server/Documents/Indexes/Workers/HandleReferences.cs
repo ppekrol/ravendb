@@ -16,7 +16,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Indexes.Workers
 {
-    interal class HandleDocumentReferences : HandleReferences
+    internal class HandleDocumentReferences : HandleReferences
     {
         public HandleDocumentReferences(Index index, Dictionary<string, HashSet<CollectionName>> referencedCollections, DocumentsStorage documentsStorage, IndexStorage indexStorage, IndexingConfiguration configuration)
             : this(index, referencedCollections, documentsStorage, indexStorage, indexStorage.ReferencesForDocuments, configuration)
@@ -66,7 +66,7 @@ namespace Raven.Server.Documents.Indexes.Workers
         }
     }
 
-    public abstract partial class HandleReferencesBase : IIndexingWork
+    internal abstract partial class HandleReferencesBase : IIndexingWork
     {
         private readonly ReferencesState _referencesState = new ReferencesState();
 

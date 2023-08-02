@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Raven.Server.Documents.PeriodicBackup.Restore
 {
-    public interface IRestoreSource : IDisposable
+    internal interface IRestoreSource : IDisposable
     {
         Task<Stream> GetStream(string path);
 

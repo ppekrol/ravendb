@@ -2200,7 +2200,7 @@ loadToUsers({
             }, interval: 1000);
         }
 
-        public static TimeSeriesStorage.AppendOptions AppendOptionsForEtlTest = new TimeSeriesStorage.AppendOptions
+        internal static TimeSeriesStorage.AppendOptions AppendOptionsForEtlTest = new TimeSeriesStorage.AppendOptions
         {
             VerifyName = false
         };

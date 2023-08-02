@@ -3,7 +3,7 @@ using Raven.Client.Documents.Operations;
 
 namespace Raven.Server.Documents.Changes;
 
-public interface IDocumentsChanges
+internal interface IDocumentsChanges
 {
     void RaiseNotifications(TopologyChange topologyChange);
     void RaiseNotifications(OperationStatusChange operationStatusChange);

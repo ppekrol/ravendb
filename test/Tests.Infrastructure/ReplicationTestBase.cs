@@ -65,7 +65,7 @@ namespace Tests.Infrastructure
             return GetReplicationManagerAsync(store, databaseName, mode, options, servers);
         }
 
-        public async ValueTask<IReplicationManager> GetReplicationManagerAsync(IDocumentStore store, string databaseName, RavenDatabaseMode mode, ReplicationManager.ReplicationOptions options, List<RavenServer> servers = null)
+        internal async ValueTask<IReplicationManager> GetReplicationManagerAsync(IDocumentStore store, string databaseName, RavenDatabaseMode mode, ReplicationManager.ReplicationOptions options, List<RavenServer> servers = null)
         {
             if (mode == RavenDatabaseMode.Single)
                 return await  ReplicationManager.GetReplicationManagerAsync(servers ?? GetServers() , databaseName, options);
@@ -74,7 +74,7 @@ namespace Tests.Infrastructure
                 servers ?? GetServers(), databaseName, options);
         }
 
-        public async Task<ReplicationInstance> BreakReplication(Raven.Server.ServerWide.ServerStore from, string databaseName)
+        internal async Task<ReplicationInstance> BreakReplication(Raven.Server.ServerWide.ServerStore from, string databaseName)
         {
             var replication = await ReplicationInstance.GetReplicationInstanceAsync(from.Server, databaseName, new ReplicationManager.ReplicationOptions());
             replication.Break();
@@ -340,7 +340,7 @@ namespace Tests.Infrastructure
         }
 
 
-        public class ReplicationController : IDisposable
+        internal class ReplicationController : IDisposable
         {
             private readonly DocumentDatabase _database;
             private readonly ManualResetEventSlim _mre;
@@ -414,7 +414,7 @@ namespace Tests.Infrastructure
             }
         }
 
-        protected static async Task<OngoingTasksHandler> InstantiateOutgoingTaskHandler(string name, RavenServer server)
+        internal static async Task<OngoingTasksHandler> InstantiateOutgoingTaskHandler(string name, RavenServer server)
         {
             Assert.True(server.ServerStore.DatabasesLandlord.DatabasesCache.TryGetValue(name, out var db));
             var database = await db;
@@ -583,7 +583,7 @@ namespace Tests.Infrastructure
             }
         }
 
-        public class NoChangeVectorContext : IChangeVectorOperationContext
+        internal class NoChangeVectorContext : IChangeVectorOperationContext
         {
             public static NoChangeVectorContext Instance = new NoChangeVectorContext();
 
@@ -597,7 +597,7 @@ namespace Tests.Infrastructure
         }
     }
 
-    public static class ChangeVectorTestExtensions
+    internal static class ChangeVectorTestExtensions
     {
         public static ChangeVector ToVersion(this string changeVector) => new ChangeVector(changeVector, ReplicationTestBase.NoChangeVectorContext.Instance).Version;
     }

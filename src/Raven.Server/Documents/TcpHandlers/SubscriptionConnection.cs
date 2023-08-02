@@ -45,7 +45,7 @@ namespace Raven.Server.Documents.TcpHandlers
         public const string BatchWaitForAcknowledge = "BatchWaitForAcknowledge";
     }
 
-    interal class SubscriptionConnection : SubscriptionConnectionBase<DatabaseIncludesCommandImpl>
+    internal class SubscriptionConnection : SubscriptionConnectionBase<DatabaseIncludesCommandImpl>
     {
         private static readonly ParserOptions DefaultParserOptions = ParserOptions.Default with { AllowReturnOutsideFunction = true };
 

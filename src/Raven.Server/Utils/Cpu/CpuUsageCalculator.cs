@@ -13,7 +13,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Utils.Cpu
 {
-    public interface ICpuUsageCalculator : IDisposable
+    internal interface ICpuUsageCalculator : IDisposable
     {
         CpuUsageStats Calculate();
         

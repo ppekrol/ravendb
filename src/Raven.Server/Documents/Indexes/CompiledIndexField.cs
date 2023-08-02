@@ -113,7 +113,7 @@ namespace Raven.Server.Documents.Indexes
         }
     }
 
-    interal class NestedField : CompiledIndexField
+    internal class NestedField : CompiledIndexField
     {
         private Type _accessorType;
 

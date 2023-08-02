@@ -20,7 +20,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
         }
     }
 
-    public interface IPropertyAccessor
+    internal interface IPropertyAccessor
     {
         IEnumerator<PropertyItem> GetProperties(object target);
 

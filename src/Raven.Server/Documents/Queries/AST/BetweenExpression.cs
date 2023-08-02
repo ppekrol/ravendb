@@ -1,6 +1,6 @@
 namespace Raven.Server.Documents.Queries.AST
 {
-    interal class BetweenExpression : QueryExpression
+    internal class BetweenExpression : QueryExpression
     {
         public QueryExpression Source;
         public ValueExpression Max;

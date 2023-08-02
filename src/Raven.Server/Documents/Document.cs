@@ -13,7 +13,7 @@ namespace Raven.Server.Documents
         public string Key;
     }
 
-    interal class Document : IDisposable
+    internal class Document : IDisposable
     {
         public static readonly Document ExplicitNull = new Document();
 

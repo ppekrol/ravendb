@@ -27,7 +27,7 @@ namespace FastTests.Issues
             }
         }
 
-        public RavenConfiguration GetConfiguration(
+        internal RavenConfiguration GetConfiguration(
             string certPath = null, 
             UnsecuredAccessAddressRange unsecuredAccessAddressRange = UnsecuredAccessAddressRange.Local,
             string publicServerUrl = null, 

@@ -143,7 +143,7 @@ public partial class RavenTestBase
                 }
             }
         }
-        public virtual Task<DocumentDatabase> GetAnyDocumentDatabaseInstanceFor(IDocumentStore store, List<RavenServer> cluster, string database = null)
+        internal virtual Task<DocumentDatabase> GetAnyDocumentDatabaseInstanceFor(IDocumentStore store, List<RavenServer> cluster, string database = null)
         {
             foreach (var node in cluster)
             {
@@ -304,7 +304,7 @@ public partial class RavenTestBase
             return message;
         }
 
-        public string CollectLogs(ClusterOperationContext context, RavenServer server)
+        internal string CollectLogs(ClusterOperationContext context, RavenServer server)
         {
             return
                 $"{Environment.NewLine}Log for server '{server.ServerStore.NodeTag}':" +

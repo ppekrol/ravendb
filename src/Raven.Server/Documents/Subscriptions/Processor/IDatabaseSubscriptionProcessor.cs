@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Subscriptions.Processor;
 
-public interface IDatabaseSubscriptionProcessor
+internal interface IDatabaseSubscriptionProcessor
 {
     public SubscriptionPatchDocument Patch { get; set; }
 

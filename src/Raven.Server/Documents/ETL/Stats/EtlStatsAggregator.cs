@@ -6,7 +6,7 @@ using Size = Raven.Client.Util.Size;
 
 namespace Raven.Server.Documents.ETL.Stats
 {
-    public interface IEtlStatsAggregator : IStatsAggregator
+    internal interface IEtlStatsAggregator : IStatsAggregator
     {
         EtlPerformanceStats ToPerformanceStats();
 

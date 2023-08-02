@@ -525,7 +525,7 @@ namespace Raven.Server.Documents.Queries.Facets
             }
         }
         
-        interal class ParsedRange
+        internal class ParsedRange
         {
             public bool LowInclusive;
             public bool HighInclusive;

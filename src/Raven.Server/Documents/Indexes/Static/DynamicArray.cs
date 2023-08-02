@@ -10,7 +10,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    interal class DynamicArray : DynamicObject, IOrderedEnumerable<object>
+    internal class DynamicArray : DynamicObject, IOrderedEnumerable<object>
     {
         private readonly IEnumerable<object> _inner;
 

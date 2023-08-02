@@ -16,7 +16,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Smuggler.Documents.Data
 {
-    public interface ISmugglerDestination
+    internal interface ISmugglerDestination
     {
         ValueTask<IAsyncDisposable> InitializeAsync(DatabaseSmugglerOptionsServerSide options, SmugglerResult result, long buildVersion);
 
@@ -51,7 +51,7 @@ namespace Raven.Server.Smuggler.Documents.Data
         ILegacyActions LegacyAttachmentDeletions();
     }
 
-    public interface IDocumentActions : INewDocumentActions
+    internal interface IDocumentActions : INewDocumentActions
     {
         ValueTask WriteDocumentAsync(DocumentItem item, SmugglerProgressBase.CountsWithLastEtagAndAttachments progress, Func<ValueTask> beforeFlushing = null);
 
@@ -63,29 +63,29 @@ namespace Raven.Server.Smuggler.Documents.Data
         IEnumerable<DocumentItem> GetDocumentsWithDuplicateCollection();
     }
 
-    public interface INewCompareExchangeActions
+    internal interface INewCompareExchangeActions
     {
         JsonOperationContext GetContextForNewCompareExchangeValue();
     }
 
-    public interface INewItemActions
+    internal interface INewItemActions
     {
         JsonOperationContext GetContextForNewDocument();
     }
     
-    public interface INewDocumentActions : INewItemActions, IAsyncDisposable
+    internal interface INewDocumentActions : INewItemActions, IAsyncDisposable
     {
         Stream GetTempStream();
     }
 
-    public interface IIndexActions : IAsyncDisposable
+    internal interface IIndexActions : IAsyncDisposable
     {
         ValueTask WriteIndexAsync(IndexDefinitionBaseServerSide indexDefinition, IndexType indexType);
 
         ValueTask WriteIndexAsync(IndexDefinition indexDefinition);
     }
 
-    public interface ICounterActions : INewDocumentActions
+    internal interface ICounterActions : INewDocumentActions
     {
         ValueTask WriteCounterAsync(CounterGroupDetail counterDetail);
 
@@ -94,22 +94,22 @@ namespace Raven.Server.Smuggler.Documents.Data
         void RegisterForDisposal(IDisposable data);
     }
 
-    public interface ISubscriptionActions : IAsyncDisposable
+    internal interface ISubscriptionActions : IAsyncDisposable
     {
         ValueTask WriteSubscriptionAsync(SubscriptionState subscriptionState);
     }
 
-    public interface IReplicationHubCertificateActions : IAsyncDisposable
+    internal interface IReplicationHubCertificateActions : IAsyncDisposable
     {
         ValueTask WriteReplicationHubCertificateAsync(string hub, ReplicationHubAccess access);
     }
 
-    public interface IKeyValueActions<in T> : IAsyncDisposable
+    internal interface IKeyValueActions<in T> : IAsyncDisposable
     {
         ValueTask WriteKeyValueAsync(string key, T value);
     }
 
-    public interface ICompareExchangeActions : INewCompareExchangeActions, IAsyncDisposable
+    internal interface ICompareExchangeActions : INewCompareExchangeActions, IAsyncDisposable
     {
         ValueTask WriteKeyValueAsync(string key, BlittableJsonReaderObject value, Document existingDocument);
 
@@ -118,12 +118,12 @@ namespace Raven.Server.Smuggler.Documents.Data
         ValueTask FlushAsync();
     }
 
-    public interface IDatabaseRecordActions : IAsyncDisposable
+    internal interface IDatabaseRecordActions : IAsyncDisposable
     {
         ValueTask WriteDatabaseRecordAsync(DatabaseRecord databaseRecord, SmugglerResult result, AuthorizationStatus authorizationStatus, DatabaseRecordItemType databaseRecordItemType);
     }
 
-    public interface ITimeSeriesActions : IAsyncDisposable, INewItemActions
+    internal interface ITimeSeriesActions : IAsyncDisposable, INewItemActions
     {
         ValueTask WriteTimeSeriesAsync(TimeSeriesItem ts);
         
@@ -132,7 +132,7 @@ namespace Raven.Server.Smuggler.Documents.Data
         void RegisterForReturnToTheContext(AllocatedMemoryData data);
     }
 
-    public interface ILegacyActions : IAsyncDisposable
+    internal interface ILegacyActions : IAsyncDisposable
     {
         ValueTask WriteLegacyDeletions(string id);
     }

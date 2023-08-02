@@ -20,7 +20,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Subscriptions
 {
-    interal class SubscriptionConnectionsState : AbstractSubscriptionConnectionsState<SubscriptionConnection, DatabaseIncludesCommandImpl>
+    internal class SubscriptionConnectionsState : AbstractSubscriptionConnectionsState<SubscriptionConnection, DatabaseIncludesCommandImpl>
     {
         private readonly SubscriptionStorage _subscriptionStorage;
         public DocumentDatabase DocumentDatabase => _subscriptionStorage._db;

@@ -10,7 +10,7 @@ using Lucene.Net.Analysis;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers.Collation
 {
-    interal class CollationAnalyzer : Analyzer
+    internal class CollationAnalyzer : Analyzer
     {
         private CultureInfo _cultureInfo;
 

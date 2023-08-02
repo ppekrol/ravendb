@@ -4,7 +4,7 @@ using Raven.Server.Documents.Queries;
 
 namespace Raven.Server.Web
 {
-    public abstract partial class RequestHandler
+    internal abstract partial class RequestHandler
     {
         internal void TrafficWatchQuery(IndexQueryServerSide indexQuery)
         {

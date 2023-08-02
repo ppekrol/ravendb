@@ -370,7 +370,7 @@ namespace Tests.Infrastructure
             return string.Join(Environment.NewLine, servers2);
         }
 
-        protected async Task<T> WaitForValueOnGroupAsync<T>(DatabaseTopology topology, Func<ServerStore, T> func, T expected, int timeout = 15000)
+        internal async Task<T> WaitForValueOnGroupAsync<T>(DatabaseTopology topology, Func<ServerStore, T> func, T expected, int timeout = 15000)
         {
             var nodes = topology.AllNodes;
             var servers = new List<ServerStore>();

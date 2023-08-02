@@ -5,7 +5,7 @@ using Raven.Client.Http;
 
 namespace Raven.Server.Documents.Sharding.Operations;
 
-public readonly struct ShardedDropSubscriptionConnectionOperation : IShardedOperation
+internal readonly struct ShardedDropSubscriptionConnectionOperation : IShardedOperation
 {
     private readonly HttpContext _httpContext;
     private readonly string _subscriptionName;

@@ -4,7 +4,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.Sharding.Handlers.Batches;
 
-interal class SingleShardedCommand
+internal class SingleShardedCommand
 {
     public string Id;
 

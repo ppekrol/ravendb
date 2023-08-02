@@ -15,7 +15,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Smuggler.Documents
 {
-    interal class DatabaseSmuggler : SmugglerBase
+    internal class DatabaseSmuggler : SmugglerBase
     {
         private readonly DocumentDatabase _database;
 

@@ -12,7 +12,7 @@ namespace Raven.Server.Documents
 {
     internal static class DocumentCompare
     {
-        public readonly struct DocumentCompareOptions
+        internal readonly struct DocumentCompareOptions
         {
             private DocumentCompareOptions(bool tryMergeMetadataConflicts, bool throwOnAttachmentModifications)
             {

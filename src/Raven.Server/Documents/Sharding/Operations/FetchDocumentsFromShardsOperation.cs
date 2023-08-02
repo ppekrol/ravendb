@@ -19,7 +19,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Operations
 {
-    public readonly struct FetchDocumentsFromShardsOperation : IShardedReadOperation<GetDocumentsResult, GetShardedDocumentsResult>
+    internal readonly struct FetchDocumentsFromShardsOperation : IShardedReadOperation<GetDocumentsResult, GetShardedDocumentsResult>
     {
         private readonly JsonOperationContext _context;
         private readonly ShardedDatabaseContext _databaseContext;

@@ -28,7 +28,7 @@ using Sparrow.Server.Platform.Posix;
 
 namespace Raven.Server.ServerWide
 {
-    public sealed unsafe class SecretProtection
+    internal sealed unsafe class SecretProtection
     {
         public static readonly byte[] EncryptionContext = Encoding.UTF8.GetBytes("Secrets!");
 

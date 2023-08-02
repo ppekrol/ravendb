@@ -5,7 +5,7 @@ using Raven.Client.Documents.Indexes;
 
 namespace Raven.Server.Documents.Indexes;
 
-interal class DatabaseIndexDeleteController : AbstractIndexDeleteController
+internal class DatabaseIndexDeleteController : AbstractIndexDeleteController
 {
     private readonly DocumentDatabase _database;
 

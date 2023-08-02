@@ -27,7 +27,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Rachis
 {
-    public partial class Follower : IDisposable
+    internal partial class Follower : IDisposable
     {
         private static int _uniqueId;
 

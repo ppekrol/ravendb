@@ -669,7 +669,7 @@ namespace Raven.Server.Documents.TimeSeries
             AggregationType.Count
         };
 
-        public readonly struct TimeSeriesAggregation
+        internal readonly struct TimeSeriesAggregation
         {
             private readonly AggregationMode _mode;
             public bool Any => Values.Count > 0;

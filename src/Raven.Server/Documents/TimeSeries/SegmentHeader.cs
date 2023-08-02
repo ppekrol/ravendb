@@ -3,7 +3,7 @@
 namespace Raven.Server.Documents.TimeSeries
 {
     [StructLayout(LayoutKind.Explicit, Size = 16)]
-    public unsafe struct SegmentHeader
+    internal unsafe struct SegmentHeader
     {
         [FieldOffset(0)]
         public int PreviousTimestamp;

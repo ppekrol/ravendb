@@ -32,7 +32,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Replication.Incoming
 {
-    interal class IncomingReplicationHandler : AbstractIncomingReplicationHandler<DocumentsContextPool, DocumentsOperationContext>
+    internal class IncomingReplicationHandler : AbstractIncomingReplicationHandler<DocumentsContextPool, DocumentsOperationContext>
     {
         private readonly DocumentDatabase _database;
         private readonly ReplicationLoader _parent;

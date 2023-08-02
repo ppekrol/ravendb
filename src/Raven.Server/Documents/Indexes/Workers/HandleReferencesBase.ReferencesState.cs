@@ -4,7 +4,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.Indexes.Workers
 {
-    public abstract partial class HandleReferencesBase
+    internal abstract partial class HandleReferencesBase
     {
         private sealed class ReferencesState
         {

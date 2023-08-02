@@ -338,7 +338,7 @@ namespace Raven.Server.Documents.Indexes
             }
         }
 
-        public abstract unsafe class BloomFilter : IDisposable
+        internal abstract unsafe class BloomFilter : IDisposable
         {
             private const long K = 10;
 

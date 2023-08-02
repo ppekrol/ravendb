@@ -27,7 +27,7 @@ namespace SlowTests.Issues
         {
         }
 
-        public class TestCommandValidator : RachisVersionValidation
+        internal class TestCommandValidator : RachisVersionValidation
         {
             public TestCommandValidator(ClusterCommandsVersionManager commandsVersionManager) : base(commandsVersionManager)
             {

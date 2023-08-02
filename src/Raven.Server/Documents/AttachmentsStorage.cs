@@ -44,7 +44,7 @@ namespace Raven.Server.Documents
         public CollectionName DestinationCollectionName;
     }
     
-    public unsafe partial class AttachmentsStorage
+    internal unsafe partial class AttachmentsStorage
     {
         internal readonly TableSchema AttachmentsSchema;
 

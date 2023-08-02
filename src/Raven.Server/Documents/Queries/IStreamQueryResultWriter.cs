@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Raven.Server.Documents.Queries
 {
-    public interface IStreamQueryResultWriter<in T> : IAsyncDisposable
+    internal interface IStreamQueryResultWriter<in T> : IAsyncDisposable
     {
         void StartResponse();
 

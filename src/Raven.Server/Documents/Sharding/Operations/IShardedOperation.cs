@@ -12,16 +12,16 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Operations
 {
-    public interface IShardedOperation<TResult> : IShardedOperation<TResult, TResult>
+    internal interface IShardedOperation<TResult> : IShardedOperation<TResult, TResult>
     {
     }
 
-    public interface IShardedOperation : IShardedOperation<object>
+    internal interface IShardedOperation : IShardedOperation<object>
     {
         object IShardedOperation<object, object>.Combine(Dictionary<int, ShardExecutionResult<object>> results) => null;
     }
 
-    public interface IShardedOperation<TResult, out TCombinedResult>
+    internal interface IShardedOperation<TResult, out TCombinedResult>
     {
         HttpRequest HttpRequest { get; }
 
@@ -61,7 +61,7 @@ namespace Raven.Server.Documents.Sharding.Operations
         string ModifyUrl(string url) => url;
     }
 
-    public interface IShardedStreamableOperation : IShardedReadOperation<StreamResult, CombinedStreamResult>
+    internal interface IShardedStreamableOperation : IShardedReadOperation<StreamResult, CombinedStreamResult>
     {
         ShardedReadResult<CombinedStreamResult> IShardedOperation<StreamResult, ShardedReadResult<CombinedStreamResult>>.Combine(
             Dictionary<int, ShardExecutionResult<StreamResult>> results) =>

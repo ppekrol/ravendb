@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Tests.Infrastructure.Operations
 {
-    public class GetIndexStalenessOperation : IMaintenanceOperation<GetIndexStalenessCommand.IndexStaleness>
+    internal class GetIndexStalenessOperation : IMaintenanceOperation<GetIndexStalenessCommand.IndexStaleness>
     {
         private readonly string _indexName;
 

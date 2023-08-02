@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.ETL.Providers.Queue
 {
-    interal class QueueItem : ExtractedItem
+    internal class QueueItem : ExtractedItem
     {
         public QueueItem(QueueItem item)
         {

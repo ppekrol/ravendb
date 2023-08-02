@@ -4,7 +4,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.Indexes
 {
-    public interface IIndexedItemEnumerator : IDisposable
+    internal interface IIndexedItemEnumerator : IDisposable
     {
         bool MoveNext(DocumentsOperationContext ctx, out IEnumerable resultsOfCurrentDocument, out long? etag);
 

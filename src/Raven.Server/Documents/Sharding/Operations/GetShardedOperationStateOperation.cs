@@ -8,7 +8,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Sharding.Operations
 {
-    public readonly struct GetShardedOperationStateOperation : IShardedOperation<OperationState>
+    internal readonly struct GetShardedOperationStateOperation : IShardedOperation<OperationState>
     {
         private readonly HttpContext _httpContext;
         private readonly long _id;

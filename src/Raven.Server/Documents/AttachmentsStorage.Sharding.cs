@@ -15,7 +15,7 @@ using static Raven.Server.Documents.Schemas.Attachments;
 
 namespace Raven.Server.Documents
 {
-    public unsafe partial class AttachmentsStorage
+    internal unsafe partial class AttachmentsStorage
     {
         public IEnumerable<AttachmentReplicationItem> GetAttachmentsByBucketFrom(DocumentsOperationContext context, int bucket, long etag)
         {

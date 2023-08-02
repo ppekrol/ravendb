@@ -34,7 +34,7 @@ namespace Raven.Server.Rachis.Remote
         protected override int InternalRead(int offset, int count) => _stream.Read(Buffer, offset, count);
     }
         
-    interal class RemoteSnapshotReader : SnapshotReader
+    internal class RemoteSnapshotReader : SnapshotReader
     {
         private readonly RemoteConnection _parent;
 

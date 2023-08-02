@@ -21,7 +21,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Handlers.Processors.Smuggler
 {
-    public delegate Task<SmugglerResult> ImportDelegate(JsonOperationContext context,
+    internal delegate Task<SmugglerResult> ImportDelegate(JsonOperationContext context,
         Stream stream,
         DatabaseSmugglerOptionsServerSide options,
         SmugglerResult result,

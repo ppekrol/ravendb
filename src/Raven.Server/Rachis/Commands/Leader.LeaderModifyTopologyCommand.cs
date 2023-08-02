@@ -15,7 +15,7 @@ using Exception = System.Exception;
 
 namespace Raven.Server.Rachis;
 
-public partial class Leader
+internal partial class Leader
 {
     internal sealed class LeaderModifyTopologyCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
     {

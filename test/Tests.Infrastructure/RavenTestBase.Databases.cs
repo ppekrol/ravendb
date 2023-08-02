@@ -30,12 +30,12 @@ public partial class RavenTestBase
             _parent = parent ?? throw new ArgumentNullException(nameof(parent));
         }
 
-        public Task<DocumentDatabase> GetDocumentDatabaseInstanceFor(IDocumentStore store, string database = null)
+        internal Task<DocumentDatabase> GetDocumentDatabaseInstanceFor(IDocumentStore store, string database = null)
         {
             return _parent.Server.ServerStore.DatabasesLandlord.TryGetOrCreateResourceStore(database ?? store.Database);
         }
 
-        public Task<DocumentDatabase> GetDocumentDatabaseInstanceFor(RavenServer server, IDocumentStore store, string database = null)
+        internal Task<DocumentDatabase> GetDocumentDatabaseInstanceFor(RavenServer server, IDocumentStore store, string database = null)
         {
             return server.ServerStore.DatabasesLandlord.TryGetOrCreateResourceStore(database ?? store.Database);
         }

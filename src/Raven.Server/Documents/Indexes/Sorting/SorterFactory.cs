@@ -4,7 +4,7 @@ using Lucene.Net.Search;
 
 namespace Raven.Server.Documents.Indexes.Sorting
 {
-    interal class SorterFactory
+    internal class SorterFactory
     {
         public readonly Type Type;
 

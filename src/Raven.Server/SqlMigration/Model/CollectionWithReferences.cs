@@ -2,7 +2,7 @@
 
 namespace Raven.Server.SqlMigration.Model
 {
-    interal class CollectionWithReferences : AbstractCollection
+    internal class CollectionWithReferences : AbstractCollection
     {
         public List<EmbeddedCollection> NestedCollections { get; set; }
         public List<LinkedCollection> LinkedCollections { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace Raven.Server.Documents.Sharding.Streaming;
 
-interal class ShardStreamItem<T>
+internal class ShardStreamItem<T>
 {
     public T Item;
     public int ShardNumber;

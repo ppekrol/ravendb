@@ -10,7 +10,7 @@ using Sparrow.Json;
 
 namespace FastTests.Utils
 {
-    public class RevisionsHelper
+    internal class RevisionsHelper
     {
         public static async Task SetupConflictedRevisionsAsync(IDocumentStore store, Raven.Server.ServerWide.ServerStore serverStore, RevisionsCollectionConfiguration configuration)
         {

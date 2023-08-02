@@ -4,7 +4,7 @@ using Raven.Server.Documents.Indexes.Persistence.Lucene;
 
 namespace Raven.Server.Documents.Indexes.Analysis
 {
-    interal class AnalyzerFactory
+    internal class AnalyzerFactory
     {
         public readonly Type Type;
 

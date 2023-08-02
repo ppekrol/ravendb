@@ -5,7 +5,7 @@ using Raven.Client.Documents.Operations.Expiration;
 
 namespace FastTests.Utils
 {
-    public static class ExpirationHelper
+    internal static class ExpirationHelper
     {
         public static async Task SetupExpiration(IDocumentStore store, Raven.Server.ServerWide.ServerStore serverStore, ExpirationConfiguration configuration)
         {

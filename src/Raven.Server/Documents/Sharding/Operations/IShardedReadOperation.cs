@@ -5,12 +5,12 @@ using Raven.Server.Documents.Sharding.Executors;
 
 namespace Raven.Server.Documents.Sharding.Operations;
 
-public interface IShardedReadOperation<TResult> : IShardedReadOperation<TResult, TResult>
+internal interface IShardedReadOperation<TResult> : IShardedReadOperation<TResult, TResult>
 {
 
 }
 
-public interface IShardedReadOperation<TResult, TCombinedResult> : IShardedOperation<TResult, ShardedReadResult<TCombinedResult>>
+internal interface IShardedReadOperation<TResult, TCombinedResult> : IShardedOperation<TResult, ShardedReadResult<TCombinedResult>>
 {
     string ExpectedEtag { get; }
 

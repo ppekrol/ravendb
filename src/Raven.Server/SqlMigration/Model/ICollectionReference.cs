@@ -2,7 +2,7 @@
 
 namespace Raven.Server.SqlMigration.Model
 {
-    public interface ICollectionReference
+    internal interface ICollectionReference
     {
         string SourceTableSchema { get; set; }
         

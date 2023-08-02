@@ -30,7 +30,7 @@ namespace Raven.Server.Web.Studio.Sharding.Processors
         }
     }
 
-    public readonly struct ShardedGetBucketsOperation : IShardedOperation<BucketsResults>
+    internal readonly struct ShardedGetBucketsOperation : IShardedOperation<BucketsResults>
     {
         private readonly HttpRequest _request;
         private readonly int _fromBucket;

@@ -5,7 +5,7 @@ using Raven.Server.Documents.Queries.AST;
 
 namespace Raven.Server.Documents.Queries
 {
-    interal class SelectField
+    internal class SelectField
     {
         public ValueTokenType? ValueTokenType;
 

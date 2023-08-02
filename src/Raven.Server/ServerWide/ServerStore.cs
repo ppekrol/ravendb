@@ -98,7 +98,7 @@ namespace Raven.Server.ServerWide
     /// <summary>
     /// Persistent store for server-wide configuration, such as cluster settings, database configuration, etc
     /// </summary>
-    public partial class ServerStore : IDisposable, ILowMemoryHandler
+    internal class ServerStore : IDisposable, ILowMemoryHandler
     {
         private const string ResourceName = nameof(ServerStore);
 

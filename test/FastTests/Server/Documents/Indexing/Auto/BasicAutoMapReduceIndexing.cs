@@ -423,7 +423,7 @@ namespace FastTests.Server.Documents.Indexing.Auto
             }
         }
 
-        public static void CreateUsers(DocumentDatabase db, long numberOfUsers, params string[] locations)
+        internal static void CreateUsers(DocumentDatabase db, long numberOfUsers, params string[] locations)
         {
             using (var context = DocumentsOperationContext.ShortTermSingleUse(db))
             {

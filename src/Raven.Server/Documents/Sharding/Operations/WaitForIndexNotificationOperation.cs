@@ -8,7 +8,7 @@ using Raven.Server.Documents.Sharding.Executors;
 
 namespace Raven.Server.Documents.Sharding.Operations
 {
-    public readonly struct WaitForIndexNotificationOperation : IShardedOperation
+    internal readonly struct WaitForIndexNotificationOperation : IShardedOperation
     {
         private readonly List<long> _indexes;
 

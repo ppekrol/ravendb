@@ -17,7 +17,7 @@ using StringSegment = Sparrow.StringSegment;
 
 namespace Raven.Server.Routing
 {
-    public delegate Task HandleRequest(RequestHandlerContext ctx);
+    internal delegate Task HandleRequest(RequestHandlerContext ctx);
 
     internal sealed class RouteInformation
     {

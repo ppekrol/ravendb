@@ -5,7 +5,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.Indexes.Workers
 {
-    public readonly struct CanContinueBatchParameters
+    internal readonly struct CanContinueBatchParameters
     {
         public CanContinueBatchParameters(IndexingStatsScope stats, IndexingWorkType workType, QueryOperationContext queryContext, TransactionOperationContext indexingContext,
             Lazy<IndexWriteOperationBase> indexWriteOperation, long currentEtag, long maxEtag, long count,

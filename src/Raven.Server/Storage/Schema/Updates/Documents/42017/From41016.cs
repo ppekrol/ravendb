@@ -26,7 +26,7 @@ using Constants = Voron.Global.Constants;
 
 namespace Raven.Server.Storage.Schema.Updates.Documents
 {
-    public sealed unsafe class From41016 : ISchemaUpdate
+    internal sealed unsafe class From41016 : ISchemaUpdate
     {
         internal static int NumberOfCountersToMigrateInSingleTransaction = 100_000;
 

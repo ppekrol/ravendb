@@ -6,7 +6,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    interal class PutCertificateCommand : PutValueCommand<CertificateDefinition>
+    internal class PutCertificateCommand : PutValueCommand<CertificateDefinition>
     {
         public string PublicKeyPinningHash;
 

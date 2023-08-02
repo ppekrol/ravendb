@@ -38,7 +38,7 @@ internal sealed class StaticIndexInformationHolder : IndexInformationHolder
     public readonly AbstractStaticIndexBase Compiled;
 }
 
-interal class IndexInformationHolder
+internal class IndexInformationHolder
 {
     protected IndexInformationHolder([NotNull] IndexDefinitionBaseServerSide definition, [NotNull] IndexingConfiguration configuration)
     {

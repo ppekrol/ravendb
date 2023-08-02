@@ -73,7 +73,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Raven.Server.Documents
 {
-    interal class DocumentDatabase : IDisposable
+    internal class DocumentDatabase : IDisposable
     {
         private readonly ServerStore _serverStore;
         private readonly Action<string> _addToInitLog;

@@ -6,7 +6,7 @@ using Voron.Impl;
 
 namespace Raven.Server.ServerWide
 {
-    interal class RavenTransaction : IDisposable
+    internal class RavenTransaction : IDisposable
     {
         private static readonly Logger Logger = LoggingSource.Instance.GetLogger<RavenTransaction>("Server");
 

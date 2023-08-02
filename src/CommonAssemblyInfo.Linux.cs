@@ -14,3 +14,7 @@
 [assembly: InternalsVisibleTo("Tryouts")]
 [assembly: InternalsVisibleTo("LicenseTests")]
 [assembly: InternalsVisibleTo("Subscriptions.Benchmark")]
+[assembly: InternalsVisibleTo("BenchmarkTests")]
+[assembly: InternalsVisibleTo("ServerStoreTxMerger.Benchmark")]
+[assembly: InternalsVisibleTo("Voron.Benchmark")]
+

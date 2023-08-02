@@ -7,7 +7,7 @@ using Sparrow.Server.Collections;
 
 namespace Raven.Server.Documents.Replication.Stats
 {
-    public interface ILiveReplicationCollector : IDisposable
+    internal interface ILiveReplicationCollector : IDisposable
     {
         
     }

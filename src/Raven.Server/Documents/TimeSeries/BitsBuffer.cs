@@ -6,7 +6,7 @@ using Memory = Sparrow.Memory;
 
 namespace Raven.Server.Documents.TimeSeries
 {
-    public unsafe struct BitsBuffer
+    internal unsafe struct BitsBuffer
     {
         private byte* _buffer;
 #if DEBUG

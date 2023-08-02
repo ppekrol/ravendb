@@ -44,7 +44,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Replication
 {
-    interal class ReplicationLoader : AbstractReplicationLoader<DocumentsContextPool, DocumentsOperationContext>, ITombstoneAware
+    internal class ReplicationLoader : AbstractReplicationLoader<DocumentsContextPool, DocumentsOperationContext>, ITombstoneAware
     {
         private readonly Timer _reconnectAttemptTimer;
         private long _reconnectInProgress;

@@ -19,7 +19,7 @@ namespace Raven.Server.Utils.Imports.Memory
     /// An implementation of <see cref="IMemoryCache"/> using a dictionary to
     /// store its entries.
     /// </summary>
-    public partial class MemoryCache : IMemoryCache
+    internal partial class MemoryCache : IMemoryCache
     {
         internal readonly ILogger _logger;
 

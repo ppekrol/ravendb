@@ -44,7 +44,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Smuggler.Documents
 {
-    interal class StreamSource : ISmugglerSource, IDisposable
+    internal class StreamSource : ISmugglerSource, IDisposable
     {
         private readonly PeepingTomStream _peepingTomStream;
         private readonly JsonOperationContext _context;

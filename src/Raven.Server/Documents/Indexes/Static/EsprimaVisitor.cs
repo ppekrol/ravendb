@@ -6,7 +6,7 @@ using Jint;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    interal class EsprimaVisitor
+    internal class EsprimaVisitor
     {
         public virtual void VisitProgram(Esprima.Ast.Program program)
         {

@@ -50,7 +50,7 @@ internal sealed class BufferedCommand
         return modifier.Rewrite(CommandStream);
     }
 
-    public interface IItemModifier
+    internal interface IItemModifier
     {
         public void Validate();
         public int GetPosition();

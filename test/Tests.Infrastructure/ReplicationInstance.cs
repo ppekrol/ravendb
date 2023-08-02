@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Tests.Infrastructure
 {
-    public class ReplicationInstance : IReplicationManager
+    internal class ReplicationInstance : IReplicationManager
     {
         private readonly DocumentDatabase _database;
         public readonly string DatabaseName;

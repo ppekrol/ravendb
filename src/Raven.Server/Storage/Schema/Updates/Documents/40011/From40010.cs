@@ -13,7 +13,7 @@ using static Raven.Server.Documents.Schemas.Tombstones;
 
 namespace Raven.Server.Storage.Schema.Updates.Documents
 {
-    public sealed unsafe class From40010 : ISchemaUpdate
+    internal sealed unsafe class From40010 : ISchemaUpdate
     {
         public int From => 40_010;
         public int To => 40_011;

@@ -2,7 +2,7 @@
 
 namespace Raven.Server.NotificationCenter.Notifications.Details
 {
-    public interface INotificationDetails
+    internal interface INotificationDetails
     {
         DynamicJsonValue ToJson();
     }

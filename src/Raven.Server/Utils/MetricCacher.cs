@@ -7,7 +7,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Utils
 {
-    interal class MetricCacher
+    internal class MetricCacher
     {
         internal sealed class Keys
         {

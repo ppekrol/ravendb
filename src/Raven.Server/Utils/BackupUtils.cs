@@ -594,7 +594,7 @@ internal static class BackupUtils
         public string DatabaseName { get; set; }
     }
 
-    interal class EarliestIdleDatabaseActivityParameters
+    internal class EarliestIdleDatabaseActivityParameters
     {
         public string DatabaseName { get; set; }
 

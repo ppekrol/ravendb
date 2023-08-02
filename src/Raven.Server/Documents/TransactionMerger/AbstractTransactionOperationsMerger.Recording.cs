@@ -11,7 +11,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Documents.TransactionMerger;
 
-public abstract partial class AbstractTransactionOperationsMerger<TOperationContext, TTransaction>
+internal abstract partial class AbstractTransactionOperationsMerger<TOperationContext, TTransaction>
     where TOperationContext : TransactionOperationContext<TTransaction>
     where TTransaction : RavenTransaction
 {

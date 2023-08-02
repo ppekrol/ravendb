@@ -12,7 +12,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries
 {
-    interal class DocumentQueryResult : QueryResultServerSide<Document>
+    internal class DocumentQueryResult : QueryResultServerSide<Document>
     {
         public static readonly DocumentQueryResult NotModifiedResult = new DocumentQueryResult(null) { NotModified = true };
 

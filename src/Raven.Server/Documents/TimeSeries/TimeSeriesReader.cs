@@ -99,7 +99,7 @@ namespace Raven.Server.Documents.TimeSeries
         public double[] Max { get; set; }
     }
 
-    public interface ITimeSeriesReader
+    internal interface ITimeSeriesReader
     {
         public IEnumerable<(IEnumerable<SingleResult> IndividualValues, SegmentResult Segment)> SegmentsOrValues();
 
@@ -108,7 +108,7 @@ namespace Raven.Server.Documents.TimeSeries
         public bool IsRaw { get; }
     }
 
-    public sealed unsafe class TimeSeriesReader : ITimeSeriesReader
+    internal sealed unsafe class TimeSeriesReader : ITimeSeriesReader
     {
         private readonly DocumentsOperationContext _context;
         private readonly string _documentId;

@@ -356,7 +356,7 @@ namespace Raven.Server.Documents.Replication.Stats
             OutgoingInternal
         }
 
-        public interface IReplicationPerformanceStats
+        internal interface IReplicationPerformanceStats
         {
             void Write(JsonOperationContext context, AbstractBlittableJsonTextWriter writer);
         }

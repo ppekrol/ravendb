@@ -290,7 +290,7 @@ namespace SlowTests.Authentication
             }
         }
 
-        public async Task<(RavenServer Leader, List<RavenServer> Nodes, X509Certificate2 Cert)> CreateLetsEncryptCluster(int clutserSize)
+        internal async Task<(RavenServer Leader, List<RavenServer> Nodes, X509Certificate2 Cert)> CreateLetsEncryptCluster(int clutserSize)
         {
             var settingPath = Path.Combine(NewDataPath(forceCreateDir: true), "settings.json");
             var defaultSettingsPath = new PathSetting("settings.default.json").FullPath;

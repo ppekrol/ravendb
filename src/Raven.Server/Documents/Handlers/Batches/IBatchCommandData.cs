@@ -3,7 +3,7 @@ using Raven.Server.Documents.Handlers.Batches.Commands;
 
 namespace Raven.Server.Documents.Handlers.Batches;
 
-public interface IBatchCommandData
+internal interface IBatchCommandData
 {
     CommandType Type { get; }
 

@@ -11,7 +11,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Indexing
 {
-    public sealed unsafe class LuceneVoronDirectory : Lucene.Net.Store.Directory
+    internal sealed unsafe class LuceneVoronDirectory : Lucene.Net.Store.Directory
     {
         private readonly StorageEnvironment _environment;
         private readonly TempFileCache _tempFileCache;

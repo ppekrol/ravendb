@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Raven.Server.Documents.Handlers.Batches.Commands;
 
-public interface IBatchCommand : IDisposable
+internal interface IBatchCommand : IDisposable
 {
     public HashSet<string> ModifiedCollections { get; set; }
 

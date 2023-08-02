@@ -65,7 +65,7 @@ namespace FastTests
                 }, true);
             }
 
-            public async Task WaitForPolicyRunnerAsync(DocumentDatabase database)
+            internal async Task WaitForPolicyRunnerAsync(DocumentDatabase database)
             {
                 var loops = 10;
                 await database.TimeSeriesPolicyRunner.HandleChanges();

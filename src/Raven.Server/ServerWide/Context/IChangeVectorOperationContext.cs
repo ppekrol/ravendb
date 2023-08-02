@@ -3,7 +3,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.ServerWide.Context;
 
-public interface IChangeVectorOperationContext
+internal interface IChangeVectorOperationContext
 {
     ChangeVector GetChangeVector(string changeVector, bool throwOnRecursion = false);
 

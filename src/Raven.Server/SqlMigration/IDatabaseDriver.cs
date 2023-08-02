@@ -10,7 +10,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.SqlMigration
 {
-    public interface IDatabaseDriver
+    internal interface IDatabaseDriver
     {
         DatabaseSchema FindSchema();
         

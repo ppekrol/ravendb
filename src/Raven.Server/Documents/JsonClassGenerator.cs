@@ -251,7 +251,7 @@ namespace Raven.Server.Documents
             for (var i = 0; i < classes.Count; i++)
             {
                 var @class = classes[i];
-                codeBuilder.Append("\tinteral class " + @class.Name + Environment.NewLine);
+                codeBuilder.Append("\tinternal class " + @class.Name + Environment.NewLine);
                 codeBuilder.Append("\t{" + Environment.NewLine);
 
                 foreach (var field in @class.Properties)

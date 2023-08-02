@@ -190,7 +190,7 @@ namespace SlowTests.Sharding
         }
     }
 
-    public class GetBucketsOperation : IOperation<BucketsResults>
+    internal class GetBucketsOperation : IOperation<BucketsResults>
     {
         private readonly int _fromBucket;
         private readonly int _toBucket;
@@ -211,7 +211,7 @@ namespace SlowTests.Sharding
         }
     }
 
-    public class GetBucketInfoOperation : IOperation<BucketInfo>
+    internal class GetBucketInfoOperation : IOperation<BucketInfo>
     {
         private readonly int _bucket;
         

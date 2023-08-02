@@ -13,7 +13,7 @@ using Sparrow.Server;
 
 namespace Raven.Server.Documents.Queries.Results
 {
-    public interface IQueryResultRetriever
+    internal interface IQueryResultRetriever
     {
         (Document Document, List<Document> List) Get(ref RetrieverInput retrieverInput, CancellationToken token);
 

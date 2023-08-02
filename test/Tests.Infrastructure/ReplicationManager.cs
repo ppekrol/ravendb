@@ -7,7 +7,7 @@ namespace FastTests;
 
 public partial class RavenTestBase
 {
-    public class ReplicationManager : IReplicationManager
+    internal class ReplicationManager : IReplicationManager
     {
         public readonly string DatabaseName;
         public readonly Dictionary<string, ReplicationInstance> Instances;

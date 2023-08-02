@@ -59,7 +59,7 @@ public partial class RavenTestBase
             }
         }
 
-        public class ShardedReplicationManager : IReplicationManager
+        internal class ShardedReplicationManager : IReplicationManager
         {
             public readonly Dictionary<int, ReplicationManager> ShardReplications;
             public readonly string DatabaseName;

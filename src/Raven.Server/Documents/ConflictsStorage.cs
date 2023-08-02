@@ -28,7 +28,7 @@ using static Raven.Server.Documents.Schemas.Conflicts;
 
 namespace Raven.Server.Documents
 {
-    public unsafe partial class ConflictsStorage
+    internal unsafe partial class ConflictsStorage
     {
         public readonly TableSchema ConflictsSchema;
         public long ConflictsCount;

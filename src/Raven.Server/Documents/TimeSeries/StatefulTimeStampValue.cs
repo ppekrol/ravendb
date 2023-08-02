@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace Raven.Server.Documents.TimeSeries
 {
     [StructLayout(LayoutKind.Explicit, Size = 48)]
-    public unsafe struct StatefulTimestampValue
+    internal unsafe struct StatefulTimestampValue
     {
         [FieldOffset(0)]
         public long RawFirst;
@@ -56,7 +56,7 @@ namespace Raven.Server.Documents.TimeSeries
         public fixed byte Reserved[2];
     }
 
-    public unsafe struct StatefulTimestampValueSpan
+    internal unsafe struct StatefulTimestampValueSpan
     {
         private StatefulTimestampValue* Pointer;
         private int Length;

@@ -37,7 +37,7 @@ namespace Raven.Server.Documents.Sharding.Handlers.Processors.Collections
         }
     }
 
-    public readonly struct ShardedCollectionStatisticsOperation : IShardedOperation<CollectionStatistics>
+    internal readonly struct ShardedCollectionStatisticsOperation : IShardedOperation<CollectionStatistics>
     {
         private readonly HttpContext _httpContext;
 
@@ -71,7 +71,7 @@ namespace Raven.Server.Documents.Sharding.Handlers.Processors.Collections
         public RavenCommand<CollectionStatistics> CreateCommandForShard(int shardNumber) => new GetCollectionStatisticsOperation.GetCollectionStatisticsCommand();
     }
 
-    public readonly struct ShardedDetailedCollectionStatisticsOperation : IShardedOperation<DetailedCollectionStatistics>
+    internal readonly struct ShardedDetailedCollectionStatisticsOperation : IShardedOperation<DetailedCollectionStatistics>
     {
         private readonly HttpContext _httpContext;
 

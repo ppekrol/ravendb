@@ -17,7 +17,7 @@ internal sealed class ProxyCommand : ProxyCommand<object>
     }
 }
 
-interal class ProxyCommand<T> : RavenCommand
+internal class ProxyCommand<T> : RavenCommand
 {
     private readonly RavenCommand<T> _command;
     private readonly HttpResponse _response;

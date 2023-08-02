@@ -501,7 +501,7 @@ namespace FastTests
                 return waitHandles.ToArray();
             }
 
-            public static void FillBackupCompletionHandles(List<WaitHandle> waitHandles, DocumentDatabase database)
+            internal static void FillBackupCompletionHandles(List<WaitHandle> waitHandles, DocumentDatabase database)
             {
                 var mre = new ManualResetEventSlim();
                 waitHandles.Add(mre.WaitHandle);

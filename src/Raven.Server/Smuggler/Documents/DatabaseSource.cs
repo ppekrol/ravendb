@@ -29,7 +29,7 @@ using Voron;
 
 namespace Raven.Server.Smuggler.Documents
 {
-    interal class DatabaseSource : ISmugglerSource
+    internal class DatabaseSource : ISmugglerSource
     {
         private readonly DocumentDatabase _database;
         private DocumentsOperationContext _context;

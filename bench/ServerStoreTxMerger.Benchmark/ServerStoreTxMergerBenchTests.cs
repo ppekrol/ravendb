@@ -11,7 +11,7 @@ namespace ServerStoreTxMerger.Benchmark;
 public class ServerStoreTxMergerBenchTests
 {
     private static readonly List<(int Count, int Size)> _numAndSizeOfCmds = new List<(int, int)> { (30000, 1_024) };
-    public static Dictionary<string, RachisConsensusTestBase.TestCommandWithLargeData[]> CmdsArrays = new Dictionary<string, RachisConsensusTestBase.TestCommandWithLargeData[]>();
+    internal static Dictionary<string, RachisConsensusTestBase.TestCommandWithLargeData[]> CmdsArrays = new Dictionary<string, RachisConsensusTestBase.TestCommandWithLargeData[]>();
     public static List<string> CmdsArraysKeys { get; set; } = new List<string>();
 
     [ParamsSource(nameof(CmdsArraysKeys))]
@@ -105,7 +105,7 @@ public class ActualTests : RachisConsensusTestBase
         _leader = await CreateNetworkAndGetLeader(nodeCount: nodesCount, watcherCluster: true, shouldRunInMemory: false);
     }
 
-    public async Task Test(TestCommandWithLargeData[] cmds)
+    internal async Task Test(TestCommandWithLargeData[] cmds)
     {
         if (_leader == null)
         {

@@ -3,7 +3,7 @@
 namespace Raven.Server.Documents.TimeSeries
 {
     [StructLayout(LayoutKind.Explicit, Size = 8)]
-    public unsafe struct BitsBufferHeader
+    internal unsafe struct BitsBufferHeader
     {
         [FieldOffset(0)]
         public int UncompressedBitsPosition;

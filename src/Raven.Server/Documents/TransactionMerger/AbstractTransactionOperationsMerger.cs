@@ -31,7 +31,7 @@ namespace Raven.Server.Documents.TransactionMerger
     /// Merges multiple commands into a single transaction. Any commands that implement IDisposable
     /// will be disposed after the command is executed and transaction is committed
     /// </summary>
-    public abstract partial class AbstractTransactionOperationsMerger<TOperationContext, TTransaction> : IDisposable
+    internal abstract partial class AbstractTransactionOperationsMerger<TOperationContext, TTransaction> : IDisposable
         where TOperationContext : TransactionOperationContext<TTransaction>
         where TTransaction : RavenTransaction
     {

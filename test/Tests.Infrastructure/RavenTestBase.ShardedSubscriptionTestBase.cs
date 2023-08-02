@@ -25,7 +25,7 @@ public partial class RavenTestBase
             _parent = parent ?? throw new ArgumentNullException(nameof(parent));
         }
 
-        public async Task AssertNoItemsInTheResendQueueAsync(IDocumentStore store, string subscriptionId, List<RavenServer> servers = null, List<ShardedDocumentDatabase> shards = null)
+        internal async Task AssertNoItemsInTheResendQueueAsync(IDocumentStore store, string subscriptionId, List<RavenServer> servers = null, List<ShardedDocumentDatabase> shards = null)
         {
             var id = long.Parse(subscriptionId);
             shards ??= await _parent.Sharding.GetShardsDocumentDatabaseInstancesFor(store, servers).ToListAsync();
@@ -51,7 +51,7 @@ public partial class RavenTestBase
             }
         }
 
-        public async Task AssertNumberOfItemsInTheResendQueueAsync(IDocumentStore store, string subscriptionId, long expected, List<RavenServer> servers = null,
+        internal async Task AssertNumberOfItemsInTheResendQueueAsync(IDocumentStore store, string subscriptionId, long expected, List<RavenServer> servers = null,
             List<ShardedDocumentDatabase> shards = null)
         {
             var id = long.Parse(subscriptionId);

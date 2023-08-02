@@ -12,7 +12,7 @@ namespace SlowTests.Server.Documents.PeriodicBackup
 {
     public abstract class CloudBackupTestBase : RavenTestBase
     {
-        protected static readonly Raven.Server.Config.Categories.BackupConfiguration DefaultConfiguration;
+        internal static readonly Raven.Server.Config.Categories.BackupConfiguration DefaultConfiguration;
 
         static CloudBackupTestBase()
         {

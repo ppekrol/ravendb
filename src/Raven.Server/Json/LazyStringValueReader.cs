@@ -9,7 +9,7 @@ using Sparrow.Server.Utils;
 
 namespace Raven.Server.Json
 {
-    public sealed unsafe class LazyStringReader : IDisposable
+    internal sealed unsafe class LazyStringReader : IDisposable
     {
         internal const int MinLengthForLazyStringStreamReader = 2048;
 

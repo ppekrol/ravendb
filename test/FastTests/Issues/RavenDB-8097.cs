@@ -64,7 +64,7 @@ namespace FastTests.Issues
             }
         }
 
-        public RavenConfiguration GetConfiguration(string serverUrl = null, string tcpServerUrl = null, string certPath = null)
+        internal RavenConfiguration GetConfiguration(string serverUrl = null, string tcpServerUrl = null, string certPath = null)
         {
             var configuration = RavenConfiguration.CreateForServer(null);
             configuration.SetSetting(

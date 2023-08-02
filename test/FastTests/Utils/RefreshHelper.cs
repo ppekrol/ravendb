@@ -5,7 +5,7 @@ using Raven.Client.Documents.Operations.Refresh;
 
 namespace FastTests.Utils
 {
-    public static class RefreshHelper
+    internal static class RefreshHelper
     {
         public static async Task SetupExpiration(IDocumentStore store, Raven.Server.ServerWide.ServerStore serverStore, RefreshConfiguration configuration)
         {

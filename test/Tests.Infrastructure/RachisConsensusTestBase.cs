@@ -67,7 +67,7 @@ namespace Tests.Infrastructure
 
         protected int LongWaitTime = 15000; //under stress the thread pool may take time to schedule the task to complete the set of the TCS
 
-        protected async Task<RachisConsensus<CountingStateMachine>> CreateNetworkAndGetLeader(int nodeCount, [CallerMemberName] string caller = null, bool watcherCluster = false, bool shouldRunInMemory = true)
+        internal async Task<RachisConsensus<CountingStateMachine>> CreateNetworkAndGetLeader(int nodeCount, [CallerMemberName] string caller = null, bool watcherCluster = false, bool shouldRunInMemory = true)
         {
             string[] allowedNodeTags = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
 
@@ -122,21 +122,21 @@ namespace Tests.Infrastructure
             return Task.CompletedTask;
         }
 
-        protected RachisConsensus<CountingStateMachine> GetRandomFollower()
+        internal RachisConsensus<CountingStateMachine> GetRandomFollower()
         {
             var followers = GetFollowers();
             var indexOfFollower = _random.Next(followers.Count);
             return followers[indexOfFollower];
         }
 
-        protected List<RachisConsensus<CountingStateMachine>> GetFollowers()
+        internal List<RachisConsensus<CountingStateMachine>> GetFollowers()
         {
             return RachisConsensuses.Where(
                      x => x.CurrentState != RachisState.Leader &&
                      x.CurrentState != RachisState.LeaderElect).ToList();
         }
 
-        protected void DisconnectFromNode(RachisConsensus<CountingStateMachine> node)
+        internal void DisconnectFromNode(RachisConsensus<CountingStateMachine> node)
         {
             foreach (var follower in RachisConsensuses.Where(x => x.Url != node.Url))
             {
@@ -144,7 +144,7 @@ namespace Tests.Infrastructure
             }
         }
 
-        protected void DisconnectBiDirectionalFromNode(RachisConsensus<CountingStateMachine> node)
+        internal void DisconnectBiDirectionalFromNode(RachisConsensus<CountingStateMachine> node)
         {
             foreach (var follower in RachisConsensuses.Where(x => x.Url != node.Url))
             {
@@ -153,7 +153,7 @@ namespace Tests.Infrastructure
             }
         }
 
-        protected void ReconnectBiDirectionalFromNode(RachisConsensus<CountingStateMachine> node)
+        internal void ReconnectBiDirectionalFromNode(RachisConsensus<CountingStateMachine> node)
         {
             foreach (var follower in RachisConsensuses.Where(x => x.Url != node.Url))
             {
@@ -162,7 +162,7 @@ namespace Tests.Infrastructure
             }
         }
 
-        protected void ReconnectToNode(RachisConsensus<CountingStateMachine> node)
+        internal void ReconnectToNode(RachisConsensus<CountingStateMachine> node)
         {
             foreach (var follower in RachisConsensuses.Where(x => x.Url != node.Url))
             {
@@ -170,7 +170,7 @@ namespace Tests.Infrastructure
             }
         }
 
-        protected RachisConsensus<CountingStateMachine> WaitForAnyToBecomeLeader(IEnumerable<RachisConsensus<CountingStateMachine>> nodes)
+        internal RachisConsensus<CountingStateMachine> WaitForAnyToBecomeLeader(IEnumerable<RachisConsensus<CountingStateMachine>> nodes)
         {
             var waitingTasks = new List<Task>();
 
@@ -183,7 +183,7 @@ namespace Tests.Infrastructure
             return nodes.FirstOrDefault(x => x.CurrentState == RachisState.Leader);
         }
 
-        public static string GetCandidateStatus(IEnumerable<RachisConsensus<CountingStateMachine>> nodes)
+        internal static string GetCandidateStatus(IEnumerable<RachisConsensus<CountingStateMachine>> nodes)
         {
             var sb = new StringBuilder();
             sb.AppendLine("Waited too long for a node to become a leader but no leader was elected.");
@@ -204,7 +204,7 @@ namespace Tests.Infrastructure
             return sb.ToString();
         }
 
-        protected RachisConsensus<CountingStateMachine> SetupServer(bool bootstrap = false, int port = 0, int electionTimeout = 300, [CallerMemberName] string caller = null, bool shouldRunInMemory = true, string nodeTag = null)
+        internal RachisConsensus<CountingStateMachine> SetupServer(bool bootstrap = false, int port = 0, int electionTimeout = 300, [CallerMemberName] string caller = null, bool shouldRunInMemory = true, string nodeTag = null)
         {
             var tcpListener = new TcpListener(IPAddress.Loopback, port);
             tcpListener.Start();
@@ -391,7 +391,7 @@ namespace Tests.Infrastructure
             return index;
         }
 
-        protected List<Task> IssueCommandsWithoutWaitingForCommits(RachisConsensus<CountingStateMachine> leader, int numberOfCommands, string name, int? value = null)
+        internal List<Task> IssueCommandsWithoutWaitingForCommits(RachisConsensus<CountingStateMachine> leader, int numberOfCommands, string name, int? value = null)
         {
             List<Task> waitingList = new List<Task>();
             for (var i = 1; i <= numberOfCommands; i++)
@@ -407,7 +407,7 @@ namespace Tests.Infrastructure
             return waitingList;
         }
 
-        protected async Task ActionWithLeader(Func<RachisConsensus<CountingStateMachine>, Task> action)
+        internal async Task ActionWithLeader(Func<RachisConsensus<CountingStateMachine>, Task> action)
         {
             var retires = 5;
             Exception lastException;
@@ -441,7 +441,7 @@ namespace Tests.Infrastructure
         private readonly ConcurrentDictionary<string, ConcurrentSet<string>> _rejectionList = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         private readonly ConcurrentDictionary<string, ConcurrentSet<Tuple<string, TcpClient>>> _connections = new ConcurrentDictionary<string, ConcurrentSet<Tuple<string, TcpClient>>>();
         private readonly List<TcpListener> _listeners = new List<TcpListener>();
-        protected readonly List<RachisConsensus<CountingStateMachine>> RachisConsensuses = new List<RachisConsensus<CountingStateMachine>>();
+        internal readonly List<RachisConsensus<CountingStateMachine>> RachisConsensuses = new List<RachisConsensus<CountingStateMachine>>();
         private readonly List<Task> _mustBeSuccessfulTasks = new List<Task>();
         private readonly Random _random = new Random();
         private long _count;
@@ -482,7 +482,7 @@ namespace Tests.Infrastructure
             exceptionAggregator.ThrowIfNeeded();
         }
 
-        public class CountingValidator : RachisVersionValidation
+        internal class CountingValidator : RachisVersionValidation
         {
             public CountingValidator(ClusterCommandsVersionManager commandsVersionManager) : base(commandsVersionManager)
             {
@@ -497,7 +497,7 @@ namespace Tests.Infrastructure
             }
         }
 
-        public class CountingStateMachine : RachisStateMachine
+        internal class CountingStateMachine : RachisStateMachine
         {
             public string Read(ClusterOperationContext context, string name)
             {
@@ -591,7 +591,7 @@ namespace Tests.Infrastructure
             }
         }
 
-        public class TestCommand : CommandBase
+        internal class TestCommand : CommandBase
         {
             public string Name;
 
@@ -610,7 +610,7 @@ namespace Tests.Infrastructure
             }
         }
 
-        public class TestCommandWithLargeData : CommandBase
+        internal class TestCommandWithLargeData : CommandBase
         {
             public string Name;
 

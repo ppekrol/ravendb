@@ -14,7 +14,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    interal class CurrentIndexingScope : IDisposable
+    internal class CurrentIndexingScope : IDisposable
     {
         private IndexingStatsScope _stats;
         private IndexingStatsScope _loadDocumentStats;

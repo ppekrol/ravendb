@@ -38,7 +38,7 @@ namespace Raven.Server.Rachis
     /// actually does work in here, the leader thread. All other work is requested
     /// from it and it is done
     /// </summary>
-    public partial class Leader : IDisposable
+    internal partial class Leader : IDisposable
     {
         private TaskCompletionSource<object> _topologyModification;
         private readonly RachisConsensus _engine;

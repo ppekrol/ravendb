@@ -18,7 +18,7 @@ namespace Raven.Server.Documents.ETL.Stats
         }
     }
 
-    interal class EtlProcessTransformationStats : IDynamicJson
+    internal class EtlProcessTransformationStats : IDynamicJson
     {
         public string TransformationName { get; set; }
 

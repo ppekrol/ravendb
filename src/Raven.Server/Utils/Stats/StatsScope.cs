@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Raven.Server.Utils.Stats
 {
-    public interface IStatsScope
+    internal interface IStatsScope
     {
         TimeSpan Duration { get; }
     }

@@ -118,7 +118,7 @@ namespace Raven.Server.Documents.Subscriptions
         }
     }
 
-    interal class DocumentSubscriptionFetcher : SubscriptionFetcher<Document>
+    internal class DocumentSubscriptionFetcher : SubscriptionFetcher<Document>
     {
         public DocumentSubscriptionFetcher(DocumentDatabase database, SubscriptionConnectionsState subscriptionConnectionsState, string collection) :
             base(database, subscriptionConnectionsState, collection)

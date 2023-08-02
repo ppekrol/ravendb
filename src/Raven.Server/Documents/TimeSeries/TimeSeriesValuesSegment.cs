@@ -16,7 +16,7 @@ using Voron;
 
 namespace Raven.Server.Documents.TimeSeries
 {
-    public unsafe struct TimeSeriesValuesSegment
+    internal unsafe struct TimeSeriesValuesSegment
     {
         public const int BitsForFirstTimestamp = 31;
         public const int LeadingZerosLengthBits = 5;
@@ -995,7 +995,7 @@ namespace Raven.Server.Documents.TimeSeries
         }
     }
 
-    public readonly struct TimeSeriesSegmentSummary
+    internal readonly struct TimeSeriesSegmentSummary
     {
         public readonly IReadOnlyList<double> Min;
 

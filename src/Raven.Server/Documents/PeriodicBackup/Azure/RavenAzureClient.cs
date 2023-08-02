@@ -17,7 +17,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Documents.PeriodicBackup.Azure
 {
-    public interface IRavenAzureClient : IDisposable
+    internal interface IRavenAzureClient : IDisposable
     {
         void PutBlob(string blobName, Stream stream, Dictionary<string, string> metadata);
         RavenStorageClient.ListBlobResult ListBlobs(string prefix, string delimiter, bool listFolders, string continuationToken = null);

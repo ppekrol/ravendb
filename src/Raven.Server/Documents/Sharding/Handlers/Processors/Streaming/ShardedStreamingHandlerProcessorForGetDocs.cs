@@ -68,7 +68,7 @@ namespace Raven.Server.Documents.Sharding.Handlers.Processors.Streaming
         }
     }
 
-    public readonly struct ShardedStreamDocumentsOperation : IShardedStreamableOperation
+    internal readonly struct ShardedStreamDocumentsOperation : IShardedStreamableOperation
     {
         private readonly string _startsWith;
         private readonly string _matches;

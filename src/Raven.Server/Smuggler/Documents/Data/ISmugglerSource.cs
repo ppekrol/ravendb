@@ -15,7 +15,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Smuggler.Documents.Data
 {
-    public interface ISmugglerSource
+    internal interface ISmugglerSource
     {
         Task<SmugglerInitializeResult> InitializeAsync(DatabaseSmugglerOptionsServerSide options, SmugglerResult result);
 

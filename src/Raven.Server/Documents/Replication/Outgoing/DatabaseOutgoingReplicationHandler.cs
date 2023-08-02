@@ -452,14 +452,14 @@ namespace Raven.Server.Documents.Replication.Outgoing
         }
     }
 
-    public interface IReportOutgoingReplicationPerformance
+    internal interface IReportOutgoingReplicationPerformance
     {
         string DestinationFormatted { get; }
 
         OutgoingReplicationPerformanceStats[] GetReplicationPerformance();
     }
 
-    public interface IReportIncomingReplicationPerformance
+    internal interface IReportIncomingReplicationPerformance
     {
         string DestinationFormatted { get; }
 

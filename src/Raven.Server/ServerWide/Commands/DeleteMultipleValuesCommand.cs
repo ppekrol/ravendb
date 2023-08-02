@@ -6,7 +6,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    interal class DeleteMultipleValuesCommand : CommandBase
+    internal class DeleteMultipleValuesCommand : CommandBase
     {
         public List<string> Names;
 

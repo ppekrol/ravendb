@@ -27,7 +27,7 @@ namespace SlowTests.Server.Documents.Migration
         
         private const int CommandTimeout = 10 * 60; // We want to avoid timeout exception. We don't care about performance here. The query can take long time if all the outer database are working simultaneously on the same machine 
 
-        protected void ApplyDefaultColumnNamesMapping(DatabaseSchema dbSchema, MigrationSettings settings, bool binaryToAttachment = false)
+        internal void ApplyDefaultColumnNamesMapping(DatabaseSchema dbSchema, MigrationSettings settings, bool binaryToAttachment = false)
         {
             foreach (var collection in settings.Collections)
             {
@@ -35,7 +35,7 @@ namespace SlowTests.Server.Documents.Migration
             }
         }
 
-        protected void ApplyDefaultColumnNamesMapping(DatabaseSchema dbSchema, AbstractCollection collection, bool binaryToAttachment)
+        internal void ApplyDefaultColumnNamesMapping(DatabaseSchema dbSchema, AbstractCollection collection, bool binaryToAttachment)
         {
             var tableSchema = dbSchema.Tables.First(x => x.Schema == collection.SourceTableSchema && x.TableName == collection.SourceTableName);
 

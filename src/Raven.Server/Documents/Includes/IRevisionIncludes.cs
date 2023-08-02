@@ -4,7 +4,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Includes;
 
-public interface IRevisionIncludes
+internal interface IRevisionIncludes
 {
     ValueTask WriteIncludesAsync(AsyncBlittableJsonTextWriter writer, JsonOperationContext context, CancellationToken token);
 

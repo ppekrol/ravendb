@@ -97,7 +97,7 @@ namespace Raven.Server.NotificationCenter
         public string SizeOfTombstonesHumane => new Size(SizeOfTombstonesInBytes, SizeUnit.Bytes).ToString();
         }
 
-    internal sealed class TombstoneDeletionBlockageSource : IEquatable<TombstoneDeletionBlockageSource>
+    public sealed class TombstoneDeletionBlockageSource : IEquatable<TombstoneDeletionBlockageSource>
     {
         public long TaskId { get; }
         public ITombstoneAware.TombstoneDeletionBlockerType Type { get; }

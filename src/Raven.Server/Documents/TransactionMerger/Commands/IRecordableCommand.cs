@@ -4,7 +4,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.TransactionMerger.Commands;
 
-public interface IRecordableCommand<TOperationContext, TTransaction>
+internal interface IRecordableCommand<TOperationContext, TTransaction>
     where TOperationContext : TransactionOperationContext<TTransaction>
     where TTransaction : RavenTransaction
 {

@@ -142,7 +142,7 @@ namespace FastTests.Issues
             Assert.Equal($"https://localhost:8080".ToLowerInvariant(), result);
         }
 
-        public RavenConfiguration GetConfiguration(string publicServerUrl = null, string publicTcpServerUrl = null, string serverUrl = null, string tcpServerUrl = null, string certPath = null, string unsecuredAccessAddressRange = nameof(UnsecuredAccessAddressRange.Local))
+        internal RavenConfiguration GetConfiguration(string publicServerUrl = null, string publicTcpServerUrl = null, string serverUrl = null, string tcpServerUrl = null, string certPath = null, string unsecuredAccessAddressRange = nameof(UnsecuredAccessAddressRange.Local))
         {
             var configuration = RavenConfiguration.CreateForServer(null);
             configuration.SetSetting(

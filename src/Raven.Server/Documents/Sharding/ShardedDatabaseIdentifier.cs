@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 
 namespace Raven.Server.Documents.Sharding;
 
-public readonly struct ShardedDatabaseIdentifier
+internal readonly struct ShardedDatabaseIdentifier
 {
     public readonly string NodeTag;
 

@@ -1009,7 +1009,7 @@ namespace SlowTests.Rolling
             return null;
         }
 
-        public static Dictionary<string, RollingIndexDeployment> ReadDeployment(RavenServer server, string database, string index)
+        internal static Dictionary<string, RollingIndexDeployment> ReadDeployment(RavenServer server, string database, string index)
         {
             using (server.ServerStore.ContextPool.AllocateOperationContext(out TransactionOperationContext ctx))
             using (ctx.OpenReadTransaction())
@@ -1087,7 +1087,7 @@ namespace SlowTests.Rolling
             public override string IndexName => nameof(MyRollingIndex);
         }
 
-        public static async Task<Index> WaitForRollingIndex(string database, string name, RavenServer server)
+        internal static async Task<Index> WaitForRollingIndex(string database, string name, RavenServer server)
         {
             var db = await server.ServerStore.DatabasesLandlord.TryGetOrCreateResourceStore(database);
 

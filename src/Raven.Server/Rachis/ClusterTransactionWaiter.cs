@@ -17,7 +17,7 @@ namespace Raven.Server.Rachis
         public DynamicJsonArray Array;
     }
 
-    interal class AsyncWaiter<T>
+    internal class AsyncWaiter<T>
     {
         private readonly ConcurrentDictionary<string, TaskCompletionSource<T>> _results = new ConcurrentDictionary<string, TaskCompletionSource<T>>();
 
@@ -50,7 +50,7 @@ namespace Raven.Server.Rachis
             }
         }
 
-        public readonly struct RemoveTask : IDisposable
+        internal readonly struct RemoveTask : IDisposable
         {
             private readonly AsyncWaiter<T> _parent;
             private readonly string _id;

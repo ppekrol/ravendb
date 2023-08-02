@@ -11,7 +11,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Indexes.MapReduce.Auto;
 
-interal class AutoMapReduceIndexResultsAggregator
+internal class AutoMapReduceIndexResultsAggregator
 {
     protected Action<DynamicJsonValue> ModifyOutputToStore;
 

@@ -19,7 +19,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Sharding.Operations;
 
-public readonly struct ShardedSubscriptionTryoutOperation : IShardedOperation<GetDocumentsResult>
+internal readonly struct ShardedSubscriptionTryoutOperation : IShardedOperation<GetDocumentsResult>
 {
     private readonly HttpContext _httpContext;
     private readonly TransactionOperationContext _context;

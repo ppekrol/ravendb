@@ -62,18 +62,18 @@ namespace FastTests
             return store.Maintenance.Server.Send(new GetDatabaseRecordOperation(database ?? store.Database));
         }
 
-        protected virtual Task<DocumentDatabase> GetDocumentDatabaseInstanceFor(IDocumentStore store, string database = null)
+        internal virtual Task<DocumentDatabase> GetDocumentDatabaseInstanceFor(IDocumentStore store, string database = null)
         {
             return Server.ServerStore.DatabasesLandlord.TryGetOrCreateResourceStore(database ?? store.Database);
         }
 
-        protected async ValueTask<DocumentDatabase> GetDocumentDatabaseInstanceForAsync(string database, RavenServer server = null)
+        internal async ValueTask<DocumentDatabase> GetDocumentDatabaseInstanceForAsync(string database, RavenServer server = null)
         {
             server ??= Server;
             return await server.ServerStore.DatabasesLandlord.TryGetOrCreateResourceStore(database);
         }
 
-        protected virtual async ValueTask<DocumentDatabase> GetDocumentDatabaseInstanceForAsync(IDocumentStore store, RavenDatabaseMode mode, string id, RavenServer server = null)
+        internal virtual async ValueTask<DocumentDatabase> GetDocumentDatabaseInstanceForAsync(IDocumentStore store, RavenDatabaseMode mode, string id, RavenServer server = null)
         {
             server ??= Server;
             var database = mode == RavenDatabaseMode.Single ? store.Database : await Sharding.GetShardDatabaseNameForDocAsync(store, id);
@@ -734,7 +734,7 @@ namespace FastTests
             }
         }
 
-        protected override void Dispose(ExceptionAggregator exceptionAggregator)
+        internal override void Dispose(ExceptionAggregator exceptionAggregator)
         {
             foreach (var store in CreatedStores)
             {

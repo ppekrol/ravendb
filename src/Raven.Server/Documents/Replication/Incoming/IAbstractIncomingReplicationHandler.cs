@@ -4,7 +4,7 @@ using Raven.Server.Documents.Replication.Stats;
 
 namespace Raven.Server.Documents.Replication.Incoming
 {
-    public interface IAbstractIncomingReplicationHandler : IDisposable
+    internal interface IAbstractIncomingReplicationHandler : IDisposable
     {
         public bool IsDisposed { get; }
         public IncomingConnectionInfo ConnectionInfo { get; }

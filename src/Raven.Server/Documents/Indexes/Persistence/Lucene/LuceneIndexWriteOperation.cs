@@ -18,7 +18,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 {
-    interal class LuceneIndexWriteOperation : IndexWriteOperationBase, IWriteOperationBuffer
+    internal class LuceneIndexWriteOperation : IndexWriteOperationBase, IWriteOperationBuffer
     {
         private readonly Term _documentId = new Term(Constants.Documents.Indexing.Fields.DocumentIdFieldName, "Dummy");
         private readonly Term _reduceKeyHash = new Term(Constants.Documents.Indexing.Fields.ReduceKeyHashFieldName, "Dummy");
@@ -252,7 +252,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
         }
     }
 
-    public interface IWriteOperationBuffer
+    internal interface IWriteOperationBuffer
     {
         byte[] GetBuffer(int necessarySize);
     }

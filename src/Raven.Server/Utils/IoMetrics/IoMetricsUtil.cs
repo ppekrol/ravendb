@@ -171,7 +171,7 @@ namespace Raven.Server.Utils.IoMetrics
         public double CompressionRatio;
     }
 
-    interal class IOMetricsRecentStats
+    internal class IOMetricsRecentStats
     {
         public string Start { get; set; }
         public long Size { get; set; }

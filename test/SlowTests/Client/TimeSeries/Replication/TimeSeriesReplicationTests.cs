@@ -829,7 +829,7 @@ namespace SlowTests.Client.TimeSeries.Replication
             }
         }
 
-        public static async Task AssertNoLeftOvers(DocumentDatabase db)
+        internal static async Task AssertNoLeftOvers(DocumentDatabase db)
         {
             await db.TombstoneCleaner.ExecuteCleanup();
             using (db.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext ctx))

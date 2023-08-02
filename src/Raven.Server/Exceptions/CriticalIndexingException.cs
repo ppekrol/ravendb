@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Exceptions
 {
-    interal class CriticalIndexingException : Exception
+    internal class CriticalIndexingException : Exception
     {
         public CriticalIndexingException(Exception e)
             : base(e.Message, e)

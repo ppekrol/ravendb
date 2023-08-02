@@ -37,7 +37,7 @@ using IndexSearcher = Corax.IndexSearcher;
 using CoraxSpatialResult = global::Corax.Utils.Spatial.SpatialResult;
 namespace Raven.Server.Documents.Indexes.Persistence.Corax
 {
-    interal class CoraxIndexReadOperation : IndexReadOperationBase
+    internal class CoraxIndexReadOperation : IndexReadOperationBase
     {
         // PERF: This is a hack in order to deal with RavenDB-19597. The ArrayPool creates contention under high requests environments.
         // There are 2 ways to avoid this contention, one is to avoid using it altogether and the other one is separating the pools from

@@ -155,7 +155,7 @@ namespace Raven.Server.Documents.Sharding.Handlers.Processors.Streaming
         }
     }
 
-    public readonly struct ShardedStreamQueryOperation : IShardedOperation<StreamResult, ShardedStreamQueryResult>
+    internal readonly struct ShardedStreamQueryOperation : IShardedOperation<StreamResult, ShardedStreamQueryResult>
     {
         private readonly HttpContext _httpContext;
         private readonly Func<(JsonOperationContext, IDisposable)> _allocateJsonContext;
@@ -211,7 +211,7 @@ namespace Raven.Server.Documents.Sharding.Handlers.Processors.Streaming
         }
     }
 
-    public readonly struct ShardedStreamQueryResult : IDisposable
+    internal readonly struct ShardedStreamQueryResult : IDisposable
     {
         private readonly MergedEnumerator<BlittableJsonReaderObject> _enumerator;
         private readonly long _skip;

@@ -24,7 +24,7 @@ namespace Voron.Benchmark.Corax
             return Search(query.Where);
         }
 
-        public IQueryMatch Search(QueryExpression where)
+        internal IQueryMatch Search(QueryExpression where)
         {
             return Evaluate(@where);
         }
@@ -65,7 +65,7 @@ namespace Voron.Benchmark.Corax
         }
     }
 
-    public class QueryDefinition
+    internal class QueryDefinition
     {
         /// <summary>
         /// This is the means by which the outside world refers to this query

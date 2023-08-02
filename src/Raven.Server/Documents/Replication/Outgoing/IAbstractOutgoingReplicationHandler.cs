@@ -3,7 +3,7 @@ using Raven.Client.Documents.Replication;
 
 namespace Raven.Server.Documents.Replication.Outgoing
 {
-    public interface IAbstractOutgoingReplicationHandler : IDisposable, IReportOutgoingReplicationPerformance
+    internal interface IAbstractOutgoingReplicationHandler : IDisposable, IReportOutgoingReplicationPerformance
     {
         public ReplicationNode Node { get; }
         public long LastSentDocumentEtag { get; }

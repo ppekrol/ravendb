@@ -11,7 +11,7 @@ using static Raven.Server.Documents.Schemas.TimeSeries;
 
 namespace Raven.Server.Documents.TimeSeries
 {
-    public partial class TimeSeriesStorage
+    internal partial class TimeSeriesStorage
     {
         public IEnumerable<TimeSeriesReplicationItem> GetSegmentsByBucketFrom(DocumentsOperationContext context, int bucket, long etag)
         {

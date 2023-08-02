@@ -11,7 +11,7 @@ using static Raven.Server.Documents.Schemas.CounterTombstones;
 
 namespace Raven.Server.Documents
 {
-    public partial class CountersStorage
+    internal partial class CountersStorage
     {
         public IEnumerable<ReplicationBatchItem> GetCountersByBucketFrom(DocumentsOperationContext context, int bucket, long etag)
         {

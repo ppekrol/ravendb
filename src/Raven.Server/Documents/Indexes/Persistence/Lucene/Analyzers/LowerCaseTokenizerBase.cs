@@ -4,7 +4,7 @@ using Lucene.Net.Util;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers
 {
-    public interface ILowerCaseTokenizerHelper
+    internal interface ILowerCaseTokenizerHelper
     {
         /// <summary>Returns true iff a character should be included in a token.  This
         /// tokenizer generates as tokens adjacent sequences of characters which
@@ -20,7 +20,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers
         char Normalize(char c);
     }
 
-    interal class LowerCaseTokenizerBase<T> : Tokenizer where T : struct, ILowerCaseTokenizerHelper
+    internal class LowerCaseTokenizerBase<T> : Tokenizer where T : struct, ILowerCaseTokenizerHelper
     {
         // PERF: This helper will act as a inheritance dispatcher that can be modified but at the same time
         //       ensure these performance critical calls will get inlined and optimized accordingly.

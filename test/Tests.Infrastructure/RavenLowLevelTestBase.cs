@@ -32,13 +32,13 @@ namespace FastTests
         {
         }
 
-        protected static void WaitForIndexMap(Index index, long etag)
+        internal static void WaitForIndexMap(Index index, long etag)
         {
             var timeout = Debugger.IsAttached ? TimeSpan.FromMinutes(5) : TimeSpan.FromSeconds(15);
             Assert.True(SpinWait.SpinUntil(() => index.GetLastMappedEtagsForDebug().Values.Min() == etag, timeout));
         }
 
-        protected IDisposable CreatePersistentDocumentDatabase(string dataDirectory, out DocumentDatabase db, Action<Dictionary<string, string>> modifyConfiguration = null, [CallerMemberName]string caller = null)
+        internal IDisposable CreatePersistentDocumentDatabase(string dataDirectory, out DocumentDatabase db, Action<Dictionary<string, string>> modifyConfiguration = null, [CallerMemberName]string caller = null)
         {
             var database = CreateDocumentDatabase(runInMemory: false, dataDirectory: dataDirectory, caller: caller, modifyConfiguration: modifyConfiguration);
             db = database;
@@ -49,20 +49,20 @@ namespace FastTests
             });
         }
 
-        protected DocumentDatabase CreateDocumentDatabaseForSearchEngine(RavenTestParameters config)
+        internal DocumentDatabase CreateDocumentDatabaseForSearchEngine(RavenTestParameters config)
         {
             return CreateDocumentDatabase(modifyConfiguration: dictionary =>
                 dictionary[RavenConfiguration.GetKey(x => x.Indexing.AutoIndexingEngineType)] = config.SearchEngine.ToString());
         }
         
-        protected DocumentDatabase CreateDocumentDatabase([CallerMemberName] string caller = null, bool runInMemory = true, string dataDirectory = null, Action<Dictionary<string, string>> modifyConfiguration = null)
+        internal DocumentDatabase CreateDocumentDatabase([CallerMemberName] string caller = null, bool runInMemory = true, string dataDirectory = null, Action<Dictionary<string, string>> modifyConfiguration = null)
         {
             var name = GetDatabaseName(caller);
 
             return CreateDatabaseWithName(runInMemory, dataDirectory, modifyConfiguration, name);
         }
 
-        protected DocumentDatabase CreateDatabaseWithName(bool runInMemory, string dataDirectory, Action<Dictionary<string, string>> modifyConfiguration, string name)
+        internal DocumentDatabase CreateDatabaseWithName(bool runInMemory, string dataDirectory, Action<Dictionary<string, string>> modifyConfiguration, string name)
         {
             _databases.Add(name);
 
@@ -117,7 +117,7 @@ namespace FastTests
             }
         }
 
-        protected override void Dispose(ExceptionAggregator exceptionAggregator)
+        internal override void Dispose(ExceptionAggregator exceptionAggregator)
         {
             if (_databases.Count == 0)
                 return;

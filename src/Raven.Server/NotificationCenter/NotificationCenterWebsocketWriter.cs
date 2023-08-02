@@ -12,11 +12,11 @@ using Sparrow.Server.Collections;
 
 namespace Raven.Server.NotificationCenter
 {
-    public interface INotificationCenterWebSocketWriter
+    internal interface INotificationCenterWebSocketWriter
     {
     }
 
-    interal class NotificationCenterWebSocketWriter<TOperationContext> : IWebsocketWriter, INotificationCenterWebSocketWriter, IDisposable
+    internal class NotificationCenterWebSocketWriter<TOperationContext> : IWebsocketWriter, INotificationCenterWebSocketWriter, IDisposable
         where TOperationContext : JsonOperationContext
     {
         protected readonly WebSocket _webSocket;

@@ -8,7 +8,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Includes
 {
-    public sealed unsafe class IncludeDocumentsDuringTimeSeriesLoadingCommand
+    internal sealed unsafe class IncludeDocumentsDuringTimeSeriesLoadingCommand
     {
         private readonly DocumentsOperationContext _context;
         private readonly string _docId;

@@ -3,7 +3,7 @@ using Raven.Client.Util;
 
 namespace Raven.Server.Utils.Stats
 {
-    public interface IStatsAggregator
+    internal interface IStatsAggregator
     {
         DateTime StartTime { get; }
 

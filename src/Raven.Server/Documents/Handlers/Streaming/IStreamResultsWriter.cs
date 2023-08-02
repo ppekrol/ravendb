@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Raven.Server.Documents.Handlers.Streaming;
 
-public interface IStreamResultsWriter<in T> : IAsyncDisposable
+internal interface IStreamResultsWriter<in T> : IAsyncDisposable
 {
     void StartResponse();
     

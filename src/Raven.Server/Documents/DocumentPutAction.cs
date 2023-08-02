@@ -23,7 +23,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Raven.Server.Documents
 {
-    public unsafe class DocumentPutAction
+    internal unsafe class DocumentPutAction
     {
         private readonly DocumentsStorage _documentsStorage;
         private readonly DocumentDatabase _documentDatabase;
@@ -528,7 +528,7 @@ namespace Raven.Server.Documents
                    metadata.TryGet(type.MetadataProperty, out current);
         }
 
-        public interface IRecreationType
+        internal interface IRecreationType
         {
             string MetadataProperty { get; }
 

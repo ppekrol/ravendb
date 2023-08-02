@@ -73,7 +73,7 @@ namespace SlowTests.Server.Replication
             }
         }
 
-        public class GetResolvedRevisionsOperation : IMaintenanceOperation<ResolvedRevisions>
+        internal class GetResolvedRevisionsOperation : IMaintenanceOperation<ResolvedRevisions>
         {
             private readonly DateTime? _since;
             private readonly int? _take;

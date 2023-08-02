@@ -17,7 +17,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public abstract partial class ShardedDatabaseRequestHandler : AbstractDatabaseRequestHandler<TransactionOperationContext>
+    internal abstract partial class ShardedDatabaseRequestHandler : AbstractDatabaseRequestHandler<TransactionOperationContext>
     {
         public ShardedDatabaseContext DatabaseContext;
 

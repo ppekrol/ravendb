@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Integrations.PostgreSQL.Messages
 {
-    public interface IInitialMessage
+    internal interface IInitialMessage
     {
     }
 

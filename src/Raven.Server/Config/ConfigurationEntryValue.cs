@@ -45,7 +45,7 @@ namespace Raven.Server.Config
         }
     }
 
-    interal class ConfigurationEntryServerValue : ConfigurationEntryValue
+    internal class ConfigurationEntryServerValue : ConfigurationEntryValue
     {
         public ConfigurationEntryServerValue(IConfiguration configuration, ConfigurationEntryMetadata metadata, RavenServer.AuthenticationStatus authenticationStatus)
             : base(metadata)

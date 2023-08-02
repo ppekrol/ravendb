@@ -7,7 +7,7 @@ using Sparrow.Platform.Posix;
 
 namespace Tests.Infrastructure.TestMetrics
 {
-    public class TestResourcesAnalyzerMetricCacher : MetricCacher
+    internal class TestResourcesAnalyzerMetricCacher : MetricCacher
     {
         private readonly SmapsReader _smapsReader;
         private readonly TimeSpan _cacheRefreshRate = TimeSpan.FromMilliseconds(25);

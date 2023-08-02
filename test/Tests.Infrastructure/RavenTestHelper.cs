@@ -73,7 +73,7 @@ namespace FastTests
             Xunit.Assert.True(condition, failureMessage);
         }
 
-        public static void DeletePaths(ConcurrentSet<string> pathsToDelete, ExceptionAggregator exceptionAggregator)
+        internal static void DeletePaths(ConcurrentSet<string> pathsToDelete, ExceptionAggregator exceptionAggregator)
         {
             var localPathsToDelete = pathsToDelete.ToArray();
             foreach (var pathToDelete in localPathsToDelete)

@@ -36,7 +36,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Documents.Revisions
 {
-    public partial class RevisionsStorage
+    internal partial class RevisionsStorage
     {
         public readonly TableSchema RevisionsSchema;
         public readonly TableSchema CompressedRevisionsSchema;
@@ -535,7 +535,7 @@ namespace Raven.Server.Documents.Revisions
             return document;
         }
 
-        interal class DeleteOldRevisionsResult
+        internal class DeleteOldRevisionsResult
         {
             public bool HasMore;
             public long PreviousCount;

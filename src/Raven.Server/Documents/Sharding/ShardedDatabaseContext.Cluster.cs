@@ -7,7 +7,7 @@ using Raven.Server.Documents.Sharding.Operations;
 
 namespace Raven.Server.Documents.Sharding;
 
-public partial class ShardedDatabaseContext
+internal partial class ShardedDatabaseContext
 {
     public ShardedCluster Cluster;
 

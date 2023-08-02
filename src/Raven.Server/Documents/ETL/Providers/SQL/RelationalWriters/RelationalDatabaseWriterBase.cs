@@ -2,7 +2,7 @@ using System.Linq;
 
 namespace Raven.Server.Documents.ETL.Providers.SQL.RelationalWriters
 {
-    interal class RelationalDatabaseWriterBase
+    internal class RelationalDatabaseWriterBase
     {
         protected readonly bool IsSqlServerFactoryType;
 

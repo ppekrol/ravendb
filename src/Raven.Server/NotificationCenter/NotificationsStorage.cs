@@ -17,7 +17,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.NotificationCenter
 {
-    public sealed unsafe class NotificationsStorage
+    internal sealed unsafe class NotificationsStorage
     {
         private readonly string _tableName;
 

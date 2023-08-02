@@ -30,7 +30,7 @@ namespace FastTests.Server.Documents.Indexing.Lucene
     {
         public class FakeWriteOperationBuffer : IWriteOperationBuffer
         {
-            public static IWriteOperationBuffer Create()
+            internal static IWriteOperationBuffer Create()
             {
                 return new FakeWriteOperationBuffer();
             }
@@ -466,7 +466,7 @@ namespace FastTests.Server.Documents.Indexing.Lucene
             }
         }
 
-        public Document create_doc(DynamicJsonValue document, string id)
+        internal Document create_doc(DynamicJsonValue document, string id)
         {
             var data = _ctx.ReadObject(document, id);
 
@@ -496,7 +496,7 @@ namespace FastTests.Server.Documents.Indexing.Lucene
             base.Dispose();
         }
 
-        public class FakeIndex : Index
+        internal class FakeIndex : Index
         {
             public FakeIndex()
                 : base(IndexType.Map, IndexSourceType.Documents, new AutoMapIndexDefinition("Orders", new AutoIndexField[0]))

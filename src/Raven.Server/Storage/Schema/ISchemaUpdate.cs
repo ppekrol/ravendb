@@ -1,6 +1,6 @@
 ﻿namespace Raven.Server.Storage.Schema
 {
-    public interface ISchemaUpdate
+    internal interface ISchemaUpdate
     {
         int From { get; }
 

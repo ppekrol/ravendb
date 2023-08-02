@@ -132,7 +132,7 @@ namespace Raven.Server.Documents.Subscriptions.Processor
         }
     }
 
-    public interface IEtagSettable
+    internal interface IEtagSettable
     {
         public void SetStartEtag(long etag);
     }

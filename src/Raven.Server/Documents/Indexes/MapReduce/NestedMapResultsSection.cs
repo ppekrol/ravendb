@@ -13,7 +13,7 @@ using Voron.Global;
 
 namespace Raven.Server.Documents.Indexes.MapReduce
 {
-    public sealed unsafe class NestedMapResultsSection
+    internal sealed unsafe class NestedMapResultsSection
     {
         private readonly StorageEnvironment _env;
         private readonly Tree _parent;

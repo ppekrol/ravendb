@@ -28,7 +28,7 @@ namespace Raven.Server.Documents.Indexes.Static
             return new Enumerator(_enumerable.GetEnumerator(), _stats);
         }
 
-        public readonly struct Enumerator : IEnumerator
+        internal readonly struct Enumerator : IEnumerator
         {
             [NotNull]
             private readonly IEnumerator _enumerator;

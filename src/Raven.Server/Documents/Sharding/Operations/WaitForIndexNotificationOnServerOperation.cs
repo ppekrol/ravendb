@@ -4,7 +4,7 @@ using Raven.Client.ServerWide.Commands;
 
 namespace Raven.Server.Documents.Sharding.Operations;
 
-public readonly struct WaitForIndexNotificationOnServerOperation : IShardedOperation
+internal readonly struct WaitForIndexNotificationOnServerOperation : IShardedOperation
 {
     private readonly long _index;
     public WaitForIndexNotificationOnServerOperation(long index)

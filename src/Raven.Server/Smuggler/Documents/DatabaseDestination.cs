@@ -36,7 +36,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Smuggler.Documents
 {
-    interal class DatabaseDestination : ISmugglerDestination
+    internal class DatabaseDestination : ISmugglerDestination
     {
         protected readonly DocumentDatabase _database;
         protected readonly CancellationToken _token;

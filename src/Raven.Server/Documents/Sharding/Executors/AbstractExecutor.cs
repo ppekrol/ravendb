@@ -249,12 +249,12 @@ internal abstract class AbstractExecutor : IDisposable
     }
 }
 
-public interface IExecutionMode
+internal interface IExecutionMode
 {
 
 }
 
-public interface IFailureMode
+internal interface IFailureMode
 {
 
 }

@@ -21,7 +21,7 @@ namespace SlowTests.Server.Documents.Queries
         }
 
         private DocumentDatabase _documentDatabase;
-        protected DynamicQueryToIndexMatcher _sut;
+        internal DynamicQueryToIndexMatcher _sut;
 
         public void Initialize([CallerMemberName] string caller = null)
         {
@@ -69,12 +69,12 @@ namespace SlowTests.Server.Documents.Queries
             Assert.Equal(DynamicQueryMatchType.Failure, result.MatchType);
         }
 
-        protected void add_index(IndexDefinitionBaseServerSide definition)
+        internal void add_index(IndexDefinitionBaseServerSide definition)
         {
             AsyncHelpers.RunSync(() => _documentDatabase.IndexStore.CreateIndex(definition, Guid.NewGuid().ToString()));
         }
 
-        protected Index get_index(string name)
+        internal Index get_index(string name)
         {
             return _documentDatabase.IndexStore.GetIndex(name);
         }

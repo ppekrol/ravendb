@@ -18,7 +18,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Queries;
 
-interal class ShardedMapReduceQueryResultsMerger
+internal class ShardedMapReduceQueryResultsMerger
 {
     private static readonly ShardedAutoMapReduceIndexResultsAggregator Aggregator = new();
 

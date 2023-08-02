@@ -7,7 +7,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Replication.Senders
 {
-    interal class ExternalReplicationDocumentSender : ReplicationDocumentSenderBase
+    internal class ExternalReplicationDocumentSender : ReplicationDocumentSenderBase
     {
         public ExternalReplicationDocumentSender(Stream stream, DatabaseOutgoingReplicationHandler parent, Logger log) : base(stream, parent, log)
         {

@@ -11,7 +11,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Subscriptions;
 
-public interface ISubscriptionBinder
+internal interface ISubscriptionBinder
 {
     Task Run(TcpConnectionOptions tcpConnectionOptions, IDisposable subscriptionConnectionInProgress);
 }

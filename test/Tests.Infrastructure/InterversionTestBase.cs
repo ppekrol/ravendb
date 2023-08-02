@@ -318,7 +318,7 @@ namespace Tests.Infrastructure
             Console.WriteLine(msg);
         }
 
-        protected override void Dispose(ExceptionAggregator exceptionAggregator)
+        internal override void Dispose(ExceptionAggregator exceptionAggregator)
         {
             foreach (var serverProcess in _testInstanceServerProcesses)
             {

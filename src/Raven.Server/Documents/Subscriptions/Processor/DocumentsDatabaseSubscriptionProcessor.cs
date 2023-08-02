@@ -13,7 +13,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Documents.Subscriptions.Processor
 {
-    interal class DocumentsDatabaseSubscriptionProcessor : DatabaseSubscriptionProcessor<Document>
+    internal class DocumentsDatabaseSubscriptionProcessor : DatabaseSubscriptionProcessor<Document>
     {
         private readonly CancellationToken _token;
 

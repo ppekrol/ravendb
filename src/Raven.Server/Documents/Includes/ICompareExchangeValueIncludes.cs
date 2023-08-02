@@ -4,7 +4,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Includes;
 
-public interface ICompareExchangeValueIncludes
+internal interface ICompareExchangeValueIncludes
 {
     public Dictionary<string, CompareExchangeValue<BlittableJsonReaderObject>> Results { get; }
 }

@@ -195,7 +195,7 @@ public partial class RavenTestBase
                 return ShardHelper.GetShardNumberFor(record.Sharding, allocator, id);
         }
 
-        public async Task<ShardedDocumentDatabase> GetShardedDocumentDatabaseForBucketAsync(string database, int bucket)
+        internal async Task<ShardedDocumentDatabase> GetShardedDocumentDatabaseForBucketAsync(string database, int bucket)
         {
             using (_parent.Server.ServerStore.Engine.ContextPool.AllocateOperationContext(out ClusterOperationContext context))
             using (context.OpenReadTransaction())
@@ -209,7 +209,7 @@ public partial class RavenTestBase
             }
         }
 
-        public ShardedDatabaseContext GetOrchestrator(string database, RavenServer server = null)
+        internal ShardedDatabaseContext GetOrchestrator(string database, RavenServer server = null)
         {
             if ((server ?? _parent.Server).ServerStore.DatabasesLandlord.ShardedDatabasesCache.TryGetValue(database, out var task) == false)
                 throw new InvalidOperationException($"The orchestrator for '{database}' wasn't found on this node");
@@ -217,7 +217,7 @@ public partial class RavenTestBase
             return task.Result;
         }
 
-        public ShardedDatabaseContext GetOrchestratorInCluster(string database, List<RavenServer> servers)
+        internal ShardedDatabaseContext GetOrchestratorInCluster(string database, List<RavenServer> servers)
         {
             ShardedDatabaseContext orchestrator = null;
             foreach (var server in servers)
@@ -249,12 +249,12 @@ public partial class RavenTestBase
             }
         }
 
-        public IAsyncEnumerable<ShardedDocumentDatabase> GetShardsDocumentDatabaseInstancesFor(IDocumentStore store, List<RavenServer> servers = null)
+        internal IAsyncEnumerable<ShardedDocumentDatabase> GetShardsDocumentDatabaseInstancesFor(IDocumentStore store, List<RavenServer> servers = null)
         {
             return GetShardsDocumentDatabaseInstancesFor(store.Database, servers);
         }
 
-        public async IAsyncEnumerable<ShardedDocumentDatabase> GetShardsDocumentDatabaseInstancesFor(string database, List<RavenServer> servers = null)
+        internal async IAsyncEnumerable<ShardedDocumentDatabase> GetShardsDocumentDatabaseInstancesFor(string database, List<RavenServer> servers = null)
         {
             servers ??= _parent.GetServers();
             foreach (var server in servers.Where(s => s.Disposed == false))
@@ -268,7 +268,7 @@ public partial class RavenTestBase
             }
         }
 
-        public async ValueTask<ShardedDocumentDatabase> GetAnyShardDocumentDatabaseInstanceFor(string shardDatabase, List<RavenServer> servers = null)
+        internal async ValueTask<ShardedDocumentDatabase> GetAnyShardDocumentDatabaseInstanceFor(string shardDatabase, List<RavenServer> servers = null)
         {
             if (ShardHelper.IsShardName(shardDatabase) == false)
             {
@@ -323,7 +323,7 @@ public partial class RavenTestBase
             return combined;
         }
 
-        public bool AllShardHaveDocs(IDictionary<string, List<DocumentDatabase>> servers, long count = 1L)
+        internal bool AllShardHaveDocs(IDictionary<string, List<DocumentDatabase>> servers, long count = 1L)
         {
             foreach (var kvp in servers)
             {
@@ -342,7 +342,7 @@ public partial class RavenTestBase
             return true;
         }
 
-        public long GetDocsCountForCollectionInAllShards(IDictionary<string, List<DocumentDatabase>> servers, string collection)
+        internal long GetDocsCountForCollectionInAllShards(IDictionary<string, List<DocumentDatabase>> servers, string collection)
         {
             var sum = 0L;
             foreach (var kvp in servers)

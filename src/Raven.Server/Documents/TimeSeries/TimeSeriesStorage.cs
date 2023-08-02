@@ -34,7 +34,7 @@ using static Raven.Server.Documents.Schemas.TimeSeries;
 
 namespace Raven.Server.Documents.TimeSeries
 {
-    public unsafe partial class TimeSeriesStorage
+    internal unsafe partial class TimeSeriesStorage
     {
         public const int MaxSegmentSize = 2048;
         public readonly TimeSeriesStats Stats;

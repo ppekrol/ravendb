@@ -8,7 +8,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Replication.Incoming
 {
-    public sealed unsafe class IncomingReplicationAllocator : IDisposable
+    internal sealed unsafe class IncomingReplicationAllocator : IDisposable
     {
         private readonly long _maxSizeForContextUseInBytes;
         private readonly long _minSizeToAllocateNonContextUseInBytes;

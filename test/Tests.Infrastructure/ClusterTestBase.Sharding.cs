@@ -77,7 +77,7 @@ public partial class ClusterTestBase
             return new TTopology { Members = members };
         }
 
-        public async Task<IDictionary<string, List<DocumentDatabase>>> GetShardsDocumentDatabaseInstancesFor(IDocumentStore store, List<RavenServer> Nodes, string database = null)
+        internal async Task<IDictionary<string, List<DocumentDatabase>>> GetShardsDocumentDatabaseInstancesFor(IDocumentStore store, List<RavenServer> Nodes, string database = null)
         {
             var dbs = new Dictionary<string, List<DocumentDatabase>>();
             foreach (var server in Nodes)

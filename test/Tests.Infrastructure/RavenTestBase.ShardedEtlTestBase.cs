@@ -22,9 +22,9 @@ public partial class RavenTestBase
         }
 
 
-        public Task<ManualResetEventSlim> WaitForEtlAsync(IDocumentStore store, Func<string, EtlProcessStatistics, bool> predicate, int count) => WaitForEtlAsync(store.Database, predicate, count);
+        internal Task<ManualResetEventSlim> WaitForEtlAsync(IDocumentStore store, Func<string, EtlProcessStatistics, bool> predicate, int count) => WaitForEtlAsync(store.Database, predicate, count);
 
-        public async Task<ManualResetEventSlim> WaitForEtlAsync(string database, Func<string, EtlProcessStatistics, bool> predicate, int count)
+        internal async Task<ManualResetEventSlim> WaitForEtlAsync(string database, Func<string, EtlProcessStatistics, bool> predicate, int count)
         {
             if (count < 1)
                 throw new ArgumentOutOfRangeException(nameof(count));
@@ -61,7 +61,7 @@ public partial class RavenTestBase
             return mre;
         }
 
-        public IEnumerable<ManualResetEventSlim> WaitForEtlOnAllShards(IDocumentStore store, Func<string, EtlProcessStatistics, bool> predicate)
+        internal IEnumerable<ManualResetEventSlim> WaitForEtlOnAllShards(IDocumentStore store, Func<string, EtlProcessStatistics, bool> predicate)
         {
             var dbs = _parent.Server.ServerStore.DatabasesLandlord.TryGetOrCreateShardedResourcesStore(store.Database).ToList();
             var list = new List<ManualResetEventSlim>(dbs.Count);
@@ -81,7 +81,7 @@ public partial class RavenTestBase
             return list;
         }
 
-        public ManualResetEventSlim WaitForEtl(IDocumentStore store, Func<string, EtlProcessStatistics, bool> predicate)
+        internal ManualResetEventSlim WaitForEtl(IDocumentStore store, Func<string, EtlProcessStatistics, bool> predicate)
         {
             return AsyncHelpers.RunSync(() => WaitForEtlAsync(store, predicate, count: 1));
         }

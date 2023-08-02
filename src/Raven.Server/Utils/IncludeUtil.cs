@@ -15,7 +15,7 @@ namespace Raven.Server.Utils
         private const string SuffixStart = "{0}";
         private static readonly char[] PrefixSeparatorChar = { PrefixSeparator };
 
-        public interface IIncludeOp
+        internal interface IIncludeOp
         {
             void Include(BlittableJsonReaderObject parent, string id);
         }

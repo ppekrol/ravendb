@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Raven.Server.Smuggler.Migration.ApiKey
 {
-    public interface IHashEncryptor : IDisposable
+    internal interface IHashEncryptor : IDisposable
     {
         int StorageHashSize { get; }
 

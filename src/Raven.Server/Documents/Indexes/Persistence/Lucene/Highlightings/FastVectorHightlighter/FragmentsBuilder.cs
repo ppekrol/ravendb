@@ -24,7 +24,7 @@ namespace Lucene.Net.Search.Vectorhighlight
     /// FragmentsBuilder is an interface for fragments (snippets) builder classes.
     /// A FragmentsBuilder class can be plugged in to Highlighter.
     /// </summary>
-    public interface FragmentsBuilder
+    internal interface FragmentsBuilder
     {
         /// <summary>
         /// create a fragment.

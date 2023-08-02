@@ -98,7 +98,7 @@ namespace Raven.Server.Documents.Queries.AST
         public bool HasGroupByTag => Tag || Field != null;
     }
 
-    public unsafe struct RangeGroup
+    internal unsafe struct RangeGroup
     {
         public long Ticks;
         public int Months;

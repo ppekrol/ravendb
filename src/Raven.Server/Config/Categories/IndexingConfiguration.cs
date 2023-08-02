@@ -19,7 +19,7 @@ using Sparrow.Platform;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.Indexing)]
-    interal class IndexingConfiguration : ConfigurationCategory
+    internal class IndexingConfiguration : ConfigurationCategory
     {
         private bool? _runInMemory;
 
@@ -163,7 +163,7 @@ namespace Raven.Server.Config.Categories
         [IndexUpdateType(IndexUpdateType.Refresh)]
         [ConfigurationEntry("Indexing.QueryClauseCache.SizeInMb", ConfigurationEntryScope.ServerWideOnly)]
         public Size QueryClauseCacheSize { get; protected set; }
-        
+
         [Description("EXPERT: Disable the query clause cache for a server, database or a single index.")]
         [DefaultValue(DefaultValueSetInConstructor)]
         [IndexUpdateType(IndexUpdateType.Refresh)]
@@ -176,21 +176,21 @@ namespace Raven.Server.Config.Categories
         [IndexUpdateType(IndexUpdateType.Refresh)]
         [ConfigurationEntry("Indexing.QueryClauseCache.ExpirationScanFrequencyInSec", ConfigurationEntryScope.ServerWideOnly)]
         public TimeSetting QueryClauseCacheExpirationScanFrequency { get; protected set; }
-        
+
         [Description("EXPERT: The number of recent queries that we'll keep to identify repeated queries (and thus, relevant for caching).")]
         [DefaultValue(512)]
         [IndexUpdateType(IndexUpdateType.Refresh)]
         [ConfigurationEntry("Indexing.QueryClauseCache.RepeatedQueriesCount", ConfigurationEntryScope.ServerWideOnly)]
         public int QueryClauseCacheRepeatedQueriesCount { get; protected set; }
 
-        
+
         [Description("EXPERT: The time frame for a query to repeat itself for us to consider it worth caching.")]
         [DefaultValue(300)]
         [TimeUnit(TimeUnit.Seconds)]
         [IndexUpdateType(IndexUpdateType.Refresh)]
         [ConfigurationEntry("Indexing.QueryClauseCache.RepeatedQueriesTimeFrameInSec", ConfigurationEntryScope.ServerWideOrPerDatabaseOrPerIndex)]
         public TimeSetting QueryClauseCacheRepeatedQueriesTimeFrame { get; protected set; }
-        
+
         [Description("Maximum number of mapped documents. Cannot be less than 128. By default 'null' - no limit.")]
         [DefaultValue(null)]
         [MinValue(128)]
@@ -361,7 +361,7 @@ namespace Raven.Server.Config.Categories
         [IndexUpdateType(IndexUpdateType.Reset)]
         [ConfigurationEntry("Indexing.NuGetAllowPreleasePackages", ConfigurationEntryScope.ServerWideOnly)]
         public bool NuGetAllowPreleasePackages { get; set; }
-        
+
         [Description("Number of index history revisions to keep per index")]
         [DefaultValue(10)]
         [IndexUpdateType(IndexUpdateType.None)]
@@ -410,7 +410,7 @@ namespace Raven.Server.Config.Categories
         [IndexUpdateType(IndexUpdateType.Reset)]
         [ConfigurationEntry("Indexing.Corax.DocumentsLimitForCompressionDictionaryCreation", ConfigurationEntryScope.ServerWideOrPerDatabaseOrPerIndex)]
         public int DocumentsLimitForCompressionDictionaryCreation { get; protected set; }
-        
+
         public Lazy<AnalyzerFactory> DefaultAnalyzerType { get; private set; }
 
         public Lazy<AnalyzerFactory> DefaultExactAnalyzerType { get; private set; }
@@ -435,26 +435,26 @@ namespace Raven.Server.Config.Categories
         [IndexUpdateType(IndexUpdateType.None)]
         [ConfigurationEntry("Indexing.Static.RequireAdminToDeployJavaScriptIndexes", ConfigurationEntryScope.ServerWideOrPerDatabase)]
         public bool RequireAdminToDeployJavaScriptIndexes { get; set; }
-        
+
         [Description("Order by score automatically when boosting is inside index definition or query.")]
         [DefaultValue(true)]
         [IndexUpdateType(IndexUpdateType.Refresh)]
         [ConfigurationEntry("Indexing.OrderByScoreAutomaticallyWhenBoostingIsInvolved", ConfigurationEntryScope.ServerWideOrPerDatabaseOrPerIndex)]
         public bool OrderByScoreAutomaticallyWhenBoostingIsInvolved { get; set; }
-        
+
         [Description("EXPERT: Use compound file in merging")]
         [DefaultValue(true)]
         [IndexUpdateType(IndexUpdateType.Refresh)]
         [ConfigurationEntry("Indexing.Lucene.UseCompoundFileInMerging", ConfigurationEntryScope.ServerWideOrPerDatabaseOrPerIndex)]
         [ConfigurationEntry("Indexing.UseCompoundFileInMerging", ConfigurationEntryScope.ServerWideOrPerDatabaseOrPerIndex)]
         public bool LuceneUseCompoundFileInMerging { get; set; }
-        
+
         [Description("Lucene index input")]
         [DefaultValue(LuceneIndexInputType.Buffered)]
         [IndexUpdateType(IndexUpdateType.Refresh)]
         [ConfigurationEntry("Indexing.Lucene.IndexInputType", ConfigurationEntryScope.ServerWideOrPerDatabaseOrPerIndex)]
         public LuceneIndexInputType LuceneIndexInput { get; set; }
-        
+
         [Description("Max time to wait when forcing the storage environment flush and sync when replacing side-by-side index.")]
         [DefaultValue(30)]
         [TimeUnit(TimeUnit.Seconds)]
@@ -469,7 +469,7 @@ namespace Raven.Server.Config.Categories
         [ConfigurationEntry("Indexing.MinimumTotalSizeOfJournalsToRunFlushAndSyncWhenReplacingSideBySideIndexInMb",
             ConfigurationEntryScope.ServerWideOrPerDatabaseOrPerIndex)]
         public Size MinimumTotalSizeOfJournalsToRunFlushAndSyncWhenReplacingSideBySideIndex { get; set; }
-        
+
         [Description("Sort by ticks when field contains dates. When sorting in descending order, null dates are returned at the end with this option enabled.")]
         [DefaultValue(true)]
         [IndexUpdateType(IndexUpdateType.None)]
@@ -481,13 +481,13 @@ namespace Raven.Server.Config.Categories
         [IndexUpdateType(IndexUpdateType.Refresh)]
         [ConfigurationEntry("Indexing.Lucene.ReaderTermsIndexDivisor", ConfigurationEntryScope.ServerWideOrPerDatabaseOrPerIndex)]
         public int ReaderTermsIndexDivisor { get; set; }
-        
+
         [Description("Include score value in the metadata when sorting by score. Disabling this option could enhance query performance.")]
         [ConfigurationEntry("Indexing.Corax.IncludeDocumentScore", ConfigurationEntryScope.ServerWideOrPerDatabaseOrPerIndex)]
         [DefaultValue(false)]
         [IndexUpdateType(IndexUpdateType.Refresh)]
         public bool CoraxIncludeDocumentScore { get; set; }
-        
+
         [Description("Include spatial information in the metadata when sorting by distance. Disabling this option could enhance query performance.")]
         [ConfigurationEntry("Indexing.Corax.IncludeSpatialDistance", ConfigurationEntryScope.ServerWideOrPerDatabaseOrPerIndex)]
         [DefaultValue(false)]
@@ -530,6 +530,6 @@ namespace Raven.Server.Config.Categories
             Immediate,
             Pause,
             Delay
+        }
     }
-}
 }
