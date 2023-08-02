@@ -3,7 +3,7 @@ using Raven.Server.Documents.ETL.Test;
 
 namespace Raven.Server.Documents.ETL.Providers.SQL.RelationalWriters
 {
-    public sealed class TestSqlEtlScript : TestEtlScript<SqlEtlConfiguration, SqlConnectionString>
+    internal sealed class TestSqlEtlScript : TestEtlScript<SqlEtlConfiguration, SqlConnectionString>
     {
         public bool PerformRolledBackTransaction;
 

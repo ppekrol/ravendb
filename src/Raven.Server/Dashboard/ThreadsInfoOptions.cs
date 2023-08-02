@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Dashboard;
 
-public sealed class ThreadsInfoOptions
+internal sealed class ThreadsInfoOptions
 {
     public TimeSpan ThreadsInfoThrottle { get; set; } = TimeSpan.FromSeconds(1);
 }

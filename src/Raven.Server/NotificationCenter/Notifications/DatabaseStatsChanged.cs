@@ -8,7 +8,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.NotificationCenter.Notifications
 {
-    public sealed class DatabaseStatsChanged : Notification
+    internal sealed class DatabaseStatsChanged : Notification
     {
         private DatabaseStatsChanged(string database) : base(NotificationType.DatabaseStatsChanged, database)
         {
@@ -81,7 +81,7 @@ namespace Raven.Server.NotificationCenter.Notifications
             };
         }
 
-        public sealed class ModifiedCollection
+        internal sealed class ModifiedCollection
         {
             public string Name;
 

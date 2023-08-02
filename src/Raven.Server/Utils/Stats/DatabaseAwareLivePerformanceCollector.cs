@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Utils.Stats
 {
-    public abstract class DatabaseAwareLivePerformanceCollector<T> : LivePerformanceCollector<T>
+    internal abstract class DatabaseAwareLivePerformanceCollector<T> : LivePerformanceCollector<T>
     {
         protected readonly DocumentDatabase Database;
 

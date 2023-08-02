@@ -72,7 +72,7 @@ namespace Raven.Server.Integrations.PostgreSQL.Messages
         Routine = (byte)'R'
     }
 
-    public sealed class PgColumn
+    internal sealed class PgColumn
     {
         public string Name;
         /// <summary>
@@ -96,7 +96,7 @@ namespace Raven.Server.Integrations.PostgreSQL.Messages
         }
     }
 
-    public sealed class PgTable
+    internal sealed class PgTable
     {
         public List<PgColumn> Columns;
         public List<PgDataRow> Data;
@@ -108,7 +108,7 @@ namespace Raven.Server.Integrations.PostgreSQL.Messages
         }
     }
 
-    public sealed class PgDataRow
+    internal sealed class PgDataRow
     {
         public Memory<ReadOnlyMemory<byte>?> ColumnData;
 
@@ -128,7 +128,7 @@ namespace Raven.Server.Integrations.PostgreSQL.Messages
         Binary = 1
     }
 
-    public sealed class PgSeverity
+    internal sealed class PgSeverity
     {
         // In ErrorResponse messages
         public const string Error = "ERROR";
@@ -143,7 +143,7 @@ namespace Raven.Server.Integrations.PostgreSQL.Messages
         public const string Log = "LOG";
     }
 
-    public abstract class Message
+    internal abstract class Message
     {
         public async Task Init(MessageReader messageReader, PipeReader reader, CancellationToken token)
         {

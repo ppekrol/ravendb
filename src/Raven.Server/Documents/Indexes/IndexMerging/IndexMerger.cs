@@ -12,7 +12,7 @@ using Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters;
 
 namespace Raven.Server.Documents.Indexes.IndexMerging
 {
-    public sealed class IndexMerger
+    internal sealed class IndexMerger
     {
         private readonly Dictionary<string, IndexDefinition> _indexDefinitions;
         private static readonly IdentifierNameSyntax DefaultDocumentIdentifier = SyntaxFactory.IdentifierName("doc");

@@ -24,7 +24,7 @@ namespace Raven.Server.Documents.Patch
     /// <summary>
     /// An advanced patch request for a specified document (using JavaScript)
     /// </summary>
-    public sealed class PatchRequest : ScriptRunnerCache.Key
+    internal sealed class PatchRequest : ScriptRunnerCache.Key
     {
         /// <summary>
         /// JavaScript function to use to patch a document

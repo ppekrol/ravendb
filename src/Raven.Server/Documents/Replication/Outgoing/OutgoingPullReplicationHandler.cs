@@ -9,7 +9,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Replication.Outgoing
 {
-    public abstract class OutgoingPullReplicationHandler : DatabaseOutgoingReplicationHandler
+    internal abstract class OutgoingPullReplicationHandler : DatabaseOutgoingReplicationHandler
     {
         public string[] PathsToSend;
         private string[] _destinationAcceptablePaths;
@@ -36,7 +36,7 @@ namespace Raven.Server.Documents.Replication.Outgoing
         }
     }
 
-    public sealed class OutgoingPullReplicationHandlerAsHub : OutgoingPullReplicationHandler
+    internal sealed class OutgoingPullReplicationHandlerAsHub : OutgoingPullReplicationHandler
     {
         // In case this is an outgoing pull replication from the hub
         // we need to associate this instance to the replication definition.
@@ -49,7 +49,7 @@ namespace Raven.Server.Documents.Replication.Outgoing
         public override string FromToString => $"{base.FromToString} (pull definition: {PullReplicationDefinitionName})";
     }
 
-    public sealed class OutgoingPullReplicationHandlerAsSink : OutgoingPullReplicationHandler
+    internal sealed class OutgoingPullReplicationHandlerAsSink : OutgoingPullReplicationHandler
     {
         private readonly PullReplicationAsSink _node;
 

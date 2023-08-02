@@ -963,7 +963,7 @@ namespace Raven.Server.Rachis
             }
         }
 
-        public sealed class CommandState
+        internal sealed class CommandState
         {
             public long CommandIndex;
             public object Result;
@@ -972,7 +972,7 @@ namespace Raven.Server.Rachis
             public Action<TaskCompletionSource<(long, object)>> OnNotify;
         }
 
-        public sealed class ConvertResultAction
+        internal sealed class ConvertResultAction
         {
             private readonly JsonOperationContext _contextToWriteBlittableResult;
             private readonly ConvertResultFromLeader _action;

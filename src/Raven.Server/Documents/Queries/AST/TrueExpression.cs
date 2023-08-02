@@ -1,6 +1,6 @@
 namespace Raven.Server.Documents.Queries.AST
 {
-    public sealed class TrueExpression : QueryExpression
+    internal sealed class TrueExpression : QueryExpression
     {
         public TrueExpression()
         {

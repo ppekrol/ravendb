@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Commands.Indexes;
 
-public sealed class ReplaceIndexCommand : RavenCommand
+internal sealed class ReplaceIndexCommand : RavenCommand
 {
     private readonly string _indexName;
 

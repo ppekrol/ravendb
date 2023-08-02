@@ -7,7 +7,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Raven.Server.Smuggler
 {
-    public static class MultipartRequestHelper
+    internal static class MultipartRequestHelper
     {
         private static readonly FormOptions DefaultFormOptions = new FormOptions();
 

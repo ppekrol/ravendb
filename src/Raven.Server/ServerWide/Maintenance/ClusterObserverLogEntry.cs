@@ -3,7 +3,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Maintenance
 {
-    public sealed class ClusterObserverLogEntry : IDynamicJson
+    internal sealed class ClusterObserverLogEntry : IDynamicJson
     {
         public DateTime Date { get; set; }
         public long Iteration { get ; set; }

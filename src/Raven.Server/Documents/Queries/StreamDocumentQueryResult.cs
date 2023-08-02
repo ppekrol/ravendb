@@ -6,7 +6,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Documents.Queries
 {
-    public sealed class StreamDocumentQueryResult : StreamQueryResult<Document>
+    internal sealed class StreamDocumentQueryResult : StreamQueryResult<Document>
     {
         public override async ValueTask AddResultAsync(Document result, CancellationToken token)
         {

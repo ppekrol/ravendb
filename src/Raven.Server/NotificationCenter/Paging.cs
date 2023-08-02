@@ -11,7 +11,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.NotificationCenter
 {
-    public sealed class Paging : IDisposable
+    internal sealed class Paging : IDisposable
     {
         private static readonly string PagingDocumentsId = $"{NotificationType.PerformanceHint}/{PerformanceHintType.Paging}/{PagingOperationType.Documents}";
         private static readonly string PagingQueriesId = $"{NotificationType.PerformanceHint}/{PerformanceHintType.Paging}/{PagingOperationType.Queries}";

@@ -4,7 +4,7 @@ using Jint.Runtime.Descriptors;
 
 namespace Raven.Server.Documents.Indexes.Static.JavaScript
 {
-    public abstract class ObjectInstanceBase : ObjectInstance
+    internal abstract class ObjectInstanceBase : ObjectInstance
     {
         protected static readonly PropertyDescriptor ImplicitNull = new PropertyDescriptor(DynamicJsNull.ImplicitNull, writable: false, enumerable: false, configurable: false);
 

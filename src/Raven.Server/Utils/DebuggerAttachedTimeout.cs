@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Raven.Server.Utils
 {
-    public static class DebuggerAttachedTimeout
+    internal static class DebuggerAttachedTimeout
     {
         public static bool DisableLongTimespan = true;
 

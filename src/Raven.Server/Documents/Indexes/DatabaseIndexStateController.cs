@@ -7,7 +7,7 @@ using Raven.Server.Documents.Indexes.Errors;
 
 namespace Raven.Server.Documents.Indexes;
 
-public class DatabaseIndexStateController : AbstractIndexStateController
+interal class DatabaseIndexStateController : AbstractIndexStateController
 {
     private readonly DocumentDatabase _database;
 

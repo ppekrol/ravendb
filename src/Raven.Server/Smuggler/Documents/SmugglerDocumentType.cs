@@ -9,9 +9,9 @@ using Voron;
 
 namespace Raven.Server.Smuggler.Documents
 {
-    public sealed class DocumentItem
+    internal sealed class DocumentItem
     {
-        public static class ExportDocumentType
+        internal static class ExportDocumentType
         {
             public const string Key = "@export-type";
 
@@ -24,7 +24,7 @@ namespace Raven.Server.Smuggler.Documents
         public Tombstone Tombstone;
         public DocumentConflict Conflict;
 
-        public struct AttachmentStream : IDisposable
+        internal struct AttachmentStream : IDisposable
         {
             public Slice Base64Hash;
             public ByteStringContext.ExternalScope Base64HashDispose;
@@ -46,25 +46,25 @@ namespace Raven.Server.Smuggler.Documents
         }
     }
 
-    public sealed class CounterItem
+    internal sealed class CounterItem
     {
         public string DocId;
         public string ChangeVector;
 
-        public struct Legacy
+        internal struct Legacy
         {
             public string Name;
             public long Value;
         }
 
-        public struct Batch
+        internal struct Batch
         {
             public BlittableJsonReaderObject Values;
         }
     }
 
 
-    public sealed class TimeSeriesItem : IDisposable
+    internal sealed class TimeSeriesItem : IDisposable
     {
         public LazyStringValue DocId;
 

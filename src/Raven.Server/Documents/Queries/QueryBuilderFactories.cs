@@ -3,7 +3,7 @@ using Raven.Server.Documents.Indexes.Static.Spatial;
 
 namespace Raven.Server.Documents.Queries
 {
-    public sealed class QueryBuilderFactories
+    internal sealed class QueryBuilderFactories
     {
         public Func<string, SpatialField> GetSpatialFieldFactory { get; set; }
         public Func<string, System.Text.RegularExpressions.Regex> GetRegexFactory { get; set; }

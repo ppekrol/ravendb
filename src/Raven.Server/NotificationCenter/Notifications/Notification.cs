@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.NotificationCenter.Notifications
 {
-    public abstract class Notification
+    internal abstract class Notification
     {
         public const string ServerWide = null;
 

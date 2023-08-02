@@ -6,7 +6,7 @@ using Raven.Server.Config.Settings;
 
 namespace Raven.Server.Documents.Indexes.Static.NuGet
 {
-    public sealed class MultiSourceNuGetFetcher
+    internal sealed class MultiSourceNuGetFetcher
     {
         public static MultiSourceNuGetFetcher Instance = new MultiSourceNuGetFetcher();
 

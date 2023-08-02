@@ -2,7 +2,7 @@
 
 namespace Raven.Server.ServerWide.Maintenance
 {
-    public sealed class ClusterObserverDecisions
+    internal sealed class ClusterObserverDecisions
     {
         public string LeaderNode { get; set;}
         public long Term { get; set; }

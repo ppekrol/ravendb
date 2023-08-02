@@ -16,7 +16,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public abstract class CompareExchangeCommandBase : CommandBase
+    internal abstract class CompareExchangeCommandBase : CommandBase
     {
         public string Key;
         public string Database;
@@ -179,7 +179,7 @@ namespace Raven.Server.ServerWide.Commands
             return JsonDeserializationCluster.CompareExchangeResult(((BlittableJsonReaderObject)remoteResult).Clone(ContextToWriteResult));
         }
 
-        public sealed class CompareExchangeResult : IDynamicJsonValueConvertible
+        internal sealed class CompareExchangeResult : IDynamicJsonValueConvertible
         {
             public long Index;
             public object Value;
@@ -236,7 +236,7 @@ namespace Raven.Server.ServerWide.Commands
         }
     }
 
-    public sealed class RemoveCompareExchangeCommand : CompareExchangeCommandBase
+    internal sealed class RemoveCompareExchangeCommand : CompareExchangeCommandBase
     {
         public RemoveCompareExchangeCommand() { }
 
@@ -319,7 +319,7 @@ namespace Raven.Server.ServerWide.Commands
         }
     }
 
-    public sealed class AddOrUpdateCompareExchangeCommand : CompareExchangeCommandBase
+    internal sealed class AddOrUpdateCompareExchangeCommand : CompareExchangeCommandBase
     {
         private static readonly UTF8Encoding Encoding = new UTF8Encoding();
 

@@ -6,7 +6,7 @@ using Raven.Server.Documents.Queries.Results;
 
 namespace Raven.Server.Documents.Indexes.Persistence;
 
-public abstract class IndexQueryingScopeBase<TKey> : IDisposable
+internal abstract class IndexQueryingScopeBase<TKey> : IDisposable
 {
     protected readonly IndexType _indexType;
 

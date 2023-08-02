@@ -4,7 +4,7 @@ using Raven.Server.Documents.ETL.Stats;
 
 namespace Raven.Server.Documents.ETL.Providers.OLAP
 {
-    public sealed class OlapEtlPerformanceOperation : EtlPerformanceOperation
+    internal sealed class OlapEtlPerformanceOperation : EtlPerformanceOperation
     {
         public OlapEtlPerformanceOperation(TimeSpan duration)
             : base(duration)

@@ -8,7 +8,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Replication.Senders
 {
-    public sealed class FilteredReplicationDocumentSender : ExternalReplicationDocumentSender
+    internal sealed class FilteredReplicationDocumentSender : ExternalReplicationDocumentSender
     {
         private readonly AllowedPathsValidator _pathsToSend, _destinationAcceptablePaths;
         private readonly bool _shouldSkipSendingTombstones;

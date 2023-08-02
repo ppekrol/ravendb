@@ -14,7 +14,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands.Indexes
 {
-    public sealed class PutAutoIndexCommand : UpdateDatabaseCommand
+    internal sealed class PutAutoIndexCommand : UpdateDatabaseCommand
     {
         public DateTime CreatedAt;
         public AutoIndexDefinition Definition;

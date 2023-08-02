@@ -15,7 +15,7 @@ using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents
 {
-    public sealed class BlittableMetadataModifier : IDisposable, IBlittableDocumentModifier
+    internal sealed class BlittableMetadataModifier : IDisposable, IBlittableDocumentModifier
     {
         private bool _readingMetadataObject;
         private int _depth;

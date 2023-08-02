@@ -9,7 +9,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Config
 {
-    public sealed class SettingsResult : IDynamicJson
+    internal sealed class SettingsResult : IDynamicJson
     {
         public List<ConfigurationEntryValue> Settings { get; set; }
 
@@ -27,7 +27,7 @@ namespace Raven.Server.Config
         }
     }
     
-    public abstract class ConfigurationEntryValue : IDynamicJson
+    internal abstract class ConfigurationEntryValue : IDynamicJson
     {
         protected ConfigurationEntryValue(ConfigurationEntryMetadata metadata)
         {
@@ -45,7 +45,7 @@ namespace Raven.Server.Config
         }
     }
 
-    public class ConfigurationEntryServerValue : ConfigurationEntryValue
+    interal class ConfigurationEntryServerValue : ConfigurationEntryValue
     {
         public ConfigurationEntryServerValue(IConfiguration configuration, ConfigurationEntryMetadata metadata, RavenServer.AuthenticationStatus authenticationStatus)
             : base(metadata)
@@ -84,7 +84,7 @@ namespace Raven.Server.Config
         }
     }
 
-    public sealed class ConfigurationEntryDatabaseValue : ConfigurationEntryServerValue
+    internal sealed class ConfigurationEntryDatabaseValue : ConfigurationEntryServerValue
     {
         public ConfigurationEntryDatabaseValue(RavenConfiguration configuration, DatabaseRecord dbRecord, ConfigurationEntryMetadata metadata, RavenServer.AuthenticationStatus authenticationStatus)
             : base(configuration.ServerWideSettings, metadata, authenticationStatus)
@@ -173,7 +173,7 @@ namespace Raven.Server.Config
         }
     }
 
-    public sealed class ConfigurationEntrySingleValue : IDynamicJson
+    internal sealed class ConfigurationEntrySingleValue : IDynamicJson
     {
         public string Value { get; set; }
         public bool HasValue { get; set; }
@@ -192,7 +192,7 @@ namespace Raven.Server.Config
         }
     }
 
-    public sealed class ConfigurationEntrySinglePendingValue : IDynamicJson
+    internal sealed class ConfigurationEntrySinglePendingValue : IDynamicJson
     {
         public bool HasValue { get; set; }
         public string Value { get; set; }

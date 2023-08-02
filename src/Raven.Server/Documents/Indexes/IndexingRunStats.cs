@@ -8,7 +8,7 @@ using Sparrow.Server.Exceptions;
 
 namespace Raven.Server.Documents.Indexes
 {
-    public sealed class IndexingRunStats
+    internal sealed class IndexingRunStats
     {
         public long MapAttempts;
         public long MapReferenceAttempts;

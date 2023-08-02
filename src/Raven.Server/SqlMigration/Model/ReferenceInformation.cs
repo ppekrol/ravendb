@@ -2,7 +2,7 @@
 
 namespace Raven.Server.SqlMigration.Model
 {
-    public sealed class ReferenceInformation
+    internal sealed class ReferenceInformation
     {
         public string PropertyName { get; set; }
         

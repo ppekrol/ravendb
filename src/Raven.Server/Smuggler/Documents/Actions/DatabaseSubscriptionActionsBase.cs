@@ -7,7 +7,7 @@ using Raven.Server.Smuggler.Documents.Data;
 
 namespace Raven.Server.Smuggler.Documents.Actions;
 
-public abstract class DatabaseSubscriptionActionsBase<T> : ISubscriptionActions
+internal abstract class DatabaseSubscriptionActionsBase<T> : ISubscriptionActions
     where T : PutSubscriptionCommand
 {
     protected readonly ServerStore _serverStore;

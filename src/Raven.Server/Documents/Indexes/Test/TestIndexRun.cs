@@ -10,7 +10,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Indexes.Test;
 
-public sealed class TestIndexRun
+internal sealed class TestIndexRun
 {
     private sealed class CollectionIterationStats
     {

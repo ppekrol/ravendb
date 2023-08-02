@@ -4,7 +4,7 @@ using Jint.Runtime;
 
 namespace Raven.Server.Documents.Indexes.Static.JavaScript
 {
-    public sealed class DynamicJsNull : JsValue, IEquatable<JsNull>, IEquatable<DynamicJsNull>
+    internal sealed class DynamicJsNull : JsValue, IEquatable<JsNull>, IEquatable<DynamicJsNull>
     {
         public static DynamicJsNull ImplicitNull = new DynamicJsNull(isExplicitNull: false);
 

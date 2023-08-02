@@ -7,7 +7,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.NotificationCenter.BackgroundWork;
 
-public sealed class NotificationCenterDatabaseStats
+internal sealed class NotificationCenterDatabaseStats
 {
     public long CountOfConflicts;
 

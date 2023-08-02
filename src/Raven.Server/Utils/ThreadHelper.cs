@@ -4,7 +4,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Utils;
 
-public static class ThreadHelper
+internal static class ThreadHelper
 {
     public static bool TrySetThreadPriority(ThreadPriority priority, string threadName, Logger logger)
     {

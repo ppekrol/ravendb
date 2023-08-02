@@ -20,7 +20,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.TcpHandlers;
 
-public sealed class SubscriptionConnectionForShard : SubscriptionConnection
+internal sealed class SubscriptionConnectionForShard : SubscriptionConnection
 {
     public readonly string ShardName;
     private readonly ShardedDocumentDatabase _shardedDatabase;

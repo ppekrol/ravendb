@@ -18,7 +18,7 @@ using Sparrow.Server.Utils;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 {
-    public sealed class LuceneSuggestionIndexWriter : IDisposable
+    internal sealed class LuceneSuggestionIndexWriter : IDisposable
     {
         private const string FWord = "word";
         private readonly Term _fWordTerm = new Term(FWord);

@@ -2,7 +2,7 @@ using Raven.Client.ServerWide.Operations;
 
 namespace Raven.Server.Commercial
 {
-    public sealed class UserRegistrationInfo
+    internal sealed class UserRegistrationInfo
     {
         public string FirstName { get; set; }
 

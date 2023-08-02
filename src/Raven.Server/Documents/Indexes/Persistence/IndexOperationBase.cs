@@ -15,7 +15,7 @@ using Query = Lucene.Net.Search.Query;
 
 namespace Raven.Server.Documents.Indexes.Persistence;
 
-public abstract class IndexOperationBase : IDisposable
+internal abstract class IndexOperationBase : IDisposable
 {
     protected readonly string _indexName;
     private const int DefaultBufferSizeForCorax = 4 * 1024;

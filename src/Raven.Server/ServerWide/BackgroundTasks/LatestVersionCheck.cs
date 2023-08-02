@@ -14,7 +14,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.BackgroundTasks
 {
-    public sealed class LatestVersionCheck
+    internal sealed class LatestVersionCheck
     {
         private const string ApiRavenDbNet = "https://api.ravendb.net";
 
@@ -148,7 +148,7 @@ namespace Raven.Server.ServerWide.BackgroundTasks
             return Enum.Parse<NotificationSeverity>(latestVersionInfo.UpdateSeverity);
         }
 
-        public sealed class VersionInfo
+        internal sealed class VersionInfo
         {
             public string Version { get; set; }
 

@@ -20,7 +20,7 @@ using System.Collections.Generic;
 
 namespace Lucene.Net.Search.Vectorhighlight
 {
-    public static class StringUtils 
+    internal static class StringUtils 
     {
         /// <summary>
         /// Check if the termToMatch is a match for the term, considering the use of a wildcards.

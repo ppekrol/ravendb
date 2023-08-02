@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Sharding.Streaming.Comparers;
 
-public sealed class StreamDocumentByLastModifiedComparer : Comparer<ShardStreamItem<Document>>
+internal sealed class StreamDocumentByLastModifiedComparer : Comparer<ShardStreamItem<Document>>
 {
     public static StreamDocumentByLastModifiedComparer Instance = new StreamDocumentByLastModifiedComparer();
         

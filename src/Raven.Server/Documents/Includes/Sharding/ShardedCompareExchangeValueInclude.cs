@@ -5,7 +5,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Includes.Sharding;
 
-public sealed class ShardedCompareExchangeValueInclude : ICompareExchangeValueIncludes
+internal sealed class ShardedCompareExchangeValueInclude : ICompareExchangeValueIncludes
 {
     public Dictionary<string, CompareExchangeValue<BlittableJsonReaderObject>> Results { get; set; }
 

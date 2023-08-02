@@ -7,7 +7,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Documents.Indexes.Persistence
 {
-    public abstract class IndexPersistenceBase : IDisposable
+    internal abstract class IndexPersistenceBase : IDisposable
     {
         protected readonly Index _index;
 

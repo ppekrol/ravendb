@@ -6,7 +6,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Replication
 {
-    public sealed class AllowedPathsValidator : IDisposable
+    internal sealed class AllowedPathsValidator : IDisposable
     {
         private readonly JsonOperationContext _allowedPathsContext;
         private readonly List<LazyStringValue> _allowedPaths;

@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters
 {
-    public sealed class IsRewriter : CSharpSyntaxRewriter
+    internal sealed class IsRewriter : CSharpSyntaxRewriter
     {
         public static readonly IsRewriter Instance = new IsRewriter();
 

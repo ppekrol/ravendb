@@ -4,7 +4,7 @@ using McMaster.Extensions.CommandLineUtils;
 
 namespace Raven.Server.Commercial;
 
-public sealed class CreateSetupPackageParameters
+internal sealed class CreateSetupPackageParameters
 {
     public string SetupJsonPath;
     public string PackageOutputPath;

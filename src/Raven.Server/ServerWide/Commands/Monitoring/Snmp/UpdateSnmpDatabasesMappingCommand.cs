@@ -5,7 +5,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands.Monitoring.Snmp
 {
-    public sealed class UpdateSnmpDatabasesMappingCommand : UpdateValueCommand<List<string>>
+    internal sealed class UpdateSnmpDatabasesMappingCommand : UpdateValueCommand<List<string>>
     {
         public UpdateSnmpDatabasesMappingCommand()
         {

@@ -3,7 +3,7 @@ using Raven.Client.Documents.Operations.Backups;
 
 namespace Raven.Server.Documents.PeriodicBackup
 {
-    public sealed class Progress
+    internal sealed class Progress
     {
         public Progress(UploadProgress progress = null)
         {

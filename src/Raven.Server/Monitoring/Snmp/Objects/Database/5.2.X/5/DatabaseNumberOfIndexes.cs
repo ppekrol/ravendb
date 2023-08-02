@@ -9,7 +9,7 @@ using Raven.Server.Documents;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database
 {
-    public sealed class DatabaseNumberOfIndexes : DatabaseScalarObjectBase<Integer32>
+    internal sealed class DatabaseNumberOfIndexes : DatabaseScalarObjectBase<Integer32>
     {
         public DatabaseNumberOfIndexes(string databaseName, DatabasesLandlord landlord, int index)
             : base(databaseName, landlord, SnmpOids.Databases.NumberOfIndexes, index)

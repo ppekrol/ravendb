@@ -25,7 +25,7 @@ using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Indexes.Debugging
 {
-    public static class IndexDebugExtensions
+    internal static class IndexDebugExtensions
     {
         public static IDisposable GetIdentifiersOfMappedDocuments(this Index self, string startsWith, long start, long take, out IEnumerable<string> docIds)
         {

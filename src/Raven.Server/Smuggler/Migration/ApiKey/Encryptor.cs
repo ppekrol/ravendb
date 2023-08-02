@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Smuggler.Migration.ApiKey
 {
-    public static class Encryptor
+    internal static class Encryptor
     {
         static Encryptor()
         {

@@ -14,7 +14,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Rachis
 {
-    public abstract class RachisStateMachine : IDisposable
+    internal abstract class RachisStateMachine : IDisposable
     {
         internal static bool EnableDebugLongCommit;
 

@@ -3,7 +3,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Sharding;
 
-public class BucketStats : IDynamicJson
+interal class BucketStats : IDynamicJson
 {
     public int Bucket;
 

@@ -16,7 +16,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Patch
 {
-    public abstract class PatchDocumentCommandBase : DocumentMergedTransactionCommand
+    internal abstract class PatchDocumentCommandBase : DocumentMergedTransactionCommand
     {
         private readonly bool _skipPatchIfChangeVectorMismatch;
 
@@ -363,7 +363,7 @@ namespace Raven.Server.Documents.Patch
         public abstract string HandleReply(DynamicJsonArray reply, HashSet<string> modifiedCollections);
     }
 
-    public sealed class BatchPatchDocumentCommand : PatchDocumentCommandBase
+    internal sealed class BatchPatchDocumentCommand : PatchDocumentCommandBase
     {
         private readonly BlittableJsonReaderArray _ids;
 
@@ -432,7 +432,7 @@ namespace Raven.Server.Documents.Patch
         }
     }
 
-    public sealed class PatchDocumentCommand : PatchDocumentCommandBase
+    internal sealed class PatchDocumentCommand : PatchDocumentCommandBase
     {
         private readonly string _id;
         private readonly LazyStringValue _expectedChangeVector;
@@ -491,7 +491,7 @@ namespace Raven.Server.Documents.Patch
         }
     }
 
-    public sealed class BatchPatchDocumentCommandDto : PatchDocumentCommandDtoBase<BatchPatchDocumentCommand>
+    internal sealed class BatchPatchDocumentCommandDto : PatchDocumentCommandDtoBase<BatchPatchDocumentCommand>
     {
         public BlittableJsonReaderArray Ids;
 
@@ -510,7 +510,7 @@ namespace Raven.Server.Documents.Patch
         }
     }
 
-    public sealed class PatchDocumentCommandDto : PatchDocumentCommandDtoBase<PatchDocumentCommand>
+    internal sealed class PatchDocumentCommandDto : PatchDocumentCommandDtoBase<PatchDocumentCommand>
     {
         public string Id;
         public LazyStringValue ExpectedChangeVector;
@@ -534,13 +534,13 @@ namespace Raven.Server.Documents.Patch
         }
     }
 
-    public abstract class PatchDocumentCommandDtoBase<TCommand> : PatchDocumentCommandDtoBase, IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, TCommand>
+    internal abstract class PatchDocumentCommandDtoBase<TCommand> : PatchDocumentCommandDtoBase, IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, TCommand>
         where TCommand : MergedTransactionCommand<DocumentsOperationContext, DocumentsTransaction>
     {
         public abstract TCommand ToCommand(DocumentsOperationContext context, DocumentDatabase database);
     }
 
-    public abstract class PatchDocumentCommandDtoBase
+    internal abstract class PatchDocumentCommandDtoBase
     {
         public bool SkipPatchIfChangeVectorMismatch;
         public (PatchRequest run, BlittableJsonReaderObject args) Patch;

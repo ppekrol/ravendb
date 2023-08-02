@@ -7,7 +7,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class CleanUpClusterStateCommand : CommandBase
+    internal sealed class CleanUpClusterStateCommand : CommandBase
     {
         public Dictionary<string, long> ClusterTransactionsCleanup;
 

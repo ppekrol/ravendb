@@ -10,7 +10,7 @@ using Sparrow.Server.Utils;
 
 namespace Raven.Server.Rachis
 {
-    public sealed class Elector : IDisposable
+    internal sealed class Elector : IDisposable
     {
         private readonly RachisConsensus _engine;
         private readonly RemoteConnection _connection;

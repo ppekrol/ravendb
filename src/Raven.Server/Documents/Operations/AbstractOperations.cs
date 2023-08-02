@@ -17,7 +17,7 @@ using Sparrow.LowMemory;
 
 namespace Raven.Server.Documents.Operations;
 
-public abstract class AbstractOperations<TOperation> : ILowMemoryHandler
+internal abstract class AbstractOperations<TOperation> : ILowMemoryHandler
     where TOperation : AbstractOperation, new()
 {
     private readonly IDocumentsChanges _changes;

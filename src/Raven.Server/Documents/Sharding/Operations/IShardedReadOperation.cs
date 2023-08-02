@@ -38,7 +38,7 @@ public interface IShardedReadOperation<TResult, TCombinedResult> : IShardedOpera
         return result;
     }
 }
-public sealed class ShardedReadResult<T>
+internal sealed class ShardedReadResult<T>
 {
     public T Result;
     public int StatusCode;

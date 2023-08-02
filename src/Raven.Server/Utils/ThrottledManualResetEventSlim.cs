@@ -7,7 +7,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Utils
 {
-    public sealed class ThrottledManualResetEventSlim : IDisposable
+    internal sealed class ThrottledManualResetEventSlim : IDisposable
     {
         public enum TimerManagement
         {

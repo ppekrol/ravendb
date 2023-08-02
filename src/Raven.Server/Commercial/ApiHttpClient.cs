@@ -7,7 +7,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Commercial
 {
-    public static class ApiHttpClient
+    internal static class ApiHttpClient
     {
         public static string ApiRavenDbNet 
         {

@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Changes;
 
-public abstract class DocumentsChangesBase<TChangesClientConnection, TOperationContext> : IDocumentsChanges
+internal abstract class DocumentsChangesBase<TChangesClientConnection, TOperationContext> : IDocumentsChanges
     where TChangesClientConnection : AbstractChangesClientConnection<TOperationContext>
     where TOperationContext : JsonOperationContext
 {

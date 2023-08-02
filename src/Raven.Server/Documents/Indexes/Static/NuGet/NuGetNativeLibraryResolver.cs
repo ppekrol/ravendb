@@ -8,7 +8,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Documents.Indexes.Static.NuGet
 {
-    public static class NuGetNativeLibraryResolver
+    internal static class NuGetNativeLibraryResolver
     {
         private static readonly object _locker = new object();
 

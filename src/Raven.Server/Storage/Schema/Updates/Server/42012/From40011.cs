@@ -16,7 +16,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Storage.Schema.Updates.Server
 {
-    public sealed class From40011 : ISchemaUpdate
+    internal sealed class From40011 : ISchemaUpdate
     {
         private const string LocalNodeStateTreeName = "LocalNodeState";
 

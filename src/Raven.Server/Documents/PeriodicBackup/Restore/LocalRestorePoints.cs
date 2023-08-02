@@ -7,7 +7,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.PeriodicBackup.Restore
 {
-    public sealed class LocalRestorePoints : RestorePointsBase
+    internal sealed class LocalRestorePoints : RestorePointsBase
     {
         public LocalRestorePoints(TransactionOperationContext context) : base(context)
         {

@@ -15,9 +15,9 @@ using Voron.Impl;
 
 namespace Raven.Server.Documents.Handlers.Debugging
 {
-    public sealed class TransactionDebugHandler : DatabaseRequestHandler
+    internal sealed class TransactionDebugHandler : DatabaseRequestHandler
     {
-        public sealed class TransactionInfo
+        internal sealed class TransactionInfo
         {
             public string Path;
             public List<LowLevelTransaction> Information;

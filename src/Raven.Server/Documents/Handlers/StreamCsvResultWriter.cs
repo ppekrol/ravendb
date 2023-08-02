@@ -18,7 +18,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Handlers
 {
-    public abstract class StreamCsvResultWriter<T> : IStreamQueryResultWriter<T>
+    internal abstract class StreamCsvResultWriter<T> : IStreamQueryResultWriter<T>
     {
         private readonly StreamWriter _writer;
         private readonly CsvWriter _csvWriter;

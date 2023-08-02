@@ -31,7 +31,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Web.Authentication
 {
-    public sealed class AdminCertificatesHandler : ServerRequestHandler
+    internal sealed class AdminCertificatesHandler : ServerRequestHandler
     {
         [RavenAction("/admin/certificates", "POST", AuthorizationStatus.Operator, DisableOnCpuCreditsExhaustion = true)]
         public async Task Generate()

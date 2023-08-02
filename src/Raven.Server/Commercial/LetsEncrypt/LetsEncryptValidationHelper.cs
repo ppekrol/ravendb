@@ -15,7 +15,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Commercial.LetsEncrypt;
 
-public sealed class LetsEncryptValidationHelper
+internal sealed class LetsEncryptValidationHelper
 {
     private static async Task AssertLocalNodeCanListenToEndpoints(SetupInfoBase setupInfoBase, ServerStore serverStore)
     {

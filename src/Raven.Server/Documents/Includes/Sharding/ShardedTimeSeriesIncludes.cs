@@ -9,7 +9,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Includes.Sharding;
 
-public sealed class ShardedTimeSeriesIncludes : AbstractIncludeTimeSeriesCommand
+internal sealed class ShardedTimeSeriesIncludes : AbstractIncludeTimeSeriesCommand
 {
     private readonly bool _supportsMissingIncludes;
     private readonly CancellationToken _token;

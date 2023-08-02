@@ -10,7 +10,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Rachis.Commands
 {
-    public sealed class HardResetToNewClusterCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
+    internal sealed class HardResetToNewClusterCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
     {
         private readonly RachisConsensus _engine;
         private readonly string _tag;

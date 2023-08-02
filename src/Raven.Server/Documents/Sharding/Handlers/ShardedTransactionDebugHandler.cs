@@ -5,7 +5,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedTransactionDebugHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedTransactionDebugHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/admin/debug/txinfo", "GET")]
         public async Task TxInfo()

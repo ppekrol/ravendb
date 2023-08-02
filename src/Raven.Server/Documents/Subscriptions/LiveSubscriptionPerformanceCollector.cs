@@ -17,7 +17,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Subscriptions
 {
-    public sealed class LiveSubscriptionPerformanceCollector : DatabaseAwareLivePerformanceCollector<SubscriptionTaskPerformanceStats>
+    internal sealed class LiveSubscriptionPerformanceCollector : DatabaseAwareLivePerformanceCollector<SubscriptionTaskPerformanceStats>
     {
         private readonly ConcurrentDictionary<string, SubscriptionAndPerformanceConnectionStatsList> _perSubscriptionConnectionStats
             = new ConcurrentDictionary<string, SubscriptionAndPerformanceConnectionStatsList>();

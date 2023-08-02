@@ -5,7 +5,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Commercial;
 
-public abstract class SetupInfoBase
+internal abstract class SetupInfoBase
 {
     public bool EnableExperimentalFeatures { get; set; }
     public StudioConfiguration.StudioEnvironment Environment { get; set; }

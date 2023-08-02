@@ -12,7 +12,7 @@ using Constants = Voron.Global.Constants;
 
 namespace Raven.Server.Documents
 {
-    public sealed class ExecuteRateLimitedOperations<T> : MergedTransactionCommand<DocumentsOperationContext, DocumentsTransaction>
+    internal sealed class ExecuteRateLimitedOperations<T> : MergedTransactionCommand<DocumentsOperationContext, DocumentsTransaction>
     {
         private readonly Queue<T> _documentIds;
         private readonly Func<T, MergedTransactionCommand<DocumentsOperationContext, DocumentsTransaction>> _commandToExecute;

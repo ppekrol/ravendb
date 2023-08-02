@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Raven.Server.Documents.Indexes.Static.Roslyn
 {
-    public static class RoslynHelper
+    internal static class RoslynHelper
     {
         public static SyntaxList<UsingDirectiveSyntax> CreateUsings(UsingDirectiveSyntax[] usings)
         {

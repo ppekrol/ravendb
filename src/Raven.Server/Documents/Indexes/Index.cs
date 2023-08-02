@@ -86,7 +86,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Documents.Indexes
 {
-    public abstract class Index<TIndexDefinition, TField> : Index
+    internal abstract class Index<TIndexDefinition, TField> : Index
         where TIndexDefinition : IndexDefinitionBaseServerSide<TField> where TField : IndexFieldBase
     {
         public new TIndexDefinition Definition => (TIndexDefinition)base.Definition;
@@ -97,7 +97,7 @@ namespace Raven.Server.Documents.Indexes
         }
     }
 
-    public abstract class Index : ITombstoneAware, IDisposable, ILowMemoryHandler
+    internal abstract class Index : ITombstoneAware, IDisposable, ILowMemoryHandler
     {
         private int _writeErrors;
 

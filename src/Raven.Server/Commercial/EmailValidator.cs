@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Commercial.LetsEncrypt;
 
-public sealed class EmailValidator
+internal sealed class EmailValidator
 {
     public static bool IsValid(string email)
     {

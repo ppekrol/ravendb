@@ -9,7 +9,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Handlers.Batches;
 
-public sealed class DatabaseBatchCommandsReader : AbstractBatchCommandsReader<MergedBatchCommand, DocumentsOperationContext>
+internal sealed class DatabaseBatchCommandsReader : AbstractBatchCommandsReader<MergedBatchCommand, DocumentsOperationContext>
 {
     private readonly DocumentDatabase _database;
     public List<MergedBatchCommand.AttachmentStream> AttachmentStreams;

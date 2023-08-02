@@ -2,7 +2,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Smuggler.Documents.Processors
 {
-    public static class BuildVersion
+    internal static class BuildVersion
     {
         public static BuildVersionType Type(long buildVersion)
         {

@@ -24,7 +24,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Patch
 {
-    public struct JsBlittableBridge
+    internal struct JsBlittableBridge
     {
         private readonly ManualBlittableJsonDocumentBuilder<UnmanagedWriteBuffer> _writer;
         private readonly BlittableJsonDocumentBuilder.UsageMode _usageMode;

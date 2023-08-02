@@ -7,7 +7,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class AddDatabaseCommand : CommandBase
+    internal sealed class AddDatabaseCommand : CommandBase
     {
         public string Name;
         public DatabaseRecord Record;

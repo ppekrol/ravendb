@@ -7,7 +7,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Documents
 {
-    public static class AttachmentsStorageHelper
+    internal static class AttachmentsStorageHelper
     {
         public static async Task<string> CopyStreamToFileAndCalculateHash(JsonOperationContext context, Stream requestStream, Stream file, CancellationToken cancellationToken)
         {

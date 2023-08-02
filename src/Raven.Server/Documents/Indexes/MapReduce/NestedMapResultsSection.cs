@@ -231,7 +231,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce
         }
 
         [StructLayout(LayoutKind.Explicit, Pack = 1)]
-        public struct ResultHeader
+        internal struct ResultHeader
         {
             [FieldOffset(0)]
             public long Id;

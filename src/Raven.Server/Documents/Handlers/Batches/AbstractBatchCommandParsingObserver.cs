@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Handlers.Batches;
 
-public abstract class AbstractBatchCommandParsingObserver
+internal abstract class AbstractBatchCommandParsingObserver
 {
     public abstract void OnCommandStart(UnmanagedJsonParser parser);
 

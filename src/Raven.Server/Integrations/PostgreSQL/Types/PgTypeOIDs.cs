@@ -23,7 +23,7 @@ namespace Raven.Server.Integrations.PostgreSQL.Types
     /// <summary>
     /// Holds well-known, built-in PostgreSQL type OIDs.
     /// </summary>
-    public static class PgTypeOIDs
+    internal static class PgTypeOIDs
     {
         // Numeric
         public const int Int8 = 20;

@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.SqlMigration
 {
-    public sealed class JsPatcher : IDisposable
+    internal sealed class JsPatcher : IDisposable
     {
         private readonly ScriptRunner.SingleRun _runner;
         private readonly DocumentsOperationContext _context;

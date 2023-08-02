@@ -3,7 +3,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Dashboard.Cluster.Notifications
 {
-    public sealed class TrafficWatchPayload : AbstractClusterDashboardNotification
+    internal sealed class TrafficWatchPayload : AbstractClusterDashboardNotification
     {
         internal List<TrafficWatchItem> TrafficPerDatabase { get; set; }
 

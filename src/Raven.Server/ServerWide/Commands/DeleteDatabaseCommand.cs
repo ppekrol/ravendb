@@ -10,7 +10,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class DeleteDatabaseCommand : UpdateDatabaseCommand
+    internal sealed class DeleteDatabaseCommand : UpdateDatabaseCommand
     {
         public string[] ClusterNodes;
         public bool HardDelete;

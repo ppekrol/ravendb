@@ -5,7 +5,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedAttachmentHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedAttachmentHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/attachments", "HEAD")]
         public async Task Head()

@@ -15,7 +15,7 @@ namespace Raven.Server.Documents.Indexes.Static
     /// will build up and tear down a server frequently, so we can still reduce the cost of compiling
     /// the indexes.
     /// </summary>
-    public static class IndexCompilationCache
+    internal static class IndexCompilationCache
     {
         private static readonly ConcurrentDictionary<CacheKey, Lazy<AbstractStaticIndexBase>> _indexCache = new ConcurrentDictionary<CacheKey, Lazy<AbstractStaticIndexBase>>();
 

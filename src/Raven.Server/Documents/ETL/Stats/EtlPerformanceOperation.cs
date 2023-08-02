@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.ETL.Stats
 {
-    public class EtlPerformanceOperation
+    interal class EtlPerformanceOperation
     {
         public EtlPerformanceOperation(TimeSpan duration)
         {

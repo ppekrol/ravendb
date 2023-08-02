@@ -3,7 +3,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class ServerStorageTotalSize : ScalarObjectBase<Gauge32>
+    internal sealed class ServerStorageTotalSize : ScalarObjectBase<Gauge32>
     {
         private readonly ServerStore _store;
 

@@ -7,7 +7,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Web.Studio
 {
-    public static class FolderPath
+    internal static class FolderPath
     {
         public static FolderPathOptions GetOptions(string path, bool isBackupFolder, RavenConfiguration ravenConfiguration)
         {
@@ -126,7 +126,7 @@ namespace Raven.Server.Web.Studio
             return null;
         }
     }
-    public sealed class FolderPathOptions
+    internal sealed class FolderPathOptions
     {
         public SortedSet<string> List { get; } = new SortedSet<string>();
     }

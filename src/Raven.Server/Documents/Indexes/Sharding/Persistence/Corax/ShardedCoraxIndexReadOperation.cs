@@ -18,7 +18,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Documents.Indexes.Sharding.Persistence.Corax;
 
-public sealed class ShardedCoraxIndexReadOperation : CoraxIndexReadOperation
+internal sealed class ShardedCoraxIndexReadOperation : CoraxIndexReadOperation
 {
     public ShardedCoraxIndexReadOperation(Index index, Logger logger, Transaction readTransaction, QueryBuilderFactories queryBuilderFactories,
         IndexFieldsMapping fieldsMapping, IndexQueryServerSide query) : base(index, logger, readTransaction, queryBuilderFactories, fieldsMapping, query)

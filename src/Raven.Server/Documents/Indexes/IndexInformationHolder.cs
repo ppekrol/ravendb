@@ -14,7 +14,7 @@ using Raven.Server.Documents.Indexes.Static.TimeSeries;
 
 namespace Raven.Server.Documents.Indexes;
 
-public sealed class StaticIndexInformationHolder : IndexInformationHolder
+internal sealed class StaticIndexInformationHolder : IndexInformationHolder
 {
     public StaticIndexInformationHolder([NotNull] IndexDefinitionBaseServerSide definition, [NotNull] IndexingConfiguration configuration, AbstractStaticIndexBase staticIndex)
         : base(definition, configuration)
@@ -38,7 +38,7 @@ public sealed class StaticIndexInformationHolder : IndexInformationHolder
     public readonly AbstractStaticIndexBase Compiled;
 }
 
-public class IndexInformationHolder
+interal class IndexInformationHolder
 {
     protected IndexInformationHolder([NotNull] IndexDefinitionBaseServerSide definition, [NotNull] IndexingConfiguration configuration)
     {
@@ -135,7 +135,7 @@ public class IndexInformationHolder
     }
 }
 
-public static class IndexInformationHolderExtensions
+internal static class IndexInformationHolderExtensions
 {
     public static IndexInformationHolder ToIndexInformationHolder(this Index index) => IndexInformationHolder.CreateFor(index);
 

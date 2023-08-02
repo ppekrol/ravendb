@@ -12,7 +12,7 @@ namespace Raven.Server.Documents.Commands.Attachments
     {
         private readonly string _hash;
 
-        public sealed class Response
+        internal sealed class Response
         {
             public string Hash { get; set; }
 

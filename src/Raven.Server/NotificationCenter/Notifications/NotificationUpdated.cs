@@ -2,7 +2,7 @@
 
 namespace Raven.Server.NotificationCenter.Notifications
 {
-    public sealed class NotificationUpdated : Notification
+    internal sealed class NotificationUpdated : Notification
     {
         private NotificationUpdated() : base(NotificationType.NotificationUpdated, "*")
         {

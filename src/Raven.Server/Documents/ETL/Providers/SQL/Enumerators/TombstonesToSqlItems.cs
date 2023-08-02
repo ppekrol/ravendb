@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Raven.Server.Documents.ETL.Providers.SQL.Enumerators
 {
-    public sealed class TombstonesToSqlItems : IEnumerator<ToSqlItem>
+    internal sealed class TombstonesToSqlItems : IEnumerator<ToSqlItem>
     {
         private readonly IEnumerator<Tombstone> _tombstones;
         private readonly string _collection;

@@ -4,7 +4,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Replication
 {
-    public struct ChangeVectorEntry : IComparable<ChangeVectorEntry>, IEquatable<ChangeVectorEntry>
+    internal struct ChangeVectorEntry : IComparable<ChangeVectorEntry>, IEquatable<ChangeVectorEntry>
     {
         public string DbId;
         public long Etag;

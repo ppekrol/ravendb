@@ -17,7 +17,7 @@ using Encoding = System.Text.Encoding;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Corax;
 
-public class CoraxSuggestionReader : SuggestionIndexReaderBase
+interal class CoraxSuggestionReader : SuggestionIndexReaderBase
 {
     private readonly IndexFieldsMapping _fieldMappings;
     private readonly IndexSearcher _indexSearcher;

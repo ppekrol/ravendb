@@ -5,7 +5,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class PutCertificateWithSamePinningHashCommand : PutCertificateCommand
+    internal sealed class PutCertificateWithSamePinningHashCommand : PutCertificateCommand
     {
         public PutCertificateWithSamePinningHashCommand()
         {

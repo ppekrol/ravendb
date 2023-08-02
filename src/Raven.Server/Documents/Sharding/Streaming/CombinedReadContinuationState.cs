@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Raven.Server.Documents.Sharding.Streaming;
 
-public sealed class CombinedReadContinuationState : IDisposable
+internal sealed class CombinedReadContinuationState : IDisposable
 {
     private readonly ShardedDatabaseContext _databaseContext;
     private readonly CombinedStreamResult _combinedStream;

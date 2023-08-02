@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Utils
 {
-    public sealed class DisposableLazy<T> : IDisposable where T : IDisposable
+    internal sealed class DisposableLazy<T> : IDisposable where T : IDisposable
     {
         private readonly Lazy<T> _lazy;
 

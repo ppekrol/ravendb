@@ -6,7 +6,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Utils.Cli
 {
-    public static class PostSetupCliArgumentsUpdater
+    internal static class PostSetupCliArgumentsUpdater
     {
         public static string[] Process(string[] configurationArgs, RavenConfiguration configBeforeRestart, RavenConfiguration currentConfiguration)
         {

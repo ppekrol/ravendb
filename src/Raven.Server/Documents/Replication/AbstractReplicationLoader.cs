@@ -31,7 +31,7 @@ using Sparrow.Server.Json.Sync;
 
 namespace Raven.Server.Documents.Replication
 {
-    public abstract class AbstractReplicationLoader<TContextPool, TOperationContext> : IDisposable 
+    internal abstract class AbstractReplicationLoader<TContextPool, TOperationContext> : IDisposable 
         where TContextPool : JsonContextPoolBase<TOperationContext>
         where TOperationContext : JsonOperationContext
     {
@@ -75,7 +75,7 @@ namespace Raven.Server.Documents.Replication
             return ForTestingPurposes = new TestingStuff();
         }
 
-        public sealed class TestingStuff
+        internal sealed class TestingStuff
         {
             public Action<DatabaseOutgoingReplicationHandler> OnOutgoingReplicationStart;
             public Action<Exception> OnIncomingReplicationHandlerFailure;

@@ -17,7 +17,7 @@ using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Queries.Facets
 {
-    public static class FacetedQueryParser
+    internal static class FacetedQueryParser
     {
         public static Dictionary<string, FacetResult> Parse(JsonOperationContext context, FacetQuery query, SearchEngineType searchEngineType)
         {
@@ -386,7 +386,7 @@ namespace Raven.Server.Documents.Queries.Facets
             }
         }
         
-        public sealed class CoraxParsedRange : ParsedRange
+        internal sealed class CoraxParsedRange : ParsedRange
         {
             private Operation _leftSide; 
             private Operation _rightSide; 
@@ -525,7 +525,7 @@ namespace Raven.Server.Documents.Queries.Facets
             }
         }
         
-        public class ParsedRange
+        interal class ParsedRange
         {
             public bool LowInclusive;
             public bool HighInclusive;
@@ -561,7 +561,7 @@ namespace Raven.Server.Documents.Queries.Facets
             }
         }
 
-        public sealed class FacetResult
+        internal sealed class FacetResult
         {
             public FacetResult()
             {
@@ -580,7 +580,7 @@ namespace Raven.Server.Documents.Queries.Facets
 
             public FacetOptions Options;
 
-            public sealed class Aggregation
+            internal sealed class Aggregation
             {
                 public bool Sum;
 

@@ -12,7 +12,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Indexes.MapReduce.OutputToCollection
 {
-    public sealed class DeleteReduceOutputDocumentsCommand : OutputReduceAbstractCommand
+    internal sealed class DeleteReduceOutputDocumentsCommand : OutputReduceAbstractCommand
     {
         private readonly string _documentsPrefix;
         private readonly int _batchSize;
@@ -153,7 +153,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce.OutputToCollection
         }
     }
 
-    public sealed class DeleteReduceOutputDocumentsCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, DeleteReduceOutputDocumentsCommand>
+    internal sealed class DeleteReduceOutputDocumentsCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, DeleteReduceOutputDocumentsCommand>
     {
         public string DocumentsPrefix;
         public string OriginalPattern;

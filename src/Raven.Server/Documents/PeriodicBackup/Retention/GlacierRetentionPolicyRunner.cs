@@ -4,7 +4,7 @@ using Raven.Server.Documents.PeriodicBackup.Aws;
 
 namespace Raven.Server.Documents.PeriodicBackup.Retention
 {
-    public sealed class GlacierRetentionPolicyRunner : RetentionPolicyRunnerBase
+    internal sealed class GlacierRetentionPolicyRunner : RetentionPolicyRunnerBase
     {
         private readonly RavenAwsGlacierClient _client;
 

@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Raven.Server.Utils
 {
-    public sealed class WildcardMatcher
+    internal sealed class WildcardMatcher
     {
         private static readonly char[] Separator = { '|' };
 

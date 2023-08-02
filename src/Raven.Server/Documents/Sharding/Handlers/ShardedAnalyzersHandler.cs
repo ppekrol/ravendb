@@ -5,7 +5,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.Sharding.Handlers;
 
-public sealed class ShardedAnalyzersHandler : ShardedDatabaseRequestHandler
+internal sealed class ShardedAnalyzersHandler : ShardedDatabaseRequestHandler
 {
     [RavenShardedAction("/databases/*/analyzers", "GET")]
     public async Task Get()

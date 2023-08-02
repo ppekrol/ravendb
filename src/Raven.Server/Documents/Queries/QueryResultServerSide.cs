@@ -11,7 +11,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries
 {
-    public abstract class QueryResultServerSide<T> : QueryResult<List<T>, List<T>>, IDisposable
+    internal abstract class QueryResultServerSide<T> : QueryResult<List<T>, List<T>>, IDisposable
     {
         protected QueryResultServerSide(long? indexDefinitionRaftIndex)
         {

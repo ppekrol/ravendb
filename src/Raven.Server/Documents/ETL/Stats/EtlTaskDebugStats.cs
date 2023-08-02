@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.ETL.Stats;
 
-public sealed class EtlTaskDebugStats : IDynamicJson
+internal sealed class EtlTaskDebugStats : IDynamicJson
 {
     public string TaskName { get; set; }
 
@@ -20,7 +20,7 @@ public sealed class EtlTaskDebugStats : IDynamicJson
     }
 }
 
-public sealed class EtlProcessTransformationDebugStats : EtlProcessTransformationStats
+internal sealed class EtlProcessTransformationDebugStats : EtlProcessTransformationStats
 {
     public EtlMetricsCountersManager Metrics { get; set; }
 

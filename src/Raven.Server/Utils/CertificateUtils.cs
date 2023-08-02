@@ -32,7 +32,7 @@ using X509Certificate = Org.BouncyCastle.X509.X509Certificate;
 
 namespace Raven.Server.Utils
 {
-    public static class CertificateUtils
+    internal static class CertificateUtils
     {
         private const int BitsPerByte = 8;
 
@@ -103,7 +103,7 @@ namespace Raven.Server.Utils
             return true;
         }
 
-        public sealed class CertificateHolder : IDisposable
+        internal sealed class CertificateHolder : IDisposable
         {
             public string CertificateForClients;
             public X509Certificate2 Certificate;
@@ -598,7 +598,7 @@ namespace Raven.Server.Utils
             return CertificateLoaderUtil.CreateCertificate(certBytes, flags: CertificateLoaderUtil.FlagsForExport);
         }
     }
-    public static class PublicKeyPinningHashHelpers
+    internal static class PublicKeyPinningHashHelpers
     {
         public static string GetPublicKeyPinningHash(this X509Certificate2 cert)
         {

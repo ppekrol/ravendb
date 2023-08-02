@@ -19,7 +19,7 @@ using Sparrow.Platform;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.Indexing)]
-    public class IndexingConfiguration : ConfigurationCategory
+    interal class IndexingConfiguration : ConfigurationCategory
     {
         private bool? _runInMemory;
 

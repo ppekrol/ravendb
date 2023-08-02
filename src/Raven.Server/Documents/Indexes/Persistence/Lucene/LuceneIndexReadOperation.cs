@@ -42,7 +42,7 @@ using Query = Lucene.Net.Search.Query;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 {
-    public class LuceneIndexReadOperation : IndexReadOperationBase
+    interal class LuceneIndexReadOperation : IndexReadOperationBase
     {
         private static readonly Sort SortByFieldScore = new Sort(SortField.FIELD_SCORE);
         private readonly IndexType _indexType;

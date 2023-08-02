@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Indexes.Persistence;
 
-public abstract class AbstractQueryFilter : IDisposable
+internal abstract class AbstractQueryFilter : IDisposable
 {
     private ScriptRunner.ReturnRun _filterSingleRun;
 

@@ -28,7 +28,7 @@ using Lucene.Net.Store;
 
 namespace Lucene.Net.Search.Vectorhighlight
 {
-    public abstract class BaseFragmentsBuilder : FragmentsBuilder
+    internal abstract class BaseFragmentsBuilder : FragmentsBuilder
     {
         protected String[] preTags, postTags;
         public static String[] COLORED_PRE_TAGS = {

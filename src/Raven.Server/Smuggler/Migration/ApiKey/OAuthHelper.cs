@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Raven.Server.Smuggler.Migration.ApiKey
 {
-    public static class OAuthHelper
+    internal static class OAuthHelper
     {
-        public static class Keys
+        internal static class Keys
         {
             public const string EncryptedData = "data";
             public const string APIKeyName = "api key name";

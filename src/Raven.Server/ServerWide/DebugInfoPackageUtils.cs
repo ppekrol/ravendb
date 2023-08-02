@@ -12,7 +12,7 @@ using Sparrow.Server.Platform.Posix;
 
 namespace Raven.Server.ServerWide
 {
-    public static class DebugInfoPackageUtils
+    internal static class DebugInfoPackageUtils
     {
         public static readonly IReadOnlyList<RouteInformation> Routes = RouteScanner.DebugRoutes;
 

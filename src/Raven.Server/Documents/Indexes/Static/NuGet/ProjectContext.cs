@@ -7,7 +7,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Indexes.Static.NuGet
 {
-    public sealed class ProjectContext : INuGetProjectContext
+    internal sealed class ProjectContext : INuGetProjectContext
     {
         private static readonly Logger Logger = LoggingSource.Instance.GetLogger<RavenServer>("NuGet");
 

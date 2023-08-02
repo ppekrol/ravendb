@@ -2414,7 +2414,7 @@ namespace Raven.Server.Documents
             return TableValueToEtag((int)CountersTable.Etag, ref result.Reader);
         }
 
-        public sealed class IndexingMethods
+        internal sealed class IndexingMethods
         {
             private readonly CountersStorage _countersStorage;
 
@@ -2637,7 +2637,7 @@ namespace Raven.Server.Documents
         }
     }
 
-    public sealed class CounterGroupItemMetadata : IDisposable
+    internal sealed class CounterGroupItemMetadata : IDisposable
     {
         private bool _disposed;
         private IDisposable _keyScope;
@@ -2684,7 +2684,7 @@ namespace Raven.Server.Documents
         }
     }
 
-    public struct CounterPartialValue
+    internal struct CounterPartialValue
     {
         public readonly long PartialValue;
         public readonly long Etag;
@@ -2698,7 +2698,7 @@ namespace Raven.Server.Documents
         }
     }
 
-    public sealed class CounterInfo
+    internal sealed class CounterInfo
     {
         public long Value;
         public long Etag;
@@ -2706,7 +2706,7 @@ namespace Raven.Server.Documents
         public string Name;
     }
 
-    public sealed class CounterTombstoneDetail : IDisposable
+    internal sealed class CounterTombstoneDetail : IDisposable
     {
         public LazyStringValue DocumentId { get; set; }
         public LazyStringValue ChangeVector { get; set; }

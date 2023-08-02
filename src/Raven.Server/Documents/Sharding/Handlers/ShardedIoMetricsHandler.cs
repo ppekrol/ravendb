@@ -5,7 +5,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers;
 
-public sealed class ShardedIoMetricsHandler : ShardedDatabaseRequestHandler
+internal sealed class ShardedIoMetricsHandler : ShardedDatabaseRequestHandler
 {
     [RavenShardedAction("/databases/*/debug/io-metrics/live", "GET")]
     public async Task Live()

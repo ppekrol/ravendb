@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers.BulkInsert;
 
-public sealed class ShardedBulkInsertHandler : ShardedDatabaseRequestHandler
+internal sealed class ShardedBulkInsertHandler : ShardedDatabaseRequestHandler
 {
     [RavenShardedAction("/databases/*/bulk_insert", "POST")]
     public async Task BulkInsert()

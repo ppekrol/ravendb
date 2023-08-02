@@ -6,7 +6,7 @@ using Raven.Server.Documents.Replication.Stats;
 
 namespace Raven.Server.Documents.Replication.Senders
 {
-    public sealed class ReplicationBatchItemByEtagComparer : Comparer<ReplicationBatchItem>
+    internal sealed class ReplicationBatchItemByEtagComparer : Comparer<ReplicationBatchItem>
     {
         public static ReplicationBatchItemByEtagComparer Instance = new();
 
@@ -22,7 +22,7 @@ namespace Raven.Server.Documents.Replication.Senders
         }
     }
 
-    public sealed class MergedReplicationBatchEnumerator : MergedEnumerator<ReplicationBatchItem>
+    internal sealed class MergedReplicationBatchEnumerator : MergedEnumerator<ReplicationBatchItem>
     {
         private readonly OutgoingReplicationStatsScope _documentRead;
         private readonly OutgoingReplicationStatsScope _attachmentRead;

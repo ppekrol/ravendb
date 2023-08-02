@@ -17,7 +17,7 @@ namespace Raven.Server.Documents.ETL.Stats
         bool Completed { get; }
     }
 
-    public sealed class EtlStatsAggregator<TStatsScope, TEtlPerformanceOperation> : StatsAggregator<EtlRunStats, TStatsScope>, IEtlStatsAggregator
+    internal sealed class EtlStatsAggregator<TStatsScope, TEtlPerformanceOperation> : StatsAggregator<EtlRunStats, TStatsScope>, IEtlStatsAggregator
         where TStatsScope : AbstractEtlStatsScope<TStatsScope, TEtlPerformanceOperation>
         where TEtlPerformanceOperation : EtlPerformanceOperation
     {

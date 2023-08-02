@@ -11,7 +11,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands.ETL
 {
-    public abstract class UpdateEtlCommand<T, TConnectionString> : UpdateDatabaseCommand where T : EtlConfiguration<TConnectionString> where TConnectionString : ConnectionString
+    internal abstract class UpdateEtlCommand<T, TConnectionString> : UpdateDatabaseCommand where T : EtlConfiguration<TConnectionString> where TConnectionString : ConnectionString
     {
         public long TaskId { get; protected set; }
 
@@ -39,7 +39,7 @@ namespace Raven.Server.ServerWide.Commands.ETL
         }
     }
 
-    public sealed class UpdateRavenEtlCommand : UpdateEtlCommand<RavenEtlConfiguration, RavenConnectionString>
+    internal sealed class UpdateRavenEtlCommand : UpdateEtlCommand<RavenEtlConfiguration, RavenConnectionString>
     {
         public UpdateRavenEtlCommand()
         {
@@ -59,7 +59,7 @@ namespace Raven.Server.ServerWide.Commands.ETL
         }
     }
 
-    public sealed class UpdateSqlEtlCommand : UpdateEtlCommand<SqlEtlConfiguration, SqlConnectionString>
+    internal sealed class UpdateSqlEtlCommand : UpdateEtlCommand<SqlEtlConfiguration, SqlConnectionString>
     {
         public UpdateSqlEtlCommand()
         {
@@ -79,7 +79,7 @@ namespace Raven.Server.ServerWide.Commands.ETL
         }
     }
 
-    public sealed class UpdateOlapEtlCommand : UpdateEtlCommand<OlapEtlConfiguration, OlapConnectionString>
+    internal sealed class UpdateOlapEtlCommand : UpdateEtlCommand<OlapEtlConfiguration, OlapConnectionString>
     {
         public UpdateOlapEtlCommand()
         {
@@ -98,7 +98,7 @@ namespace Raven.Server.ServerWide.Commands.ETL
         }
     }
     
-    public sealed class UpdateElasticSearchEtlCommand : UpdateEtlCommand<ElasticSearchEtlConfiguration, ElasticSearchConnectionString>
+    internal sealed class UpdateElasticSearchEtlCommand : UpdateEtlCommand<ElasticSearchEtlConfiguration, ElasticSearchConnectionString>
     {
         public UpdateElasticSearchEtlCommand()
         {
@@ -117,7 +117,7 @@ namespace Raven.Server.ServerWide.Commands.ETL
         }
     }
 
-    public sealed class UpdateQueueEtlCommand : UpdateEtlCommand<QueueEtlConfiguration, QueueConnectionString>
+    internal sealed class UpdateQueueEtlCommand : UpdateEtlCommand<QueueEtlConfiguration, QueueConnectionString>
     {
         public UpdateQueueEtlCommand()
         {

@@ -8,7 +8,7 @@ using Raven.Client.Exceptions.Documents.Compilation;
 
 namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters.ReduceIndex
 {
-    public abstract class MethodsInGroupByValidator : CSharpSyntaxWalker
+    internal abstract class MethodsInGroupByValidator : CSharpSyntaxWalker
     {
         protected static string[] ForbiddenMethods = { "Count", "Average" };
 
@@ -23,7 +23,7 @@ namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters.ReduceIndex
         }
     }
 
-    public sealed class MethodsInGroupByValidatorMethodSyntax : MethodsInGroupByValidator
+    internal sealed class MethodsInGroupByValidatorMethodSyntax : MethodsInGroupByValidator
     {
         private ParameterSyntax _root;
 
@@ -76,7 +76,7 @@ namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters.ReduceIndex
         }
     }
 
-    public sealed class MethodsInGroupByValidatorQuerySyntax : MethodsInGroupByValidator
+    internal sealed class MethodsInGroupByValidatorQuerySyntax : MethodsInGroupByValidator
     {
         private SyntaxToken _root;
 
@@ -127,7 +127,7 @@ namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters.ReduceIndex
         }
     }
 
-    public abstract class GroupByFieldsRetriever : CSharpSyntaxRewriter
+    internal abstract class GroupByFieldsRetriever : CSharpSyntaxRewriter
     {
         public CompiledIndexField[] GroupByFields { get; protected set; }
 
@@ -135,7 +135,7 @@ namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters.ReduceIndex
 
         public static GroupByFieldsRetriever MethodSyntax => new MethodSyntaxRetriever();
 
-        public sealed class QuerySyntaxRetriever : GroupByFieldsRetriever
+        internal sealed class QuerySyntaxRetriever : GroupByFieldsRetriever
         {
             public override SyntaxNode VisitGroupClause(GroupClauseSyntax node)
             {

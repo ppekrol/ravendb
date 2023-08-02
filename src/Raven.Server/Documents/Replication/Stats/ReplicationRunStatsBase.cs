@@ -5,7 +5,7 @@ using Raven.Client.Util;
 
 namespace Raven.Server.Documents.Replication.Stats
 {
-    public abstract class ReplicationRunStatsBase
+    internal abstract class ReplicationRunStatsBase
     {
         public List<ReplicationError> Errors;
 

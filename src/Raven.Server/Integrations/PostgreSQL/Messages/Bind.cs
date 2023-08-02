@@ -6,7 +6,7 @@ using Raven.Server.Integrations.PostgreSQL.Exceptions;
 
 namespace Raven.Server.Integrations.PostgreSQL.Messages
 {
-    public sealed class Bind : ExtendedProtocolMessage
+    internal sealed class Bind : ExtendedProtocolMessage
     {
         public string PortalName;
         public string StatementName;

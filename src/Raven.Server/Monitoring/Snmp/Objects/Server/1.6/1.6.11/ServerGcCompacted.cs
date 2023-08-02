@@ -5,7 +5,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class ServerGcCompacted : ServerGcBase<OctetString>
+    internal sealed class ServerGcCompacted : ServerGcBase<OctetString>
     {
         public ServerGcCompacted(MetricCacher metricCacher, GCKind gcKind)
             : base(metricCacher, gcKind, SnmpOids.Server.GcCompacted)

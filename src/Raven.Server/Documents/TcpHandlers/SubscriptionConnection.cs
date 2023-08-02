@@ -37,7 +37,7 @@ namespace Raven.Server.Documents.TcpHandlers
         Error
     }
 
-    public sealed class SubscriptionOperationScope
+    internal sealed class SubscriptionOperationScope
     {
         public const string ConnectionPending = "ConnectionPending";
         public const string ConnectionActive = "ConnectionActive";
@@ -45,7 +45,7 @@ namespace Raven.Server.Documents.TcpHandlers
         public const string BatchWaitForAcknowledge = "BatchWaitForAcknowledge";
     }
 
-    public class SubscriptionConnection : SubscriptionConnectionBase<DatabaseIncludesCommandImpl>
+    interal class SubscriptionConnection : SubscriptionConnectionBase<DatabaseIncludesCommandImpl>
     {
         private static readonly ParserOptions DefaultParserOptions = ParserOptions.Default with { AllowReturnOutsideFunction = true };
 
@@ -88,7 +88,7 @@ namespace Raven.Server.Documents.TcpHandlers
             base.DisposeInternal();
         }
 
-        public struct ParsedSubscription
+        internal struct ParsedSubscription
         {
             public string Collection;
             public string Script;
@@ -459,7 +459,7 @@ namespace Raven.Server.Documents.TcpHandlers
         }
     }
 
-    public sealed class SubscriptionConnectionsDetails
+    internal sealed class SubscriptionConnectionsDetails
     {
         public List<SubscriptionConnectionDetails> Results;
         public SubscriptionMode SubscriptionMode;
@@ -474,7 +474,7 @@ namespace Raven.Server.Documents.TcpHandlers
         }
     }
 
-    public sealed class SubscriptionConnectionDetails
+    internal sealed class SubscriptionConnectionDetails
     {
         public string ClientUri { get; set; }
         public string WorkerId { get; set; }

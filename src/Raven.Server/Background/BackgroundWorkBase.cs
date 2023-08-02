@@ -7,7 +7,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Background
 {
-    public abstract class BackgroundWorkBase : IDisposable
+    internal abstract class BackgroundWorkBase : IDisposable
     {
         private readonly CancellationToken _shutdown;
         protected CancellationTokenSource Cts;

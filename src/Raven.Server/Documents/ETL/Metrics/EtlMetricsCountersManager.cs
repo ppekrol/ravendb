@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.ETL.Metrics
 {
-    public class EtlMetricsCountersManager
+    interal class EtlMetricsCountersManager
     {
         private readonly double[] _processedPerSecondRate = new double[8];
         private int _index;

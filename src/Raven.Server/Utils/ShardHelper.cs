@@ -19,7 +19,7 @@ using Voron;
 
 namespace Raven.Server.Utils
 {
-    public static class ShardHelper
+    internal static class ShardHelper
     {
         public const int NumberOfBuckets = 1024 * 1024;
 

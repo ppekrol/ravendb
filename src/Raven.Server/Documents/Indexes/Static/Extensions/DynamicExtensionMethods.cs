@@ -4,7 +4,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Indexes.Static.Extensions
 {
-    public static class DynamicExtensionMethods
+    internal static class DynamicExtensionMethods
     {
         public static BoostedValue Boost(dynamic o, object value)
         {

@@ -8,7 +8,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents
 {
-    public sealed class CatastrophicFailureHandler
+    internal sealed class CatastrophicFailureHandler
     {
         internal TimeSpan TimeToWaitBeforeUnloadingDatabase = TimeSpan.FromSeconds(2);
         internal int MaxDatabaseUnloads = 3;
@@ -90,7 +90,7 @@ namespace Raven.Server.Documents
             });
         }
 
-        public sealed class FailureStats
+        internal sealed class FailureStats
         {
             private readonly int _maxDatabaseUnloads;
 

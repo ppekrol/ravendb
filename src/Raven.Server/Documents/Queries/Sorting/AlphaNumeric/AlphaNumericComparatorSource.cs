@@ -3,7 +3,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.Queries.Sorting.AlphaNumeric
 {
-    public sealed class AlphaNumericComparatorSource : FieldComparatorSource
+    internal sealed class AlphaNumericComparatorSource : FieldComparatorSource
     {
         private readonly DocumentsOperationContext _context;
 

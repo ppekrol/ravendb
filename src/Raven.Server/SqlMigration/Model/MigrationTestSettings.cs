@@ -2,7 +2,7 @@
 
 namespace Raven.Server.SqlMigration.Model
 {
-    public sealed class MigrationTestSettings
+    internal sealed class MigrationTestSettings
     {
         public bool BinaryToAttachment { get; set; }
         public RootCollection Collection { get; set; }
@@ -17,7 +17,7 @@ namespace Raven.Server.SqlMigration.Model
         ByPrimaryKey
     }
     
-    public sealed class CollectionNamesMapping {
+    internal sealed class CollectionNamesMapping {
         public string TableSchema { get; set; }
         public string TableName { get; set; }
         public string CollectionName { get; set; }

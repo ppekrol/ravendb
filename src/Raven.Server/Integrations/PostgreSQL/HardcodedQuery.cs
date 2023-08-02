@@ -9,7 +9,7 @@ using Raven.Server.Integrations.PostgreSQL.PowerBI;
 
 namespace Raven.Server.Integrations.PostgreSQL
 {
-    public sealed class HardcodedQuery : PgQuery
+    internal sealed class HardcodedQuery : PgQuery
     {
         private PgTable _result;
 

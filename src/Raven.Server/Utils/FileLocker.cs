@@ -6,7 +6,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Utils
 {
-    public struct FileLocker : IDisposable
+    internal struct FileLocker : IDisposable
     {
         private static readonly ConcurrentDictionary<string, object> _inMemoryLocks = new ConcurrentDictionary<string, object>();
 

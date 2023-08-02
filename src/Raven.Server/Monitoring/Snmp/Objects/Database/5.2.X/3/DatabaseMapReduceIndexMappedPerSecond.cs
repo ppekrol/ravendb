@@ -3,7 +3,7 @@ using Raven.Server.Documents;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database
 {
-    public sealed class DatabaseMapReduceIndexMappedPerSecond : DatabaseScalarObjectBase<Gauge32>
+    internal sealed class DatabaseMapReduceIndexMappedPerSecond : DatabaseScalarObjectBase<Gauge32>
     {
         public DatabaseMapReduceIndexMappedPerSecond(string databaseName, DatabasesLandlord landlord, int index)
             : base(databaseName, landlord, SnmpOids.Databases.MapReduceIndexMappedPerSecond, index)

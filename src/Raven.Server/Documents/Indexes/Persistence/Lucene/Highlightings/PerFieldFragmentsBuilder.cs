@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Highlightings
 {
-    public sealed class PerFieldFragmentsBuilder : BaseFragmentsBuilder
+    internal sealed class PerFieldFragmentsBuilder : BaseFragmentsBuilder
     {
         private readonly Dictionary<string, (string[] PreTags, string[] PostTags)> _tagsPerField;
 

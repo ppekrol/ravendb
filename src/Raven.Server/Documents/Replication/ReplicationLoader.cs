@@ -44,7 +44,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Replication
 {
-    public class ReplicationLoader : AbstractReplicationLoader<DocumentsContextPool, DocumentsOperationContext>, ITombstoneAware
+    interal class ReplicationLoader : AbstractReplicationLoader<DocumentsContextPool, DocumentsOperationContext>, ITombstoneAware
     {
         private readonly Timer _reconnectAttemptTimer;
         private long _reconnectInProgress;
@@ -583,7 +583,7 @@ namespace Raven.Server.Documents.Replication
             }
         }
 
-        public sealed class PullReplicationParams
+        internal sealed class PullReplicationParams
         {
             public string Name;
             public string[] AllowedPaths;
@@ -1796,7 +1796,7 @@ namespace Raven.Server.Documents.Replication
             return dict;
         }
 
-        public sealed class IncomingConnectionRejectionInfo
+        internal sealed class IncomingConnectionRejectionInfo
         {
             public string Reason { get; set; }
             public DateTime When { get; } = DateTime.UtcNow;
@@ -1901,7 +1901,7 @@ namespace Raven.Server.Documents.Replication
         }
     }
 
-    public sealed class OutgoingReplicationFailureToConnectReporter : IReportOutgoingReplicationPerformance
+    internal sealed class OutgoingReplicationFailureToConnectReporter : IReportOutgoingReplicationPerformance
     {
         private ReplicationNode _node;
         private OutgoingReplicationStatsAggregator _stats;
@@ -1920,7 +1920,7 @@ namespace Raven.Server.Documents.Replication
         }
     }
 
-    public sealed class IncomingReplicationFailureToConnectReporter : IReportIncomingReplicationPerformance
+    internal sealed class IncomingReplicationFailureToConnectReporter : IReportIncomingReplicationPerformance
     {
         private ReplicationNode _node;
         private IncomingReplicationStatsAggregator _stats;

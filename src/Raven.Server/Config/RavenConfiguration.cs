@@ -29,7 +29,7 @@ using Voron.Util.Settings;
 
 namespace Raven.Server.Config
 {
-    public sealed class RavenConfiguration
+    internal sealed class RavenConfiguration
     {
 #if !RVN
         internal static readonly RavenConfiguration Default = new RavenConfiguration("__default", ResourceType.Server);

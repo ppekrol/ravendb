@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Queries
 {
-    public sealed class QueryFieldName
+    internal sealed class QueryFieldName
     {
         public static readonly QueryFieldName Empty = new QueryFieldName(string.Empty, false);
         public static readonly QueryFieldName DocumentId = new QueryFieldName(Constants.Documents.Indexing.Fields.DocumentIdFieldName, false);

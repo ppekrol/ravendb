@@ -32,7 +32,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Indexes.MapReduce.Static
 {
-    public class MapReduceIndex : MapReduceIndexBase<MapReduceIndexDefinition, IndexField>
+    interal class MapReduceIndex : MapReduceIndexBase<MapReduceIndexDefinition, IndexField>
     {
         private readonly HashSet<string> _referencedCollections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -502,7 +502,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce.Static
             return _referencedCollections.Overlaps(collections);
         }
 
-        public sealed class AnonymousObjectToBlittableMapResultsEnumerableWrapper : IEnumerable<MapResult>
+        internal sealed class AnonymousObjectToBlittableMapResultsEnumerableWrapper : IEnumerable<MapResult>
         {
             private IEnumerable _items;
             private TransactionOperationContext _indexContext;

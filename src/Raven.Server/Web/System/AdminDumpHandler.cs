@@ -15,7 +15,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Web.System
 {
-    public sealed class AdminDumpHandler : ServerRequestHandler
+    internal sealed class AdminDumpHandler : ServerRequestHandler
     {
         [RavenAction("/admin/debug/dump", "GET", AuthorizationStatus.ClusterAdmin)]
         public async Task Dump()

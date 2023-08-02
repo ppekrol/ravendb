@@ -24,7 +24,7 @@ namespace Raven.Server.Documents.TimeSeries
     }
 
     [StructLayout(LayoutKind.Explicit, Size = 1)]
-    public struct SegmentVersion
+    internal struct SegmentVersion
     {
         [FieldOffset(0)]
         public Version Number;

@@ -11,7 +11,7 @@ using Raven.Server.Documents.ETL.Providers.SQL.Test;
 
 namespace Raven.Server.Documents.ETL.Providers.SQL.RelationalWriters
 {
-    public sealed class RelationalDatabaseWriterSimulator : RelationalDatabaseWriterBase
+    internal sealed class RelationalDatabaseWriterSimulator : RelationalDatabaseWriterBase
     {
         private readonly SqlEtlConfiguration _configuration;
         private readonly DbProviderFactory _providerFactory;

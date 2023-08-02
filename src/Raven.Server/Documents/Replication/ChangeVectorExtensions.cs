@@ -7,7 +7,7 @@ using Sparrow.Server.Utils;
 
 namespace Raven.Server.Documents.Replication
 {
-    public static class ChangeVectorExtensions
+    internal static class ChangeVectorExtensions
     {
         /// <summary>
         /// Generate DbId that is then can be put in the ChangeVectorEntry DbId field

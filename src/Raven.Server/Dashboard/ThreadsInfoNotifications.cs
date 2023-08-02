@@ -4,7 +4,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Dashboard;
 
-public sealed class ThreadsInfoNotifications : NotificationsBase
+internal sealed class ThreadsInfoNotifications : NotificationsBase
 {
     public ThreadsInfoNotifications(CancellationToken shutdown)
     {

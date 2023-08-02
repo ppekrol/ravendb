@@ -3,7 +3,7 @@
 namespace Raven.Server.SqlMigration.Model
 {
     
-    public sealed class MigrationSettings
+    internal sealed class MigrationSettings
     {
         public List<RootCollection> Collections { get; set; }
         public int BatchSize { get; set; } = 1000;

@@ -8,7 +8,7 @@ using Sparrow.Binary;
 
 namespace Raven.Server.Integrations.PostgreSQL.Messages
 {
-    public sealed class MessageBuilder : IDisposable
+    internal sealed class MessageBuilder : IDisposable
     {
         private IMemoryOwner<byte> _bufferOwner;
         private Memory<byte> Buffer => _bufferOwner.Memory;

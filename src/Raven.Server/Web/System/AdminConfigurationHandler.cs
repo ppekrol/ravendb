@@ -14,7 +14,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Web.System
 {
-    public sealed class AdminConfigurationHandler : ServerRequestHandler
+    internal sealed class AdminConfigurationHandler : ServerRequestHandler
     {
         [RavenAction("/admin/configuration/settings", "GET", AuthorizationStatus.ClusterAdmin)]
         public async Task GetSettings()

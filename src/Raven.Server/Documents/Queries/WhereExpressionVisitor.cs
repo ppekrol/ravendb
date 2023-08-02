@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries
 {
-    public abstract class WhereExpressionVisitor
+    internal abstract class WhereExpressionVisitor
     {
         protected readonly string QueryText;
 

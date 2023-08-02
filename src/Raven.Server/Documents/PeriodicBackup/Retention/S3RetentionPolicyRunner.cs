@@ -7,7 +7,7 @@ using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.PeriodicBackup.Retention
 {
-    public sealed class S3RetentionPolicyRunner : RetentionPolicyRunnerBase
+    internal sealed class S3RetentionPolicyRunner : RetentionPolicyRunnerBase
     {
         private readonly RavenAwsS3Client _client;
 

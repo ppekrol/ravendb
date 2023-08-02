@@ -44,7 +44,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Smuggler.Documents
 {
-    public class StreamSource : ISmugglerSource, IDisposable
+    interal class StreamSource : ISmugglerSource, IDisposable
     {
         private readonly PeepingTomStream _peepingTomStream;
         private readonly JsonOperationContext _context;
@@ -1890,7 +1890,7 @@ namespace Raven.Server.Smuggler.Documents
             };
         }
 
-        public struct LegacyAttachmentDetails
+        internal struct LegacyAttachmentDetails
         {
             public LazyStringValue Id;
             public string Hash;

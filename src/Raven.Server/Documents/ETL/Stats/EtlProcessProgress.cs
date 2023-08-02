@@ -2,7 +2,7 @@ using Raven.Client.Documents.Operations.ETL;
 
 namespace Raven.Server.Documents.ETL.Stats
 {
-    public sealed class EtlTaskProgress
+    internal sealed class EtlTaskProgress
     {
         public string TaskName { get; set; }
 
@@ -11,7 +11,7 @@ namespace Raven.Server.Documents.ETL.Stats
         public EtlProcessProgress[] ProcessesProgress { get; set; }
     }
 
-    public sealed class EtlProcessProgress
+    internal sealed class EtlProcessProgress
     {
         public string TransformationName { get; set; }
 

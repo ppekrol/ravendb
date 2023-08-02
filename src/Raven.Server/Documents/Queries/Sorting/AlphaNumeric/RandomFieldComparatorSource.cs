@@ -2,7 +2,7 @@ using Lucene.Net.Search;
 
 namespace Raven.Server.Documents.Queries.Sorting.AlphaNumeric
 {
-    public sealed class RandomFieldComparatorSource : FieldComparatorSource 
+    internal sealed class RandomFieldComparatorSource : FieldComparatorSource 
     {
         public static readonly RandomFieldComparatorSource Instance = new RandomFieldComparatorSource();
 

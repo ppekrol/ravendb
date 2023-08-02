@@ -6,7 +6,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.SqlMigration.Model
 {
-    public sealed class SqlMigrationDocument
+    internal sealed class SqlMigrationDocument
     {
         public string Id { get; set; }
         public string Collection { get; set; }

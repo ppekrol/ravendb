@@ -15,7 +15,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedSmugglerHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedSmugglerHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/smuggler/validate-options", "POST")]
         public async Task ValidateOptions()

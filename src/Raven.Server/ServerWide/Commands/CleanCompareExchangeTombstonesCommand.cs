@@ -3,7 +3,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class CleanCompareExchangeTombstonesCommand : CommandBase
+    internal sealed class CleanCompareExchangeTombstonesCommand : CommandBase
     {
         public string DatabaseName;
         public long MaxRaftIndex;

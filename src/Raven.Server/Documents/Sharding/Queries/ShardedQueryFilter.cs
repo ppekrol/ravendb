@@ -7,7 +7,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Queries;
 
-public sealed class ShardedQueryFilter : AbstractQueryFilter
+internal sealed class ShardedQueryFilter : AbstractQueryFilter
 {
     private readonly ShardedQueryResult _result;
 

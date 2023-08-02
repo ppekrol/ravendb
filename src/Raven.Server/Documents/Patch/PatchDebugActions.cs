@@ -2,7 +2,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Patch
 {
-    public sealed class PatchDebugActions
+    internal sealed class PatchDebugActions
     {
         public readonly DynamicJsonArray LoadDocument = new DynamicJsonArray();
         public readonly DynamicJsonArray PutDocument = new DynamicJsonArray();

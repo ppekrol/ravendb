@@ -4,7 +4,7 @@ using Sparrow;
 
 namespace Raven.Server.Smuggler.Documents.Iteration
 {
-    public sealed class TombstonesIterationState : CollectionAwareIterationState<Tombstone>
+    internal sealed class TombstonesIterationState : CollectionAwareIterationState<Tombstone>
     {
         public TombstonesIterationState(DocumentsOperationContext context, Size pulseLimit) : base(context, pulseLimit)
         {

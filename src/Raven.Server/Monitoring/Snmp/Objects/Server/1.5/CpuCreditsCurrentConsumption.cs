@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class CpuCreditsCurrentConsumption : ScalarObjectBase<OctetString>
+    internal sealed class CpuCreditsCurrentConsumption : ScalarObjectBase<OctetString>
     {
         private readonly RavenServer.CpuCreditsState _state;
 

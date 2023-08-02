@@ -11,7 +11,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.ServerWide.Commands.Subscriptions
 {
-    public sealed class DeleteSubscriptionCommand : UpdateValueForDatabaseCommand
+    internal sealed class DeleteSubscriptionCommand : UpdateValueForDatabaseCommand
     {
         public string SubscriptionName;
 

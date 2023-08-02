@@ -10,7 +10,7 @@ using Raven.Server.Documents.Patch;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public abstract class AbstractCountersAndTimeSeriesJavaScriptIndex : AbstractJavaScriptIndex
+    internal abstract class AbstractCountersAndTimeSeriesJavaScriptIndex : AbstractJavaScriptIndex
     {
         private const string NameProperty = "name";
 

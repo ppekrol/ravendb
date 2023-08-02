@@ -23,7 +23,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Smuggler.Documents.Actions;
 
-public sealed class DatabaseRecordActions : IDatabaseRecordActions
+internal sealed class DatabaseRecordActions : IDatabaseRecordActions
 {
     private readonly ServerStore _server;
     private readonly Logger _log;

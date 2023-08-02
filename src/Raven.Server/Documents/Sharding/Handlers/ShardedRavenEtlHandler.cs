@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedRavenEtlHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedRavenEtlHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/admin/etl/raven/test", "POST")]
         public async Task PostScriptTest()

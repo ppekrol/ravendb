@@ -15,7 +15,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Web.System
 {
-    public sealed class AdminMonitoringHandler : ServerRequestHandler
+    internal sealed class AdminMonitoringHandler : ServerRequestHandler
     {
         [RavenAction("/admin/monitoring/v1/server", "GET", AuthorizationStatus.Operator)]
         public async Task MonitoringServer()

@@ -12,7 +12,7 @@ using DynamicBlittableJson = Raven.Server.Documents.Indexes.Static.DynamicBlitta
 
 namespace Raven.Server.Documents.Indexes.MapReduce.Static
 {
-    public sealed class ReduceMapResultsOfStaticIndex : ReduceMapResultsBase<MapReduceIndexDefinition>
+    internal sealed class ReduceMapResultsOfStaticIndex : ReduceMapResultsBase<MapReduceIndexDefinition>
     {
         private readonly DynamicIterationOfAggregationBatchWrapper _blittableToDynamicWrapper = new DynamicIterationOfAggregationBatchWrapper();
         private readonly IndexingFunc _reducingFunc;
@@ -51,7 +51,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce.Static
             return new AggregatedAnonymousObjects(resultObjects, _propertyAccessor, indexContext);
         }
 
-        public sealed class DynamicIterationOfAggregationBatchWrapper : IEnumerable<DynamicBlittableJson>
+        internal sealed class DynamicIterationOfAggregationBatchWrapper : IEnumerable<DynamicBlittableJson>
         {
             private readonly Enumerator _enumerator = new Enumerator();
 

@@ -25,7 +25,7 @@ using static Raven.Server.Documents.Schemas.Revisions;
 
 namespace Raven.Server.Storage.Schema.Updates.Documents
 {
-    public sealed class From42017 : ISchemaUpdate
+    internal sealed class From42017 : ISchemaUpdate
     {
         public int From => 42_017;
 

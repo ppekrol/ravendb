@@ -17,7 +17,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.ServerWide.Commands.Subscriptions
 {
-    public class PutSubscriptionCommand : UpdateValueForDatabaseCommand
+    interal class PutSubscriptionCommand : UpdateValueForDatabaseCommand
     {
         public string Query;
         public string InitialChangeVector;

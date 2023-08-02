@@ -5,7 +5,7 @@ using Raven.Server.NotificationCenter;
 
 namespace Raven.Server.Documents.Sharding.NotificationCenter;
 
-public sealed class ShardedDatabaseNotificationCenter : AbstractDatabaseNotificationCenter
+internal sealed class ShardedDatabaseNotificationCenter : AbstractDatabaseNotificationCenter
 {
     private readonly ShardedDatabaseContext _context;
 

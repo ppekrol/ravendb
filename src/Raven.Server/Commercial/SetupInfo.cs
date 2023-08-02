@@ -16,7 +16,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Commercial
 {
-    public sealed class NodeInfo
+    internal sealed class NodeInfo
     {
         public string PublicServerUrl { get; set; }
         public string PublicTcpServerUrl { get; set; }
@@ -43,7 +43,7 @@ namespace Raven.Server.Commercial
         }
     }
 
-    public sealed class SetupInfo : SetupInfoBase
+    internal sealed class SetupInfo : SetupInfoBase
     {
         public bool RegisterClientCert { get; set; }
         public DateTime? ClientCertNotAfter { get; set; }
@@ -158,7 +158,7 @@ namespace Raven.Server.Commercial
         }
     }
 
-    public sealed class UnsecuredSetupInfo : SetupInfoBase
+    internal sealed class UnsecuredSetupInfo : SetupInfoBase
     {
         public override void ValidateInfo(CreateSetupPackageParameters parameters)
         {
@@ -219,7 +219,7 @@ namespace Raven.Server.Commercial
 
     }
 
-    public sealed class ContinueSetupInfo
+    internal sealed class ContinueSetupInfo
     {
         public string NodeTag { get; set; }
         public bool RegisterClientCert { get; set; }
@@ -236,7 +236,7 @@ namespace Raven.Server.Commercial
         }
     }
 
-    public sealed class ListDomainsInfo
+    internal sealed class ListDomainsInfo
     {
         public License License { get; set; }
 
@@ -249,7 +249,7 @@ namespace Raven.Server.Commercial
         }
     }
 
-    public sealed class ClaimDomainInfo
+    internal sealed class ClaimDomainInfo
     {
         public License License { get; set; }
         public string Domain { get; set; }
@@ -264,7 +264,7 @@ namespace Raven.Server.Commercial
         }
     }
 
-    public sealed class RegistrationInfo
+    internal sealed class RegistrationInfo
     {
         public License License { get; set; }
         public string Domain { get; set; }
@@ -285,7 +285,7 @@ namespace Raven.Server.Commercial
         }
     }
 
-    public sealed class RegistrationNodeInfo
+    internal sealed class RegistrationNodeInfo
     {
         public List<string> Ips { get; set; }
         public string SubDomain { get; set; }
@@ -300,7 +300,7 @@ namespace Raven.Server.Commercial
         }
     }
 
-    public sealed class SubDomainAndIps
+    internal sealed class SubDomainAndIps
     {
         public string SubDomain { get; set; }
         public List<string> Ips { get; set; }
@@ -320,7 +320,7 @@ namespace Raven.Server.Commercial
         }
     }
 
-    public sealed class UserDomainsAndLicenseInfo
+    internal sealed class UserDomainsAndLicenseInfo
     {
         public UserDomainsWithIps UserDomainsWithIps { get; set; }
         public int MaxClusterSize { get; set; }
@@ -337,7 +337,7 @@ namespace Raven.Server.Commercial
         }
     }
 
-    public sealed class UserDomainsWithIps
+    internal sealed class UserDomainsWithIps
     {
         public string[] Emails { get; set; }
         public string[] RootDomains { get; set; }
@@ -354,7 +354,7 @@ namespace Raven.Server.Commercial
         }
     }
 
-    public sealed class UserDomainsResult
+    internal sealed class UserDomainsResult
     {
         public string[] Emails { get; set; }
         public string[] RootDomains { get; set; }
@@ -371,7 +371,7 @@ namespace Raven.Server.Commercial
         }
     }
 
-    public sealed class RegistrationResult
+    internal sealed class RegistrationResult
     {
         public string Status { get; set; }
 
@@ -394,7 +394,7 @@ namespace Raven.Server.Commercial
         Finish
     }
 
-    public sealed class SetupProgressAndResult : IOperationResult, IOperationProgress
+    internal sealed class SetupProgressAndResult : IOperationResult, IOperationProgress
     {
         private readonly Action<(string Message, Exception Exception)> _onMessage;
 
@@ -474,7 +474,7 @@ namespace Raven.Server.Commercial
         public bool ShouldPersist => false;
     }
 
-    public sealed class SetupSettings
+    internal sealed class SetupSettings
     {
         public Node[] Nodes;
 
@@ -488,7 +488,7 @@ namespace Raven.Server.Commercial
             };
         }
 
-        public sealed class Node
+        internal sealed class Node
         {
             public string Tag { get; set; }
 

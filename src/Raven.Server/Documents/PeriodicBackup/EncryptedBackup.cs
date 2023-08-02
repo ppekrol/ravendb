@@ -8,7 +8,7 @@ using Sparrow.Server.Global;
 
 namespace Raven.Server.Documents.PeriodicBackup
 {
-    public sealed class DecryptingXChaCha20Oly1305Stream : Stream
+    internal sealed class DecryptingXChaCha20Oly1305Stream : Stream
     {
         private readonly Stream _inner;
         private readonly byte[] _pullState;
@@ -159,7 +159,7 @@ namespace Raven.Server.Documents.PeriodicBackup
         }
     }
 
-    public sealed class EncryptingXChaCha20Poly1305Stream : Stream
+    internal sealed class EncryptingXChaCha20Poly1305Stream : Stream
     {
         private readonly Stream _inner;
         private readonly byte[] _pushState;

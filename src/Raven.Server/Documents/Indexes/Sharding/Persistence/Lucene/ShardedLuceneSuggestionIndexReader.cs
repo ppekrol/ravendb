@@ -7,7 +7,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Documents.Indexes.Sharding.Persistence.Lucene;
 
-public sealed class ShardedLuceneSuggestionIndexReader : LuceneSuggestionIndexReader
+internal sealed class ShardedLuceneSuggestionIndexReader : LuceneSuggestionIndexReader
 {
     public ShardedLuceneSuggestionIndexReader(Index index, LuceneVoronDirectory directory, LuceneIndexSearcherHolder searcherHolder, Transaction readTransaction) : base(index, directory, searcherHolder, readTransaction)
     {

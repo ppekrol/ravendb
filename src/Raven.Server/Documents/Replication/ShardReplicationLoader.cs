@@ -18,7 +18,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Replication;
 
-public sealed class ShardReplicationLoader : ReplicationLoader
+internal sealed class ShardReplicationLoader : ReplicationLoader
 {
     private readonly ShardedDocumentDatabase _database;
     private readonly int _myShardNumber;

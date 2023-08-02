@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters
 {
-    public sealed class ThrowOnInvalidMethodCalls : CSharpSyntaxRewriter
+    internal sealed class ThrowOnInvalidMethodCalls : CSharpSyntaxRewriter
     {
         private static readonly List<ForbiddenMethod> ForbiddenMethods = new List<ForbiddenMethod>
         {

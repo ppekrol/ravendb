@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-public sealed class LruDictionary<TKey, TValue> where TKey : notnull
+internal sealed class LruDictionary<TKey, TValue> where TKey : notnull
 {
     private readonly int _maxCapacity;
     private readonly Dictionary<TKey, (LinkedListNode<TKey> Node, TValue Value)> _cache;

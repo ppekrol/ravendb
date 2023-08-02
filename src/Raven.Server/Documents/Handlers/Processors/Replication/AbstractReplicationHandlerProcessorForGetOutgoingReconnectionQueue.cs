@@ -24,7 +24,7 @@ namespace Raven.Server.Documents.Handlers.Processors.Replication
         }
     }
 
-    public sealed class ReplicationOutgoingReconnectionQueuePreview
+    internal sealed class ReplicationOutgoingReconnectionQueuePreview
     {
         public List<ReplicationNode> QueueInfo;
 

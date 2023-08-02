@@ -5,7 +5,7 @@ using Sparrow;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class ServerGcFragmented : ServerGcBase<Gauge32>
+    internal sealed class ServerGcFragmented : ServerGcBase<Gauge32>
     {
         public ServerGcFragmented(MetricCacher metricCacher, GCKind gcKind)
             : base(metricCacher, gcKind, SnmpOids.Server.GcFragmented)

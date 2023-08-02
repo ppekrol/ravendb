@@ -4,7 +4,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Documents.Schemas
 {
-    public static class Attachments
+    internal static class Attachments
     {
         internal static readonly TableSchema AttachmentsSchemaBase = new TableSchema();
         internal static readonly TableSchema ShardingAttachmentsSchemaBase = new TableSchema();

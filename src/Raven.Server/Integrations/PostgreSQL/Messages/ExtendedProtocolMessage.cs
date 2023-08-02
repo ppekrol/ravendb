@@ -5,7 +5,7 @@ using Raven.Server.Integrations.PostgreSQL.Exceptions;
 
 namespace Raven.Server.Integrations.PostgreSQL.Messages
 {
-    public abstract class ExtendedProtocolMessage : Message
+    internal abstract class ExtendedProtocolMessage : Message
     {
         public override async Task Handle(PgTransaction transaction, MessageBuilder messageBuilder, PipeReader reader, PipeWriter writer, CancellationToken token)
         {

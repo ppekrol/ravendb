@@ -61,7 +61,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Web.System
 {
-    public sealed class AdminDatabasesHandler : ServerRequestHandler
+    internal sealed class AdminDatabasesHandler : ServerRequestHandler
     {
         private static readonly Logger Logger = LoggingSource.Instance.GetLogger<AdminDatabasesHandler>("Server");
 

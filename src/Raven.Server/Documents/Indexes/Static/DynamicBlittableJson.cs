@@ -10,7 +10,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public abstract class AbstractDynamicObject : DynamicObject
+    internal abstract class AbstractDynamicObject : DynamicObject
     {
         public abstract bool Set(object item);
 
@@ -30,7 +30,7 @@ namespace Raven.Server.Documents.Indexes.Static
         }
     }
 
-    public sealed class DynamicBlittableJson : AbstractDynamicObject, IEnumerable<object>, IEnumerable<KeyValuePair<object, object>>, IBlittableJsonContainer
+    internal sealed class DynamicBlittableJson : AbstractDynamicObject, IEnumerable<object>, IEnumerable<KeyValuePair<object, object>>, IBlittableJsonContainer
     {
         private const int DocumentIdFieldNameIndex = 0;
         private const int MetadataIdPropertyIndex = 1;

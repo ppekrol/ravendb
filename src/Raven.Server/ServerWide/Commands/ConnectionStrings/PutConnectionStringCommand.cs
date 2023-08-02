@@ -11,7 +11,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands.ConnectionStrings
 {
-    public abstract class PutConnectionStringCommand<T> : UpdateDatabaseCommand where T : ConnectionString
+    internal abstract class PutConnectionStringCommand<T> : UpdateDatabaseCommand where T : ConnectionString
     {
         public T ConnectionString { get; protected set; }
 
@@ -31,7 +31,7 @@ namespace Raven.Server.ServerWide.Commands.ConnectionStrings
         }
     }
 
-    public sealed class PutRavenConnectionStringCommand : PutConnectionStringCommand<RavenConnectionString>
+    internal sealed class PutRavenConnectionStringCommand : PutConnectionStringCommand<RavenConnectionString>
     {
         public PutRavenConnectionStringCommand()
         {
@@ -56,7 +56,7 @@ namespace Raven.Server.ServerWide.Commands.ConnectionStrings
         }
     }
 
-    public sealed class PutSqlConnectionStringCommand : PutConnectionStringCommand<SqlConnectionString>
+    internal sealed class PutSqlConnectionStringCommand : PutConnectionStringCommand<SqlConnectionString>
     {
         public PutSqlConnectionStringCommand()
         {
@@ -74,7 +74,7 @@ namespace Raven.Server.ServerWide.Commands.ConnectionStrings
         }
     }
 
-    public sealed class PutOlapConnectionStringCommand : PutConnectionStringCommand<OlapConnectionString>
+    internal sealed class PutOlapConnectionStringCommand : PutConnectionStringCommand<OlapConnectionString>
     {
         public PutOlapConnectionStringCommand()
         {
@@ -92,7 +92,7 @@ namespace Raven.Server.ServerWide.Commands.ConnectionStrings
         }
     }
 
-    public sealed class PutElasticSearchConnectionStringCommand : PutConnectionStringCommand<ElasticSearchConnectionString>
+    internal sealed class PutElasticSearchConnectionStringCommand : PutConnectionStringCommand<ElasticSearchConnectionString>
     {
         public PutElasticSearchConnectionStringCommand()
         {
@@ -110,7 +110,7 @@ namespace Raven.Server.ServerWide.Commands.ConnectionStrings
         }
     }
 
-    public sealed class PutQueueConnectionStringCommand : PutConnectionStringCommand<QueueConnectionString>
+    internal sealed class PutQueueConnectionStringCommand : PutConnectionStringCommand<QueueConnectionString>
     {
         public PutQueueConnectionStringCommand()
         {

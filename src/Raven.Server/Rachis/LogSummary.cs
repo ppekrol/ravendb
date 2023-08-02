@@ -3,7 +3,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Rachis
 {
-    public sealed class LogSummary
+    internal sealed class LogSummary
     {
         public long CommitIndex { get; set; }
         public long LastTruncatedIndex { get; set; }

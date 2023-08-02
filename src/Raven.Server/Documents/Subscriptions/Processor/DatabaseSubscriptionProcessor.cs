@@ -17,7 +17,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Subscriptions.Processor
 {
-    public abstract class DatabaseSubscriptionProcessor<T> : DatabaseSubscriptionProcessorBase<T>
+    internal abstract class DatabaseSubscriptionProcessor<T> : DatabaseSubscriptionProcessorBase<T>
     {
         protected SubscriptionFetcher<T> Fetcher;
         protected DatabaseSubscriptionProcessor(ServerStore server, DocumentDatabase database, SubscriptionConnection connection) :
@@ -107,7 +107,7 @@ namespace Raven.Server.Documents.Subscriptions.Processor
         protected abstract SubscriptionBatchItem ShouldSend(T item, out string reason);
     }
 
-    public abstract class DatabaseSubscriptionProcessorBase<TItem> : AbstractSubscriptionProcessor<DatabaseIncludesCommandImpl, TItem>, IDatabaseSubscriptionProcessor
+    internal abstract class DatabaseSubscriptionProcessorBase<TItem> : AbstractSubscriptionProcessor<DatabaseIncludesCommandImpl, TItem>, IDatabaseSubscriptionProcessor
     {
         protected readonly long MaximumAllowedMemory;
 

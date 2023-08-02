@@ -5,7 +5,7 @@ using Raven.Server.Integrations.PostgreSQL.Exceptions;
 
 namespace Raven.Server.Integrations.PostgreSQL.Messages
 {
-    public sealed class Terminate : Message
+    internal sealed class Terminate : Message
     {
         protected override Task<int> InitMessage(MessageReader messageReader, PipeReader reader, int msgLen, CancellationToken token)
         {

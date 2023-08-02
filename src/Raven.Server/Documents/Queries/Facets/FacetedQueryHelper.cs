@@ -4,7 +4,7 @@ using Raven.Client.Extensions;
 
 namespace Raven.Server.Documents.Queries.Facets
 {
-    public static class FacetedQueryHelper
+    internal static class FacetedQueryHelper
     {
         public static string GetRangeName(string field, string text)
         {

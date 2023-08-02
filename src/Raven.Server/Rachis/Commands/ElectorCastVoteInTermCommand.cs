@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Rachis.Commands;
 
-public sealed class ElectorCastVoteInTermCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
+internal sealed class ElectorCastVoteInTermCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
 {
     private readonly RachisConsensus _engine;
     private readonly RequestVote _requestVote;

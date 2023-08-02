@@ -22,7 +22,7 @@ using Sparrow.Server.Strings;
 
 namespace Raven.Server.Documents.Handlers.Batches;
 
-public abstract class AbstractBatchCommandsReader<TBatchCommand, TOperationContext> : IDisposable
+internal abstract class AbstractBatchCommandsReader<TBatchCommand, TOperationContext> : IDisposable
     where TBatchCommand : IBatchCommand
     where TOperationContext : JsonOperationContext
 {

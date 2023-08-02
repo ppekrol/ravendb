@@ -17,14 +17,14 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
 {
     public delegate object DynamicGetter(object target);
 
-    public sealed class PropertyAccessor : IPropertyAccessor
+    internal sealed class PropertyAccessor : IPropertyAccessor
     {
         private readonly Dictionary<string, Accessor> Properties = new();
 
         private readonly List<KeyValuePair<string, Accessor>> _propertiesInOrder = new();
 
 
-        public struct PropertiesEnumerator : IEnumerator<PropertyItem>
+        internal struct PropertiesEnumerator : IEnumerator<PropertyItem>
         {
             private readonly List<KeyValuePair<string, Accessor>> _propertiesInOrder;
             private readonly object _target;
@@ -181,7 +181,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
             }
         }
 
-        public abstract class Accessor
+        internal abstract class Accessor
         {
             public abstract object GetValue(object target);
 

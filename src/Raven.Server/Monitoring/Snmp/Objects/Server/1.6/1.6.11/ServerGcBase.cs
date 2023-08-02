@@ -4,7 +4,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public abstract class ServerGcBase<TData> : ScalarObjectBase<TData>
+    internal abstract class ServerGcBase<TData> : ScalarObjectBase<TData>
         where TData : ISnmpData
     {
         private readonly MetricCacher _metricCacher;

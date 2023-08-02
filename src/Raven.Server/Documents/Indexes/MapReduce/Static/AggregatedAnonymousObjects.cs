@@ -8,7 +8,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Documents.Indexes.MapReduce.Static
 {
-    public class AggregatedAnonymousObjects : AggregationResult
+    interal class AggregatedAnonymousObjects : AggregationResult
     {
         private readonly List<object> _outputs;
         private readonly List<BlittableJsonReaderObject> _jsons;

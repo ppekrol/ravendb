@@ -4,7 +4,7 @@ using Raven.Server.Documents;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database
 {
-    public sealed class DatabaseIndexTimeSinceLastQuery : DatabaseIndexScalarObjectBase<TimeTicks>
+    internal sealed class DatabaseIndexTimeSinceLastQuery : DatabaseIndexScalarObjectBase<TimeTicks>
     {
         public DatabaseIndexTimeSinceLastQuery(string databaseName, string indexName, DatabasesLandlord landlord, int databaseIndex, int indexIndex)
             : base(databaseName, indexName, landlord, databaseIndex, indexIndex, SnmpOids.Databases.Indexes.TimeSinceLastQuery)

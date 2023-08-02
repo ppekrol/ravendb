@@ -14,7 +14,7 @@ using Sparrow.Server.Utils;
 
 namespace Raven.Server.Rachis
 {
-    public sealed class Candidate : IDisposable
+    internal sealed class Candidate : IDisposable
     {
         private TaskCompletionSource<object> _stateChange = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly RachisConsensus _engine;

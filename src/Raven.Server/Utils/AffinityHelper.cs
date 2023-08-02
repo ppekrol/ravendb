@@ -10,7 +10,7 @@ using Sparrow.Server.Platform.Posix;
 
 namespace Raven.Server.Utils
 {
-    public sealed class AffinityHelper
+    internal sealed class AffinityHelper
     {
         private static readonly ConcurrentSet<PoolOfThreads.PooledThread> _customAffinityThreads = new ConcurrentSet<PoolOfThreads.PooledThread>();
         private static readonly Logger _logger = LoggingSource.Instance.GetLogger<AffinityHelper>("Server");

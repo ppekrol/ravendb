@@ -6,7 +6,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.NotificationCenter.Notifications
 {
-    public sealed class OperationChanged : Notification
+    internal sealed class OperationChanged : Notification
     {
         private OperationChanged(string database) : base(NotificationType.OperationChanged, database)
         {

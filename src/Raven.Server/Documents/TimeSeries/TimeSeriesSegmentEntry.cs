@@ -4,7 +4,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.TimeSeries
 {
-    public sealed class TimeSeriesSegmentEntry : IDisposable
+    internal sealed class TimeSeriesSegmentEntry : IDisposable
     {
         public LazyStringValue Key;
 
@@ -62,7 +62,7 @@ namespace Raven.Server.Documents.TimeSeries
         All = Key | DocIdNameAndStart | LuceneKey | ChangeVector | Segment | Collection,
     }
 
-    public static class EnumExtensions
+    internal static class EnumExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Contain(this TimeSeriesSegmentEntryFields current, TimeSeriesSegmentEntryFields flag)

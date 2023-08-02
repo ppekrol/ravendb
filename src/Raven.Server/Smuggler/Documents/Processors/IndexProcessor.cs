@@ -13,7 +13,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Smuggler.Documents.Processors
 {
-    public static class IndexProcessor
+    internal static class IndexProcessor
     {
         public static object ReadIndexDefinition(BlittableJsonReaderObject reader, BuildVersionType buildVersionType, out IndexType type)
         {

@@ -11,7 +11,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Documents.PeriodicBackup
 {
-    public static class BackupHelper
+    internal static class BackupHelper
     {
         public static void AssertFreeSpaceForSnapshot(string directoryPath, long sizeInBytes, string action, Logger logger)
         {

@@ -7,7 +7,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Indexes.IndexMerging
 {
-    public sealed class IndexMergeResults
+    internal sealed class IndexMergeResults
     {
         public Dictionary<string, string> Unmergables = new Dictionary<string, string>(); // index name, reason
         public List<MergeSuggestions> Suggestions = new List<MergeSuggestions>();
@@ -22,7 +22,7 @@ namespace Raven.Server.Documents.Indexes.IndexMerging
         }
     }
 
-    public sealed class MergeSuggestions
+    internal sealed class MergeSuggestions
     {
         public IndexDefinition MergedIndex = new IndexDefinition();  //propose for new index with all it's properties
 

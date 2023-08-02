@@ -1,6 +1,6 @@
 ﻿namespace Raven.Server.Documents.Sharding.Queries;
 
-public static class ShardedQueryResultDocumentExtensions
+internal static class ShardedQueryResultDocumentExtensions
 {
     public static ShardedQueryResultDocument EnsureDataHashInQueryResultMetadata(this Document doc)
     {

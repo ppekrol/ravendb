@@ -12,7 +12,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Rachis.Commands
 {
-    public sealed class RemoveEntryFromRaftLogCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
+    internal sealed class RemoveEntryFromRaftLogCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
     {
         private readonly long _index;
         private readonly string _tag;

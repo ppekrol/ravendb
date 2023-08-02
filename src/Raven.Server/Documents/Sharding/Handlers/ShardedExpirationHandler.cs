@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedExpirationHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedExpirationHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/expiration/config", "GET")]
         public async Task GetExpirationConfig()

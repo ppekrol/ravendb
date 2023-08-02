@@ -9,7 +9,7 @@ using Raven.Client.Util;
 
 namespace Raven.Server.Extensions
 {
-    public static class JintExtensions
+    internal static class JintExtensions
     {
         public static IEnumerable<KeyValuePair<string, JsValue>> GetOwnPropertiesWithoutLength(this JsArray array)
         {

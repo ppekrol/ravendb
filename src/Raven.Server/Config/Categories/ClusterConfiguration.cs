@@ -6,7 +6,7 @@ using Sparrow;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.Cluster)]
-    public sealed class ClusterConfiguration : ConfigurationCategory
+    internal sealed class ClusterConfiguration : ConfigurationCategory
     {
         [Description("Timeout in which the node expects to receive a heartbeat from the leader")]
         [DefaultValue(300)]

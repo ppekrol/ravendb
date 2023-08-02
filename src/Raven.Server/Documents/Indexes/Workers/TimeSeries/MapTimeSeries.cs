@@ -6,7 +6,7 @@ using Raven.Server.Documents.TimeSeries;
 
 namespace Raven.Server.Documents.Indexes.Workers.TimeSeries
 {
-    public sealed class MapTimeSeries : MapItems
+    internal sealed class MapTimeSeries : MapItems
     {
         private readonly TimeSeriesStorage _timeSeriesStorage;
 

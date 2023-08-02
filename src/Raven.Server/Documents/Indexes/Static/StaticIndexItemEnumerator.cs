@@ -8,7 +8,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public sealed class StaticIndexItemEnumerator<TType> : IIndexedItemEnumerator where TType : AbstractDynamicObject, new()
+    internal sealed class StaticIndexItemEnumerator<TType> : IIndexedItemEnumerator where TType : AbstractDynamicObject, new()
     {
         private readonly IndexingStatsScope _documentReadStats;
         private readonly IEnumerator<IndexItem> _itemsEnumerator;

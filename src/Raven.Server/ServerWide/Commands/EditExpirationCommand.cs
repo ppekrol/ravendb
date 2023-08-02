@@ -5,7 +5,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class EditExpirationCommand : UpdateDatabaseCommand
+    internal sealed class EditExpirationCommand : UpdateDatabaseCommand
     {
         public ExpirationConfiguration Configuration;
         public void UpdateDatabaseRecord(DatabaseRecord databaseRecord)

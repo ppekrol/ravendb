@@ -5,7 +5,7 @@ using Raven.Server.Config.Categories;
 
 namespace Raven.Server.Utils
 {
-    public static class SecurityUtils
+    internal static class SecurityUtils
     {
         public static bool IsUnsecuredAccessAllowedForAddress(UnsecuredAccessAddressRange addressRange, IPAddress ipAddress)
         {

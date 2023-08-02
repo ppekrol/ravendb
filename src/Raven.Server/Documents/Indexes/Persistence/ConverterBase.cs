@@ -22,7 +22,7 @@ using Type = System.Type;
 
 namespace Raven.Server.Documents.Indexes.Persistence
 {
-    public abstract class ConverterBase : IDisposable
+    internal abstract class ConverterBase : IDisposable
     {
         public static readonly BlittableJsonTraverser FlatMapReduceResultsWithTimeOnlyDateOnlySupport = BlittableJsonTraverser.CreateInstanceForIndexing(BlittableJsonTraverser.DefaultFlatMapReduceSeparators, supportTimeOnlyDateOnly: true);
         public static readonly BlittableJsonTraverser DefaultWithTimeOnlyDateOnlySupport =  BlittableJsonTraverser.CreateInstanceForIndexing(supportTimeOnlyDateOnly: true);

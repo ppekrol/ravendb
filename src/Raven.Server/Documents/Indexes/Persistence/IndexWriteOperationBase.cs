@@ -9,7 +9,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Indexes.Persistence
 {
-    public abstract class IndexWriteOperationBase : IndexOperationBase
+    internal abstract class IndexWriteOperationBase : IndexOperationBase
     {
         protected IndexingStatsScope _statsInstance;
         protected readonly IndexWriteOperationStats Stats = new IndexWriteOperationStats();

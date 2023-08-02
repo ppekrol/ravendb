@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Includes;
 
-public class DatabaseIncludesCommandImpl : AbstractIncludesCommand
+interal class DatabaseIncludesCommandImpl : AbstractIncludesCommand
 {
     public readonly IncludeDocumentsCommand IncludeDocumentsCommand;
     public readonly IncludeTimeSeriesCommand IncludeTimeSeriesCommand;

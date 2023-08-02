@@ -4,7 +4,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database;
 
-public sealed class ServerStorageDiskIosReadOperations : ScalarObjectBase<Gauge32>
+internal sealed class ServerStorageDiskIosReadOperations : ScalarObjectBase<Gauge32>
 {
     private readonly ServerStore _store;
 

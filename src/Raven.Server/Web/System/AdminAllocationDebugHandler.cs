@@ -10,7 +10,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Web.System
 {
-    public sealed class AdminAllocationDebugHandler : ServerRequestHandler
+    internal sealed class AdminAllocationDebugHandler : ServerRequestHandler
     {
         public const string AllocationEventName = "GCAllocationTick_V4";
 
@@ -55,14 +55,14 @@ namespace Raven.Server.Web.System
             }
         }
 
-        public sealed class AllocationInfo
+        internal sealed class AllocationInfo
         {
             public string Type;
             public ulong Allocations;
             public long NumberOfAllocations;
         }
 
-        public sealed class Expensive_GcEventListener : EventListener
+        internal sealed class Expensive_GcEventListener : EventListener
         {
             private const int GC_KEYWORD = 0x0000001;
 

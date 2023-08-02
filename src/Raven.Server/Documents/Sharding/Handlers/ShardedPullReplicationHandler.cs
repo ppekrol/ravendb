@@ -5,7 +5,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedPullReplicationHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedPullReplicationHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/admin/tasks/sink-pull-replication", "POST")]
         public async Task UpdatePullReplicationOnSinkNode()

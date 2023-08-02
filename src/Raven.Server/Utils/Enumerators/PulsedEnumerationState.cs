@@ -4,7 +4,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Utils.Enumerators
 {
-    public abstract class PulsedEnumerationState<T>
+    internal abstract class PulsedEnumerationState<T>
     {
         public const int DefaultNumberOfEnumeratedDocumentsToCheckIfPulseLimitExceeded = 1024;
 

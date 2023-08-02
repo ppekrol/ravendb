@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Integrations.PostgreSQL.PowerBI
 {
-    public static class PowerBIQuery
+    internal static class PowerBIQuery
     {
         public static bool TryParse(string queryText, int[] parametersDataTypes, DocumentDatabase documentDatabase, out PgQuery pgQuery)
         {

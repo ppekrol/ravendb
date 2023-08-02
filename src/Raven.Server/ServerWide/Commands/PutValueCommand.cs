@@ -5,7 +5,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public abstract class PutValueCommand<T> : CommandBase
+    internal abstract class PutValueCommand<T> : CommandBase
     {
         public string Name;
 

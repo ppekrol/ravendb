@@ -16,7 +16,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Sharding.Handlers.Batches;
 
-public sealed class ShardedBatchCommand : IBatchCommand
+internal sealed class ShardedBatchCommand : IBatchCommand
 {
     private readonly TransactionOperationContext _context;
     private readonly ShardedDatabaseContext _databaseContext;

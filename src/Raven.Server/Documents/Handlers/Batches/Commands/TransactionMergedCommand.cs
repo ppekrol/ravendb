@@ -7,7 +7,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Handlers.Batches.Commands;
 
-public abstract class TransactionMergedCommand : DocumentMergedTransactionCommand, IBatchCommand
+internal abstract class TransactionMergedCommand : DocumentMergedTransactionCommand, IBatchCommand
 {
     protected readonly DocumentDatabase Database;
 

@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Utils
 {
-    public static class IncludeUtil
+    internal static class IncludeUtil
     {
         private const char PrefixSeparator = '(';
         private const char SuffixSeparator = '[';

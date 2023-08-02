@@ -5,7 +5,7 @@ using Sparrow;
 
 namespace Raven.Server.Smuggler.Documents.Iteration
 {
-    public abstract class CollectionAwareIterationState<T> : PulsedEnumerationState<T>
+    internal abstract class CollectionAwareIterationState<T> : PulsedEnumerationState<T>
     {
         protected CollectionAwareIterationState(DocumentsOperationContext context, Size pulseLimit) : base(context, pulseLimit)
         {

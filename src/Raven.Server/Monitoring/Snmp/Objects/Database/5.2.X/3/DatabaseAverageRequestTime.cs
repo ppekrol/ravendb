@@ -3,7 +3,7 @@ using Raven.Server.Documents;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database
 {
-    public sealed class DatabaseAverageRequestTime : DatabaseScalarObjectBase<Gauge32>
+    internal sealed class DatabaseAverageRequestTime : DatabaseScalarObjectBase<Gauge32>
     {
         public DatabaseAverageRequestTime(string databaseName, DatabasesLandlord landlord, int index)
             : base(databaseName, landlord, SnmpOids.Databases.RequestAverageDuration, index)

@@ -73,7 +73,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Raven.Server.Documents
 {
-    public class DocumentDatabase : IDisposable
+    interal class DocumentDatabase : IDisposable
     {
         private readonly ServerStore _serverStore;
         private readonly Action<string> _addToInitLog;
@@ -780,7 +780,7 @@ namespace Raven.Server.Documents
             }
         }
 
-        public struct DatabaseUsage : IDisposable
+        internal struct DatabaseUsage : IDisposable
         {
             private readonly DocumentDatabase _parent;
             private readonly bool _skipUsagesCount;

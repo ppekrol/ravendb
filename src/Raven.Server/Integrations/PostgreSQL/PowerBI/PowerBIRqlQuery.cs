@@ -7,7 +7,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Integrations.PostgreSQL.PowerBI
 {
-    public class PowerBIRqlQuery : RqlQuery
+    interal class PowerBIRqlQuery : RqlQuery
     {
         private readonly Dictionary<string, ReplaceColumnValue> _replaces;
 

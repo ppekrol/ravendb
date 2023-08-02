@@ -13,7 +13,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Documents.TimeSeries
 {
-    public sealed class TimeSeriesStats
+    internal sealed class TimeSeriesStats
     {
         private readonly TimeSeriesStorage _timeSeriesStorage;
         private static readonly Slice RawPolicySlice;

@@ -7,7 +7,7 @@ namespace Raven.Server.Integrations.PostgreSQL.Npgsql
     /// <summary>
     /// Support for Npgsql is from version 3.2.3 onwards.
     /// </summary>
-    public static class NpgsqlConfig
+    internal static class NpgsqlConfig
     {
         // 5.0.0 - current
         public static readonly string VersionQuery = "select version()";

@@ -5,7 +5,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.ETL.Providers.Raven.Enumerators
 {
-    public sealed class CountersToRavenEtlItems : IEnumerator<RavenEtlItem>
+    internal sealed class CountersToRavenEtlItems : IEnumerator<RavenEtlItem>
     {
         private readonly DocumentsOperationContext _context;
         private readonly IEnumerator<CounterGroupDetail> _counters;

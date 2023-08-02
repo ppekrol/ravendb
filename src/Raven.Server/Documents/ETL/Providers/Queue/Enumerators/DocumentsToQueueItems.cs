@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Raven.Server.Documents.ETL.Providers.Queue.Enumerators
 {
-    public sealed class DocumentsToQueueItems : IEnumerator<QueueItem>
+    internal sealed class DocumentsToQueueItems : IEnumerator<QueueItem>
     {
         private readonly string _collection;
         private readonly IEnumerator<Document> _docs;

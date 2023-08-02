@@ -23,7 +23,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Handlers
 {
-    public sealed class TransactionsRecordingHandler : DatabaseRequestHandler
+    internal sealed class TransactionsRecordingHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/transactions/replay", "POST", AuthorizationStatus.ValidUser, EndpointType.Write)]
         public async Task ReplayRecording()
@@ -213,7 +213,7 @@ namespace Raven.Server.Documents.Handlers
             NoContentStatus();
         }
 
-        public sealed class RecordingDetails : IOperationDetailedDescription
+        internal sealed class RecordingDetails : IOperationDetailedDescription
         {
             public string DatabaseName { get; set; }
 
@@ -230,7 +230,7 @@ namespace Raven.Server.Documents.Handlers
         }
     }
 
-    public sealed class StartTransactionsRecordingCommand<TOperationContext, TTransaction> : MergedTransactionCommand<TOperationContext, TTransaction>
+    internal sealed class StartTransactionsRecordingCommand<TOperationContext, TTransaction> : MergedTransactionCommand<TOperationContext, TTransaction>
         where TOperationContext : TransactionOperationContext<TTransaction>
         where TTransaction : RavenTransaction
     {
@@ -262,7 +262,7 @@ namespace Raven.Server.Documents.Handlers
         }
     }
 
-    public sealed class StopTransactionsRecordingCommand<TOperationContext, TTransaction> : MergedTransactionCommand<TOperationContext, TTransaction>
+    internal sealed class StopTransactionsRecordingCommand<TOperationContext, TTransaction> : MergedTransactionCommand<TOperationContext, TTransaction>
         where TOperationContext : TransactionOperationContext<TTransaction>
         where TTransaction : RavenTransaction
     {

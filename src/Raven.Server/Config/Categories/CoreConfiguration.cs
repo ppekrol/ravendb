@@ -13,7 +13,7 @@ using Raven.Server.Utils.Features;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.Core)]
-    public sealed class CoreConfiguration : ConfigurationCategory
+    internal sealed class CoreConfiguration : ConfigurationCategory
     {
         [Description("The URLs which the server should listen to. By default we listen to localhost:8080")]
         [DefaultValue("http://localhost:8080")]

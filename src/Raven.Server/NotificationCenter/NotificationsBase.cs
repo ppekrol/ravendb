@@ -11,7 +11,7 @@ using Sparrow.Server.Collections;
 
 namespace Raven.Server.NotificationCenter
 {
-    public abstract class NotificationsBase : IDisposable
+    internal abstract class NotificationsBase : IDisposable
     {
         private readonly object _watchersLock = new object();
 

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class ServerPublicTcpUrl : ScalarObjectBase<OctetString>
+    internal sealed class ServerPublicTcpUrl : ScalarObjectBase<OctetString>
     {
         private readonly OctetString _url;
 

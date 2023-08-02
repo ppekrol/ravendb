@@ -5,7 +5,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Extensions
 {
-    public static class RequestExecutorExtensions
+    internal static class RequestExecutorExtensions
     {
         public static void ExecuteWithCancellationToken<TResult>(
             this RequestExecutor requestExecutor,

@@ -1,6 +1,6 @@
 ﻿namespace Raven.Server.Documents.ETL.Stats
 {
-    public sealed class EtlOperations
+    internal sealed class EtlOperations
     {
         public const string Extract = "Extract";
 

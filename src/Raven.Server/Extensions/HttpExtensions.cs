@@ -6,7 +6,7 @@ using Raven.Server.Web;
 
 namespace Raven.Server.Extensions
 {
-    public static class HttpExtensions
+    internal static class HttpExtensions
     {
         public static string GetHostnameUrl(this HttpRequest request)
         {

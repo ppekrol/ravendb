@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers
 {
-    public struct LowerCaseWhitespaceTokenizerHelper : ILowerCaseTokenizerHelper
+    internal struct LowerCaseWhitespaceTokenizerHelper : ILowerCaseTokenizerHelper
     {
         private static readonly TextInfo _invariantTextInfo = CultureInfo.InvariantCulture.TextInfo;
 
@@ -30,7 +30,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers
         }
     }
 
-    public sealed class LowerCaseWhitespaceTokenizer : LowerCaseTokenizerBase<LowerCaseWhitespaceTokenizerHelper>
+    internal sealed class LowerCaseWhitespaceTokenizer : LowerCaseTokenizerBase<LowerCaseWhitespaceTokenizerHelper>
     {
         public LowerCaseWhitespaceTokenizer(TextReader input) : base(input)
         {

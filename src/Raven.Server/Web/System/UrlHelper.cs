@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Web.System
 {
-    public static class UrlHelper
+    internal static class UrlHelper
     {
         public static string TryGetLeftPart(string originalUrl)
         {

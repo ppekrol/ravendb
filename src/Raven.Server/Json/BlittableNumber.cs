@@ -4,7 +4,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Json
 {
-    public static class BlittableNumber
+    internal static class BlittableNumber
     {
         public static NumberParseResult Parse(object value, out double doubleResult, out long longResult)
         {

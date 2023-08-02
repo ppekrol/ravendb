@@ -4,7 +4,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Subscriptions
 {
-    public sealed class SubscriptionPatchDocument : ScriptRunnerCache.Key
+    internal sealed class SubscriptionPatchDocument : ScriptRunnerCache.Key
     {
         public readonly string Script;
         public readonly string[] DeclaredFunctions;

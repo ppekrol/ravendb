@@ -19,7 +19,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Documents.Indexes
 {
-    public abstract class IndexDefinitionBaseServerSide
+    internal abstract class IndexDefinitionBaseServerSide
     {
         protected IndexDefinitionBaseServerSide()
         {
@@ -136,7 +136,7 @@ namespace Raven.Server.Documents.Indexes
 
         public Dictionary<string, IndexField> IndexFields { get; set; }
 
-        public static class IndexVersion
+        internal static class IndexVersion
         {
             public const long BaseVersion = 40_000;
 
@@ -166,7 +166,7 @@ namespace Raven.Server.Documents.Indexes
         }
     }
 
-    public abstract class IndexDefinitionBaseServerSide<T> : IndexDefinitionBaseServerSide where T : IndexFieldBase
+    internal abstract class IndexDefinitionBaseServerSide<T> : IndexDefinitionBaseServerSide where T : IndexFieldBase
     {
         protected const string MetadataFileName = "metadata";
 

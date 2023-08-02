@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Commercial
 {
-    public sealed class NodeDetails
+    internal sealed class NodeDetails
     {
         public string NodeTag { get; set; }
 

@@ -27,7 +27,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Replication.Senders
 {
-    public abstract class ReplicationDocumentSenderBase : IDisposable
+    internal abstract class ReplicationDocumentSenderBase : IDisposable
     {
         protected readonly Logger Log;
         private long _lastEtag;
@@ -661,7 +661,7 @@ namespace Raven.Server.Documents.Replication.Senders
             _stats.TimeSeriesRead = _stats.Storage.For(ReplicationOperation.Outgoing.TimeSeriesRead, start: false);
         }
 
-        public sealed class ReplicationStats
+        internal sealed class ReplicationStats
         {
             public OutgoingReplicationStatsScope Network;
             public OutgoingReplicationStatsScope Storage;

@@ -4,12 +4,12 @@ using Raven.Server.Utils.Stats;
 
 namespace Raven.Server.Documents.Queries.Timings
 {
-    public sealed class QueryTimingsScope : StatsScope<object, QueryTimingsScope>
+    internal sealed class QueryTimingsScope : StatsScope<object, QueryTimingsScope>
     {
         /// <summary>
         /// Used for nameof
         /// </summary>
-        public static class Names
+        internal static class Names
         {
             public static string Staleness;
             public static string Query;

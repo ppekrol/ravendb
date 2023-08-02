@@ -5,7 +5,7 @@ using Sparrow;
 
 namespace Raven.Server.Smuggler.Documents.Iteration
 {
-    public sealed class DocumentConflictsIterationState : PulsedEnumerationState<DocumentConflict>
+    internal sealed class DocumentConflictsIterationState : PulsedEnumerationState<DocumentConflict>
     {
         public DocumentConflictsIterationState(DocumentsOperationContext context, Size pulseLimit) : base(context, pulseLimit)
         {

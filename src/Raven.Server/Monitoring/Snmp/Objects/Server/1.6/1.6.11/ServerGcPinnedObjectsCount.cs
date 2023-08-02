@@ -4,7 +4,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class ServerGcPinnedObjectsCount : ServerGcBase<Gauge32>
+    internal sealed class ServerGcPinnedObjectsCount : ServerGcBase<Gauge32>
     {
         public ServerGcPinnedObjectsCount(MetricCacher metricCacher, GCKind gcKind)
             : base(metricCacher, gcKind, SnmpOids.Server.GcPinnedObjectsCount)

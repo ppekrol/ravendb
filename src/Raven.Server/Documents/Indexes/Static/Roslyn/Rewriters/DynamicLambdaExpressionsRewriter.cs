@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters
 {
-    public sealed class DynamicLambdaExpressionsRewriter : CSharpSyntaxRewriter
+    internal sealed class DynamicLambdaExpressionsRewriter : CSharpSyntaxRewriter
     {
         public static readonly DynamicLambdaExpressionsRewriter Instance = new DynamicLambdaExpressionsRewriter();
 

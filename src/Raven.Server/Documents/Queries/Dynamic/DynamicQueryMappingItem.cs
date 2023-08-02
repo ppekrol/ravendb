@@ -4,7 +4,7 @@ using Raven.Client.Documents.Indexes.Spatial;
 
 namespace Raven.Server.Documents.Queries.Dynamic
 {
-    public sealed class DynamicQueryMappingItem
+    internal sealed class DynamicQueryMappingItem
     {
         private DynamicQueryMappingItem(
             QueryFieldName name,

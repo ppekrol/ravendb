@@ -10,7 +10,7 @@ using Sparrow;
 namespace Raven.Server.Config.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public sealed class SizeUnitAttribute : Attribute
+    internal sealed class SizeUnitAttribute : Attribute
     {
         public SizeUnit Unit { get; set; }
 

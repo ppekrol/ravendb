@@ -33,7 +33,7 @@ using TimeoutException = System.TimeoutException;
 
 namespace Raven.Server.Monitoring.Snmp
 {
-    public sealed class SnmpWatcher
+    internal sealed class SnmpWatcher
     {
         private readonly ConcurrentDictionary<string, SnmpDatabase> _loadedDatabases = new ConcurrentDictionary<string, SnmpDatabase>(StringComparer.OrdinalIgnoreCase);
 

@@ -10,7 +10,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents
 {
-    public static class DocumentCompare
+    internal static class DocumentCompare
     {
         public readonly struct DocumentCompareOptions
         {

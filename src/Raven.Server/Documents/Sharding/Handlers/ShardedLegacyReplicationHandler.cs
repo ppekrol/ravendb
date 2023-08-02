@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedLegacyReplicationHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedLegacyReplicationHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/replication/lastEtag", "GET")]
         public async Task LastEtag()

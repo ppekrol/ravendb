@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace Raven.Server.Web.System
 {
-    public static class EnumHelper
+    internal static class EnumHelper
     {
         public static string GetDescription(Enum value)
         {

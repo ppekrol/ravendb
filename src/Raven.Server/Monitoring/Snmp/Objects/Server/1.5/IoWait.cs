@@ -4,7 +4,7 @@ using Raven.Server.Utils.Cpu;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class IoWait : ScalarObjectBase<Gauge32>
+    internal sealed class IoWait : ScalarObjectBase<Gauge32>
     {
         private readonly MetricCacher _metricCacher;
         private readonly ICpuUsageCalculator _calculator;

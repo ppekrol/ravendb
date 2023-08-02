@@ -13,7 +13,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.ServerWide.Commands.Sharding
 {
-    public sealed class StartBucketMigrationCommand : UpdateDatabaseCommand
+    internal sealed class StartBucketMigrationCommand : UpdateDatabaseCommand
     {
         public int? SourceShard;
         public int DestinationShard;

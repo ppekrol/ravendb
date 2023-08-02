@@ -12,7 +12,7 @@ using Index = Raven.Server.Documents.Indexes.Index;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class PutDatabaseSettingsCommand : UpdateDatabaseCommand
+    internal sealed class PutDatabaseSettingsCommand : UpdateDatabaseCommand
     {
         public Dictionary<string, string> Configuration;
 

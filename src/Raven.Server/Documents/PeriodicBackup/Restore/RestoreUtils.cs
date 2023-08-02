@@ -20,7 +20,7 @@ using BackupUtils = Raven.Server.Utils.BackupUtils;
 
 namespace Raven.Server.Documents.PeriodicBackup.Restore
 {
-    public static class RestoreUtils
+    internal static class RestoreUtils
     {
         public static RestoreBackupConfigurationBase GetRestoreConfigurationAndSource(ServerStore serverStore, BlittableJsonReaderObject restoreConfiguration, out IRestoreSource restoreSource)
         {

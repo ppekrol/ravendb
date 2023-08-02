@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Revisions
 {
-    public sealed class RevisionsOperations
+    internal sealed class RevisionsOperations
     {
         private readonly DocumentDatabase _database;
 

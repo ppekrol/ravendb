@@ -12,7 +12,7 @@ namespace Raven.Server.Documents.Replication.Stats
         
     }
 
-    public sealed class LiveReplicationPulsesCollector : IDisposable
+    internal sealed class LiveReplicationPulsesCollector : IDisposable
     {
         private readonly DocumentDatabase _database;
 
@@ -69,7 +69,7 @@ namespace Raven.Server.Documents.Replication.Stats
             _database.ReplicationLoader.OutgoingReplicationConnectionFailed -= HandleReplicationPulse;
         }
 
-        public struct ReplicationPulse
+        internal struct ReplicationPulse
         {
             public DateTime OccurredAt;
             public ReplicationPulseDirection Direction;

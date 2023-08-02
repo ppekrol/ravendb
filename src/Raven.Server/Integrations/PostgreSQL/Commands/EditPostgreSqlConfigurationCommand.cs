@@ -6,7 +6,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Integrations.PostgreSQL.Commands
 {
-    public sealed class EditPostgreSqlConfigurationCommand : UpdateDatabaseCommand
+    internal sealed class EditPostgreSqlConfigurationCommand : UpdateDatabaseCommand
     {
         public PostgreSqlConfiguration Configuration;
 

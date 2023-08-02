@@ -3,7 +3,7 @@ using Raven.Server.Documents;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database
 {
-    public sealed class DatabaseName : DatabaseScalarObjectBase<OctetString>
+    internal sealed class DatabaseName : DatabaseScalarObjectBase<OctetString>
     {
         private readonly OctetString _name;
 

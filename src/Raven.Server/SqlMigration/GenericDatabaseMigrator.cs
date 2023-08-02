@@ -21,7 +21,7 @@ using DbProviderFactories = Raven.Server.Documents.ETL.Providers.SQL.RelationalW
 namespace Raven.Server.SqlMigration
 {
     
-    public abstract class GenericDatabaseMigrator : IDatabaseDriver
+    internal abstract class GenericDatabaseMigrator : IDatabaseDriver
     {
         protected readonly string ConnectionString;
 

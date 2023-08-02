@@ -10,7 +10,7 @@ using Voron;
 
 namespace Raven.Server.Documents;
 
-public abstract class AbstractCompareExchangeStorage
+internal abstract class AbstractCompareExchangeStorage
 {
     private readonly ServerStore _serverStore;
 

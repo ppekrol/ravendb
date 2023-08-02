@@ -9,7 +9,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
 {
-    public sealed class LuceneDocumentConverter : LuceneDocumentConverterBase
+    internal sealed class LuceneDocumentConverter : LuceneDocumentConverterBase
     {
 
         public LuceneDocumentConverter(Index index, bool indexEmptyEntries = true, string keyFieldName = null, bool storeValue = false, string storeValueFieldName = Constants.Documents.Indexing.Fields.ReduceKeyValueFieldName)

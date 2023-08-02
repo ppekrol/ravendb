@@ -25,7 +25,7 @@ namespace Lucene.Net.Search.Vectorhighlight
     /// <summary>
     /// A simple implementation of FragmentsBuilder.
     /// </summary>
-    public sealed class SimpleFragmentsBuilder : BaseFragmentsBuilder
+    internal sealed class SimpleFragmentsBuilder : BaseFragmentsBuilder
     {
         /// <summary>
         /// a constructor.

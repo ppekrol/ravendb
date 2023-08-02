@@ -3,7 +3,7 @@ using Raven.Client.Documents.Operations.ETL;
 
 namespace Raven.Server.Documents.ETL.Test
 {
-    public abstract class TestEtlScript<TConfiguration, TConnectionString> 
+    internal abstract class TestEtlScript<TConfiguration, TConnectionString> 
         where TConfiguration : EtlConfiguration<TConnectionString> 
         where TConnectionString : ConnectionString
     {

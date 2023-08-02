@@ -87,7 +87,7 @@ namespace Raven.Server.Documents.Sharding.Handlers.Processors.Replication
             public RavenCommand<GetConflictsPreviewResult> CreateCommandForShard(int shardNumber) => new GetConflictsOperation.GetConflictsCommand(_token.Pages[shardNumber].Start, _token.PageSize);
         }
 
-        public sealed class ConflictsLastModifiedComparer : Comparer<ShardStreamItem<GetConflictsPreviewResult.ConflictPreview>>
+        internal sealed class ConflictsLastModifiedComparer : Comparer<ShardStreamItem<GetConflictsPreviewResult.ConflictPreview>>
         {
             public override int Compare(ShardStreamItem<GetConflictsPreviewResult.ConflictPreview> x,
                 ShardStreamItem<GetConflictsPreviewResult.ConflictPreview> y)

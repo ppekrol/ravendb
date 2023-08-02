@@ -3,7 +3,7 @@ using Raven.Server.Integrations.PostgreSQL.Messages;
 
 namespace Raven.Server.Integrations.PostgreSQL.Types
 {
-    public sealed class PgChar : PgType
+    internal sealed class PgChar : PgType
     {
         public static readonly PgChar Default = new();
         public override int Oid => PgTypeOIDs.Char;

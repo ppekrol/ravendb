@@ -10,7 +10,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries
 {
-    public sealed class LiveRunningQueriesCollector : LivePerformanceCollector<LiveRunningQueriesCollector.ExecutingQueryCollection>
+    internal sealed class LiveRunningQueriesCollector : LivePerformanceCollector<LiveRunningQueriesCollector.ExecutingQueryCollection>
     {
         private readonly ServerStore _serverStore;
         private readonly HashSet<string> _dbNames;
@@ -144,7 +144,7 @@ namespace Raven.Server.Documents.Queries
             writer.WriteEndArray();
         }
 
-        public sealed class ExecutingQueryCollection
+        internal sealed class ExecutingQueryCollection
         {
             public string DatabaseName { get; set; }
             public string IndexName { get; set; }

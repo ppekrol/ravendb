@@ -10,7 +10,7 @@ using Raven.Server.Documents.Indexes.Static.JavaScript;
 
 namespace Raven.Server.Documents.Indexes.Static.TimeSeries
 {
-    public sealed class TimeSeriesSegmentObjectInstance : ObjectInstance
+    internal sealed class TimeSeriesSegmentObjectInstance : ObjectInstance
     {
         private readonly DynamicTimeSeriesSegment _segment;
 

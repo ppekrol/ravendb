@@ -15,7 +15,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Documents.Handlers
 {
-    public sealed class SecretKeyHandler : ServerRequestHandler
+    internal sealed class SecretKeyHandler : ServerRequestHandler
     {
         [RavenAction("/admin/secrets", "GET", AuthorizationStatus.Operator)]
         public async Task GetKeys()

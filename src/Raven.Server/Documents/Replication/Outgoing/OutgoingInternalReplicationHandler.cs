@@ -14,7 +14,7 @@ using Sparrow.Server;
 
 namespace Raven.Server.Documents.Replication.Outgoing
 {
-    public sealed class OutgoingInternalReplicationHandler : DatabaseOutgoingReplicationHandler
+    internal sealed class OutgoingInternalReplicationHandler : DatabaseOutgoingReplicationHandler
     {
         private long _lastDestinationEtag;
 

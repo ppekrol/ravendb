@@ -6,7 +6,7 @@ using Raven.Server.Web.Studio.Sharding.Processors;
 
 namespace Raven.Server.Web.Studio.Sharding
 {
-    public sealed class ShardedStudioCollectionsHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedStudioCollectionsHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/studio/collections/preview", "GET")]
         public async Task PreviewCollection()

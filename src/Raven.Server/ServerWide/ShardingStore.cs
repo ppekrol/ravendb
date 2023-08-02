@@ -24,7 +24,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.ServerWide
 {
-    public sealed class ShardingStore
+    internal sealed class ShardingStore
     {
         public bool BlockPrefixedSharding = true;
 

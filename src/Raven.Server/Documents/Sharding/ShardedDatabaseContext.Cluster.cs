@@ -11,7 +11,7 @@ public partial class ShardedDatabaseContext
 {
     public ShardedCluster Cluster;
 
-    public sealed class ShardedCluster
+    internal sealed class ShardedCluster
     {
         private readonly ShardedDatabaseContext _context;
 

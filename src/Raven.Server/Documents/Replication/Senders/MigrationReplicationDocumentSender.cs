@@ -11,7 +11,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Replication.Senders
 {
-    public sealed class MigrationReplicationDocumentSender : ReplicationDocumentSenderBase
+    internal sealed class MigrationReplicationDocumentSender : ReplicationDocumentSenderBase
     {
         public readonly BucketMigrationReplication Destination;
         public readonly ShardedDocumentDatabase Database;

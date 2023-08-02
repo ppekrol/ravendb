@@ -5,7 +5,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Subscriptions
 {
-    public abstract class SubscriptionFetcher<T> : SubscriptionFetcher
+    internal abstract class SubscriptionFetcher<T> : SubscriptionFetcher
     {
         protected Logger Logger;
 
@@ -41,7 +41,7 @@ namespace Raven.Server.Documents.Subscriptions
         }
     }
 
-    public abstract class SubscriptionFetcher
+    internal abstract class SubscriptionFetcher
     {
         protected readonly DocumentDatabase Database;
         protected readonly SubscriptionConnectionsState SubscriptionConnectionsState;
@@ -88,7 +88,7 @@ namespace Raven.Server.Documents.Subscriptions
         public FetchingOrigin FetchingFrom;
     }
 
-    public sealed class RevisionSubscriptionFetcher : SubscriptionFetcher<(Document Previous, Document Current)>
+    internal sealed class RevisionSubscriptionFetcher : SubscriptionFetcher<(Document Previous, Document Current)>
     {
         public RevisionSubscriptionFetcher(DocumentDatabase database, SubscriptionConnectionsState subscriptionConnectionsState, string collection) : base(database, subscriptionConnectionsState, collection)
         {
@@ -118,7 +118,7 @@ namespace Raven.Server.Documents.Subscriptions
         }
     }
 
-    public class DocumentSubscriptionFetcher : SubscriptionFetcher<Document>
+    interal class DocumentSubscriptionFetcher : SubscriptionFetcher<Document>
     {
         public DocumentSubscriptionFetcher(DocumentDatabase database, SubscriptionConnectionsState subscriptionConnectionsState, string collection) :
             base(database, subscriptionConnectionsState, collection)

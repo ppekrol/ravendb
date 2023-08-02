@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Changes;
 
-public static class ChangesClientConnectionId
+internal static class ChangesClientConnectionId
 {
     private static long Counter;
 

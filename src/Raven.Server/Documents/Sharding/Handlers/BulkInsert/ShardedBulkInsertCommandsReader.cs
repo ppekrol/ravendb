@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Handlers.BulkInsert;
 
-public sealed class ShardedBulkInsertCommandsReader : AbstractBulkInsertBatchCommandsReader<ShardedBatchCommandData>
+internal sealed class ShardedBulkInsertCommandsReader : AbstractBulkInsertBatchCommandsReader<ShardedBatchCommandData>
 {
     private readonly BatchCommandStreamCopier _commandStreamCopier;
 

@@ -33,7 +33,7 @@ using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.PeriodicBackup
 {
-    public sealed class PeriodicBackupRunner : ITombstoneAware, IDisposable
+    internal sealed class PeriodicBackupRunner : ITombstoneAware, IDisposable
     {
         private readonly Logger _logger;
         private readonly Logger _auditLog;
@@ -1101,7 +1101,7 @@ namespace Raven.Server.Documents.PeriodicBackup
             return _forTestingPurposes = new TestingStuff();
         }
 
-        public sealed class TestingStuff
+        internal sealed class TestingStuff
         {
             internal bool SimulateClusterDownStatus;
             internal bool ClusterDownStatusSimulated;

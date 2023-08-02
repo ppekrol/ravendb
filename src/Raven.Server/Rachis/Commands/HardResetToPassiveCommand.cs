@@ -10,7 +10,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Rachis.Commands
 {
-    public sealed class HardResetToPassiveCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
+    internal sealed class HardResetToPassiveCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
     {
         private readonly RachisConsensus _engine;
         private readonly string _tag;

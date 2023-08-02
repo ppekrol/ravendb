@@ -10,7 +10,7 @@ using Raven.Server.Documents.Indexes;
 
 namespace Raven.Server.Monitoring.Snmp.Objects
 {
-    public abstract class DatabaseIndexScalarObjectBase<TData> : DatabaseScalarObjectBase<TData>
+    internal abstract class DatabaseIndexScalarObjectBase<TData> : DatabaseScalarObjectBase<TData>
         where TData : ISnmpData
     {
         protected readonly string IndexName;

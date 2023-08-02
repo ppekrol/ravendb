@@ -4,7 +4,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.TransactionMerger;
 
-public sealed class DocumentsTransactionOperationsMerger : AbstractTransactionOperationsMerger<DocumentsOperationContext, DocumentsTransaction>
+internal sealed class DocumentsTransactionOperationsMerger : AbstractTransactionOperationsMerger<DocumentsOperationContext, DocumentsTransaction>
 {
     private readonly DocumentDatabase _database;
 

@@ -9,7 +9,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.ETL.Providers.Queue.Kafka;
 
-public sealed class KafkaDocumentTransformer<T> : QueueDocumentTransformer<T, KafkaItem>
+internal sealed class KafkaDocumentTransformer<T> : QueueDocumentTransformer<T, KafkaItem>
     where T : QueueItem
 {
     public KafkaDocumentTransformer(Transformation transformation, DocumentDatabase database, DocumentsOperationContext context, QueueEtlConfiguration config) : base(transformation, database, context, config)

@@ -7,7 +7,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.SqlMigration.Schema
 {
-    public sealed class SqlTableSchema : IDynamicJson
+    internal sealed class SqlTableSchema : IDynamicJson
     {
         public string Schema { get; set; }
         

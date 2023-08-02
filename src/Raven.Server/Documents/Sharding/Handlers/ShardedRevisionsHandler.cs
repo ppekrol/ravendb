@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedRevisionsHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedRevisionsHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/revisions", "GET")]
         public async Task GetRevisionsFor()

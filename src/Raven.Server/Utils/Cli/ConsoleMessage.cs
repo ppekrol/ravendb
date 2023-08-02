@@ -4,7 +4,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Utils.Cli
 {
-    public abstract class ConsoleMessage
+    internal abstract class ConsoleMessage
     {
         protected ConsoleMessage(TextWriter tw)
         {

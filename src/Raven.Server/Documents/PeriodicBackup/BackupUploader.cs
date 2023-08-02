@@ -25,7 +25,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Documents.PeriodicBackup
 {
-    public sealed class BackupUploader
+    internal sealed class BackupUploader
     {
         private readonly UploaderSettings _settings;
         private readonly List<PoolOfThreads.LongRunningWork> _threads;
@@ -448,7 +448,7 @@ namespace Raven.Server.Documents.PeriodicBackup
         }
     }
 
-    public sealed class UploaderSettings
+    internal sealed class UploaderSettings
     {
         public readonly Config.Categories.BackupConfiguration Configuration;
 

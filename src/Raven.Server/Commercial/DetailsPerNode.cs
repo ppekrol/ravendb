@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Commercial
 {
-    public sealed class DetailsPerNode: IDynamicJson
+    internal sealed class DetailsPerNode: IDynamicJson
     {
         public int UtilizedCores;
 

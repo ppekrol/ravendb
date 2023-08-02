@@ -10,14 +10,14 @@ using Sparrow.Json;
 
 namespace Raven.Server.Web.Http;
 
-public sealed class ProxyCommand : ProxyCommand<object>
+internal sealed class ProxyCommand : ProxyCommand<object>
 {
     public ProxyCommand(RavenCommand command, [NotNull] HttpResponse response) : base(command, response)
     {
     }
 }
 
-public class ProxyCommand<T> : RavenCommand
+interal class ProxyCommand<T> : RavenCommand
 {
     private readonly RavenCommand<T> _command;
     private readonly HttpResponse _response;

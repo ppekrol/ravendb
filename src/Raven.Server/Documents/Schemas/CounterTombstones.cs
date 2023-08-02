@@ -4,7 +4,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Documents.Schemas
 {
-    public static class CounterTombstones
+    internal static class CounterTombstones
     {
         internal static readonly TableSchema CounterTombstonesSchemaBase = new TableSchema();
         internal static readonly TableSchema ShardingCounterTombstonesSchemaBase = new TableSchema();

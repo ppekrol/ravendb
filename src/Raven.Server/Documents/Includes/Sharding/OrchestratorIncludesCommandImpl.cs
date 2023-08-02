@@ -5,7 +5,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Includes.Sharding;
 
-public sealed class OrchestratorIncludesCommandImpl : AbstractIncludesCommand
+internal sealed class OrchestratorIncludesCommandImpl : AbstractIncludesCommand
 {
     public readonly IncludeDocumentsOrchestratedSubscriptionCommand IncludeDocumentsCommand;
     public readonly ShardedTimeSeriesIncludes IncludeTimeSeriesCommand;

@@ -1025,7 +1025,7 @@ namespace Raven.Server.Documents
             }
         }
 
-        public struct DocumentOrTombstone
+        internal struct DocumentOrTombstone
         {
             public Document Document;
             public Tombstone Tombstone;
@@ -1915,7 +1915,7 @@ namespace Raven.Server.Documents
             return deleteResults;
         }
 
-        public struct DeleteOperationResult
+        internal struct DeleteOperationResult
         {
             public long Etag;
             public string ChangeVector;
@@ -2153,7 +2153,7 @@ namespace Raven.Server.Documents
             throw new NotSupportedException($"Could not delete document '{lowerId}' from collection '{collectionName.Name}' because tombstone for that document already exists but in a different collection ('{tombstoneCollectionName.Name}'). Did you change the document's collection recently? If yes, please give some time for other system components (e.g. Indexing, Replication, Backup) and tombstone cleaner to process that change. Tombstone cleaner is executed every '{DocumentDatabase.Configuration.Tombstones.CleanupInterval.AsTimeSpan.TotalMinutes}' minutes.", e);
         }
 
-        public struct PutOperationResults
+        internal struct PutOperationResults
         {
             public string Id;
             public long Etag;
@@ -2253,7 +2253,7 @@ namespace Raven.Server.Documents
             return fst.NumberOfEntries;
         }
 
-        public sealed class CollectionStats
+        internal sealed class CollectionStats
         {
             public string Name;
             public long Count;

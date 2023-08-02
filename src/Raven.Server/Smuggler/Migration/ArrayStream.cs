@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Raven.Server.Smuggler.Migration
 {
-    public sealed class ArrayStream : Stream
+    internal sealed class ArrayStream : Stream
     {
         private Stream _baseStream;
         private long _position;

@@ -3,7 +3,7 @@ using Raven.Server.Smuggler.Documents.Processors;
 
 namespace Raven.Server.ServerWide
 {
-    public sealed class ServerVersion
+    internal sealed class ServerVersion
     {
         private static int? _buildVersion;
         private static BuildVersionType? _buildType;

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Raven.Server.NotificationCenter.Notifications.Details
 {
-    public sealed class WarnIndexOutputsPerDocument : INotificationDetails
+    internal sealed class WarnIndexOutputsPerDocument : INotificationDetails
     {
         public Dictionary<string, Queue<WarningDetails>> Warnings { get; set; }
         
@@ -55,7 +55,7 @@ namespace Raven.Server.NotificationCenter.Notifications.Details
             };
         }
         
-        public sealed class WarningDetails
+        internal sealed class WarningDetails
         {
             public long NumberOfExceedingDocuments { get; set; }
             public string SampleDocumentId { get; set; }

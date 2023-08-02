@@ -10,7 +10,7 @@ namespace Raven.Server.Utils.Stats
         IStatsScope StatsScope { get; }
     }
 
-    public abstract class StatsAggregator<TStats, TStatsScope> : IStatsAggregator
+    internal abstract class StatsAggregator<TStats, TStatsScope> : IStatsAggregator
         where TStats : class, new() 
         where TStatsScope : StatsScope<TStats, TStatsScope>
     {

@@ -12,7 +12,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Commercial.SetupWizard;
 
-public static class SetupWizardUtils
+internal static class SetupWizardUtils
 {
     public static async Task<CompleteClusterConfigurationResult> CompleteClusterConfigurationSecuredSetup(CompleteClusterConfigurationParameters parameters)
     {

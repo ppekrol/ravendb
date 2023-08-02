@@ -5,7 +5,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Includes.Sharding;
 
-public sealed class IncludeDocumentsOrchestratedSubscriptionCommand : AbstractIncludeDocumentsCommand
+internal sealed class IncludeDocumentsOrchestratedSubscriptionCommand : AbstractIncludeDocumentsCommand
 {
     private readonly JsonOperationContext _clusterContext;
     private readonly CancellationToken _token;

@@ -225,7 +225,7 @@ namespace Raven.Server.Documents.ETL.Providers.SQL
             return item;
         }
 
-        public sealed class VarcharFunctionCall
+        internal sealed class VarcharFunctionCall
         {
             public static JsValue AnsiStringType = DbType.AnsiString.ToString();
             public static JsValue StringType = DbType.String.ToString();

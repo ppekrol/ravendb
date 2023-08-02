@@ -9,7 +9,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Indexes.Workers.TimeSeries
 {
-    public sealed class HandleTimeSeriesReferences : HandleReferences
+    internal sealed class HandleTimeSeriesReferences : HandleReferences
     {
         private readonly TimeSeriesStorage _timeSeriesStorage;
 

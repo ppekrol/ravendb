@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Dashboard
 {
-    public sealed class DatabasesOngoingTasksInfo : AbstractDashboardNotification
+    internal sealed class DatabasesOngoingTasksInfo : AbstractDashboardNotification
     {
         public List<DatabaseOngoingTasksInfoItem> Items { get; set; }
 
@@ -14,7 +14,7 @@ namespace Raven.Server.Dashboard
         }
     }
 
-    public sealed class DatabaseOngoingTasksInfoItem : IDynamicJson
+    internal sealed class DatabaseOngoingTasksInfoItem : IDynamicJson
     {
         public string Database { get; set; }
 

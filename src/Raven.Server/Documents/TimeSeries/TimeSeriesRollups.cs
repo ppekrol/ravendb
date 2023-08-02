@@ -22,7 +22,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Documents.TimeSeries
 {
-    public sealed class TimeSeriesRollups
+    internal sealed class TimeSeriesRollups
     {
         private readonly DocumentDatabase _database;
         private static readonly TableSchema RollupSchema;
@@ -285,7 +285,7 @@ namespace Raven.Server.Documents.TimeSeries
                 return new TimeSeriesRetentionCommandDto(_keys, _collection, _to);
             }
 
-            public sealed class TimeSeriesRetentionCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, TimeSeriesRetentionCommand>
+            internal sealed class TimeSeriesRetentionCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, TimeSeriesRetentionCommand>
             {
                 public List<Slice> _keys;
                 public string _collection;
@@ -360,7 +360,7 @@ namespace Raven.Server.Documents.TimeSeries
                 return new AddedNewRollupPoliciesCommandDto(_collection, _from, _to, _skip);
             }
 
-            public sealed class AddedNewRollupPoliciesCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, AddedNewRollupPoliciesCommand>
+            internal sealed class AddedNewRollupPoliciesCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, AddedNewRollupPoliciesCommand>
             {
                 public CollectionName _name;
                 public TimeSeriesPolicy _from;
@@ -630,7 +630,7 @@ namespace Raven.Server.Documents.TimeSeries
                 return new RollupTimeSeriesCommandDto(_configuration, _now, _states, _isFirstInTopology);
             }
 
-            public sealed class RollupTimeSeriesCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, RollupTimeSeriesCommand>
+            internal sealed class RollupTimeSeriesCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, RollupTimeSeriesCommand>
             {
                 public TimeSeriesConfiguration _configuration;
                 public DateTime _now;
@@ -979,7 +979,7 @@ namespace Raven.Server.Documents.TimeSeries
             }
         }
 
-        public sealed class RollupExceedNumberOfValuesException : Exception
+        internal sealed class RollupExceedNumberOfValuesException : Exception
         {
             public RollupExceedNumberOfValuesException()
             {

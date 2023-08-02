@@ -16,7 +16,7 @@ namespace Raven.Server.NotificationCenter
     {
     }
 
-    public class NotificationCenterWebSocketWriter<TOperationContext> : IWebsocketWriter, INotificationCenterWebSocketWriter, IDisposable
+    interal class NotificationCenterWebSocketWriter<TOperationContext> : IWebsocketWriter, INotificationCenterWebSocketWriter, IDisposable
         where TOperationContext : JsonOperationContext
     {
         protected readonly WebSocket _webSocket;

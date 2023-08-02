@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.ETL.Stats
 {
-    public sealed class EtlTaskPerformanceStats
+    internal sealed class EtlTaskPerformanceStats
     {
         public long TaskId { get; set;  }
         
@@ -15,7 +15,7 @@ namespace Raven.Server.Documents.ETL.Stats
         public EtlProcessPerformanceStats[] Stats { get; set; }
     }
 
-    public sealed class EtlProcessPerformanceStats
+    internal sealed class EtlProcessPerformanceStats
     {
         public string TransformationName { get; set; }
         public EtlPerformanceStats[] Performance { get; set; }

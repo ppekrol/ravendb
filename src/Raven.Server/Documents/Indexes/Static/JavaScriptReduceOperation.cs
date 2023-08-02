@@ -18,7 +18,7 @@ using Sparrow.Server;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public sealed class JavaScriptReduceOperation
+    internal sealed class JavaScriptReduceOperation
     {
         public JavaScriptReduceOperation(ScriptFunctionInstance reduce, ScriptFunctionInstance key, Engine engine, JintPreventResolvingTasksReferenceResolver resolver, long indexVersion)
         {

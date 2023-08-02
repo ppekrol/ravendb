@@ -8,7 +8,7 @@ using Voron;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class UpdateServerPublishedUrlsCommand : CommandBase
+    internal sealed class UpdateServerPublishedUrlsCommand : CommandBase
     {
         public const string ClusterUrlsKey = "server-published-urls";
         
@@ -65,7 +65,7 @@ namespace Raven.Server.ServerWide.Commands
         }
     }
 
-    public sealed class PublishedServerUrls : IDynamicJson
+    internal sealed class PublishedServerUrls : IDynamicJson
     {
         private static Func<BlittableJsonReaderObject, PublishedServerUrls> _converter = JsonDeserializationBase.GenerateJsonDeserializationRoutine<PublishedServerUrls>();
 
@@ -103,7 +103,7 @@ namespace Raven.Server.ServerWide.Commands
         }
     }
 
-    public sealed class UrlInfo : IDynamicJson
+    internal sealed class UrlInfo : IDynamicJson
     {
         public string PublicUrl;
         public string PrivateUrl;

@@ -22,7 +22,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Expiration
 {
-    public sealed class ExpiredDocumentsCleaner : BackgroundWorkBase
+    internal sealed class ExpiredDocumentsCleaner : BackgroundWorkBase
     {
         internal static int BatchSize = PlatformDetails.Is32Bits == false
             ? 4096

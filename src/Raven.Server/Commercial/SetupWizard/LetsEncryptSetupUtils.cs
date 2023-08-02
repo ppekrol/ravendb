@@ -10,7 +10,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Commercial.SetupWizard;
 
-public static class LetsEncryptSetupUtils
+internal static class LetsEncryptSetupUtils
 {
         private const string AcmeClientUrl = "https://acme-v02.api.letsencrypt.org/directory";
 

@@ -12,7 +12,7 @@ using System.Text;
 
 namespace Raven.Server.Documents.PeriodicBackup.Aws
 {
-    public static class RavenAwsHelper
+    internal static class RavenAwsHelper
     {
         private const int OneMegabyte = 1024 * 1024;
 

@@ -12,7 +12,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Indexes.Workers
 {
-    public class CleanupDocuments : IIndexingWork
+    interal class CleanupDocuments : IIndexingWork
     {
         private readonly Logger _logger;
 

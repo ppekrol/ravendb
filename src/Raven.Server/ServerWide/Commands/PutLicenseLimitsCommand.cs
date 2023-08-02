@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class PutLicenseLimitsCommand : PutValueCommand<LicenseLimits>
+    internal sealed class PutLicenseLimitsCommand : PutValueCommand<LicenseLimits>
     {
         public PutLicenseLimitsCommand()
         {

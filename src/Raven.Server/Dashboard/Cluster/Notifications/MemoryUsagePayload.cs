@@ -10,7 +10,7 @@ using Sparrow.LowMemory;
 
 namespace Raven.Server.Dashboard.Cluster.Notifications
 {
-    public sealed class MemoryUsagePayload : AbstractClusterDashboardNotification
+    internal sealed class MemoryUsagePayload : AbstractClusterDashboardNotification
     {
         public DateTime Time { get; set; }
         public LowMemorySeverity LowMemorySeverity { get; set; }

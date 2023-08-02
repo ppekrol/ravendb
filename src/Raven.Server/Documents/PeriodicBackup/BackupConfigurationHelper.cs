@@ -15,7 +15,7 @@ using Voron.Util.Settings;
 
 namespace Raven.Server.Documents.PeriodicBackup
 {
-    public static class BackupConfigurationHelper
+    internal static class BackupConfigurationHelper
     {
         internal static bool SkipMinimumBackupAgeToKeepValidation = false;
 
@@ -169,7 +169,7 @@ namespace Raven.Server.Documents.PeriodicBackup
             SecurityClearanceValidator.AssertSecurityClearance(configuration, authConnection?.Status);
         }
 
-        public sealed class ActualPathResult
+        internal sealed class ActualPathResult
         {
             public bool HasLocalRootPath { get; set; }
 

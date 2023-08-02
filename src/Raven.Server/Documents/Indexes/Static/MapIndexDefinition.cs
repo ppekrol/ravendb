@@ -12,7 +12,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public class MapIndexDefinition : IndexDefinitionBaseServerSide<IndexField>
+    interal class MapIndexDefinition : IndexDefinitionBaseServerSide<IndexField>
     {
         private readonly bool _hasDynamicFields;
         private readonly bool _hasCompareExchange;

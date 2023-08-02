@@ -11,7 +11,7 @@ using PemWriter = Org.BouncyCastle.OpenSsl.PemWriter;
 
 namespace Raven.Server.Documents.ETL.Providers.Queue;
 
-public static class QueueBrokerConnectionHelper
+internal static class QueueBrokerConnectionHelper
 {
     public static IProducer<string, byte[]> CreateKafkaProducer(KafkaConnectionSettings settings, string transactionalId, Logger logger, string etlProcessName,
         CertificateUtils.CertificateHolder certificateHolder = null)

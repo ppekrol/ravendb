@@ -17,7 +17,7 @@ using Voron;
 
 namespace Raven.Server.Utils.IoMetrics
 {
-    public abstract class LiveIoStatsCollector<T> : IDisposable where T : JsonOperationContext
+    internal abstract class LiveIoStatsCollector<T> : IDisposable where T : JsonOperationContext
     {
         // Dictionary to hold the ioFileItems written by server
         private readonly ConcurrentDictionary<string, BlockingCollection<IoMeterBuffer.MeterItem>> _perEnvironmentsFilesMetrics; // Path+fileName is the key

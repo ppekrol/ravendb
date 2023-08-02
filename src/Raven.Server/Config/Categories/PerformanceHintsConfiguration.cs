@@ -8,7 +8,7 @@ using Sparrow.Platform;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.PerformanceHints)]
-    public sealed class PerformanceHintsConfiguration : ConfigurationCategory
+    internal sealed class PerformanceHintsConfiguration : ConfigurationCategory
     {
         public PerformanceHintsConfiguration()
         {

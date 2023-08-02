@@ -6,7 +6,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Queries.AST
 {
-    public abstract class QueryVisitor
+    internal abstract class QueryVisitor
     {
         public void Visit(Query q)
         {

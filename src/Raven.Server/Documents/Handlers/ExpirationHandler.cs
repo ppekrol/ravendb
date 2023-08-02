@@ -10,7 +10,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Handlers
 {
-    public sealed class ExpirationHandler : DatabaseRequestHandler
+    internal sealed class ExpirationHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/expiration/config", "GET", AuthorizationStatus.ValidUser, EndpointType.Read)]
         public async Task GetExpirationConfig()

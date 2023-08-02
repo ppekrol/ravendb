@@ -12,7 +12,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Dashboard.Cluster.Notifications
 {
-    public sealed class ClusterOverviewNotificationSender : AbstractClusterDashboardNotificationSender
+    internal sealed class ClusterOverviewNotificationSender : AbstractClusterDashboardNotificationSender
     {
         private readonly RavenServer _server;
 

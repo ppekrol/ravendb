@@ -8,7 +8,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands.Indexes
 {
-    public sealed class PutIndexCommand : UpdateDatabaseCommand
+    internal sealed class PutIndexCommand : UpdateDatabaseCommand
     {
         public IndexDefinition Definition;
 

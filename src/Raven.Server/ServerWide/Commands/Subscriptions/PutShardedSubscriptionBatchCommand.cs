@@ -3,7 +3,7 @@ using Raven.Server.ServerWide.Commands.Sharding;
 
 namespace Raven.Server.ServerWide.Commands.Subscriptions;
 
-public sealed class PutShardedSubscriptionBatchCommand : PutSubscriptionBatchCommandBase<PutShardedSubscriptionCommand>
+internal sealed class PutShardedSubscriptionBatchCommand : PutSubscriptionBatchCommandBase<PutShardedSubscriptionCommand>
 {
     public PutShardedSubscriptionBatchCommand()
     {

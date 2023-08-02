@@ -1,6 +1,6 @@
 ﻿namespace Raven.Server.Documents.Indexes.Spatial
 {
-    public abstract class SpatialShapeBase
+    internal abstract class SpatialShapeBase
     {
         public readonly SpatialShapeType Type;
 

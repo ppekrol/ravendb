@@ -9,7 +9,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Documents.Operations
 {
-    public sealed class ServerOperations : Operations
+    internal sealed class ServerOperations : Operations
     {
         public ServerOperations(ServerStore serverStore, OperationsStorage operationsStorage)
             : base(null, operationsStorage, serverStore.NotificationCenter, null, PlatformDetails.Is32Bits || serverStore.Configuration.Storage.ForceUsing32BitsPager
@@ -19,7 +19,7 @@ namespace Raven.Server.Documents.Operations
         }
     }
 
-    public sealed class DatabaseOperations : Operations
+    internal sealed class DatabaseOperations : Operations
     {
         public DatabaseOperations(DocumentDatabase database)
             : base(database.Name, database.ConfigurationStorage.OperationsStorage, database.NotificationCenter, database.Changes, database.Is32Bits ? TimeSpan.FromHours(12) : TimeSpan.FromDays(2))
@@ -27,7 +27,7 @@ namespace Raven.Server.Documents.Operations
         }
     }
 
-    public abstract class Operations : AbstractOperations<Operation>
+    internal abstract class Operations : AbstractOperations<Operation>
     {
         private readonly string _databaseName;
         private readonly OperationsStorage _operationsStorage;

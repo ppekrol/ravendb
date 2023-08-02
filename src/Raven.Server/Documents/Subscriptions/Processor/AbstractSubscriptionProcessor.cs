@@ -12,7 +12,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Subscriptions.Processor;
 
-public abstract class AbstractSubscriptionProcessor<TIncludesCommand, TItem> : ISubscriptionProcessor<TIncludesCommand>
+internal abstract class AbstractSubscriptionProcessor<TIncludesCommand, TItem> : ISubscriptionProcessor<TIncludesCommand>
     where TIncludesCommand : AbstractIncludesCommand
 {
     protected readonly ServerStore Server;

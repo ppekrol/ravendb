@@ -20,7 +20,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Replication
 {
-    public sealed class ResolveConflictOnReplicationConfigurationChange
+    internal sealed class ResolveConflictOnReplicationConfigurationChange
     {
         private readonly DocumentDatabase _database;
         private readonly Logger _log;

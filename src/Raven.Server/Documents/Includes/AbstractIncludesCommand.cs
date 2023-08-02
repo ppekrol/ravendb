@@ -9,7 +9,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Includes;
 
-public abstract class AbstractIncludesCommand
+internal abstract class AbstractIncludesCommand
 {
     public static readonly StringSegment IncludesSegment = new(nameof(QueryResult.Includes));
     public static readonly StringSegment CounterIncludesSegment = new(nameof(QueryResult.CounterIncludes));

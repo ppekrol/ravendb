@@ -7,7 +7,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public abstract class UpdateValueForDatabaseCommand : CommandBase
+    internal abstract class UpdateValueForDatabaseCommand : CommandBase
     {
         public string DatabaseName { get; set; }
 

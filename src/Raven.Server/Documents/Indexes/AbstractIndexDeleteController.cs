@@ -10,7 +10,7 @@ using Raven.Server.ServerWide.Commands.Indexes;
 
 namespace Raven.Server.Documents.Indexes;
 
-public abstract class AbstractIndexDeleteController
+internal abstract class AbstractIndexDeleteController
 {
     protected readonly ServerStore ServerStore;
 

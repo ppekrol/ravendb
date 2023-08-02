@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Raven.Server.Documents.ETL.Providers.SQL
 {
-    public sealed class ToSqlItem : ExtractedItem
+    internal sealed class ToSqlItem : ExtractedItem
     {
         public ToSqlItem(ToSqlItem item)
         {

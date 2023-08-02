@@ -5,7 +5,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Queries.AST
 {
-    public sealed class JsonQueryVisitor : QueryVisitor
+    internal sealed class JsonQueryVisitor : QueryVisitor
     {
         private JsonWriter _writer;
 

@@ -22,7 +22,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Corax;
 
-public static class CoraxIndexingHelpers
+internal static class CoraxIndexingHelpers
 {
     private static readonly ConcurrentDictionary<Type, bool> NotForQuerying = new ConcurrentDictionary<Type, bool>();
 

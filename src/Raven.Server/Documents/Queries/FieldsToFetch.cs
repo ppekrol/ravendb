@@ -14,7 +14,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Queries
 {
-    public sealed class FieldsToFetch
+    internal sealed class FieldsToFetch
     {
         public readonly Dictionary<string, FieldToFetch> Fields;
 
@@ -269,7 +269,7 @@ namespace Raven.Server.Documents.Queries
             return Fields == null || Fields.ContainsKey(name);
         }
 
-        public sealed class FieldToFetch
+        internal sealed class FieldToFetch
         {
             public FieldToFetch(string name, SelectField queryField, string projectedName, bool canExtractFromIndex, bool isDocumentId, bool isTimeSeries)
             {

@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 namespace Raven.Server.Https
 {
-    public sealed class HttpsConnectionMiddleware
+    internal sealed class HttpsConnectionMiddleware
     {
         private readonly RavenServer _server;
         public readonly CipherSuitesPolicy CipherSuitesPolicy;

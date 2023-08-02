@@ -27,7 +27,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Corax;
 
-public abstract class CoraxDocumentConverterBase : ConverterBase
+internal abstract class CoraxDocumentConverterBase : ConverterBase
 {
     private readonly bool _canContainSourceDocumentId;
     private static ReadOnlySpan<byte> TrueLiteral => "true"u8;

@@ -6,7 +6,7 @@ using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Utils
 {
-    public sealed class ConflictResolverAdvisor
+    internal sealed class ConflictResolverAdvisor
     {
         private readonly BlittableJsonReaderObject[] _docs;
         internal readonly bool IsMetadataResolver;
@@ -195,13 +195,13 @@ namespace Raven.Server.Utils
             }
         }
 
-        public sealed class MergeChunk
+        internal sealed class MergeChunk
         {
             public bool IsMetadata { get; set; }
             public string Data { get; set; }
         }
 
-        public sealed class MergeResult
+        internal sealed class MergeResult
         {
             public BlittableJsonReaderObject Document { get; set; }
             public BlittableJsonReaderObject Metadata { get; set; }

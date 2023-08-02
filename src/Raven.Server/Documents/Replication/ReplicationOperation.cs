@@ -1,12 +1,12 @@
 ﻿namespace Raven.Server.Documents.Replication
 {
-    public sealed class ReplicationOperation
+    internal sealed class ReplicationOperation
     {
         private ReplicationOperation()
         {
         }
 
-        public sealed class Incoming
+        internal sealed class Incoming
         {
             private Incoming()
             {
@@ -20,7 +20,7 @@
             public const string Storage = "Storage/Write";
         }
 
-        public sealed class Outgoing
+        internal sealed class Outgoing
         {
             private Outgoing()
             {

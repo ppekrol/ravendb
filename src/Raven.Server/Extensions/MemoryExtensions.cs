@@ -7,7 +7,7 @@ using Sparrow.Server.Platform.Posix;
 
 namespace Raven.Server.Extensions
 {
-    public static class MemoryExtensions
+    internal static class MemoryExtensions
     {
         public static void SetWorkingSet(Process process, double ramInGb, Logger logger)
         {

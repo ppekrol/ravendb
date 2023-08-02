@@ -6,7 +6,7 @@ using Lucene.Net.Store;
 
 namespace Raven.Server.Documents.Queries.Sorting.Custom
 {
-    public sealed class TestFieldComparator : FieldComparator
+    internal sealed class TestFieldComparator : FieldComparator
     {
         private readonly FieldComparator _comparator;
         private readonly List<string> _diagnostics;

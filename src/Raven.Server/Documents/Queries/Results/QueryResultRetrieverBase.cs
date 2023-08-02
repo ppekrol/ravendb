@@ -37,7 +37,7 @@ using RangeType = Raven.Client.Documents.Indexes.RangeType;
 
 namespace Raven.Server.Documents.Queries.Results
 {
-    public abstract class QueryResultRetrieverBase : IQueryResultRetriever
+    internal abstract class QueryResultRetrieverBase : IQueryResultRetriever
     {
         public static readonly int LoadedDocumentsCacheSize = 16 * 1024;
 

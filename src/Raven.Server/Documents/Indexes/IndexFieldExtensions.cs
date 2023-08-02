@@ -4,7 +4,7 @@ using Raven.Client.Documents.Indexes;
 
 namespace Raven.Server.Documents.Indexes
 {
-    public static class IndexFieldExtensions
+    internal static class IndexFieldExtensions
     {
         public static Field.TermVector GetLuceneValue(this FieldTermVector value)
         {

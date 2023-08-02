@@ -33,7 +33,7 @@ using BackupUtils = Raven.Client.Documents.Smuggler.BackupUtils;
 
 namespace Raven.Server.Documents.PeriodicBackup.Restore
 {
-    public abstract class AbstractRestoreBackupTask : IDisposable
+    internal abstract class AbstractRestoreBackupTask : IDisposable
     {
         protected RestoreBackupConfigurationBase RestoreConfiguration { get; set; }
         protected ServerStore ServerStore;

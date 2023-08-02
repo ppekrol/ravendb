@@ -9,7 +9,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Replication
 {
-    public sealed class InterruptibleRead<TContextPool, TOperationContext> : IDisposable
+    internal sealed class InterruptibleRead<TContextPool, TOperationContext> : IDisposable
     where TContextPool : JsonContextPoolBase<TOperationContext>
     where TOperationContext : JsonOperationContext
     {
@@ -21,7 +21,7 @@ namespace Raven.Server.Documents.Replication
         private readonly TContextPool _contextPool;
         private readonly Stream _stream;
 
-        public struct Result : IDisposable
+        internal struct Result : IDisposable
         {
             public BlittableJsonReaderObject Document;
             public IDisposable ReturnContext;

@@ -24,7 +24,7 @@ using Sparrow.Threading;
 
 namespace Raven.Server.Smuggler.Migration
 {
-    public abstract class AbstractLegacyMigrator : AbstractMigrator
+    internal abstract class AbstractLegacyMigrator : AbstractMigrator
     {
         protected AbstractLegacyMigrator(MigratorOptions options, MigratorParameters parameters) : base(options, parameters)
         {

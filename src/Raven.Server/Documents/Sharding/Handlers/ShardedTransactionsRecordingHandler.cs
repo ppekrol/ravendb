@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedTransactionsRecordingHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedTransactionsRecordingHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/transactions/replay", "POST")]
         public async Task ReplayRecording()

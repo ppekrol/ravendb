@@ -9,7 +9,7 @@ using Raven.Server.Integrations.PostgreSQL.Types;
 
 namespace Raven.Server.Integrations.PostgreSQL.Messages
 {
-    public sealed class Parse : ExtendedProtocolMessage
+    internal sealed class Parse : ExtendedProtocolMessage
     {
         public string StatementName;
         public string Query;

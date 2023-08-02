@@ -7,7 +7,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedIndexHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedIndexHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/indexes/replace", "POST")]
         public async Task Replace()

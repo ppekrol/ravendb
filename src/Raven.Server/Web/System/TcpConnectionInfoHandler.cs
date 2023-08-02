@@ -19,7 +19,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Web.System
 {
-    public sealed class TcpConnectionInfoHandler : ServerRequestHandler
+    internal sealed class TcpConnectionInfoHandler : ServerRequestHandler
     {
         [RavenAction("/info/tcp", "GET", AuthorizationStatus.ValidUser, EndpointType.Read)]
         public async Task Get()

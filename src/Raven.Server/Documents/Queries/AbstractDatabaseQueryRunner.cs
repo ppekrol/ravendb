@@ -22,7 +22,7 @@ using PatchRequest = Raven.Server.Documents.Patch.PatchRequest;
 
 namespace Raven.Server.Documents.Queries;
 
-public abstract class AbstractDatabaseQueryRunner : AbstractQueryRunner
+internal abstract class AbstractDatabaseQueryRunner : AbstractQueryRunner
 {
     public readonly DocumentDatabase Database;
 

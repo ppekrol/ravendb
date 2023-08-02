@@ -4,7 +4,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Streaming
 {
-    public static class ShardResultConverter
+    internal static class ShardResultConverter
     {
         public static Document BlittableToDocumentConverter(BlittableJsonReaderObject json)
         {

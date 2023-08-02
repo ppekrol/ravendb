@@ -4,7 +4,7 @@ using Raven.Server.Config.Attributes;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.Subscriptions)]
-    public sealed class SubscriptionsConfiguration : ConfigurationCategory
+    internal sealed class SubscriptionsConfiguration : ConfigurationCategory
     {
         [DefaultValue(1000)]
         [ConfigurationEntry("Subscriptions.MaxNumberOfConcurrentConnections", ConfigurationEntryScope.ServerWideOrPerDatabase)]

@@ -1,6 +1,6 @@
 ﻿namespace Raven.Server.ServerWide.Memory
 {
-    public sealed class ProcessMemoryUsage
+    internal sealed class ProcessMemoryUsage
     {
         public ProcessMemoryUsage(long workingSet, long privateMemory)
         {

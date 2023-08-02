@@ -5,7 +5,7 @@ namespace Raven.Server.Documents.Sharding.Handlers
 {
     public abstract partial class ShardedDatabaseRequestHandler
     {
-        public sealed class ShardedContinuationTokensHandler
+        internal sealed class ShardedContinuationTokensHandler
         {
             private readonly ShardedDatabaseRequestHandler _handler;
 

@@ -4,7 +4,7 @@ using Sparrow.Binary;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class MachineAssignedProcessorCount : ScalarObjectBase<Integer32>
+    internal sealed class MachineAssignedProcessorCount : ScalarObjectBase<Integer32>
     {
         public MachineAssignedProcessorCount()
             : base(SnmpOids.Server.MachineAssignedProcessorCount)

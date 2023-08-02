@@ -15,7 +15,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Subscriptions.Processor
 {
-    public class RevisionsDatabaseSubscriptionProcessor : DatabaseSubscriptionProcessor<(Document Previous, Document Current)>
+    interal class RevisionsDatabaseSubscriptionProcessor : DatabaseSubscriptionProcessor<(Document Previous, Document Current)>
     {
         private readonly CancellationToken _token;
 

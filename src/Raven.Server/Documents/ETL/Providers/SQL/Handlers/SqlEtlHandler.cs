@@ -17,7 +17,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.ETL.Providers.SQL.Handlers
 {
-    public sealed class SqlEtlHandler : DatabaseRequestHandler
+    internal sealed class SqlEtlHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/admin/etl/sql/test-connection", "POST", AuthorizationStatus.DatabaseAdmin)]
         public async Task TestConnection()

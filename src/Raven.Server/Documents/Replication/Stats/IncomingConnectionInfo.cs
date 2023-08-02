@@ -8,7 +8,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Replication.Stats
 {
-    public sealed class IncomingConnectionInfo : IEquatable<IncomingConnectionInfo>
+    internal sealed class IncomingConnectionInfo : IEquatable<IncomingConnectionInfo>
     {
         public string SourceDatabaseId { get; set; }
 

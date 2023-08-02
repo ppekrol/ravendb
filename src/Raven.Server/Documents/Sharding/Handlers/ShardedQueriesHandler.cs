@@ -19,7 +19,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedQueriesHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedQueriesHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/queries", "POST")]
         public async Task Post()

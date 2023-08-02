@@ -16,7 +16,7 @@ namespace Raven.Server.Indexing
     /// This assume single threaded and is meant to be used for indexing only
     /// We need to handle multi threaded from the low memory notifications, though 
     /// </summary>
-    public sealed class TempFileCache : IDisposable, ILowMemoryHandler
+    internal sealed class TempFileCache : IDisposable, ILowMemoryHandler
     {
         private readonly StorageEnvironmentOptions _options;
         private readonly ConcurrentQueue<TempFileStream> _files = new ConcurrentQueue<TempFileStream>();
@@ -175,7 +175,7 @@ namespace Raven.Server.Indexing
         }
     }
 
-    public sealed class TempFileStream : Stream
+    internal sealed class TempFileStream : Stream
     {
         public FileStream InnerStream;
         private long _length;

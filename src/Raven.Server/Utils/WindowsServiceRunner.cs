@@ -7,7 +7,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Utils
 {
-    public static class WindowsServiceRunner
+    internal static class WindowsServiceRunner
     {
         public static void Run(string serviceName, RavenConfiguration configuration, string[] args)
         {

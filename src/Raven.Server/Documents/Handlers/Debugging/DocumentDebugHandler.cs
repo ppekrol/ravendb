@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Handlers.Debugging
 {
-    public sealed class DocumentDebugHandler : DatabaseRequestHandler
+    internal sealed class DocumentDebugHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/debug/documents/huge", "GET", AuthorizationStatus.ValidUser, EndpointType.Read, IsDebugInformationEndpoint = true)]
         public async Task HugeDocuments()

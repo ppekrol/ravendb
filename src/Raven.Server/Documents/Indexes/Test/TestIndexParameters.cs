@@ -3,7 +3,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Indexes.Test;
 
-public sealed class TestIndexParameters
+internal sealed class TestIndexParameters
 {
     public IndexDefinition IndexDefinition { get; set; }
 

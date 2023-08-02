@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers.Admin
 {
-    public sealed class ShardedAdminTombstoneHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedAdminTombstoneHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/admin/tombstones/cleanup", "POST")]
         public async Task Cleanup()

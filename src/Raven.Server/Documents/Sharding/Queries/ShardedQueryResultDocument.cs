@@ -3,7 +3,7 @@ using Raven.Server.Documents.Queries.AST;
 
 namespace Raven.Server.Documents.Sharding.Queries;
 
-public sealed class ShardedQueryResultDocument : Document
+internal sealed class ShardedQueryResultDocument : Document
 {
     public List<OrderByField> OrderByFields = new();
 
@@ -59,7 +59,7 @@ public sealed class ShardedQueryResultDocument : Document
         };
     }
 
-    public struct OrderByField
+    internal struct OrderByField
     {
         public OrderByFieldType OrderType;
         public string StringValue;

@@ -4,7 +4,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents.Fields
 {
-    public sealed class BlittableObjectReaderPool : ILowMemoryHandler
+    internal sealed class BlittableObjectReaderPool : ILowMemoryHandler
     {
         public static BlittableObjectReaderPool Instance;
 

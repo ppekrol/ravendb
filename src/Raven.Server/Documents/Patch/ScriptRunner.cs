@@ -46,11 +46,11 @@ using JavaScriptException = Jint.Runtime.JavaScriptException;
 
 namespace Raven.Server.Documents.Patch
 {
-    public sealed class ScriptRunner
+    internal sealed class ScriptRunner
     {
         private static readonly string MaxStepsForScriptConfigurationKey = RavenConfiguration.GetKey(x => x.Patching.MaxStepsForScript);
 
-        public sealed class Holder
+        internal sealed class Holder
         {
             public Holder(long generation)
             {
@@ -219,7 +219,7 @@ namespace Raven.Server.Documents.Patch
 
         private static string GetTypes(JsValue value) => $"JintType({value.Type}) .NETType({value.GetType().Name})";
 
-        public sealed class SingleRun
+        internal sealed class SingleRun
         {
             private readonly DocumentDatabase _database;
             private readonly RavenConfiguration _configuration;
@@ -2143,7 +2143,7 @@ namespace Raven.Server.Documents.Patch
             }
         }
 
-        public struct ReturnRun : IDisposable
+        internal struct ReturnRun : IDisposable
         {
             private SingleRun _run;
             private Holder _holder;

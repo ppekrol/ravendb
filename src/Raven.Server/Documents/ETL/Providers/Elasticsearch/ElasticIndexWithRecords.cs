@@ -3,7 +3,7 @@ using Raven.Client.Documents.Operations.ETL.ElasticSearch;
 
 namespace Raven.Server.Documents.ETL.Providers.ElasticSearch
 {
-    public sealed class ElasticSearchIndexWithRecords : ElasticSearchIndex
+    internal sealed class ElasticSearchIndexWithRecords : ElasticSearchIndex
     {
         public readonly List<ElasticSearchItem> Deletes = new List<ElasticSearchItem>();
 

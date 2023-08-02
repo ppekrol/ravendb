@@ -13,7 +13,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Integrations.PostgreSQL
 {
-    public abstract class PgQuery : IDisposable
+    internal abstract class PgQuery : IDisposable
     {
         private static Logger _log = LoggingSource.Instance.GetLogger<PgQuery>("Postgres Server");
 

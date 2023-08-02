@@ -5,7 +5,7 @@ using Raven.Server.Integrations.PostgreSQL.Messages;
 
 namespace Raven.Server.Integrations.PostgreSQL
 {
-    public static class CsvToPg
+    internal static class CsvToPg
     {
         public static PgTable Convert(string fileName, Dictionary<string, PgColumn> columns)
         {

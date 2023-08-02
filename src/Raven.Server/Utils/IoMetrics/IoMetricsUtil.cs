@@ -10,7 +10,7 @@ using Voron;
 
 namespace Raven.Server.Utils.IoMetrics
 {
-    public sealed class IoMetricsUtil
+    internal sealed class IoMetricsUtil
     {
         public static IOMetricsResponse GetIoMetricsResponse(IEnumerable<StorageEnvironmentWithType> environments, IEnumerable<DatabasePerformanceMetrics> performanceMetrics)
         {
@@ -123,7 +123,7 @@ namespace Raven.Server.Utils.IoMetrics
         }
     }
 
-    public sealed class IOMetricsHistoryStats
+    internal sealed class IOMetricsHistoryStats
     {
         public string Start { get; set; }
         public string End { get; set; }
@@ -164,14 +164,14 @@ namespace Raven.Server.Utils.IoMetrics
         }
     }
 
-    public sealed class IOMetricsRecentStatsAdditionalTypes : IOMetricsRecentStats
+    internal sealed class IOMetricsRecentStatsAdditionalTypes : IOMetricsRecentStats
     {
         public long OriginalSize;
         public string HumaneOriginalSize;
         public double CompressionRatio;
     }
 
-    public class IOMetricsRecentStats
+    interal class IOMetricsRecentStats
     {
         public string Start { get; set; }
         public long Size { get; set; }
@@ -225,7 +225,7 @@ namespace Raven.Server.Utils.IoMetrics
         InUse
     }
 
-    public sealed class IOMetricsFileStats
+    internal sealed class IOMetricsFileStats
     {
         public IOMetricsFileStats()
         {
@@ -250,7 +250,7 @@ namespace Raven.Server.Utils.IoMetrics
         }
     }
 
-    public sealed class IOMetricsEnvironment
+    internal sealed class IOMetricsEnvironment
     {
         public IOMetricsEnvironment()
         {
@@ -272,7 +272,7 @@ namespace Raven.Server.Utils.IoMetrics
         }
     }
 
-    public sealed class IOMetricsResponse
+    internal sealed class IOMetricsResponse
     {
         public IOMetricsResponse()
         {

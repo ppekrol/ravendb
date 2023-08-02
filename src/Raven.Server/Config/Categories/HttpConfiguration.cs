@@ -9,7 +9,7 @@ using Sparrow.Platform;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.Http)]
-    public sealed class HttpConfiguration : ConfigurationCategory
+    internal sealed class HttpConfiguration : ConfigurationCategory
     {
         public HttpConfiguration()
         {

@@ -10,7 +10,7 @@ using Voron.Util.Settings;
 
 namespace Raven.Server.Storage.Layout
 {
-    public static class StorageLoader
+    internal static class StorageLoader
     {
         public static StorageEnvironment OpenEnvironment(StorageEnvironmentOptions options, StorageEnvironmentWithType.StorageEnvironmentType type)
         {

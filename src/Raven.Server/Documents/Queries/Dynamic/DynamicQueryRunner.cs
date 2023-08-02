@@ -20,7 +20,7 @@ using PatchRequest = Raven.Server.Documents.Patch.PatchRequest;
 
 namespace Raven.Server.Documents.Queries.Dynamic
 {
-    public sealed class DynamicQueryRunner : AbstractDatabaseQueryRunner
+    internal sealed class DynamicQueryRunner : AbstractDatabaseQueryRunner
     {
         private readonly IndexStore _indexStore;
 

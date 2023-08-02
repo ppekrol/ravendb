@@ -9,7 +9,7 @@ using Raven.Server.Documents.Indexes.Static.Extensions;
 
 namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters
 {
-    public class CollectionNameRetriever : CSharpSyntaxRewriter
+    interal class CollectionNameRetriever : CSharpSyntaxRewriter
     {
         public string[] CollectionNames { get; protected set; }
 

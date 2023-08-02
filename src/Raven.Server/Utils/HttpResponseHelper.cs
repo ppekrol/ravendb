@@ -8,7 +8,7 @@ using Raven.Client;
 
 namespace Raven.Server.Utils;
 
-public static class HttpResponseHelper
+internal static class HttpResponseHelper
 {
     private static readonly HashSet<string> HeadersToIgnore = new HashSet<string>
     {

@@ -7,7 +7,7 @@ using Raven.Client.Documents.Operations.Backups;
 
 namespace Raven.Server.Documents.PeriodicBackup
 {
-    public sealed class ProgressableStreamContent : HttpContent
+    internal sealed class ProgressableStreamContent : HttpContent
     {
         private const int DefaultBufferSize = 4096;
 

@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Indexes.Debugging
 {
-    public sealed class MapResultInLeaf
+    internal sealed class MapResultInLeaf
     {
         public BlittableJsonReaderObject Data;
 

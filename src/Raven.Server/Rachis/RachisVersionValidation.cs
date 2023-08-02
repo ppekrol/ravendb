@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Rachis
 {
-    public abstract class RachisVersionValidation
+    internal abstract class RachisVersionValidation
     {
         protected readonly ClusterCommandsVersionManager CommandsVersionManager;
 

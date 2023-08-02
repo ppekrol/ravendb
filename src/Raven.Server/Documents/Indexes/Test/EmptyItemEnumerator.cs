@@ -4,7 +4,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.Indexes.Test;
 
-public sealed class EmptyItemEnumerator : IIndexedItemEnumerator
+internal sealed class EmptyItemEnumerator : IIndexedItemEnumerator
 {
     public void Dispose()
     {

@@ -10,7 +10,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Handlers
 {
-    public sealed class RevisionsHandler : DatabaseRequestHandler
+    internal sealed class RevisionsHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/revisions/config", "GET", AuthorizationStatus.ValidUser, EndpointType.Read)]
         public async Task GetRevisionsConfiguration()

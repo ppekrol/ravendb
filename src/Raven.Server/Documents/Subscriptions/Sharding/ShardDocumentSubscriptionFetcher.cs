@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Raven.Server.Documents.Subscriptions.Sharding;
 
-public sealed class ShardDocumentSubscriptionFetcher : DocumentSubscriptionFetcher
+internal sealed class ShardDocumentSubscriptionFetcher : DocumentSubscriptionFetcher
 {
     public ShardDocumentSubscriptionFetcher(DocumentDatabase database, SubscriptionConnectionsState subscriptionConnectionsState, string collection) :
         base(database, subscriptionConnectionsState, collection)

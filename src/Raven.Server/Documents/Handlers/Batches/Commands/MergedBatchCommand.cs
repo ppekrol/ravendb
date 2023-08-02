@@ -18,7 +18,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Handlers.Batches.Commands;
 
-public sealed class MergedBatchCommand : TransactionMergedCommand
+internal sealed class MergedBatchCommand : TransactionMergedCommand
 {
     public ArraySegment<BatchRequestParser.CommandData> ParsedCommands;
 
@@ -510,7 +510,7 @@ public sealed class MergedBatchCommand : TransactionMergedCommand
         AttachmentStreamsTempFile = null;
     }
 
-    public struct AttachmentStream
+    internal struct AttachmentStream
     {
         public string Hash;
         public Stream Stream;

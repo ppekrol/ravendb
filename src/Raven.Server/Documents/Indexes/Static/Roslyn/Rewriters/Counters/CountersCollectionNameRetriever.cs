@@ -1,6 +1,6 @@
 ﻿namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters.Counters
 {
-    public sealed class CountersCollectionNameRetriever : CollectionNameRetrieverBase
+    internal sealed class CountersCollectionNameRetriever : CollectionNameRetrieverBase
     {
         public static CollectionNameRetrieverBase QuerySyntax => new QuerySyntaxRewriter("counters", "Counters");
 

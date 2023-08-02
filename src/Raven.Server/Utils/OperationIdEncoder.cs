@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Raven.Server.Utils;
 
-public static class OperationIdEncoder
+internal static class OperationIdEncoder
 {
     private const int BaseChar = '?' - 1;
 

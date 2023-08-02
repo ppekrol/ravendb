@@ -16,7 +16,7 @@ using Index = Raven.Server.Documents.Indexes.Index;
 
 namespace Raven.Server.Documents.Queries
 {
-    public sealed class LuceneQueryHelper
+    internal sealed class LuceneQueryHelper
     {
         public const string Asterisk = "*";
 

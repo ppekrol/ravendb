@@ -13,7 +13,7 @@ using Raven.Server.Utils.Cpu;
 
 namespace Raven.Server.Dashboard.Cluster.Notifications
 {
-    public sealed class CpuUsageNotificationSender : AbstractClusterDashboardNotificationSender
+    internal sealed class CpuUsageNotificationSender : AbstractClusterDashboardNotificationSender
     {
         private readonly RavenServer _server;
 

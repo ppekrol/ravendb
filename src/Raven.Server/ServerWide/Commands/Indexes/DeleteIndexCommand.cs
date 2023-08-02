@@ -3,7 +3,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands.Indexes
 {
-    public sealed class DeleteIndexCommand : UpdateDatabaseCommand
+    internal sealed class DeleteIndexCommand : UpdateDatabaseCommand
     {
         public string IndexName { get; set; }
 

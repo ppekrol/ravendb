@@ -5,7 +5,7 @@ using Raven.Server.Documents.Indexes.MapReduce;
 
 namespace Raven.Server.Documents.Indexes.Workers.Counters
 {
-    public sealed class MapCounters : MapItems
+    internal sealed class MapCounters : MapItems
     {
         private readonly CountersStorage _countersStorage;
 

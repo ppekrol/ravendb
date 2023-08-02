@@ -7,7 +7,7 @@ using Voron;
 
 namespace Raven.Server.Utils
 {
-    public static class DirectoryExecUtils
+    internal static class DirectoryExecUtils
     {
         public static void SubscribeToOnDirectoryInitializeExec(StorageEnvironmentOptions options, StorageConfiguration config, string databaseName, EnvironmentType envType, Logger logger)
         {
@@ -136,7 +136,7 @@ namespace Raven.Server.Utils
             Compaction
         }
 
-        public sealed class DirectoryParameters
+        internal sealed class DirectoryParameters
         {
             public string OnDirectoryInitializeExec { get; set; }
             public string OnDirectoryInitializeExecArguments { get; set; }

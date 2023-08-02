@@ -2,7 +2,7 @@ using System;
 
 namespace Raven.Server.Documents.PeriodicBackup.Azure
 {
-    public sealed class ContainerNotFoundException : Exception
+    internal sealed class ContainerNotFoundException : Exception
     {
         public ContainerNotFoundException()
         {

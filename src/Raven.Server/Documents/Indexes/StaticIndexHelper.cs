@@ -17,7 +17,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Indexes
 {
-    public static class StaticIndexHelper
+    internal static class StaticIndexHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsStaleDueToReferences(MapIndex index, QueryOperationContext queryContext, TransactionOperationContext indexContext, long? referenceCutoff, long? compareExchangeReferenceCutoff, List<string> stalenessReasons)

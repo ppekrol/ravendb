@@ -12,7 +12,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Commercial
 {
-    public static class OsInfoExtensions
+    internal static class OsInfoExtensions
     {
         private static readonly Logger Logger = LoggingSource.Instance.GetLogger<LicenseManager>("OsInfo");
 

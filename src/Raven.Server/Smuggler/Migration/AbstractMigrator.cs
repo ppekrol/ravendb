@@ -4,7 +4,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Smuggler.Migration
 {
-    public abstract class AbstractMigrator
+    internal abstract class AbstractMigrator
     {
         protected readonly MigratorOptions Options;
         protected readonly MigratorParameters Parameters;

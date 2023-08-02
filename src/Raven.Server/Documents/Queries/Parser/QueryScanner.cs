@@ -7,7 +7,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Queries.Parser
 {
-    public struct QueryScanner
+    internal struct QueryScanner
     {
         private int _pos;
         private string _q;

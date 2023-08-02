@@ -4,7 +4,7 @@ using Raven.Client.Documents.Queries.Suggestions;
 
 namespace Raven.Server.Documents.Queries.Suggestions
 {
-    public sealed class SuggestionQueryResult : QueryResult<List<SuggestionResult>, List<Document>>
+    internal sealed class SuggestionQueryResult : QueryResult<List<SuggestionResult>, List<Document>>
     {
         public static readonly SuggestionQueryResult NotModifiedResult = new SuggestionQueryResult { NotModified = true };
 

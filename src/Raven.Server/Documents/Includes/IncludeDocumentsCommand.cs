@@ -13,7 +13,7 @@ using Sparrow.Server.Json.Sync;
 
 namespace Raven.Server.Documents.Includes
 {
-    public sealed class IncludeDocumentsCommand : AbstractIncludeDocumentsCommand
+    internal sealed class IncludeDocumentsCommand : AbstractIncludeDocumentsCommand
     {
         private readonly DocumentsStorage _storage;
         private readonly DocumentsOperationContext _context;
@@ -184,7 +184,7 @@ namespace Raven.Server.Documents.Includes
             _idsToIgnore.Add(documentId);
         }
 
-        public sealed class ConflictDocument : Document
+        internal sealed class ConflictDocument : Document
         {
             public new readonly string Id;
 

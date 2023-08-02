@@ -5,7 +5,7 @@ using Raven.Server.Documents;
 
 namespace Raven.Server.ServerWide
 {
-    public sealed class ClusterChanges
+    internal sealed class ClusterChanges
     {
         public event Action<CompareExchangeChange> OnCompareExchangeChange;
 

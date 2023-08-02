@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Commands
 {
-    public sealed class WaitForIndexNotificationRequest
+    internal sealed class WaitForIndexNotificationRequest
     {
         public List<long> RaftCommandIndexes { get; set; }
     }

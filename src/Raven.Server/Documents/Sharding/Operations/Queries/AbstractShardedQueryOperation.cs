@@ -15,7 +15,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Operations.Queries;
 
-public abstract class AbstractShardedQueryOperation<TCombinedResult, TResult, TIncludes> : IShardedReadOperation<QueryResult, TCombinedResult>
+internal abstract class AbstractShardedQueryOperation<TCombinedResult, TResult, TIncludes> : IShardedReadOperation<QueryResult, TCombinedResult>
 {
     private readonly ShardedDatabaseRequestHandler _requestHandler;
 

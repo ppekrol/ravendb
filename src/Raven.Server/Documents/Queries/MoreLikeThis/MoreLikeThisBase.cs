@@ -127,7 +127,7 @@ namespace Raven.Server.Documents.Queries.MoreLikeThis
     /// - optimize: when no termvector support available - used maxNumTermsParsed to limit amount of tokenization
     /// </pre>
     /// </summary>
-    public abstract class MoreLikeThisBase
+    internal abstract class MoreLikeThisBase
     {
         /// <summary> Default maximum number of tokens to parse in each example doc field that is not stored with TermVector support.</summary>
         /// <seealso cref="MaxNumTokensParsed">

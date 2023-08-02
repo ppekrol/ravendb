@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Json
 {
-    public static class JsonDeserializationValidator
+    internal static class JsonDeserializationValidator
     {
         [Conditional("DEBUG")]
         public static void Validate()

@@ -20,7 +20,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Web.System
 {
-    public sealed class TestConnectionHandler : ServerRequestHandler
+    internal sealed class TestConnectionHandler : ServerRequestHandler
     {
         [RavenAction("/admin/test-connection", "POST", AuthorizationStatus.Operator)]
         public async Task TestConnection()
@@ -126,7 +126,7 @@ namespace Raven.Server.Web.System
         }
     }
 
-    public sealed class NodeConnectionTestResult : IDynamicJson
+    internal sealed class NodeConnectionTestResult : IDynamicJson
     {
         public bool Success;
         public bool HTTPSuccess;
@@ -160,7 +160,7 @@ namespace Raven.Server.Web.System
         }
     }
 
-    public sealed class TestNodeConnectionCommand : RavenCommand<NodeConnectionTestResult>
+    internal sealed class TestNodeConnectionCommand : RavenCommand<NodeConnectionTestResult>
     {
         private readonly string _url;
         private readonly string _database;

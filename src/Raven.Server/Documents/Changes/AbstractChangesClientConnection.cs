@@ -18,7 +18,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Changes;
 
-public abstract class AbstractChangesClientConnection<TOperationContext> : ILowMemoryHandler, IDisposable
+internal abstract class AbstractChangesClientConnection<TOperationContext> : ILowMemoryHandler, IDisposable
     where TOperationContext : JsonOperationContext
 {
     private readonly WebSocket _webSocket;

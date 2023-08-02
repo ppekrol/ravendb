@@ -3,7 +3,7 @@ using Lextm.SharpSnmpLib;
 
 namespace Raven.Server.Monitoring.Snmp
 {
-    public static class SnmpValuesHelper
+    internal static class SnmpValuesHelper
     {
         public static TimeTicks TimeTicksMax = new TimeTicks(uint.MaxValue);
 

@@ -167,7 +167,7 @@ internal sealed class StudioDatabasesHandlerForGetDatabases : AbstractDatabasesH
             return result;
         }
 
-        public sealed class ShardingInfo : IDynamicJson
+        internal sealed class ShardingInfo : IDynamicJson
         {
             private ShardingInfo()
             {
@@ -226,7 +226,7 @@ internal sealed class StudioDatabasesHandlerForGetDatabases : AbstractDatabasesH
                 return result;
             }
 
-            public sealed class OrchestratorInfo : IDynamicJson
+            internal sealed class OrchestratorInfo : IDynamicJson
             {
                 public NodesTopology NodesTopology { get; set; }
 

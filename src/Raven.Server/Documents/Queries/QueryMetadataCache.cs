@@ -5,7 +5,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries
 {
-    public sealed class QueryMetadataCache
+    internal sealed class QueryMetadataCache
     {
         private const int CacheSize = 512;
 

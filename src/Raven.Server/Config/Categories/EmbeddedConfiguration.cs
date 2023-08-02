@@ -4,7 +4,7 @@ using Raven.Server.Config.Attributes;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.Embedded)]
-    public sealed class EmbeddedConfiguration : ConfigurationCategory
+    internal sealed class EmbeddedConfiguration : ConfigurationCategory
     {
         [Description("Watch the parent process id and exit when it exited as well")]
         [DefaultValue(null)]

@@ -4,7 +4,7 @@ using Sparrow;
 
 namespace Raven.Server.ServerWide.Maintenance.Sharding
 {
-    public sealed class ShardMigrationResult
+    internal sealed class ShardMigrationResult
     {
         public string Database;
         public string RaftId = RaftIdGenerator.NewId();

@@ -6,7 +6,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands.ETL
 {
-    public sealed class RemoveEtlProcessStateCommand : UpdateValueForDatabaseCommand
+    internal sealed class RemoveEtlProcessStateCommand : UpdateValueForDatabaseCommand
     {
         public string ConfigurationName { get; set; }
 

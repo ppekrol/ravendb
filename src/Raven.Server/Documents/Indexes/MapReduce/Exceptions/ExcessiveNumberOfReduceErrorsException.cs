@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Indexes.MapReduce.Exceptions
 {
-    public sealed class ExcessiveNumberOfReduceErrorsException : Exception
+    internal sealed class ExcessiveNumberOfReduceErrorsException : Exception
     {
         public ExcessiveNumberOfReduceErrorsException()
         {

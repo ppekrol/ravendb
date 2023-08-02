@@ -9,9 +9,9 @@ using Sparrow.Server.Meters;
 
 namespace Raven.Server.Documents.Handlers
 {
-    public sealed class PerformanceMetricsHandler : DatabaseRequestHandler
+    internal sealed class PerformanceMetricsHandler : DatabaseRequestHandler
     {
-        public sealed class PerformanceMetricsResponse
+        internal sealed class PerformanceMetricsResponse
         {
             public PerformanceMetricsResponse()
             {

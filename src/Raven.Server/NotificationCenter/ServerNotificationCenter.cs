@@ -4,7 +4,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.NotificationCenter;
 
-public sealed class ServerNotificationCenter : AbstractNotificationCenter
+internal sealed class ServerNotificationCenter : AbstractNotificationCenter
 {
     public ServerNotificationCenter(ServerStore serverStore, NotificationsStorage storage)
         : base(storage, serverStore.Configuration, LoggingSource.Instance.GetLogger<ServerNotificationCenter>("Server"))

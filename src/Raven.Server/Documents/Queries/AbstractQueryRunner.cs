@@ -6,7 +6,7 @@ using Sparrow.Collections;
 
 namespace Raven.Server.Documents.Queries
 {
-    public abstract class AbstractQueryRunner
+    internal abstract class AbstractQueryRunner
     {
         public const string AllDocsCollectionName = "AllDocs";
 
@@ -52,7 +52,7 @@ namespace Raven.Server.Documents.Queries
                 : query.Metadata.IndexName;
         }
 
-        public struct QueryMarker : IDisposable
+        internal struct QueryMarker : IDisposable
         {
             private readonly AbstractQueryRunner _queryRunner;
 

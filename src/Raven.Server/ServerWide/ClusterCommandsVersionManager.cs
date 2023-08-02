@@ -18,7 +18,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.ServerWide
 {
-    public sealed class ClusterCommandsVersionManager
+    internal sealed class ClusterCommandsVersionManager
     {
         public const int Base40CommandsVersion = 40_000;
 
@@ -239,7 +239,7 @@ namespace Raven.Server.ServerWide
         }
     }
 
-    public sealed class UnknownClusterCommandException : Exception
+    internal sealed class UnknownClusterCommandException : Exception
     {
         public UnknownClusterCommandException()
         {
@@ -254,7 +254,7 @@ namespace Raven.Server.ServerWide
         }
     }
 
-    public sealed class ClusterVersionChangeEventArgs : EventArgs
+    internal sealed class ClusterVersionChangeEventArgs : EventArgs
     {
         public int PreviousClusterVersion { get; }
 

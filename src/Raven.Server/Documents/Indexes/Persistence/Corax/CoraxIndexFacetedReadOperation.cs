@@ -23,7 +23,7 @@ using RangeType = Raven.Client.Documents.Indexes.RangeType;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Corax;
 
-public sealed class CoraxIndexFacetedReadOperation : IndexFacetReadOperationBase
+internal sealed class CoraxIndexFacetedReadOperation : IndexFacetReadOperationBase
 {
     private readonly IndexFieldsMapping _fieldMappings;
     private readonly Dictionary<string, long> _fieldNameToRootPage = new();

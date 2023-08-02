@@ -6,7 +6,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Queries.AST
 {
-    public sealed class JavascriptCodeQueryVisitor : QueryVisitor
+    internal sealed class JavascriptCodeQueryVisitor : QueryVisitor
     {
         private readonly StringBuilder _sb;
         private readonly HashSet<string> _knownAliases = new HashSet<string>();

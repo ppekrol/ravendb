@@ -32,7 +32,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Sharding.Queries;
 
-public abstract class AbstractShardedQueryProcessor<TCommand, TResult, TCombinedResult> where TCommand : RavenCommand<TResult>
+internal abstract class AbstractShardedQueryProcessor<TCommand, TResult, TCombinedResult> where TCommand : RavenCommand<TResult>
 {
     const string LimitToken = "__raven_limit";
 

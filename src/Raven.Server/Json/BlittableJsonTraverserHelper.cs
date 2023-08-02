@@ -9,7 +9,7 @@ using TypeConverter = Raven.Server.Utils.TypeConverter;
 
 namespace Raven.Server.Json
 {
-    public static class BlittableJsonTraverserHelper
+    internal static class BlittableJsonTraverserHelper
     {
         private const string LastModifiedPath = Constants.Documents.Metadata.Key + "." + Constants.Documents.Metadata.LastModified;
 

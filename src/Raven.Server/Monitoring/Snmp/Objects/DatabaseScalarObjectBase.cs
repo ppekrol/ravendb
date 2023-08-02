@@ -3,7 +3,7 @@ using Raven.Server.Documents;
 
 namespace Raven.Server.Monitoring.Snmp.Objects
 {
-    public abstract class DatabaseScalarObjectBase<TData> : ScalarObjectBase<TData>
+    internal abstract class DatabaseScalarObjectBase<TData> : ScalarObjectBase<TData>
         where TData : ISnmpData
     {
         protected readonly string DatabaseName;

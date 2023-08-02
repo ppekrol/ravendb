@@ -9,7 +9,7 @@ using Raven.Server.ServerWide;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.Monitoring)]
-    public sealed class MonitoringConfiguration : ConfigurationCategory
+    internal sealed class MonitoringConfiguration : ConfigurationCategory
     {
         [Description("A command or executable to run which will provide machine cpu usage and total machine cores to standard output. If specified, RavenDB will use this information for monitoring cpu usage.")]
         [DefaultValue(null)]
@@ -42,7 +42,7 @@ namespace Raven.Server.Config.Categories
             Initialized = true;
         }
 
-        public sealed class SnmpConfiguration : ConfigurationCategory
+        internal sealed class SnmpConfiguration : ConfigurationCategory
         {
             [Description("Indicates if SNMP is enabled or not. Default: false")]
             [DefaultValue(false)]

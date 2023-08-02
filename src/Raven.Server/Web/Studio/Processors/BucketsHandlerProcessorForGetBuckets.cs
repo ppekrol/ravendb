@@ -69,7 +69,7 @@ namespace Raven.Server.Web.Studio.Processors
         }
     }
 
-    public sealed class BucketRange : IDynamicJson
+    internal sealed class BucketRange : IDynamicJson
     {
         public long FromBucket;
         public long ToBucket;
@@ -99,7 +99,7 @@ namespace Raven.Server.Web.Studio.Processors
         }
     }
 
-    public sealed class BucketsResults
+    internal sealed class BucketsResults
     {
         public long TotalSize;
         public string TotalSizeHumane => Size.Humane(TotalSize);

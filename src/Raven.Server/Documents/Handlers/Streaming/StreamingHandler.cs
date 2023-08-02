@@ -5,7 +5,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Handlers.Streaming
 {
-    public sealed class StreamingHandler : DatabaseRequestHandler
+    internal sealed class StreamingHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/streams/docs", "GET", AuthorizationStatus.ValidUser, EndpointType.Read, DisableOnCpuCreditsExhaustion = true)]
         public async Task StreamDocsGet()

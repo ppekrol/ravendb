@@ -7,7 +7,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Storage.Schema
 {
-    public sealed class UpdateStep
+    internal sealed class UpdateStep
     {
         private readonly SchemaUpgradeTransactions _transactions;
         private short? _lastCommittedTxMarker;

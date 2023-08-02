@@ -12,7 +12,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Handlers.BulkInsert;
 
-public abstract class AbstractBulkInsertBatchCommandsReader<TCommandData> : IDisposable where TCommandData : IBatchCommandData
+internal abstract class AbstractBulkInsertBatchCommandsReader<TCommandData> : IDisposable where TCommandData : IBatchCommandData
 {
     private readonly Stream _stream;
     private readonly UnmanagedJsonParser _parser;

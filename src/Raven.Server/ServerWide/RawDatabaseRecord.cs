@@ -32,7 +32,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.ServerWide
 {
-    public static class RawDatabaseRecordExtensions
+    internal static class RawDatabaseRecordExtensions
     {
         public static DatabaseTopology TopologyForSubscriptions(this RawDatabaseRecord record)
         {
@@ -43,7 +43,7 @@ namespace Raven.Server.ServerWide
         }
     }
 
-    public sealed class RawDatabaseRecord : IDisposable
+    internal sealed class RawDatabaseRecord : IDisposable
     {
         private BlittableJsonReaderObject _record;
         private readonly JsonOperationContext _context;

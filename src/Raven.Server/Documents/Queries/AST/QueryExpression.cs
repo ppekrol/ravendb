@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries.AST
 {
-    public abstract class QueryExpression
+    internal abstract class QueryExpression
     {
         public ExpressionType Type;
 
@@ -19,7 +19,7 @@ namespace Raven.Server.Documents.Queries.AST
         public abstract bool Equals(QueryExpression other);
     }
 
-    public static class QueryExpressionExtensions
+    internal static class QueryExpressionExtensions
     {
         private static object Evaluate(QueryExpression q, BlittableJsonReaderObject value)
         {

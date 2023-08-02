@@ -11,7 +11,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Utils.Monitoring
 {
-    public sealed class CollectionMetrics
+    internal sealed class CollectionMetrics
     {
         public string CollectionName { get; set; }
         
@@ -52,7 +52,7 @@ namespace Raven.Server.Utils.Monitoring
         }
     }
 
-    public sealed class CollectionsMetrics
+    internal sealed class CollectionsMetrics
     {
         public string PublicServerUrl { get; set; }
         public string NodeTag { get; set; }
@@ -69,7 +69,7 @@ namespace Raven.Server.Utils.Monitoring
         }
     }
     
-    public sealed class PerDatabaseCollectionMetrics
+    internal sealed class PerDatabaseCollectionMetrics
     {
         public string DatabaseName { get; set; }
         public List<CollectionMetrics> Collections { get; set; } = new List<CollectionMetrics>();

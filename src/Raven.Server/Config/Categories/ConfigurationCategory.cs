@@ -18,13 +18,13 @@ using Sparrow;
 
 namespace Raven.Server.Config.Categories
 {
-    public abstract class ConfigurationCategory
+    internal abstract class ConfigurationCategory
     {
         private static readonly ConcurrentDictionary<Type, List<ConfigurationProperty>> _configurationPropertiesCache = new ConcurrentDictionary<Type, List<ConfigurationProperty>>();
 
         public const string DefaultValueSetInConstructor = "default-value-set-in-constructor";
 
-        public sealed class SettingValue
+        internal sealed class SettingValue
         {
             public SettingValue(string current, bool keyExistsInDatabaseRecord, string server, bool keyExistsInServerSettings)
             {
@@ -474,7 +474,7 @@ namespace Raven.Server.Config.Categories
             return values;
         }
 
-        public sealed class ConfigurationProperty
+        internal sealed class ConfigurationProperty
         {
             public PropertyInfo Info;
 

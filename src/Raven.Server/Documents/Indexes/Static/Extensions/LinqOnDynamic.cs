@@ -12,7 +12,7 @@ using Raven.Server.Documents.Indexes.Static.Linq;
 
 namespace Raven.Server.Documents.Indexes.Static.Extensions
 {
-    public static class LinqOnDynamic
+    internal static class LinqOnDynamic
     {
         
         [Obsolete("This method should never be used directly.")]

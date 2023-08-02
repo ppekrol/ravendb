@@ -30,7 +30,7 @@ using HttpMethods = Raven.Client.Util.HttpMethods;
 
 namespace Raven.Server.Routing
 {
-    public sealed class RequestRouter
+    internal sealed class RequestRouter
     {
         public List<RouteInformation> AllRoutes;
 

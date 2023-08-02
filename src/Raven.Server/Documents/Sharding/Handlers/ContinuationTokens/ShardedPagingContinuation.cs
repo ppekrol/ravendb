@@ -3,7 +3,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Sharding.Handlers.ContinuationTokens;
 
-public sealed class ShardedPagingContinuation : ContinuationToken
+internal sealed class ShardedPagingContinuation : ContinuationToken
 {
     public int PageSize;
     public Dictionary<int, ShardPaging> Pages;
@@ -50,7 +50,7 @@ public sealed class ShardedPagingContinuation : ContinuationToken
         };
     }
 
-    public sealed class ShardPaging : IDynamicJson
+    internal sealed class ShardPaging : IDynamicJson
     {
         public int ShardNumber;
         public int Start;

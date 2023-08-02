@@ -12,7 +12,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Replication.ReplicationItems
 {
-    public sealed class RevisionTombstoneReplicationItem : ReplicationBatchItem
+    internal sealed class RevisionTombstoneReplicationItem : ReplicationBatchItem
     {
         public LazyStringValue Collection;
         public LazyStringValue Id;

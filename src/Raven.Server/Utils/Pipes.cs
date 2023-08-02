@@ -12,7 +12,7 @@ using Sparrow.Server.Platform.Posix;
 
 namespace Raven.Server.Utils
 {
-    public sealed class Pipes
+    internal sealed class Pipes
     {
 #if !RVN
         private static readonly Logger Logger = LoggingSource.Instance.GetLogger<Pipes>("Server");

@@ -33,7 +33,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Handlers.Admin
 {
-    public sealed class RachisAdminHandler : ServerRequestHandler
+    internal sealed class RachisAdminHandler : ServerRequestHandler
     {
         [RavenAction("/admin/rachis/send", "POST", AuthorizationStatus.Operator)]
         public async Task ApplyCommand()

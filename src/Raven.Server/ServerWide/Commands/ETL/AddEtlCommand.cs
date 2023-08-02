@@ -11,7 +11,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands.ETL
 {
-    public abstract class AddEtlCommand<T, TConnectionString> : UpdateDatabaseCommand where T : EtlConfiguration<TConnectionString> where TConnectionString : ConnectionString
+    internal abstract class AddEtlCommand<T, TConnectionString> : UpdateDatabaseCommand where T : EtlConfiguration<TConnectionString> where TConnectionString : ConnectionString
     {
         public T Configuration { get; protected set; }
 
@@ -48,7 +48,7 @@ namespace Raven.Server.ServerWide.Commands.ETL
         }
     }
 
-    public sealed class AddRavenEtlCommand : AddEtlCommand<RavenEtlConfiguration, RavenConnectionString>
+    internal sealed class AddRavenEtlCommand : AddEtlCommand<RavenEtlConfiguration, RavenConnectionString>
     {
         public AddRavenEtlCommand()
         {
@@ -66,7 +66,7 @@ namespace Raven.Server.ServerWide.Commands.ETL
         }
     }
 
-    public sealed class AddSqlEtlCommand : AddEtlCommand<SqlEtlConfiguration, SqlConnectionString>
+    internal sealed class AddSqlEtlCommand : AddEtlCommand<SqlEtlConfiguration, SqlConnectionString>
     {
         public AddSqlEtlCommand()
         {
@@ -84,7 +84,7 @@ namespace Raven.Server.ServerWide.Commands.ETL
         }
     }
 
-    public sealed class AddElasticSearchEtlCommand : AddEtlCommand<ElasticSearchEtlConfiguration, ElasticSearchConnectionString>
+    internal sealed class AddElasticSearchEtlCommand : AddEtlCommand<ElasticSearchEtlConfiguration, ElasticSearchConnectionString>
     {
         public AddElasticSearchEtlCommand()
         {
@@ -102,7 +102,7 @@ namespace Raven.Server.ServerWide.Commands.ETL
         }
     }
 
-    public sealed class AddOlapEtlCommand : AddEtlCommand<OlapEtlConfiguration, OlapConnectionString>
+    internal sealed class AddOlapEtlCommand : AddEtlCommand<OlapEtlConfiguration, OlapConnectionString>
     {
         public AddOlapEtlCommand()
         {
@@ -120,7 +120,7 @@ namespace Raven.Server.ServerWide.Commands.ETL
         }
     }
 
-    public sealed class AddQueueEtlCommand : AddEtlCommand<QueueEtlConfiguration, QueueConnectionString>
+    internal sealed class AddQueueEtlCommand : AddEtlCommand<QueueEtlConfiguration, QueueConnectionString>
     {
         public AddQueueEtlCommand()
         {

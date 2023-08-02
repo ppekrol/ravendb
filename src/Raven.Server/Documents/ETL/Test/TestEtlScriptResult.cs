@@ -6,7 +6,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.ETL.Test
 {
-    public abstract class TestEtlScriptResult
+    internal abstract class TestEtlScriptResult
     {
         public List<EtlErrorInfo> TransformationErrors { get; set; }
 

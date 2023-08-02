@@ -2,7 +2,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.ETL.Providers.SQL
 {
-    public sealed class SqlColumn
+    internal sealed class SqlColumn
     {
         public string Id;
         public object Value;

@@ -4,7 +4,7 @@ using Raven.Client.Exceptions;
 
 namespace Raven.Server.Documents.Queries.Results
 {
-    public sealed class ProjectionOptions
+    internal sealed class ProjectionOptions
     {
         public readonly bool MustExtractFromIndex;
 

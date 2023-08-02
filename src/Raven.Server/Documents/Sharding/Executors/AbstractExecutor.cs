@@ -11,7 +11,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Executors
 {
-    public sealed class ShardExecutionResult<T>
+    internal sealed class ShardExecutionResult<T>
     {
         public int ShardNumber;
         public RavenCommand<T> Command;
@@ -21,7 +21,7 @@ namespace Raven.Server.Documents.Sharding.Executors
     }
 };
 
-public abstract class AbstractExecutor : IDisposable
+internal abstract class AbstractExecutor : IDisposable
 {
     protected readonly ServerStore ServerStore;
 
@@ -259,22 +259,22 @@ public interface IFailureMode
 
 }
 
-public struct ParallelExecution : IExecutionMode
+internal struct ParallelExecution : IExecutionMode
 {
 
 }
 
-public struct OneByOneExecution : IExecutionMode
+internal struct OneByOneExecution : IExecutionMode
 {
 
 }
 
-public struct ThrowOnFailure : IFailureMode
+internal struct ThrowOnFailure : IFailureMode
 {
 
 }
 
-public struct IgnoreFailure : IFailureMode
+internal struct IgnoreFailure : IFailureMode
 {
 
 }

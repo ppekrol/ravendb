@@ -25,7 +25,7 @@ namespace Raven.Server.Documents.Queries.Results
 
     }
 
-    public struct RetrieverInput
+    internal struct RetrieverInput
     {
         public bool IsLuceneDocument() => LuceneDocument != null;
 

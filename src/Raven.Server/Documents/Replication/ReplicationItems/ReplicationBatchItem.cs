@@ -16,7 +16,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Replication.ReplicationItems
 {
-    public abstract class ReplicationBatchItem : IDisposable
+    internal abstract class ReplicationBatchItem : IDisposable
     {
         private bool _isDisposed;
 
@@ -202,7 +202,7 @@ namespace Raven.Server.Documents.Replication.ReplicationItems
         }
     }
 
-    public sealed class Reader
+    internal sealed class Reader
     {
         private readonly (IDisposable ReleaseBuffer, JsonOperationContext.MemoryBuffer Buffer) _copiedBuffer;
         private readonly Stream _stream;

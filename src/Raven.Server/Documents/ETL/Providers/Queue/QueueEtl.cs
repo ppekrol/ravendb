@@ -21,7 +21,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.ETL.Providers.Queue;
 
-public abstract class QueueEtl<T> : EtlProcess<QueueItem, QueueWithItems<T>, QueueEtlConfiguration, QueueConnectionString, EtlStatsScope,
+internal abstract class QueueEtl<T> : EtlProcess<QueueItem, QueueWithItems<T>, QueueEtlConfiguration, QueueConnectionString, EtlStatsScope,
     EtlPerformanceOperation> where T : QueueItem
 {
 

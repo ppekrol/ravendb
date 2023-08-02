@@ -7,13 +7,13 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents
 {
-    public sealed class TimeSeriesStream
+    internal sealed class TimeSeriesStream
     {
         public IEnumerable<DynamicJsonValue> TimeSeries;
         public string Key;
     }
 
-    public class Document : IDisposable
+    interal class Document : IDisposable
     {
         public static readonly Document ExplicitNull = new Document();
 
@@ -158,7 +158,7 @@ namespace Raven.Server.Documents
     }
 
 
-    public struct SpatialResult
+    internal struct SpatialResult
     {
         public double Distance, Latitude, Longitude;
 

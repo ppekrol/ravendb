@@ -7,7 +7,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Commands.Indexes;
 
-public sealed class GetIndexStalenessCommand : RavenCommand<GetIndexStalenessCommand.IndexStaleness>
+internal sealed class GetIndexStalenessCommand : RavenCommand<GetIndexStalenessCommand.IndexStaleness>
 {
     private readonly string _indexName;
 
@@ -34,7 +34,7 @@ public sealed class GetIndexStalenessCommand : RavenCommand<GetIndexStalenessCom
         Result = DocumentConventions.Default.Serialization.DefaultConverter.FromBlittable<IndexStaleness>(response);
     }
 
-    public sealed class IndexStaleness
+    internal sealed class IndexStaleness
     {
         public bool IsStale { get; set; }
 

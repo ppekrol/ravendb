@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Dashboard.Cluster
 {
-    public abstract class AbstractClusterDashboardNotification : IDynamicJson
+    internal abstract class AbstractClusterDashboardNotification : IDynamicJson
     {
         public abstract ClusterDashboardNotificationType Type { get; }
 

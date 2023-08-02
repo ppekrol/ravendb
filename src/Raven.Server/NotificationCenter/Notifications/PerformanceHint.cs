@@ -3,7 +3,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.NotificationCenter.Notifications
 {
-    public sealed class PerformanceHint : Notification
+    internal sealed class PerformanceHint : Notification
     {
         private PerformanceHint(string database) : base(NotificationType.PerformanceHint, database)
         {

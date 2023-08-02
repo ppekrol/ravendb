@@ -3,7 +3,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.NotificationCenter.Notifications.Details
 {
-    public sealed class EtlErrorsDetails : INotificationDetails
+    internal sealed class EtlErrorsDetails : INotificationDetails
     {
         public const int MaxNumberOfErrors = 500;
 

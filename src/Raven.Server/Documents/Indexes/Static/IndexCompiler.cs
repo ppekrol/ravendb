@@ -31,7 +31,7 @@ using Sparrow.Logging;
 namespace Raven.Server.Documents.Indexes.Static
 {
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
-    public static class IndexCompiler
+    internal static class IndexCompiler
     {
         private static readonly Logger Logger = LoggingSource.Instance.GetLogger("Server", typeof(IndexCompiler).FullName);
 
@@ -985,7 +985,7 @@ namespace Raven.Server.Documents.Indexes.Static
             public string Code { get; set; }
         }
 
-        public sealed class IndexMethods
+        internal sealed class IndexMethods
         {
             public bool HasLoadDocument { get; set; }
 

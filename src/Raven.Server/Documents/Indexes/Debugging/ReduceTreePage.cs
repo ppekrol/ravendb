@@ -6,7 +6,7 @@ using Voron.Data.Compression;
 
 namespace Raven.Server.Documents.Indexes.Debugging
 {
-    public sealed class ReduceTreePage : IDisposable
+    internal sealed class ReduceTreePage : IDisposable
     {
         private bool _disposed;
         private readonly bool _isLeaf;

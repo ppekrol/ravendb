@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Queries
 {
-    public sealed class WhereField
+    internal sealed class WhereField
     {
         public readonly AutoSpatialOptions Spatial;
 

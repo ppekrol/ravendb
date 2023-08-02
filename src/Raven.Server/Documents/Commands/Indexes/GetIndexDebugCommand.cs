@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Commands.Indexes;
 
-public sealed class GetIndexDebugCommand : RavenCommand
+internal sealed class GetIndexDebugCommand : RavenCommand
 {
     private readonly string _indexName;
     private readonly string _op;

@@ -17,7 +17,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.TrafficWatch
 {
-    public sealed class TrafficWatchHandler : ServerRequestHandler
+    internal sealed class TrafficWatchHandler : ServerRequestHandler
     {
         private static readonly Logger _logger = LoggingSource.Instance.GetLogger<TrafficWatchHandler>("Server");
 

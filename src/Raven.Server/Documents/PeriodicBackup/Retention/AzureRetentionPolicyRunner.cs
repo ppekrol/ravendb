@@ -6,7 +6,7 @@ using Raven.Server.Documents.PeriodicBackup.Restore;
 
 namespace Raven.Server.Documents.PeriodicBackup.Retention
 {
-    public sealed class AzureRetentionPolicyRunner : RetentionPolicyRunnerBase
+    internal sealed class AzureRetentionPolicyRunner : RetentionPolicyRunnerBase
     {
         private readonly IRavenAzureClient _client;
 

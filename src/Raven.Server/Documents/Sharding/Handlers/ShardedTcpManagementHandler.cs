@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers;
 
-public sealed class ShardedTcpManagementHandler : ShardedDatabaseRequestHandler
+internal sealed class ShardedTcpManagementHandler : ShardedDatabaseRequestHandler
 {
     [RavenShardedAction("/databases/*/tcp", "GET")]
     public async Task GetAll()

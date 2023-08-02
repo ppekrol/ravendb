@@ -6,7 +6,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.NotificationCenter;
 
-public abstract class AbstractDatabaseNotificationCenter : AbstractNotificationCenter
+internal abstract class AbstractDatabaseNotificationCenter : AbstractNotificationCenter
 {
     public readonly string Database;
 

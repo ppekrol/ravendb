@@ -4,7 +4,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public abstract class ServerGcPauseDurationsBase : ServerGcBase<TimeTicks>
+    internal abstract class ServerGcPauseDurationsBase : ServerGcBase<TimeTicks>
     {
         private readonly int _pauseDurationsIndex;
 

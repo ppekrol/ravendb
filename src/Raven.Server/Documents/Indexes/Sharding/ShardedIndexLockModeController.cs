@@ -8,7 +8,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Documents.Indexes.Sharding;
 
-public sealed class ShardedIndexLockModeController : AbstractIndexLockModeController
+internal sealed class ShardedIndexLockModeController : AbstractIndexLockModeController
 {
     private readonly ShardedDatabaseContext _context;
 

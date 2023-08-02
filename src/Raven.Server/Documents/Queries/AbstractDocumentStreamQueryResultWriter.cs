@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries
 {
-    public abstract class AbstractDocumentStreamQueryResultWriter<T> : IStreamQueryResultWriter<T>
+    internal abstract class AbstractDocumentStreamQueryResultWriter<T> : IStreamQueryResultWriter<T>
     {
         public const string ErrorPropertyName = "Error";
         protected readonly AsyncBlittableJsonTextWriter Writer;

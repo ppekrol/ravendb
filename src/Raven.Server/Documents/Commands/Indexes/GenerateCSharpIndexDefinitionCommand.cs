@@ -7,7 +7,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Commands.Indexes;
 
-public sealed class GenerateCSharpIndexDefinitionCommand : RavenCommand<string>
+internal sealed class GenerateCSharpIndexDefinitionCommand : RavenCommand<string>
 {
     private readonly string _indexName;
 

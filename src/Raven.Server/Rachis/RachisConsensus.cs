@@ -44,7 +44,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Raven.Server.Rachis
 {
-    public sealed class RachisConsensus<TStateMachine> : RachisConsensus
+    internal sealed class RachisConsensus<TStateMachine> : RachisConsensus
         where TStateMachine : RachisStateMachine, new()
     {
         private readonly ServerStore _serverStore;
@@ -151,7 +151,7 @@ namespace Raven.Server.Rachis
         }
     }
 
-    public sealed class RachisLogEntry : IDynamicJsonValueConvertible
+    internal sealed class RachisLogEntry : IDynamicJsonValueConvertible
     {
         public DateTime At = DateTime.UtcNow;
         public string Message;
@@ -167,12 +167,12 @@ namespace Raven.Server.Rachis
         }
     }
 
-    public sealed class RachisTimings
+    internal sealed class RachisTimings
     {
         public readonly ConcurrentBag<RachisLogEntry> Timings = new ConcurrentBag<RachisLogEntry>();
     }
 
-    public sealed class RachisLogRecorder
+    internal sealed class RachisLogRecorder
     {
         private readonly ConcurrentQueue<RachisTimings> _queue;
         private readonly Stopwatch _sp = Stopwatch.StartNew();
@@ -209,12 +209,12 @@ namespace Raven.Server.Rachis
         }
     }
 
-    public sealed class RachisDebug
+    internal sealed class RachisDebug
     {
         public readonly ConcurrentDictionary<string, RachisTimingsHolder> TimingTracking = new ConcurrentDictionary<string, RachisTimingsHolder>();
         public readonly ConcurrentQueue<string> StateChangeTracking = new ConcurrentQueue<string>();
 
-        public sealed class RachisTimingsHolder
+        internal sealed class RachisTimingsHolder
         {
             public ConcurrentQueue<RachisTimings> TimingTracking;
             public DateTime Since = DateTime.UtcNow;
@@ -281,7 +281,7 @@ namespace Raven.Server.Rachis
         }
     }
 
-    public abstract class RachisConsensus : IDisposable
+    internal abstract class RachisConsensus : IDisposable
     {
         internal abstract RachisStateMachine GetStateMachine();
 
@@ -705,7 +705,7 @@ namespace Raven.Server.Rachis
             _leadershipTimeChanged.SetAndResetAtomically();
         }
 
-        public sealed class StateTransition
+        internal sealed class StateTransition
         {
             public RachisState From;
             public RachisState To;
@@ -731,7 +731,7 @@ namespace Raven.Server.Rachis
 
         internal sealed class TestingStuff
         {
-            public sealed class LeaderLockDebug
+            internal sealed class LeaderLockDebug
             {
                 private readonly TestingStuff _parent;
                 private MultipleUseFlag _lockerFlag;
@@ -2060,7 +2060,7 @@ namespace Raven.Server.Rachis
 
         public abstract Task<RachisConnection> ConnectToPeer(string url, string tag, X509Certificate2 certificate);
 
-        public sealed class BootstrapOptions
+        internal sealed class BootstrapOptions
         {
             public string NewNodeTag;
             public Guid? TopologyId;
@@ -2406,7 +2406,7 @@ namespace Raven.Server.Rachis
         }
     }
 
-    public sealed class TopologyMismatchException : Exception
+    internal sealed class TopologyMismatchException : Exception
     {
         public TopologyMismatchException()
         {
@@ -2421,7 +2421,7 @@ namespace Raven.Server.Rachis
         }
     }
 
-    public sealed class NotLeadingException : Exception
+    internal sealed class NotLeadingException : Exception
     {
         public NotLeadingException()
         {

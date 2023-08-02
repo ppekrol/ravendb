@@ -8,7 +8,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Documents.Indexes.Sharding.Persistence.Corax;
 
-public sealed class ShardedCoraxSuggestionIndexReader : CoraxSuggestionReader
+internal sealed class ShardedCoraxSuggestionIndexReader : CoraxSuggestionReader
 {
     public ShardedCoraxSuggestionIndexReader(Index index, Logger logger, IndexFieldBinding binding, Transaction readTransaction, IndexFieldsMapping fieldsMapping) : base(index, logger, binding, readTransaction, fieldsMapping)
     {

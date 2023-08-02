@@ -10,7 +10,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class ToggleTaskStateCommand : UpdateDatabaseCommand
+    internal sealed class ToggleTaskStateCommand : UpdateDatabaseCommand
     {
         public long TaskId;
         public OngoingTaskType TaskType;

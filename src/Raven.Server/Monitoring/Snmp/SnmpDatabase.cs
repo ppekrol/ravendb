@@ -16,7 +16,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Monitoring.Snmp
 {
-    public sealed class SnmpDatabase
+    internal sealed class SnmpDatabase
     {
         private readonly Dictionary<string, int> _loadedIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 

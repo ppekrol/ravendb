@@ -9,7 +9,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Commercial
 {
-    public sealed class SetupParameters
+    internal sealed class SetupParameters
     {
         public int? FixedServerPortNumber { get; set; }
         public int? FixedServerTcpPortNumber { get; set; }

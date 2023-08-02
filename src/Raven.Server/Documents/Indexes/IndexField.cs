@@ -6,7 +6,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Documents.Indexes
 {
-    public abstract class IndexFieldBase
+    internal abstract class IndexFieldBase
     {
         public string Name { get; set; }
 
@@ -20,7 +20,7 @@ namespace Raven.Server.Documents.Indexes
         }
     }
 
-    public sealed class IndexField : IndexFieldBase
+    internal sealed class IndexField : IndexFieldBase
     {
         internal string OriginalName { get; set; }
 
@@ -141,7 +141,7 @@ namespace Raven.Server.Documents.Indexes
         }
     }
 
-    public sealed class AutoIndexField : IndexFieldBase
+    internal sealed class AutoIndexField : IndexFieldBase
     {
         public AggregationOperation Aggregation { get; set; }
 

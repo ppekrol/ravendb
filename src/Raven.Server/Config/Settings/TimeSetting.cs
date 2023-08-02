@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace Raven.Server.Config.Settings
 {
-    public struct TimeSetting
+    internal struct TimeSetting
     {
         public TimeSpan AsTimeSpan;
 

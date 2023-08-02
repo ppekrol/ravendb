@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.ETL.Stats
 {
-    public sealed class EtlTaskStats : IDynamicJson
+    internal sealed class EtlTaskStats : IDynamicJson
     {
         public string TaskName { get; set; }
 
@@ -18,7 +18,7 @@ namespace Raven.Server.Documents.ETL.Stats
         }
     }
 
-    public class EtlProcessTransformationStats : IDynamicJson
+    interal class EtlProcessTransformationStats : IDynamicJson
     {
         public string TransformationName { get; set; }
 

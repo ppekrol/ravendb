@@ -15,7 +15,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Indexes.Persistence
 {
-    public abstract class IndexReadOperationBase : IndexOperationBase
+    internal abstract class IndexReadOperationBase : IndexOperationBase
     {
         protected readonly QueryBuilderFactories QueryBuilderFactories;
         private readonly MemoryInfo _memoryInfo;
@@ -82,7 +82,7 @@ namespace Raven.Server.Documents.Indexes.Persistence
             }
         }
         
-        public struct QueryResult
+        internal struct QueryResult
         {
             public Document Result;
             public Dictionary<string, Dictionary<string, string[]>> Highlightings;

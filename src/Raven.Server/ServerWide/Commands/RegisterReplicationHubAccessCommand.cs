@@ -10,7 +10,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class BulkRegisterReplicationHubAccessCommand : CommandBase
+    internal sealed class BulkRegisterReplicationHubAccessCommand : CommandBase
     {
         public List<RegisterReplicationHubAccessCommand> Commands;
         public string Database;
@@ -28,7 +28,7 @@ namespace Raven.Server.ServerWide.Commands
         }
     }
 
-    public sealed class RegisterReplicationHubAccessCommand : CommandBase
+    internal sealed class RegisterReplicationHubAccessCommand : CommandBase
     {
         public string Database;
         public string HubName;
@@ -111,7 +111,7 @@ namespace Raven.Server.ServerWide.Commands
         }
     }
 
-    public sealed class UnregisterReplicationHubAccessCommand : CommandBase
+    internal sealed class UnregisterReplicationHubAccessCommand : CommandBase
     {
         public string Database;
         public string HubName;

@@ -1,6 +1,6 @@
 namespace Raven.Server.Documents.ETL.Providers.SQL.RelationalWriters
 {
-    public sealed class DbCommandBuilder
+    internal sealed class DbCommandBuilder
     {
         public string Start, End;
 

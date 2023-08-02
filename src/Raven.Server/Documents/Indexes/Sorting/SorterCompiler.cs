@@ -15,7 +15,7 @@ using Raven.Server.Documents.Indexes.Static;
 
 namespace Raven.Server.Documents.Indexes.Sorting
 {
-    public static class SorterCompiler
+    internal static class SorterCompiler
     {
         public static SorterFactory Compile(string name, string sorterCode)
         {

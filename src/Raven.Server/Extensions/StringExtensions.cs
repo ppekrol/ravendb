@@ -7,7 +7,7 @@ using Sparrow;
 
 namespace Raven.Server.Extensions
 {
-    public static class StringExtensions
+    internal static class StringExtensions
     {
         public static List<string> GetSemicolonSeparatedValues(this string self)
         {

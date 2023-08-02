@@ -13,7 +13,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.ETL.Providers.Queue;
 
-public abstract class QueueDocumentTransformer<T, TSelf> : EtlTransformer<QueueItem, QueueWithItems<T>, EtlStatsScope, EtlPerformanceOperation>
+internal abstract class QueueDocumentTransformer<T, TSelf> : EtlTransformer<QueueItem, QueueWithItems<T>, EtlStatsScope, EtlPerformanceOperation>
 where T : QueueItem
 where TSelf : QueueItem
 {

@@ -10,7 +10,7 @@ using Sparrow.Server.Utils;
 
 namespace Raven.Server.Documents
 {
-    public static class ComputeHttpEtags
+    internal static class ComputeHttpEtags
     {
         public static unsafe string ComputeEtagForDocuments(
             List<Document> documents,

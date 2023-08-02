@@ -5,7 +5,7 @@ using Raven.Server.Integrations.PostgreSQL.Messages;
 
 namespace Raven.Server.Integrations.PostgreSQL.Types
 {
-    public abstract class PgType
+    internal abstract class PgType
     {
         public abstract int Oid { get; }
         public abstract short Size { get; }

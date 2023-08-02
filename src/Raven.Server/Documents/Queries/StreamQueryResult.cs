@@ -11,7 +11,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries
 {
-    public abstract class StreamQueryResult<T> : QueryResultServerSide<T>
+    internal abstract class StreamQueryResult<T> : QueryResultServerSide<T>
     {
         private readonly IStreamQueryResultWriter<T> _writer;
         private readonly OperationCancelToken _token;

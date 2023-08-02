@@ -7,7 +7,7 @@ using Raven.Server.ServerWide.Commands;
 
 namespace Raven.Server.Documents.Handlers.Processors.Batches
 {
-    public sealed class ClusterTransactionRequestProcessor : AbstractClusterTransactionRequestProcessor<DatabaseRequestHandler, MergedBatchCommand>
+    internal sealed class ClusterTransactionRequestProcessor : AbstractClusterTransactionRequestProcessor<DatabaseRequestHandler, MergedBatchCommand>
     {
         private readonly DatabaseTopology _topology;
 

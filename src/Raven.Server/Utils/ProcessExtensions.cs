@@ -7,7 +7,7 @@ using Raven.Client.Extensions;
 
 namespace Raven.Server.Utils
 {
-    public static class ProcessExtensions
+    internal static class ProcessExtensions
     {
         public static bool TryKill(Process process)
         {

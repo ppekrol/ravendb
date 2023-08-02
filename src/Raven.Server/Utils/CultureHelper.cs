@@ -12,7 +12,7 @@ using Raven.Client.Util;
 
 namespace Raven.Server.Utils
 {
-    public static class CultureHelper
+    internal static class CultureHelper
     {
         internal static IDisposable EnsureInvariantCulture()
         {

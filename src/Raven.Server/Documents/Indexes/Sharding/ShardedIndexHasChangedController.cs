@@ -5,7 +5,7 @@ using Raven.Server.Documents.Sharding;
 
 namespace Raven.Server.Documents.Indexes.Sharding;
 
-public sealed class ShardedIndexHasChangedController : AbstractIndexHasChangedController
+internal sealed class ShardedIndexHasChangedController : AbstractIndexHasChangedController
 {
     private readonly ShardedDatabaseContext _context;
 

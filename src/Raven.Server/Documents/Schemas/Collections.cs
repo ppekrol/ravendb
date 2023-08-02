@@ -4,7 +4,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Documents.Schemas
 {
-    public static class Collections
+    internal static class Collections
     {
         public static TableSchema Current => CollectionsSchemaBase;
 

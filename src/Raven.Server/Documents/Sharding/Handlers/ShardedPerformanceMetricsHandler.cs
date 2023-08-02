@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedPerformanceMetricsHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedPerformanceMetricsHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/debug/perf-metrics", "GET")]
         public async Task IoMetrics()

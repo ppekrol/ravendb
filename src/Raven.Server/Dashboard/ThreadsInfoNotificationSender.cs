@@ -8,7 +8,7 @@ using Sparrow.Collections;
 
 namespace Raven.Server.Dashboard;
 
-public sealed class ThreadsInfoNotificationSender : BackgroundWorkBase
+internal sealed class ThreadsInfoNotificationSender : BackgroundWorkBase
 {
     private readonly ConcurrentSet<ConnectedWatcher> _watchers;
     private readonly TimeSpan _notificationsThrottle;

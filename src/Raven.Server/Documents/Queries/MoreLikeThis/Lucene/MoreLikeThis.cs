@@ -128,7 +128,7 @@ namespace Raven.Server.Documents.Queries.MoreLikeThis
     /// - optimize: when no termvector support available - used maxNumTermsParsed to limit amount of tokenization
     /// </pre>
     /// </summary>
-    public class LuceneMoreLikeThis : MoreLikeThisBase
+    interal class LuceneMoreLikeThis : MoreLikeThisBase
     {
         /// <summary> For idf() calculations.</summary>
         private Similarity _similarity;

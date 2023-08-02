@@ -6,7 +6,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Json
 {
-    public static class TableValueReaderUtil
+    internal static class TableValueReaderUtil
     {
         public static unsafe ReleaseMemory CloneTableValueReader(DocumentsOperationContext context, Table.TableValueHolder read)
         {
@@ -16,7 +16,7 @@ namespace Raven.Server.Json
             return new ReleaseMemory(context, copyReadMemory);
         }
 
-        public struct ReleaseMemory : IDisposable
+        internal struct ReleaseMemory : IDisposable
         {
             private readonly DocumentsOperationContext _context;
             private readonly AllocatedMemoryData _copyOfMemory;

@@ -10,7 +10,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public class DynamicArray : DynamicObject, IOrderedEnumerable<object>
+    interal class DynamicArray : DynamicObject, IOrderedEnumerable<object>
     {
         private readonly IEnumerable<object> _inner;
 
@@ -780,7 +780,7 @@ namespace Raven.Server.Documents.Indexes.Static
         }
 
 
-        public struct DynamicArrayIterator<T> : IEnumerator<object>
+        internal struct DynamicArrayIterator<T> : IEnumerator<object>
             where T : struct, IEnumerator<object>
         {
             private T _inner;
@@ -815,7 +815,7 @@ namespace Raven.Server.Documents.Indexes.Static
             public void Dispose() { }
         }
 
-        public struct DynamicArrayIterator : IEnumerator<object>
+        internal struct DynamicArrayIterator : IEnumerator<object>
         {
             private IEnumerator<object> _inner;
 
@@ -866,7 +866,7 @@ namespace Raven.Server.Documents.Indexes.Static
             return _inner?.GetHashCode() ?? 0;
         }
 
-        public sealed class DynamicGrouping : DynamicArray, IGrouping<object, object>
+        internal sealed class DynamicGrouping : DynamicArray, IGrouping<object, object>
         {
             private readonly IGrouping<dynamic, dynamic> _grouping;
 

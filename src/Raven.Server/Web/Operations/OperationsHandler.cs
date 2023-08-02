@@ -5,7 +5,7 @@ using Raven.Server.Web.Operations.Processors;
 
 namespace Raven.Server.Web.Operations
 {
-    public sealed class OperationsHandler : DatabaseRequestHandler
+    internal sealed class OperationsHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/operations/next-operation-id", "GET", AuthorizationStatus.ValidUser, EndpointType.Read)]
         public async Task GetNextOperationId()

@@ -12,7 +12,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Replication.Outgoing
 {
-    public sealed class OutgoingExternalReplicationHandler : DatabaseOutgoingReplicationHandler
+    internal sealed class OutgoingExternalReplicationHandler : DatabaseOutgoingReplicationHandler
     {
         private long? _taskId;
 

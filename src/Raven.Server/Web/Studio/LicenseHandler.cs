@@ -13,7 +13,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Web.Studio
 {
-    public sealed class LicenseHandler : ServerRequestHandler
+    internal sealed class LicenseHandler : ServerRequestHandler
     {
         [RavenAction("/license/eula", "GET", AuthorizationStatus.ValidUser, EndpointType.Read)]
         public async Task Eula()
@@ -157,7 +157,7 @@ namespace Raven.Server.Web.Studio
             }
         }
 
-        public sealed class ConnectivityToLicenseServer : IDynamicJson
+        internal sealed class ConnectivityToLicenseServer : IDynamicJson
         {
             public HttpStatusCode StatusCode { get; set; }
 

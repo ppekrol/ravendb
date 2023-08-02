@@ -8,7 +8,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class IncrementClusterIdentityCommand : UpdateValueForDatabaseCommand
+    internal sealed class IncrementClusterIdentityCommand : UpdateValueForDatabaseCommand
     {
         private string _itemId;
 

@@ -4,7 +4,7 @@ using Raven.Client.ServerWide.Tcp;
 
 namespace Raven.Server.Rachis
 {
-    public sealed class RachisConnection
+    internal sealed class RachisConnection
     {
         public Stream Stream { get; set; }
         public Action Disconnect { get; set; }

@@ -5,7 +5,7 @@ using Raven.Client.Documents.Indexes;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 {
-    public sealed class TimeTrackingIndexWriter : IndexWriter
+    internal sealed class TimeTrackingIndexWriter : IndexWriter
     {
         private TimeTrackingSerialMergeScheduler _mergeScheduler;
 

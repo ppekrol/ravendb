@@ -5,7 +5,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.ETL.Providers.Raven
 {
-    public sealed class RavenEtlItem : ExtractedItem
+    internal sealed class RavenEtlItem : ExtractedItem
     {
         public RavenEtlItem(Document document, string collection) : base(document, collection, EtlItemType.Document)
         {

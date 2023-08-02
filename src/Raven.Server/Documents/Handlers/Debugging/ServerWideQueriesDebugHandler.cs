@@ -9,7 +9,7 @@ using Raven.Server.Web;
 
 namespace Raven.Server.Documents.Handlers.Debugging
 {
-    public sealed class ServerWideQueriesDebugHandler : ServerRequestHandler
+    internal sealed class ServerWideQueriesDebugHandler : ServerRequestHandler
     {
         [RavenAction("/debug/queries/running/live", "GET", AuthorizationStatus.ValidUser, EndpointType.Read)]
         public async Task RunningQueriesLive()

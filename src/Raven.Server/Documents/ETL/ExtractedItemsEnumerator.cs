@@ -5,7 +5,7 @@ using Raven.Server.Documents.ETL.Stats;
 
 namespace Raven.Server.Documents.ETL
 {
-    public sealed class ExtractedItemsEnumerator<T, TStatsScope, TEtlPerformanceOperation> : IEnumerator<T>, IEnumerable<T> 
+    internal sealed class ExtractedItemsEnumerator<T, TStatsScope, TEtlPerformanceOperation> : IEnumerator<T>, IEnumerable<T> 
         where T : ExtractedItem
         where TStatsScope : AbstractEtlStatsScope<TStatsScope, TEtlPerformanceOperation>
         where TEtlPerformanceOperation : EtlPerformanceOperation

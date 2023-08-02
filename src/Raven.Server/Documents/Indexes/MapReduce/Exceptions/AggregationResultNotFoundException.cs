@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Indexes.MapReduce.Exceptions
 {
-    public sealed class AggregationResultNotFoundException : Exception
+    internal sealed class AggregationResultNotFoundException : Exception
     {
         public AggregationResultNotFoundException()
         {

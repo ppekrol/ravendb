@@ -9,7 +9,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Rachis.Commands
 {
-    public sealed class SetNewStateCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
+    internal sealed class SetNewStateCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
     {
         private readonly RachisConsensus _engine;
         private readonly RachisState _rachisState;

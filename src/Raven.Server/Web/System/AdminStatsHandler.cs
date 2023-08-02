@@ -4,7 +4,7 @@ using Raven.Server.Web.System.Processors.Stats;
 
 namespace Raven.Server.Web.System
 {
-    public sealed class AdminStatsHandler : ServerRequestHandler
+    internal sealed class AdminStatsHandler : ServerRequestHandler
     {
         [RavenAction("/admin/stats", "GET", AuthorizationStatus.Operator, SkipLastRequestTimeUpdate = true, IsDebugInformationEndpoint = true)]
         public async Task GetServerStatistics()

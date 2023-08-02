@@ -8,7 +8,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Utils.MicrosoftLogging;
 
-public static class WebHostBuilderExtensions
+internal static class WebHostBuilderExtensions
 {
     public static IWebHostBuilder ConfigureMicrosoftLogging(this IWebHostBuilder hostBuilder, LogsConfiguration configuration,
         ServerNotificationCenter notificationCenter)

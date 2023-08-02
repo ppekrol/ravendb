@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Indexes.MapReduce.Exceptions
 {
-    public sealed class UnexpectedReduceTreePageException : Exception
+    internal sealed class UnexpectedReduceTreePageException : Exception
     {
         public UnexpectedReduceTreePageException()
         {

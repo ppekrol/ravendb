@@ -4,7 +4,7 @@ using Raven.Server.Config;
 
 namespace Raven.Server.Documents.Indexes.Static.TimeSeries
 {
-    public sealed class TimeSeriesJavaScriptIndex : AbstractCountersAndTimeSeriesJavaScriptIndex
+    internal sealed class TimeSeriesJavaScriptIndex : AbstractCountersAndTimeSeriesJavaScriptIndex
     {
         private const string MapPrefix = "timeSeries.";
 

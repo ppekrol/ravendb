@@ -22,7 +22,7 @@ namespace Raven.Server.Rachis;
 
 public partial class Follower
 {
-    public sealed class FollowerReadAndCommitSnapshotCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
+    internal sealed class FollowerReadAndCommitSnapshotCommand : MergedTransactionCommand<ClusterOperationContext, ClusterTransaction>
     {
         private readonly RachisConsensus _engine;
         private readonly Follower _follower;

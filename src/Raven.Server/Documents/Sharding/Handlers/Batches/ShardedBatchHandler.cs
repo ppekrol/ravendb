@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers.Batches
 {
-    public sealed class ShardedBatchHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedBatchHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/bulk_docs", "POST")]
         public async Task BulkDocs()

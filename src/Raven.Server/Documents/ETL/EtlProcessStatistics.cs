@@ -7,7 +7,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.ETL
 {
-    public sealed class EtlProcessStatistics : IDynamicJson
+    internal sealed class EtlProcessStatistics : IDynamicJson
     {
         private readonly string _processTag;
         private readonly string _processName;

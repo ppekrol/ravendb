@@ -1,6 +1,6 @@
 ﻿namespace Raven.Server.Documents.Queries.Counters
 {
-    public sealed class CountersField
+    internal sealed class CountersField
     {
         public CountersField(int countersLength)
         {

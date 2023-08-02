@@ -16,7 +16,7 @@ using Voron.Util;
 
 namespace Raven.Server.Documents.TcpHandlers
 {
-    public sealed class TcpConnectionOptions : IDisposable
+    internal sealed class TcpConnectionOptions : IDisposable
     {
         private static long _sequence;
 

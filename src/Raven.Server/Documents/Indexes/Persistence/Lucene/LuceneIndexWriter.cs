@@ -22,7 +22,7 @@ using Directory = Lucene.Net.Store.Directory;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 {
-    public sealed class LuceneIndexWriter : IDisposable
+    internal sealed class LuceneIndexWriter : IDisposable
     {
         private readonly Logger _logger;
 

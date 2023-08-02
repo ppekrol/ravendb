@@ -16,7 +16,7 @@ using Raven.Server.Documents.Indexes.Static;
 
 namespace Raven.Server.Documents.Indexes.Analysis
 {
-    public static class AnalyzerCompiler
+    internal static class AnalyzerCompiler
     {
         public static AnalyzerFactory Compile(string name, string analyzerCode)
         {

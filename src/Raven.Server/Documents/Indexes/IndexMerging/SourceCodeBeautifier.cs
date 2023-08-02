@@ -52,7 +52,7 @@ internal static class SourceCodeBeautifier
         return formattedExpression;
     }
     
-    public sealed class FormattedExpression : IDynamicJson
+    internal sealed class FormattedExpression : IDynamicJson
     {
         public string Expression { get; set; }
 

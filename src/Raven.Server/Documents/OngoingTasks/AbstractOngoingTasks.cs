@@ -25,7 +25,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.OngoingTasks;
 
-public abstract class AbstractOngoingTasks<TSubscriptionConnectionsState>
+internal abstract class AbstractOngoingTasks<TSubscriptionConnectionsState>
     where TSubscriptionConnectionsState : AbstractSubscriptionConnectionsState
 {
     private readonly ServerStore _server;

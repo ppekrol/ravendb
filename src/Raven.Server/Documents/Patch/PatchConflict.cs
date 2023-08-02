@@ -7,7 +7,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Patch
 {
-    public sealed class PatchConflict
+    internal sealed class PatchConflict
     {
         private readonly DocumentDatabase _database;
         private readonly List<object> _docs = new List<object>();

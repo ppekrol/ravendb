@@ -13,7 +13,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 {
-    public sealed class LuceneIndexSearcherHolder : IDisposable
+    internal sealed class LuceneIndexSearcherHolder : IDisposable
     {
         private readonly Func<IState, IndexSearcher> _recreateSearcher;
         private readonly DocumentDatabase _documentDatabase;
@@ -234,7 +234,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             }
         }
 
-        public sealed class StringCollectionValue
+        internal sealed class StringCollectionValue
         {
             private readonly int _hashCode;
             private readonly uint _hash;

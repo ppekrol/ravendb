@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Sharding.Queries;
 
-public sealed class ShardedAutoMapReduceIndexResultsAggregator : AutoMapReduceIndexResultsAggregator
+internal sealed class ShardedAutoMapReduceIndexResultsAggregator : AutoMapReduceIndexResultsAggregator
 {
     private static readonly DynamicJsonValue DummyDynamicJsonValue = new();
 

@@ -24,7 +24,7 @@ using static Raven.Server.Utils.MetricCacher.Keys;
 
 namespace Raven.Server.Smuggler.Migration
 {
-    public sealed class Importer : AbstractMigrator
+    internal sealed class Importer : AbstractMigrator
     {
         private readonly int _buildVersion;
 
@@ -256,7 +256,7 @@ namespace Raven.Server.Smuggler.Migration
         }
     }
 
-    public sealed class ImportInfo
+    internal sealed class ImportInfo
     {
         public long LastEtag { get; set; }
 

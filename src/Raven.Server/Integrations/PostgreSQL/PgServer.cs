@@ -14,7 +14,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Integrations.PostgreSQL
 {
-    public sealed class PgServer : IDisposable
+    internal sealed class PgServer : IDisposable
     {
         private readonly Logger _logger = LoggingSource.Instance.GetLogger<PgServer>("Postgres Server");
 

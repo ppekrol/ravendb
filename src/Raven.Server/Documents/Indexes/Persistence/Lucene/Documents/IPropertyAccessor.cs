@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
 {
-    public struct PropertyItem
+    internal struct PropertyItem
     {
         public string Key;
         public object Value;

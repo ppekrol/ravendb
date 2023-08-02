@@ -11,7 +11,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Replication.Outgoing
 {
-    public sealed class OutgoingMigrationReplicationHandler : DatabaseOutgoingReplicationHandler
+    internal sealed class OutgoingMigrationReplicationHandler : DatabaseOutgoingReplicationHandler
     {
         private readonly ShardedDocumentDatabase _shardedDatabase;
         public readonly BucketMigrationReplication BucketMigrationNode;

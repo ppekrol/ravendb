@@ -12,7 +12,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.ETL.Providers.Queue.Kafka;
 
-public sealed class KafkaEtl : QueueEtl<KafkaItem>
+internal sealed class KafkaEtl : QueueEtl<KafkaItem>
 {
     private IProducer<string, byte[]> _producer;
 

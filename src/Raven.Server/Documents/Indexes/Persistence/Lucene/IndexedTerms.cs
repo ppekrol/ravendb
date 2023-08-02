@@ -24,7 +24,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
     {
         private static readonly WeakCache CacheInstance = new WeakCache();
 
-        public sealed class WeakCache : ILowMemoryHandler
+        internal sealed class WeakCache : ILowMemoryHandler
         {
             public ConditionalWeakTable<IndexReader, CachedIndexedTerms> TermsCachePerReader = new ConditionalWeakTable<IndexReader, CachedIndexedTerms>();
 
@@ -219,7 +219,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
                    val[0] - NumericUtils.SHIFT_START_LONG != 0;
         }
 
-        public sealed class CachedIndexedTerms : ILowMemoryHandler
+        internal sealed class CachedIndexedTerms : ILowMemoryHandler
         {
             public readonly ConcurrentDictionary<string, FieldCacheInfo> Results = new ConcurrentDictionary<string, FieldCacheInfo>();
 
@@ -238,7 +238,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
             }
         }
 
-        public sealed class FieldCacheInfo
+        internal sealed class FieldCacheInfo
         {
             public Dictionary<string, int[]> Results;
             public bool Done;

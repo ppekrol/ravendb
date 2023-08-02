@@ -7,7 +7,7 @@ using Raven.Client.Documents.Operations.ETL.ElasticSearch;
 
 namespace Raven.Server.Documents.ETL.Providers.ElasticSearch
 {
-    public static class ElasticSearchHelper
+    internal static class ElasticSearchHelper
     {
         public static ElasticClient CreateClient(ElasticSearchConnectionString connectionString, TimeSpan? requestTimeout = null, TimeSpan? pingTimeout = null)
         {

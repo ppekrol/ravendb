@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Raven.Server.Documents.ETL.Providers.OLAP
 {
-    public sealed class ToOlapItem : ExtractedItem
+    internal sealed class ToOlapItem : ExtractedItem
     {
         public ToOlapItem(ToOlapItem item)
         {

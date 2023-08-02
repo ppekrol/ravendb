@@ -5,7 +5,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class ServerGcConcurrent : ServerGcBase<OctetString>
+    internal sealed class ServerGcConcurrent : ServerGcBase<OctetString>
     {
         public ServerGcConcurrent(MetricCacher metricCacher, GCKind gcKind)
             : base(metricCacher, gcKind, SnmpOids.Server.GcConcurrent)

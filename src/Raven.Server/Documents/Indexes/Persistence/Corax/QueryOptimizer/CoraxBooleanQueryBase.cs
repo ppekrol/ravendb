@@ -5,7 +5,7 @@ using Sparrow.Extensions;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Corax.QueryOptimizer;
 
-public abstract class CoraxBooleanQueryBase : IQueryMatch
+internal abstract class CoraxBooleanQueryBase : IQueryMatch
 {
     public abstract IQueryMatch Materialize();
     public float? Boosting;

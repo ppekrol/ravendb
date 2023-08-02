@@ -17,7 +17,7 @@ using Voron;
 
 namespace Raven.Server.Documents.TimeSeries
 {
-    public sealed class TimeSeriesPolicyRunner : BackgroundWorkBase
+    internal sealed class TimeSeriesPolicyRunner : BackgroundWorkBase
     {
         private readonly DocumentDatabase _database;
 

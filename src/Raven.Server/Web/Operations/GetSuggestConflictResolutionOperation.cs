@@ -24,7 +24,7 @@ namespace Raven.Server.Web.Operations
             return new GetSuggestConflictResolutionCommand(_documentId);
         }
 
-        public sealed class GetSuggestConflictResolutionCommand : RavenCommand<ConflictResolverAdvisor.MergeResult>
+        internal sealed class GetSuggestConflictResolutionCommand : RavenCommand<ConflictResolverAdvisor.MergeResult>
         {
             private readonly string _id;
             public override bool IsReadRequest => true;

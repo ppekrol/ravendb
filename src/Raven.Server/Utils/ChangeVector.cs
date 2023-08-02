@@ -10,7 +10,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Utils;
 
-public sealed class ChangeVector
+internal sealed class ChangeVector
 {
     internal static readonly PerCoreContainer<FastList<ChangeVector>> PerCoreChangeVectors = new PerCoreContainer<FastList<ChangeVector>>(32);
 

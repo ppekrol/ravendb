@@ -9,7 +9,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Handlers.Batches;
 
-public sealed class BufferedCommand
+internal sealed class BufferedCommand
 {
     public MemoryStream CommandStream;
     public bool IsIdentity;
@@ -58,7 +58,7 @@ public sealed class BufferedCommand
         public byte[] NewValue();
     }
 
-    public sealed class PatchModifier : IItemModifier
+    internal sealed class PatchModifier : IItemModifier
     {
         public List<(string Id, string ChangeVector)> List;
         public int IdsStartPosition;
@@ -110,7 +110,7 @@ public sealed class BufferedCommand
         }
     }
 
-    public sealed class ChangeVectorModifier : IItemModifier
+    internal sealed class ChangeVectorModifier : IItemModifier
     {
         public int ChangeVectorPosition;
 
@@ -127,7 +127,7 @@ public sealed class BufferedCommand
         private static readonly byte[] Empty = Encoding.UTF8.GetBytes("\"\"");
     }
 
-    public sealed class IdModifier : IItemModifier
+    internal sealed class IdModifier : IItemModifier
     {
         public int IdStartPosition;
         public int IdLength;
@@ -148,7 +148,7 @@ public sealed class BufferedCommand
         public byte[] NewValue() => Encoding.UTF8.GetBytes(NewId);
     }
 
-    public sealed class PatchCommandModifier : BufferedCommandModifier
+    internal sealed class PatchCommandModifier : BufferedCommandModifier
     {
         public PatchCommandModifier(int idsStartPosition, int idsLength, List<(string Id, string ChangeVector)> list)
         {
@@ -162,7 +162,7 @@ public sealed class BufferedCommand
         }
     }
 
-    public sealed class IdentityCommandModifier : BufferedCommandModifier
+    internal sealed class IdentityCommandModifier : BufferedCommandModifier
     {
         public static IdentityCommandModifier Create(int idStartPosition, int idLength, int changeVectorPosition, string newId)
         {
@@ -213,7 +213,7 @@ public sealed class BufferedCommand
         }
     }
 
-    public abstract class BufferedCommandModifier
+    internal abstract class BufferedCommandModifier
     {
         protected IItemModifier[] Items;
 

@@ -27,7 +27,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.ETL.Providers.Raven
 {
-    public sealed class RavenEtlDocumentTransformer : EtlTransformer<RavenEtlItem, ICommandData, EtlStatsScope, EtlPerformanceOperation>
+    internal sealed class RavenEtlDocumentTransformer : EtlTransformer<RavenEtlItem, ICommandData, EtlStatsScope, EtlPerformanceOperation>
     {
         private readonly Transformation _transformation;
         private readonly ScriptInput _script;
@@ -825,7 +825,7 @@ namespace Raven.Server.Documents.ETL.Providers.Raven
             }
         }
 
-        public sealed class ScriptInput
+        internal sealed class ScriptInput
         {
             private readonly Dictionary<string, Dictionary<string, bool>> _collectionNameComparisons;
 

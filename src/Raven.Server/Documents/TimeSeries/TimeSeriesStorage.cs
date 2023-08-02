@@ -190,7 +190,7 @@ namespace Raven.Server.Documents.TimeSeries
             return timeSeriesPurgeSegments;
         }
 
-        public sealed class DeletionRangeRequest
+        internal sealed class DeletionRangeRequest
         {
             public string DocumentId;
             public string Collection;
@@ -807,7 +807,7 @@ namespace Raven.Server.Documents.TimeSeries
         }
 
 
-        public sealed class SegmentSummary
+        internal sealed class SegmentSummary
         {
             public string DocumentId;
             public string Name;
@@ -831,7 +831,7 @@ namespace Raven.Server.Documents.TimeSeries
             }
         }
 
-        public sealed class TimeSeriesSegmentHolder : IDisposable
+        internal sealed class TimeSeriesSegmentHolder : IDisposable
         {
             private readonly TimeSeriesStorage _tss;
             private readonly DocumentsOperationContext _context;
@@ -1658,7 +1658,7 @@ namespace Raven.Server.Documents.TimeSeries
             }
         }
 
-        public sealed class AppendOptions
+        internal sealed class AppendOptions
         {
             public ChangeVector ChangeVectorFromReplication = null;
             public bool VerifyName = true;
@@ -2843,7 +2843,7 @@ namespace Raven.Server.Documents.TimeSeries
         }
     }
 
-    public sealed class NanValueException : Exception
+    internal sealed class NanValueException : Exception
     {
         public NanValueException()
         {

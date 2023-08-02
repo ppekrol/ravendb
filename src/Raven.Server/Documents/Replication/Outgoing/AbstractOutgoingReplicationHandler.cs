@@ -41,7 +41,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Replication.Outgoing
 {
-    public abstract class AbstractOutgoingReplicationHandler<TContextPool, TOperationContext> : IAbstractOutgoingReplicationHandler
+    internal abstract class AbstractOutgoingReplicationHandler<TContextPool, TOperationContext> : IAbstractOutgoingReplicationHandler
         where TContextPool : JsonContextPoolBase<TOperationContext>
         where TOperationContext : JsonOperationContext
     {

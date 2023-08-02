@@ -8,7 +8,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Documents.Subscriptions.Sharding;
 
-public sealed class SubscriptionConnectionsStateForShard : SubscriptionConnectionsState
+internal sealed class SubscriptionConnectionsStateForShard : SubscriptionConnectionsState
 {
     public ShardedDocumentDatabase ShardedDocumentDatabase;
 

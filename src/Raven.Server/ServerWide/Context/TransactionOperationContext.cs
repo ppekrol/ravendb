@@ -9,7 +9,7 @@ using Voron;
 
 namespace Raven.Server.ServerWide.Context
 {
-    public sealed class TransactionOperationContext : TransactionOperationContext<RavenTransaction>
+    internal sealed class TransactionOperationContext : TransactionOperationContext<RavenTransaction>
     {
         public bool IgnoreStalenessDueToReduceOutputsToDelete;
 
@@ -38,7 +38,7 @@ namespace Raven.Server.ServerWide.Context
         }
     }
 
-    public abstract class TransactionOperationContext<TTransaction> : JsonOperationContext, IChangeVectorOperationContext 
+    internal abstract class TransactionOperationContext<TTransaction> : JsonOperationContext, IChangeVectorOperationContext 
         where TTransaction : RavenTransaction
     {
         internal const short DefaultTransactionMarker = 2;

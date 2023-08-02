@@ -18,7 +18,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.ETL
 {
-    public abstract class EtlTransformer<TExtracted, TTransformed, TStatsScope, TEtlPerformanceOperation> : IDisposable 
+    internal abstract class EtlTransformer<TExtracted, TTransformed, TStatsScope, TEtlPerformanceOperation> : IDisposable 
         where TExtracted : ExtractedItem
         where TStatsScope : AbstractEtlStatsScope<TStatsScope, TEtlPerformanceOperation>
         where TEtlPerformanceOperation : EtlPerformanceOperation

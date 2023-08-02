@@ -24,7 +24,7 @@ using StudioConfiguration = Raven.Client.Documents.Operations.Configuration.Stud
 
 namespace Raven.Server.Commercial.LetsEncrypt;
 
-public static class SettingsZipFileHelper
+internal static class SettingsZipFileHelper
 {
     internal static async Task<byte[]> GetSetupZipFileSecuredSetup(GetSetupZipFileParameters parameters)
     {

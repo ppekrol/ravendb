@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Raven.Server.Rachis
 {
-    public abstract class RachisException : Exception
+    internal abstract class RachisException : Exception
     {
         protected RachisException()
         {
@@ -18,7 +18,7 @@ namespace Raven.Server.Rachis
         }
     }
 
-    public sealed class RachisInvalidOperationException : RachisException
+    internal sealed class RachisInvalidOperationException : RachisException
     {
         public RachisInvalidOperationException()
         {
@@ -39,7 +39,7 @@ namespace Raven.Server.Rachis
         }
     }
 
-    public sealed class RachisTopologyChangeException : RachisException
+    internal sealed class RachisTopologyChangeException : RachisException
     {
         public RachisTopologyChangeException()
         {
@@ -60,7 +60,7 @@ namespace Raven.Server.Rachis
         }
     }
 
-    public sealed class RachisConcurrencyException : RachisException
+    internal sealed class RachisConcurrencyException : RachisException
     {
         public RachisConcurrencyException()
         {
@@ -81,7 +81,7 @@ namespace Raven.Server.Rachis
         }
     }
 
-    public sealed class RachisApplyException : RachisException
+    internal sealed class RachisApplyException : RachisException
     {
         public RachisApplyException()
         {

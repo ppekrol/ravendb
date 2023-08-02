@@ -3,7 +3,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class DeleteExpiredCompareExchangeCommand : CommandBase
+    internal sealed class DeleteExpiredCompareExchangeCommand : CommandBase
     {
         public long Ticks;
         public long Take;

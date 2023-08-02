@@ -15,7 +15,7 @@ using Sparrow.Server.Meters;
 
 namespace Raven.Server.NotificationCenter
 {
-    public sealed class SlowWriteNotifications : IDisposable
+    internal sealed class SlowWriteNotifications : IDisposable
     {
         internal TimeSpan UpdateFrequency = TimeSpan.FromSeconds(15);
         private readonly AbstractDatabaseNotificationCenter _notificationCenter;

@@ -1,6 +1,6 @@
 ﻿namespace Raven.Server.Documents.Indexes.Spatial
 {
-    public sealed class SpatialProperty
+    internal sealed class SpatialProperty
     {
         public string LatitudeProperty;
         public string LongitudeProperty;

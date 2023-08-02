@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Integrations.PostgreSQL
 {
-    public static class StringExtensions
+    internal static class StringExtensions
     {
         public static string Replace(this string input, Regex regex, string groupName, string replacement)
         {

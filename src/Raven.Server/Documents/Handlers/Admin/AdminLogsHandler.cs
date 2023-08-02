@@ -17,7 +17,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Handlers.Admin
 {
-    public sealed class AdminLogsHandler : ServerRequestHandler
+    internal sealed class AdminLogsHandler : ServerRequestHandler
     {
         [RavenAction("/admin/logs/configuration", "GET", AuthorizationStatus.Operator)]
         public async Task GetConfiguration()

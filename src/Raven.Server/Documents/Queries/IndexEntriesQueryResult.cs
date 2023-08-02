@@ -9,7 +9,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries
 {
-    public class IndexEntriesQueryResult : QueryResultServerSide<BlittableJsonReaderObject>
+    interal class IndexEntriesQueryResult : QueryResultServerSide<BlittableJsonReaderObject>
     {
         public static readonly IndexEntriesQueryResult NotModifiedResult = new IndexEntriesQueryResult(null) { NotModified = true };
 

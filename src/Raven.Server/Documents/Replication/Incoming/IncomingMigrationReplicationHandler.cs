@@ -9,7 +9,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Replication.Incoming
 {
-    public sealed class IncomingMigrationReplicationHandler : IncomingReplicationHandler
+    internal sealed class IncomingMigrationReplicationHandler : IncomingReplicationHandler
     {
         private readonly ReplicationLoader _parent;
         private readonly long _currentMigrationIndex;

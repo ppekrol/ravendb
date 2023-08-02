@@ -1,10 +1,10 @@
 namespace Raven.Server.Commercial
 {
-    public sealed class RSAPublicParameters
+    internal sealed class RSAPublicParameters
     {
         public RSAKeyValue RsaKeyValue { get; set; }
 
-        public sealed class RSAKeyValue
+        internal sealed class RSAKeyValue
         {
             public byte[] Modulus { get; set; }
 

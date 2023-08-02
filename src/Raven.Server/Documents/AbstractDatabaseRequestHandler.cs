@@ -7,7 +7,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents;
 
-public abstract class AbstractDatabaseRequestHandler<TOperationContext> : RequestHandler 
+internal abstract class AbstractDatabaseRequestHandler<TOperationContext> : RequestHandler 
     where TOperationContext : JsonOperationContext
 {
     public abstract string DatabaseName { get; }

@@ -20,7 +20,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers
         char Normalize(char c);
     }
 
-    public class LowerCaseTokenizerBase<T> : Tokenizer where T : struct, ILowerCaseTokenizerHelper
+    interal class LowerCaseTokenizerBase<T> : Tokenizer where T : struct, ILowerCaseTokenizerHelper
     {
         // PERF: This helper will act as a inheritance dispatcher that can be modified but at the same time
         //       ensure these performance critical calls will get inlined and optimized accordingly.

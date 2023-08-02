@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Indexes.Debugging
 {
-    public sealed class ReduceTree : IDisposable
+    internal sealed class ReduceTree : IDisposable
     {
         public ReduceTreePage Root;
 

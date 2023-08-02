@@ -3,7 +3,7 @@ using Raven.Server.Documents;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database
 {
-    public sealed class DatabaseLoadedCount : ScalarObjectBase<Integer32>
+    internal sealed class DatabaseLoadedCount : ScalarObjectBase<Integer32>
     {
         private readonly DatabasesLandlord _landlord;
 

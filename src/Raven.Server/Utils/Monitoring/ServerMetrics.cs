@@ -11,7 +11,7 @@ using Sparrow.LowMemory;
 
 namespace Raven.Server.Utils.Monitoring
 {
-    public sealed class ServerMetrics
+    internal sealed class ServerMetrics
     {
         public string ServerVersion { get; set; }
         public string ServerFullVersion { get; set; }
@@ -50,7 +50,7 @@ namespace Raven.Server.Utils.Monitoring
         }
     }
 
-    public sealed class ConfigurationMetrics
+    internal sealed class ConfigurationMetrics
     {
         public string[] ServerUrls { get; set; }
         public string PublicServerUrl { get; set; }
@@ -70,7 +70,7 @@ namespace Raven.Server.Utils.Monitoring
         }
     }
 
-    public sealed class BackupMetrics
+    internal sealed class BackupMetrics
     {
         public int CurrentNumberOfRunningBackups { get; set; }
         
@@ -86,7 +86,7 @@ namespace Raven.Server.Utils.Monitoring
         }
     }
 
-    public sealed class CpuMetrics
+    internal sealed class CpuMetrics
     {
         public double ProcessUsage { get; set; }
         public double MachineUsage { get; set; }
@@ -111,7 +111,7 @@ namespace Raven.Server.Utils.Monitoring
         }
     }
 
-    public sealed class MemoryMetrics
+    internal sealed class MemoryMetrics
     {
         public long InstalledMemoryInMb { get; set; }
         public long PhysicalMemoryInMb { get; set; }
@@ -138,7 +138,7 @@ namespace Raven.Server.Utils.Monitoring
         }
     }
 
-    public sealed class DiskMetrics
+    internal sealed class DiskMetrics
     {
         public long SystemStoreUsedDataFileSizeInMb { get; set; }
         public long SystemStoreTotalDataFileSizeInMb { get; set; }
@@ -167,7 +167,7 @@ namespace Raven.Server.Utils.Monitoring
         }
     }
 
-    public sealed class LicenseMetrics
+    internal sealed class LicenseMetrics
     {
         public LicenseType Type { get; set; }
         public double? ExpirationLeftInSec { get; set; }
@@ -186,7 +186,7 @@ namespace Raven.Server.Utils.Monitoring
         }
     }
     
-    public sealed class NetworkMetrics
+    internal sealed class NetworkMetrics
     {
         public long TcpActiveConnections { get; set; }
         public long ConcurrentRequestsCount { get; set; }
@@ -209,7 +209,7 @@ namespace Raven.Server.Utils.Monitoring
         }
     }
 
-    public sealed class CertificateMetrics
+    internal sealed class CertificateMetrics
     {
         public double? ServerCertificateExpirationLeftInSec { get; set; }
         public string[] WellKnownAdminCertificates { get; set; }
@@ -227,7 +227,7 @@ namespace Raven.Server.Utils.Monitoring
         }
     }
 
-    public sealed class ClusterMetrics
+    internal sealed class ClusterMetrics
     {
         public string NodeTag { get; set; }
         public RachisState NodeState { get; set; }
@@ -248,7 +248,7 @@ namespace Raven.Server.Utils.Monitoring
         }
     }
     
-    public sealed class AllDatabasesMetrics
+    internal sealed class AllDatabasesMetrics
     {
         public int TotalCount { get; set; }
         public int LoadedCount { get; set; }

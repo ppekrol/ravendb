@@ -3,7 +3,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.ServerWide
 {
-    public struct CompareExchangeKey
+    internal struct CompareExchangeKey
     {
         public readonly LazyStringValue StorageKey;
 

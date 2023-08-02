@@ -5,7 +5,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Handlers.Admin
 {
-    public sealed class AdminScriptRunnersDebugInfoHandler : ServerRequestHandler
+    internal sealed class AdminScriptRunnersDebugInfoHandler : ServerRequestHandler
     {
         [RavenAction("/admin/debug/script-runners", "GET", AuthorizationStatus.Operator)]
         public async Task GetJSAdminDebugInfo()

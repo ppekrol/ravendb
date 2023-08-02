@@ -10,7 +10,7 @@ using Sparrow.Logging;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.Logs)]
-    public sealed class LogsConfiguration : ConfigurationCategory
+    internal sealed class LogsConfiguration : ConfigurationCategory
     {
         [DefaultValue("Logs")]
         [ConfigurationEntry("Logs.Path", ConfigurationEntryScope.ServerWideOnly)]

@@ -32,12 +32,12 @@ using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents
 {
-    public sealed class AttachmentDetailsServer : AttachmentDetails
+    internal sealed class AttachmentDetailsServer : AttachmentDetails
     {
         public CollectionName CollectionName;
     }
 
-    public struct MoveAttachmentDetailsServer
+    internal struct MoveAttachmentDetailsServer
     {
         public AttachmentDetails Result;
         public CollectionName SourceCollectionName;

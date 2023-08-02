@@ -17,7 +17,7 @@ using Object = Google.Apis.Storage.v1.Data.Object;
 
 namespace Raven.Server.Documents.PeriodicBackup.GoogleCloud
 {
-    public sealed class RavenGoogleCloudClient : IDisposable
+    internal sealed class RavenGoogleCloudClient : IDisposable
     {
         private static readonly Size DownloadChunkSize = new Size(1, SizeUnit.Megabytes);
 

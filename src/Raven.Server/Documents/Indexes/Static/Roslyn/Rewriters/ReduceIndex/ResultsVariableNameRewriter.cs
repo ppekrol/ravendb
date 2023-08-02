@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters.ReduceIndex
 {
-    public abstract class ResultsVariableNameRewriter : CSharpSyntaxRewriter
+    internal abstract class ResultsVariableNameRewriter : CSharpSyntaxRewriter
     {
         public const string ResultsVariable = "results";
 

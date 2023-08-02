@@ -21,7 +21,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.OngoingTasks;
 
-public sealed class OngoingTasks : AbstractOngoingTasks<SubscriptionConnectionsState>
+internal sealed class OngoingTasks : AbstractOngoingTasks<SubscriptionConnectionsState>
 {
     private readonly DocumentDatabase _database;
     private readonly ServerStore _server;

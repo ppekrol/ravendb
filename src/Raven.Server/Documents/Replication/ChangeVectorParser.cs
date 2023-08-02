@@ -6,7 +6,7 @@ using Sparrow.Server.Utils;
 
 namespace Raven.Server.Documents.Replication
 {
-    public static class ChangeVectorParser
+    internal static class ChangeVectorParser
     {
         public const string RaftTag = "RAFT";
         public const string TrxnTag = "TRXN";

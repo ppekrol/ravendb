@@ -21,7 +21,7 @@ using Lucene.Net.Store;
 
 namespace Lucene.Net.Search.Vectorhighlight
 {
-    public sealed class FastVectorHighlighter
+    internal sealed class FastVectorHighlighter
     {
 
         public static bool DEFAULT_PHRASE_HIGHLIGHT = true;

@@ -7,15 +7,15 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Utils
 {
-    public class MetricCacher
+    interal class MetricCacher
     {
-        public sealed class Keys
+        internal sealed class Keys
         {
             private Keys()
             {
             }
 
-            public sealed class Server
+            internal sealed class Server
             {
                 private Server()
                 {
@@ -26,7 +26,7 @@ namespace Raven.Server.Utils
 
                 public const string MemoryInfo = "MemoryInfo";
 
-                public sealed class MemoryInfoExtended
+                internal sealed class MemoryInfoExtended
                 {
                     public const string RefreshRate15Seconds = "MemoryInfoExtended/RefreshRate15Seconds";
 
@@ -46,7 +46,7 @@ namespace Raven.Server.Utils
                 public const string GcBackground = "GC/Background";
             }
 
-            public sealed class Database
+            internal sealed class Database
             {
                 private Database()
                 {

@@ -8,7 +8,7 @@ using Raven.Server.Documents.Subscriptions.Stats;
 
 namespace Raven.Server.Documents.Subscriptions
 {
-    public sealed class SubscriptionTaskPerformanceStats
+    internal sealed class SubscriptionTaskPerformanceStats
     {
         public long TaskId { get; set; }
         public string TaskName { get; set; }

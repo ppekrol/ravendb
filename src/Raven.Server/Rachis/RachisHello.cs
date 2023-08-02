@@ -3,7 +3,7 @@
     /// <summary>
     /// Initial message sent when we open a connection to a remote server
     /// </summary>
-    public sealed class RachisHello
+    internal sealed class RachisHello
     {
         /// <summary>
         /// Used to filter messages from a server that connected to us by mistake

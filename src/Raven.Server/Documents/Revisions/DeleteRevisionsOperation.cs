@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Revisions
 {
-    public sealed class DeleteRevisionsOperation : IMaintenanceOperation
+    internal sealed class DeleteRevisionsOperation : IMaintenanceOperation
     {
         private readonly bool _includeForceCreated;
         private readonly Parameters _parameters;
@@ -61,7 +61,7 @@ namespace Raven.Server.Documents.Revisions
             }
         }
 
-        public sealed class Parameters
+        internal sealed class Parameters
         {
             public string[] DocumentIds { get; set; }
         }

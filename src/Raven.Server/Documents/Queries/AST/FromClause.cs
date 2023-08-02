@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Queries.AST
 {
-    public struct FromClause
+    internal struct FromClause
     {
         public FieldExpression From { get; set; }
         public StringSegment? Alias { get; set; }

@@ -5,7 +5,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedRachisDatabaseHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedRachisDatabaseHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/admin/rachis/wait-for-index-notifications", "POST")]
         public async Task WaitFor()

@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Dashboard.Cluster.Notifications
 {
-    public sealed class DatabaseStorageUsagePayload : AbstractClusterDashboardNotification
+    internal sealed class DatabaseStorageUsagePayload : AbstractClusterDashboardNotification
     {
         public List<DatabaseDiskUsage> Items { get; set; }
 

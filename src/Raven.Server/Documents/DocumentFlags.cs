@@ -60,7 +60,7 @@ namespace Raven.Server.Documents
         AllowDataAsNull = 0x20000
     }
 
-    public static class EnumExtensions
+    internal static class EnumExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Contain(this DocumentFields current, DocumentFields flag)

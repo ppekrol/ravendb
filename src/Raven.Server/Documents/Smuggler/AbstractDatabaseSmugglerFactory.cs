@@ -10,7 +10,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Smuggler;
 
-public abstract class AbstractDatabaseSmugglerFactory
+internal abstract class AbstractDatabaseSmugglerFactory
 {
     public abstract DatabaseDestination CreateDestination(CancellationToken token = default);
 

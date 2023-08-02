@@ -20,7 +20,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Handlers.Processors.Batches;
 
-public abstract class AbstractClusterTransactionRequestProcessor<TRequestHandler, TBatchCommand>
+internal abstract class AbstractClusterTransactionRequestProcessor<TRequestHandler, TBatchCommand>
     where TRequestHandler : RequestHandler
     where TBatchCommand : IBatchCommand
 {

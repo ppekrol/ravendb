@@ -6,7 +6,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database
 {
-    public sealed class TotalDatabaseDataWrittenPerSecond : DatabaseBase<Gauge32>
+    internal sealed class TotalDatabaseDataWrittenPerSecond : DatabaseBase<Gauge32>
     {
         public TotalDatabaseDataWrittenPerSecond(ServerStore serverStore)
             : base(serverStore, SnmpOids.Databases.General.TotalDataWrittenPerSecond)

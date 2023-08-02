@@ -17,7 +17,7 @@ namespace Raven.Server.Documents.Sharding.Queries;
 /// A struct that we use to hold state and break the process
 /// of handling a sharded query into distinct steps
 /// </summary>
-public abstract class ShardedQueryProcessorBase<TCombinedResult> : AbstractShardedQueryProcessor<ShardedQueryCommand, QueryResult, TCombinedResult>
+internal abstract class ShardedQueryProcessorBase<TCombinedResult> : AbstractShardedQueryProcessor<ShardedQueryCommand, QueryResult, TCombinedResult>
     where TCombinedResult : QueryResultServerSide<BlittableJsonReaderObject>
 {
     protected ShardedQueryProcessorBase(

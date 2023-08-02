@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Raven.Server.Documents.Indexes.Static.Linq
 {
-    public static class DynamicEnumerable
+    internal static class DynamicEnumerable
     {
         public static IEnumerable<dynamic> Distinct(IEnumerable source)
         {

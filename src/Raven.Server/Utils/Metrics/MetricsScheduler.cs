@@ -14,7 +14,7 @@ namespace Raven.Server.Utils.Metrics
     /// The scheduling code is inspired form Daniel Crenna's metrics port
     /// https://github.com/danielcrenna/metrics-net/blob/master/src/metrics/Reporting/ReporterBase.cs
     /// </remarks>
-    public sealed class MetricsScheduler : IDisposable
+    internal sealed class MetricsScheduler : IDisposable
     {
         private readonly Thread _schedulerThread;
         private readonly ManualResetEvent _done = new ManualResetEvent(false);

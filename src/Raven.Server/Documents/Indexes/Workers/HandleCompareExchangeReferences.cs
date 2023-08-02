@@ -4,7 +4,7 @@ using Raven.Server.Config.Categories;
 
 namespace Raven.Server.Documents.Indexes.Workers
 {
-    public class HandleCompareExchangeReferences : HandleDocumentReferences
+    interal class HandleCompareExchangeReferences : HandleDocumentReferences
     {
         private readonly HashSet<string> _collectionsWithCompareExchangeReferences;
 

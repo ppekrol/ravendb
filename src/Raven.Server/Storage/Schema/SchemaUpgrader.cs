@@ -9,7 +9,7 @@ using Voron.Schema;
 
 namespace Raven.Server.Storage.Schema
 {
-    public static class SchemaUpgrader
+    internal static class SchemaUpgrader
     {
         internal sealed class CurrentVersion
         {

@@ -6,7 +6,7 @@ using Raven.Server.Config.Settings;
 
 namespace Raven.Server.Documents.Indexes.Configuration
 {
-    public class SingleIndexConfiguration : IndexingConfiguration
+    interal class SingleIndexConfiguration : IndexingConfiguration
     {
         private readonly RavenConfiguration _databaseConfiguration;
 

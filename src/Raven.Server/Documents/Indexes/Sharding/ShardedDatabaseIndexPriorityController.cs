@@ -4,7 +4,7 @@ using Raven.Server.Documents.Sharding;
 
 namespace Raven.Server.Documents.Indexes.Sharding;
 
-public sealed class ShardedDatabaseIndexPriorityController : DatabaseIndexPriorityController
+internal sealed class ShardedDatabaseIndexPriorityController : DatabaseIndexPriorityController
 {
     private readonly ShardedDocumentDatabase _database;
 

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Raven.Server.Utils.Cli
 {
-    public static class CommandLineConfigurationArgumentsHelper
+    internal static class CommandLineConfigurationArgumentsHelper
     {
         public static string[] FormatCliArgPrefixes(string key)
         {

@@ -7,7 +7,7 @@ using Lucene.Net.Analysis.Tokenattributes;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers
 {
-    public sealed class RavenStandardFilter : TokenFilter
+    internal sealed class RavenStandardFilter : TokenFilter
     {
         public RavenStandardFilter(TokenStream input) : base(input)
         {

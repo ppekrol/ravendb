@@ -2,7 +2,7 @@
 
 namespace Raven.Server.SqlMigration.Schema
 {
-    public sealed class TableColumn : IDynamicJson
+    internal sealed class TableColumn : IDynamicJson
     {
         public string Name { get; set; }
         public ColumnType Type { get; set; }

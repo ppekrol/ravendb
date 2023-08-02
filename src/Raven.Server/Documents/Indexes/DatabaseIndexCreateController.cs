@@ -8,7 +8,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.Indexes;
 
-public class DatabaseIndexCreateController : AbstractIndexCreateController
+interal class DatabaseIndexCreateController : AbstractIndexCreateController
 {
     private readonly DocumentDatabase _database;
 

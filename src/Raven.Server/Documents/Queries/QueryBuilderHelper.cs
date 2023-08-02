@@ -27,7 +27,7 @@ using Index = Raven.Server.Documents.Indexes.Index;
 
 namespace Raven.Server.Documents.Queries;
 
-public static class QueryBuilderHelper
+internal static class QueryBuilderHelper
 {
     internal const int ScoreId = -1;
 

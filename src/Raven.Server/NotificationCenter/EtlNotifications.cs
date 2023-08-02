@@ -7,7 +7,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.NotificationCenter
 {
-    public sealed class EtlNotifications
+    internal sealed class EtlNotifications
     {
         private readonly AbstractDatabaseNotificationCenter _notificationCenter;
 

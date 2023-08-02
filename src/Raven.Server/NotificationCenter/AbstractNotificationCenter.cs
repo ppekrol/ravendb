@@ -12,7 +12,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.NotificationCenter;
 
-public abstract class AbstractNotificationCenter : NotificationsBase
+internal abstract class AbstractNotificationCenter : NotificationsBase
 {
     private readonly Logger _logger;
 

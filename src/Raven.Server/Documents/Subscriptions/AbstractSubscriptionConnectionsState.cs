@@ -23,7 +23,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Subscriptions;
 
-public abstract class AbstractSubscriptionConnectionsState : IDisposable
+internal abstract class AbstractSubscriptionConnectionsState : IDisposable
 {
     private AsyncManualResetEvent _waitForMoreDocuments;
     public readonly CancellationTokenSource CancellationTokenSource;
@@ -203,7 +203,7 @@ public abstract class AbstractSubscriptionConnectionsState : IDisposable
     public abstract void Dispose();
 }
 
-public abstract class AbstractSubscriptionConnectionsState<TSubscriptionConnection, TIncludesCommand> : AbstractSubscriptionConnectionsState
+internal abstract class AbstractSubscriptionConnectionsState<TSubscriptionConnection, TIncludesCommand> : AbstractSubscriptionConnectionsState
     where TSubscriptionConnection : SubscriptionConnectionBase<TIncludesCommand>
     where TIncludesCommand : AbstractIncludesCommand
 {

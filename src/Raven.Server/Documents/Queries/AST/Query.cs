@@ -6,7 +6,7 @@ using Raven.Client;
 
 namespace Raven.Server.Documents.Queries.AST
 {
-    public sealed class Query
+    internal sealed class Query
     {
         public bool IsDistinct;
         public QueryExpression Where;
@@ -60,7 +60,7 @@ namespace Raven.Server.Documents.Queries.AST
         }
     }
 
-    public sealed class DeclaredFunction
+    internal sealed class DeclaredFunction
     {
         public string Name;
         public string FunctionText;
@@ -76,7 +76,7 @@ namespace Raven.Server.Documents.Queries.AST
         }
     }
 
-    public sealed class TimeSeriesFunction
+    internal sealed class TimeSeriesFunction
     {
         public TimeSeriesBetweenExpression Between;
         public QueryExpression Source;
@@ -87,7 +87,7 @@ namespace Raven.Server.Documents.Queries.AST
         public TimeSeriesGroupBy GroupBy;
     }
 
-    public struct TimeSeriesGroupBy
+    internal struct TimeSeriesGroupBy
     {
         public ValueExpression TimePeriod;
         public bool Tag;

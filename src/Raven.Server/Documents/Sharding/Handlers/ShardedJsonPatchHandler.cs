@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedJsonPatchHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedJsonPatchHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/json-patch", "PATCH")]
         public async Task DocOperations()

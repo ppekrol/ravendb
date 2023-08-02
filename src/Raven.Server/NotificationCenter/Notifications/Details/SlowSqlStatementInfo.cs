@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.NotificationCenter.Notifications.Details
 {
-    public sealed class SlowSqlStatementInfo : IDynamicJsonValueConvertible
+    internal sealed class SlowSqlStatementInfo : IDynamicJsonValueConvertible
     {
         public long Duration { get; set; }
         public DateTime Date { get; set; }

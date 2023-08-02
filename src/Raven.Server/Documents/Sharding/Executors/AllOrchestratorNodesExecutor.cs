@@ -10,7 +10,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Executors;
 
-public sealed class AllOrchestratorNodesExecutor : AbstractExecutor
+internal sealed class AllOrchestratorNodesExecutor : AbstractExecutor
 {
     private readonly ServerStore _store;
     private readonly DatabaseRecord _record;

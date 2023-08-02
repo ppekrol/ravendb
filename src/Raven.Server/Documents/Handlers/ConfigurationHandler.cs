@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Handlers
 {
-    public sealed class ConfigurationHandler : DatabaseRequestHandler
+    internal sealed class ConfigurationHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/configuration/studio", "GET", AuthorizationStatus.ValidUser, EndpointType.Read)]
         public async Task GetStudioConfiguration()

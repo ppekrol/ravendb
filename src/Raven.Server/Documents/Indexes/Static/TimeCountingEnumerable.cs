@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public sealed class TimeCountingEnumerable : IEnumerable
+    internal sealed class TimeCountingEnumerable : IEnumerable
     {
         [NotNull]
         private readonly IEnumerable _enumerable;

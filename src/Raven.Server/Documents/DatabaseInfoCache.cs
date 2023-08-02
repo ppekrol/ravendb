@@ -10,7 +10,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Documents
 {
-    public sealed class DatabaseInfoCache
+    internal sealed class DatabaseInfoCache
     {
 
         private static readonly Logger Logger = LoggingSource.Instance.GetLogger<DatabaseInfoCache>("Server");
@@ -128,11 +128,11 @@ namespace Raven.Server.Documents
             }
         }
 
-        public static class DatabaseInfoSchema
+        internal static class DatabaseInfoSchema
         {
             public const string DatabaseInfoTree = "DatabaseInfo";
 
-            public static class DatabaseInfoTable
+            internal static class DatabaseInfoTable
             {
 #pragma warning disable 169
                 public const int IdIndex = 0;

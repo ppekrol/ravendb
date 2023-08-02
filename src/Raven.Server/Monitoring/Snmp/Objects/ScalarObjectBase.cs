@@ -3,7 +3,7 @@ using Lextm.SharpSnmpLib.Pipeline;
 
 namespace Raven.Server.Monitoring.Snmp.Objects
 {
-    public abstract class ScalarObjectBase<TData> : ScalarObject
+    internal abstract class ScalarObjectBase<TData> : ScalarObject
         where TData : ISnmpData
     {
         protected ScalarObjectBase(string dots, bool appendRoot = true)

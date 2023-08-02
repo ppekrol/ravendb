@@ -14,7 +14,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Indexes.Workers
 {
-    public abstract class MapItems : IIndexingWork
+    internal abstract class MapItems : IIndexingWork
     {
         private readonly Logger _logger;
         private readonly Index _index;

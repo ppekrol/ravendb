@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Utils.Metrics
 {
-    public sealed class MeterMetric
+    internal sealed class MeterMetric
     {
         private long _count;
         private long _lastCount;

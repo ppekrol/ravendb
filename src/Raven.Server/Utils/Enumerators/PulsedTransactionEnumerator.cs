@@ -7,7 +7,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Utils.Enumerators
 {
-    public sealed class PulsedTransactionEnumerator<T, TState> : IEnumerator<T> where TState : PulsedEnumerationState<T>
+    internal sealed class PulsedTransactionEnumerator<T, TState> : IEnumerator<T> where TState : PulsedEnumerationState<T>
     {
         private readonly DocumentsOperationContext _context;
         private readonly Func<TState, IEnumerable<T>> _getEnumerable;

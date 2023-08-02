@@ -5,7 +5,7 @@ using Raven.Server.Integrations.PostgreSQL.Types;
 
 namespace Raven.Server.Integrations.PostgreSQL.PowerBI
 {
-    public static class PowerBIConfig
+    internal static class PowerBIConfig
     {
         // Note: PowerBI Desktop uses and ships with NpgSQL 4.0.10 and does not recommend 4.1 and up. https://docs.microsoft.com/en-us/power-query/connectors/postgresql
 

@@ -22,7 +22,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Integrations.PostgreSQL
 {
-    public class RqlQuery : PgQuery
+    interal class RqlQuery : PgQuery
     {
         protected readonly DocumentDatabase DocumentDatabase;
         private QueryOperationContext _queryOperationContext;

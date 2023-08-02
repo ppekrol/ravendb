@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters
 {
-    public sealed class TransformNullCoalescingOperatorTransformer : CSharpSyntaxRewriter
+    internal sealed class TransformNullCoalescingOperatorTransformer : CSharpSyntaxRewriter
     {
         public static TransformNullCoalescingOperatorTransformer Instance = new TransformNullCoalescingOperatorTransformer();
 

@@ -10,7 +10,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Commercial
 {
-    public sealed class LicenseStorage
+    internal sealed class LicenseStorage
     {
         private StorageEnvironment _environment;
 
@@ -148,11 +148,11 @@ namespace Raven.Server.Commercial
             return new BlittableJsonReaderObject(ptr, size, context);
         }
 
-        public static class LicenseInfoSchema
+        internal static class LicenseInfoSchema
         {
             public const string LicenseTree = "LicenseInfo";
 
-            public static class LicenseTable
+            internal static class LicenseTable
             {
 #pragma warning disable 169
                 public const int IdIndex = 0;

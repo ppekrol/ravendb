@@ -10,7 +10,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Handlers
 {
-    public sealed class HiLoHandler : DatabaseRequestHandler
+    internal sealed class HiLoHandler : DatabaseRequestHandler
     {
         public const string RavenHiloIdPrefix = "Raven/Hilo/";
 

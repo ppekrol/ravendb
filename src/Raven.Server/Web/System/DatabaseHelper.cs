@@ -11,7 +11,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Web.System
 {
-    public static class DatabaseHelper
+    internal static class DatabaseHelper
     {
         private static readonly Lazy<string[]> ServerWideOnlyConfigurationKeys = new Lazy<string[]>(GetServerWideOnlyConfigurationKeys);
 

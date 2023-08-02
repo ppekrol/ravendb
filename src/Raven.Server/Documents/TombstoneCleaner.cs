@@ -15,7 +15,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents
 {
-    public sealed class TombstoneCleaner : BackgroundWorkBase
+    internal sealed class TombstoneCleaner : BackgroundWorkBase
     {
         private readonly ITombstoneAware.TombstoneType[] _tombstoneTypes = new ITombstoneAware.TombstoneType[]
         {
@@ -317,7 +317,7 @@ namespace Raven.Server.Documents
             public State Counters;
         }
 
-        public sealed class State
+        internal sealed class State
         {
             public State()
             {
@@ -362,7 +362,7 @@ namespace Raven.Server.Documents
                 });
             }
 
-            public sealed class SubscriptionInfo
+            internal sealed class SubscriptionInfo
             {
                 public string Identifier { get; set; }
 

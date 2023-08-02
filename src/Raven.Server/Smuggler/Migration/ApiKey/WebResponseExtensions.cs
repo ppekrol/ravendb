@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Raven.Server.Smuggler.Migration.ApiKey
 {
-    public static class WebResponseExtensions
+    internal static class WebResponseExtensions
     {
         /// <summary>
         /// Gets the response stream with HTTP decompression.

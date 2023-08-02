@@ -11,7 +11,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Indexing
 {
-    public sealed class VoronIndexInput : IndexInput
+    internal sealed class VoronIndexInput : IndexInput
     {
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 

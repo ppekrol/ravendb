@@ -8,7 +8,7 @@ using System;
 
 namespace Raven.Server.Documents.Subscriptions.Stats
 {
-    public sealed class SubscriptionConnectionPerformanceOperation
+    internal sealed class SubscriptionConnectionPerformanceOperation
     {
         public SubscriptionConnectionPerformanceOperation(TimeSpan duration)
         {

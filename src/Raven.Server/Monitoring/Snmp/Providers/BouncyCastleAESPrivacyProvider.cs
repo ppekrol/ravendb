@@ -27,7 +27,7 @@ namespace Raven.Server.Monitoring.Snmp.Providers
     /// Privacy provider for AES 128.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "AES", Justification = "definition")]
-    public sealed class BouncyCastleAESPrivacyProvider : BouncyCastleAESPrivacyProviderBase
+    internal sealed class BouncyCastleAESPrivacyProvider : BouncyCastleAESPrivacyProviderBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BouncyCastleAESPrivacyProvider"/> class.

@@ -28,7 +28,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Queries
 {
-    public sealed class IndexQueryServerSide : IndexQuery<BlittableJsonReaderObject>
+    internal sealed class IndexQueryServerSide : IndexQuery<BlittableJsonReaderObject>
     {
         [JsonDeserializationIgnore]
         public QueryResultReturnOptions ReturnOptions;
@@ -547,7 +547,7 @@ namespace Raven.Server.Documents.Queries
             }
         }
 
-        public sealed class QueryResultReturnOptions
+        internal sealed class QueryResultReturnOptions
         {
             public bool MissingIncludeAsNull;
 

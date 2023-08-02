@@ -24,7 +24,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Handlers.Debugging
 {
-    public sealed class NodeDebugHandler : ServerRequestHandler
+    internal sealed class NodeDebugHandler : ServerRequestHandler
     {
         [RavenAction("/admin/debug/node/clear-http-clients-pool", "GET", AuthorizationStatus.ClusterAdmin)]
         public Task ClearHttpClientsPool()

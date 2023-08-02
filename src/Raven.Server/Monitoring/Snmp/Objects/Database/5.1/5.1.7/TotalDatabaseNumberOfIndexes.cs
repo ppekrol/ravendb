@@ -10,7 +10,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database
 {
-    public sealed class TotalDatabaseNumberOfIndexes : DatabaseBase<Integer32>
+    internal sealed class TotalDatabaseNumberOfIndexes : DatabaseBase<Integer32>
     {
         public TotalDatabaseNumberOfIndexes(ServerStore serverStore)
             : base(serverStore, SnmpOids.Databases.General.TotalNumberOfIndexes)

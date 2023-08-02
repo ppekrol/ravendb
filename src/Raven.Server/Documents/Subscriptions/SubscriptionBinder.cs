@@ -16,7 +16,7 @@ public interface ISubscriptionBinder
     Task Run(TcpConnectionOptions tcpConnectionOptions, IDisposable subscriptionConnectionInProgress);
 }
 
-public static class SubscriptionBinder
+internal static class SubscriptionBinder
 {
     public static ISubscriptionBinder CreateSubscriptionBinder(
         ServerStore server,
@@ -53,7 +53,7 @@ public static class SubscriptionBinder
     }
 }
 
-public sealed class SubscriptionBinder<TState, TConnection, TIncludeCommand> : ISubscriptionBinder
+internal sealed class SubscriptionBinder<TState, TConnection, TIncludeCommand> : ISubscriptionBinder
     where TState : AbstractSubscriptionConnectionsState<TConnection, TIncludeCommand>
     where TConnection : SubscriptionConnectionBase<TIncludeCommand>
     where TIncludeCommand : AbstractIncludesCommand

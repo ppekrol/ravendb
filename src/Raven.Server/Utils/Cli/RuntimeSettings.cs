@@ -7,7 +7,7 @@ using Sparrow.Server.Json.Sync;
 
 namespace Raven.Server.Utils.Cli
 {
-    public sealed class RuntimeSettings : ConsoleMessage
+    internal sealed class RuntimeSettings : ConsoleMessage
     {
         public RuntimeSettings(TextWriter tw) : base(tw)
         {

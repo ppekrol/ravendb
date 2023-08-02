@@ -8,7 +8,7 @@ using Sparrow.Server.Platform.Posix;
 
 namespace Raven.Server.Documents.Indexes
 {
-    public abstract class CompiledIndexField
+    internal abstract class CompiledIndexField
     {
         protected CompiledIndexField(string name)
         {
@@ -51,7 +51,7 @@ namespace Raven.Server.Documents.Indexes
         public abstract object GetValue(object value, object blittableValue);
     }
 
-    public sealed class SimpleField : CompiledIndexField
+    internal sealed class SimpleField : CompiledIndexField
     {
         public SimpleField(string name)
             : base(name)
@@ -74,7 +74,7 @@ namespace Raven.Server.Documents.Indexes
         }
     }
 
-    public sealed class JsNestedField : NestedField
+    internal sealed class JsNestedField : NestedField
     {
         public readonly string PropertyName;
 
@@ -113,7 +113,7 @@ namespace Raven.Server.Documents.Indexes
         }
     }
 
-    public class NestedField : CompiledIndexField
+    interal class NestedField : CompiledIndexField
     {
         private Type _accessorType;
 

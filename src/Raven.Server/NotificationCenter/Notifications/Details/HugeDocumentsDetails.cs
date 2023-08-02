@@ -6,7 +6,7 @@ using Sparrow.Json;
 using Sparrow.Json.Parsing;
 namespace Raven.Server.NotificationCenter.Notifications.Details
 {
-    public sealed class HugeDocumentsDetails : INotificationDetails
+    internal sealed class HugeDocumentsDetails : INotificationDetails
     {
         private const int SizeLimit = 100;
         private const double CleanupFactor = 0.3;
@@ -62,7 +62,7 @@ namespace Raven.Server.NotificationCenter.Notifications.Details
         }
     }
 
-    public struct HugeDocumentInfo : IDynamicJsonValueConvertible
+    internal struct HugeDocumentInfo : IDynamicJsonValueConvertible
     {
         public long Size;
         public DateTime Date;

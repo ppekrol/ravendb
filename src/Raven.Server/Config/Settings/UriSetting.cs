@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Config.Settings
 {
-    public struct UriSetting
+    internal struct UriSetting
     {
         public readonly string UriValue;
 

@@ -3,7 +3,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Utils
 {
-    public sealed class PosixFile
+    internal sealed class PosixFile
     {
         public static void DeleteOnClose(string file)
         {

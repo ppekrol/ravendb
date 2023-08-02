@@ -130,7 +130,7 @@ namespace Raven.Server.Documents.Sharding.Handlers.Processors.Replication
             }
         }
 
-        public sealed class TombstonesLastModifiedComparer : Comparer<ShardStreamItem<Tombstone>>
+        internal sealed class TombstonesLastModifiedComparer : Comparer<ShardStreamItem<Tombstone>>
         {
             public override int Compare(ShardStreamItem<Tombstone> x,
                 ShardStreamItem<Tombstone> y)
@@ -147,7 +147,7 @@ namespace Raven.Server.Documents.Sharding.Handlers.Processors.Replication
             public static TombstonesLastModifiedComparer Instance = new();
         }
 
-        public sealed class TombstonesPreviewComparer : Comparer<Tombstone>
+        internal sealed class TombstonesPreviewComparer : Comparer<Tombstone>
         {
             public override int Compare(Tombstone x, Tombstone y)
             {

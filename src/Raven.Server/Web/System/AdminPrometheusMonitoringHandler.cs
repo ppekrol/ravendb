@@ -16,12 +16,12 @@ using Sparrow.LowMemory;
 
 namespace Raven.Server.Web.System
 {
-    public sealed class AdminPrometheusMonitoringHandler : ServerRequestHandler
+    internal sealed class AdminPrometheusMonitoringHandler : ServerRequestHandler
     {
         public const string PrometheusContentType = "text/plain; version=0.0.4; charset=utf-8";
         public const string MetricsPrefix = "ravendb_";
 
-        public sealed class EnumHelp
+        internal sealed class EnumHelp
         {
             private EnumHelp()
             {

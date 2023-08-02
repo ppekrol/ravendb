@@ -12,7 +12,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Queries.Results.TimeSeries
 {
-    public sealed class AggregationHolder
+    internal sealed class AggregationHolder
     {
         public static readonly object NullBucket = new object();
 
@@ -221,7 +221,7 @@ namespace Raven.Server.Documents.Queries.Results.TimeSeries
             };
         }
 
-        public sealed class PreviousAggregation
+        internal sealed class PreviousAggregation
         {
             public RangeGroup Range;
 

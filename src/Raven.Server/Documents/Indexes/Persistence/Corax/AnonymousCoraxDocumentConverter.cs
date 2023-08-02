@@ -10,14 +10,14 @@ using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Corax;
 
-public sealed class AnonymousCoraxDocumentConverter : AnonymousCoraxDocumentConverterBase
+internal sealed class AnonymousCoraxDocumentConverter : AnonymousCoraxDocumentConverterBase
 {
     public AnonymousCoraxDocumentConverter(Index index, bool storeValue = false) : base(index, numberOfBaseFields: 1, storeValue: storeValue)
     {
     }
 }
 
-public abstract class AnonymousCoraxDocumentConverterBase : CoraxDocumentConverterBase
+internal abstract class AnonymousCoraxDocumentConverterBase : CoraxDocumentConverterBase
 {
     private readonly bool _isMultiMap;
     private IPropertyAccessor _propertyAccessor;

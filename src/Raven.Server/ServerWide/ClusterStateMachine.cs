@@ -73,7 +73,7 @@ using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.ServerWide
 {
-    public sealed class ClusterStateMachine : RachisStateMachine
+    internal sealed class ClusterStateMachine : RachisStateMachine
     {
         private readonly Logger _clusterAuditLog = LoggingSource.AuditLog.GetLogger("ClusterStateMachine", "Audit");
 
@@ -89,7 +89,7 @@ namespace Raven.Server.ServerWide
         public static readonly TableSchema ReplicationCertificatesSchema;
         public static readonly TableSchema SubscriptionStateSchema;
 
-        public sealed class ServerWideConfigurationKey
+        internal sealed class ServerWideConfigurationKey
         {
             public static string Backup = "server-wide/backup/configurations";
 
@@ -4805,7 +4805,7 @@ namespace Raven.Server.ServerWide
         public readonly SubscriptionsClusterStorage Subscriptions;
     }
 
-    public sealed class RachisLogIndexNotifications : IDisposable
+    internal sealed class RachisLogIndexNotifications : IDisposable
     {
         public long LastModifiedIndex;
         private readonly AsyncManualResetEvent _notifiedListeners;
@@ -5072,7 +5072,7 @@ namespace Raven.Server.ServerWide
         }
     }
 
-    public sealed class RecentLogIndexNotification
+    internal sealed class RecentLogIndexNotification
     {
         public string Type;
         public TimeSpan ExecutionTime;

@@ -5,7 +5,7 @@ using Raven.Server.Config.Settings;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.Server)]
-    public sealed class ServerConfiguration : ConfigurationCategory
+    internal sealed class ServerConfiguration : ConfigurationCategory
     {
         [DefaultValue(30)]
         [TimeUnit(TimeUnit.Seconds)]

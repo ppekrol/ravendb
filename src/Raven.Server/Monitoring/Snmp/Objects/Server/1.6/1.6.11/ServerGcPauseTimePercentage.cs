@@ -4,7 +4,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class ServerGcPauseTimePercentage : ServerGcBase<Gauge32>
+    internal sealed class ServerGcPauseTimePercentage : ServerGcBase<Gauge32>
     {
         public ServerGcPauseTimePercentage(MetricCacher metricCacher, GCKind gcKind)
             : base(metricCacher, gcKind, SnmpOids.Server.GcPauseTimePercentage)

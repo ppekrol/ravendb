@@ -11,7 +11,7 @@ namespace Raven.Server.Documents.Commands.Tombstones;
 
 internal sealed class GetTombstonesStateCommand : RavenCommand<GetTombstonesStateCommand.Response>
 {
-    public sealed class Response
+    internal sealed class Response
     {
         public Response()
         {
@@ -46,7 +46,7 @@ internal sealed class GetTombstonesStateCommand : RavenCommand<GetTombstonesStat
 
         public List<TombstoneCleaner.TombstonesState.SubscriptionInfo> PerSubscriptionInfo { get; set; }
 
-        public sealed class TombstonesStateForCollection
+        internal sealed class TombstonesStateForCollection
         {
             public TombstonesStateForCollection()
             {

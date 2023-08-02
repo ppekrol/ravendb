@@ -6,7 +6,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.ETL.Providers.Raven.Enumerators
 {
-    public sealed class TombstonesToRavenEtlItems : IEnumerator<RavenEtlItem>
+    internal sealed class TombstonesToRavenEtlItems : IEnumerator<RavenEtlItem>
     {
         private readonly DocumentsOperationContext _context;
         private readonly IEnumerator<Tombstone> _tombstones;

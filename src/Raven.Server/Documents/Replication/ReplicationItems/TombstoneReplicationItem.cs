@@ -5,7 +5,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Replication.ReplicationItems
 {
-    public sealed class TombstoneReplicationItem
+    internal sealed class TombstoneReplicationItem
     {
         public static unsafe ReplicationBatchItem From(DocumentsOperationContext context, Tombstone doc)
         {

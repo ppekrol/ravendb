@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Raven.Server.Documents.Queries.Revisions
 {
-    public sealed class RevisionIncludeField
+    internal sealed class RevisionIncludeField
     {
         internal HashSet<string> RevisionsChangeVectorsPaths;
         internal DateTime? RevisionsBeforeDateTime;

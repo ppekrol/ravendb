@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries.Facets
 {
-    public sealed class FacetField : SelectField
+    internal sealed class FacetField : SelectField
     {
         private string _optionsAsStringOrParameterName;
 

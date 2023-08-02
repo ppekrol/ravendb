@@ -1,13 +1,13 @@
 ﻿namespace Raven.Server.Documents.Studio
 {
-    public sealed class FeedbackForm
+    internal sealed class FeedbackForm
     {
         public string Message { get; set; }
 
         public FeedbackProduct Product { get; set; }
         public FeedbackUser User { get; set; }
 
-        public sealed class FeedbackProduct
+        internal sealed class FeedbackProduct
         {
             public string Name { get; set; }
             public string Version { get; set; }
@@ -17,7 +17,7 @@
             public string FeatureImpression { get; set; } // 'positive' | 'negative' | null
         }
 
-        public sealed class FeedbackUser
+        internal sealed class FeedbackUser
         {
             public string Name { get; set; }
             public string Email { get; set; }

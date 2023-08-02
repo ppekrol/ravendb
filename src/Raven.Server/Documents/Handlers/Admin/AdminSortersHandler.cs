@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Handlers.Admin
 {
-    public sealed class AdminSortersHandler : DatabaseRequestHandler
+    internal sealed class AdminSortersHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/admin/sorters", "PUT", AuthorizationStatus.DatabaseAdmin)]
         public async Task Put()

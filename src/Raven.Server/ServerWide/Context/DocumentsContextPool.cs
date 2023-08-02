@@ -9,7 +9,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.ServerWide.Context
 {
-    public sealed class DocumentsContextPool : JsonContextPoolBase<DocumentsOperationContext>, IDocumentsContextPool
+    internal sealed class DocumentsContextPool : JsonContextPoolBase<DocumentsOperationContext>, IDocumentsContextPool
     {
         private DocumentDatabase _database;
 

@@ -26,7 +26,7 @@ namespace Raven.Server.Integrations.PostgreSQL
     /// <remarks>
     /// See http://www.postgresql.org/docs/current/static/errcodes-appendix.html
     /// </remarks>
-    public static class PgErrorCodes
+    internal static class PgErrorCodes
     {
         #region Class 00 - Successful Completion
 

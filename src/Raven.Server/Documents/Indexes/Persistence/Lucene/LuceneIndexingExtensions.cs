@@ -14,7 +14,7 @@ using Raven.Server.Documents.Indexes.Analysis;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 {
-    public static class LuceneIndexingExtensions
+    internal static class LuceneIndexingExtensions
     {
         private static readonly Assembly LuceneAssembly = typeof(StandardAnalyzer).Assembly;
 

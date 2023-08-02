@@ -16,7 +16,7 @@ using Sparrow.Collections;
 namespace Raven.Server.Documents
 {
     [SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
-    public sealed class ResourceCache<TResource> : IEnumerable<KeyValuePair<StringSegment, Task<TResource>>>
+    internal sealed class ResourceCache<TResource> : IEnumerable<KeyValuePair<StringSegment, Task<TResource>>>
     {
         private readonly ConcurrentDictionary<StringSegment, Task<TResource>> _caseInsensitive =
                     new ConcurrentDictionary<StringSegment, Task<TResource>>(StringSegmentComparer.OrdinalIgnoreCase);
@@ -29,7 +29,7 @@ namespace Raven.Server.Documents
         private readonly ConcurrentDictionary<StringSegment, ConcurrentSet<StringSegment>> _mappings =
             new ConcurrentDictionary<StringSegment, ConcurrentSet<StringSegment>>(StringSegmentComparer.OrdinalIgnoreCase);
 
-        public sealed class ResourceDetails
+        internal sealed class ResourceDetails
         {
             public DateTime InCacheSince;
         }

@@ -36,7 +36,7 @@ using StudioConfiguration = Raven.Client.Documents.Operations.Configuration.Stud
 
 namespace Raven.Server.Commercial
 {
-    public static class SetupManager
+    internal static class SetupManager
     {
         internal static readonly Logger Logger = LoggingSource.Instance.GetLogger<LicenseManager>("Server");
         

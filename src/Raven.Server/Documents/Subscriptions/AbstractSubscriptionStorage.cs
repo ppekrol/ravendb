@@ -17,7 +17,7 @@ using Sparrow.LowMemory;
 
 namespace Raven.Server.Documents.Subscriptions;
 
-public abstract class AbstractSubscriptionStorage
+internal abstract class AbstractSubscriptionStorage
 {
     protected readonly ServerStore _serverStore;
     protected string _databaseName;
@@ -146,7 +146,7 @@ public abstract class AbstractSubscriptionStorage
     }
 }
 
-public abstract class AbstractSubscriptionStorage<TState> : AbstractSubscriptionStorage, ILowMemoryHandler, IDisposable
+internal abstract class AbstractSubscriptionStorage<TState> : AbstractSubscriptionStorage, ILowMemoryHandler, IDisposable
     where TState : AbstractSubscriptionConnectionsState
 {
     protected readonly ConcurrentDictionary<long, TState> _subscriptions = new();

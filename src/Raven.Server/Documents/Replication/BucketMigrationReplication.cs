@@ -6,7 +6,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Replication
 {
-    public sealed class BucketMigrationReplication : ReplicationNode
+    internal sealed class BucketMigrationReplication : ReplicationNode
     {
         public readonly ShardBucketMigration ShardBucketMigration;
         public readonly int Bucket;

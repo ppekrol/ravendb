@@ -7,7 +7,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents.Fields
 {
-    public sealed class FieldCacheKey
+    internal sealed class FieldCacheKey
     {
         internal readonly string _name;
         internal readonly Field.Index? _index;

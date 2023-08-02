@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers.Admin
 {
-    public sealed class ShardedTransactionsModeHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedTransactionsModeHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/admin/transactions-mode", "GET")]
         public async Task CommitNonLazyTx()

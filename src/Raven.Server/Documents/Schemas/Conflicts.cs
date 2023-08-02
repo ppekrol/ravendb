@@ -4,7 +4,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Documents.Schemas
 {
-    public static class Conflicts
+    internal static class Conflicts
     {
 
         internal static readonly TableSchema ConflictsSchemaBase = new TableSchema()

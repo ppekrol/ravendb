@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.NotificationCenter.Notifications.Details;
 
-public sealed class MismatchedReferencesLoadWarning : INotificationDetails
+internal sealed class MismatchedReferencesLoadWarning : INotificationDetails
 {
     public Dictionary<string, List<WarningDetails>> Warnings { get; set; }
     
@@ -65,7 +65,7 @@ public sealed class MismatchedReferencesLoadWarning : INotificationDetails
         return djv;
     }
     
-    public sealed class WarningDetails
+    internal sealed class WarningDetails
     {
         public string SourceId { get; set; }
         public string ReferenceId { get; set; }

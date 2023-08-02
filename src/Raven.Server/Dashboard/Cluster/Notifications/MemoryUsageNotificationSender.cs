@@ -17,7 +17,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Dashboard.Cluster.Notifications
 {
-    public sealed class MemoryUsageNotificationSender : AbstractClusterDashboardNotificationSender
+    internal sealed class MemoryUsageNotificationSender : AbstractClusterDashboardNotificationSender
     {
         private readonly RavenServer _server;
         private readonly LowMemoryMonitor _lowMemoryMonitor = new();

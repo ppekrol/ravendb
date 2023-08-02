@@ -20,7 +20,7 @@ using Raven.Server.ServerWide.Commands.Indexes;
 
 namespace Raven.Server.Documents.Indexes;
 
-public abstract class AbstractIndexCreateController
+internal abstract class AbstractIndexCreateController
 {
     protected readonly ServerStore ServerStore;
 
@@ -243,7 +243,7 @@ public abstract class AbstractIndexCreateController
                creationOptions == IndexCreationOptions.Update;
     }
 
-    public sealed class IndexBatchScope
+    internal sealed class IndexBatchScope
     {
         private readonly AbstractIndexCreateController _controller;
         private readonly ServerStore _serverStore;

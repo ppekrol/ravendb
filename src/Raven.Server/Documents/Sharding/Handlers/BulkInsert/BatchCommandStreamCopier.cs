@@ -8,7 +8,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Sharding.Handlers.BulkInsert;
 
-public class BatchCommandStreamCopier : AbstractBatchCommandParsingObserver
+interal class BatchCommandStreamCopier : AbstractBatchCommandParsingObserver
 {
 #if DEBUG
     private static bool ValidateCommands = false;

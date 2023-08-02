@@ -65,7 +65,7 @@ namespace Raven.Server.Documents.Sharding.Handlers.Processors.Collections
         }
     }
 
-    public sealed class CollectionResult
+    internal sealed class CollectionResult
     {
         public BlittableJsonReaderArray Results;
         public string ContinuationToken;

@@ -35,7 +35,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Documents.Replication.Incoming
 {
-    public abstract class AbstractIncomingReplicationHandler<TContextPool, TOperationContext> : IAbstractIncomingReplicationHandler
+    internal abstract class AbstractIncomingReplicationHandler<TContextPool, TOperationContext> : IAbstractIncomingReplicationHandler
     where TContextPool : JsonContextPoolBase<TOperationContext>
     where TOperationContext : JsonOperationContext
     {
@@ -668,7 +668,7 @@ namespace Raven.Server.Documents.Replication.Incoming
             }
         }
 
-        public sealed class DataForReplicationCommand : IDisposable
+        internal sealed class DataForReplicationCommand : IDisposable
         {
             internal string SourceDatabaseId { get; set; }
 

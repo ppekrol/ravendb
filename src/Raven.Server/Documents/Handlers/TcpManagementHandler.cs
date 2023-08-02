@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Handlers
 {
-    public sealed class TcpManagementHandler : DatabaseRequestHandler
+    internal sealed class TcpManagementHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/tcp", "GET", AuthorizationStatus.ValidUser, EndpointType.Read, IsDebugInformationEndpoint = true)]
         public async Task GetAll()

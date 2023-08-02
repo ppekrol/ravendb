@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers.Admin;
 
-public sealed class ShardedAdminSortersHandler : ShardedDatabaseRequestHandler
+internal sealed class ShardedAdminSortersHandler : ShardedDatabaseRequestHandler
 {
     [RavenShardedAction("/databases/*/admin/sorters", "PUT")]
     public Task Put()

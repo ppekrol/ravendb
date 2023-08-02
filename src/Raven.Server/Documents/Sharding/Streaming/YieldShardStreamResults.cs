@@ -7,7 +7,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Sharding.Streaming;
 
-public sealed class YieldShardStreamResults : IAsyncEnumerator<BlittableJsonReaderObject>
+internal sealed class YieldShardStreamResults : IAsyncEnumerator<BlittableJsonReaderObject>
 {
     private readonly ReadContinuationState _readingState;
     private readonly string _arrayPropertyName;

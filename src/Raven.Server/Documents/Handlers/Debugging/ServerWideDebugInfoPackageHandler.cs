@@ -28,7 +28,7 @@ using Sparrow.Server.Platform.Posix;
 
 namespace Raven.Server.Documents.Handlers.Debugging
 {
-    public sealed class ServerWideDebugInfoPackageHandler : ServerRequestHandler
+    internal sealed class ServerWideDebugInfoPackageHandler : ServerRequestHandler
     {
         internal const string _serverWidePrefix = "server-wide";
 

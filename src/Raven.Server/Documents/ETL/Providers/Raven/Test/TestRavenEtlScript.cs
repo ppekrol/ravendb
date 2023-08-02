@@ -3,7 +3,7 @@ using Raven.Server.Documents.ETL.Test;
 
 namespace Raven.Server.Documents.ETL.Providers.Raven.Test
 {
-    public sealed class TestRavenEtlScript : TestEtlScript<RavenEtlConfiguration, RavenConnectionString>
+    internal sealed class TestRavenEtlScript : TestEtlScript<RavenEtlConfiguration, RavenConnectionString>
     {
         
     }

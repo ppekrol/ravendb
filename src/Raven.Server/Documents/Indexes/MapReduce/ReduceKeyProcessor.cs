@@ -351,7 +351,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce
             SingleValue,
             MultipleValues
         }
-        public struct Buffer
+        internal struct Buffer
         {
             public byte* Address;
             public int Size;

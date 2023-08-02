@@ -30,7 +30,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.ETL
 {
-    public sealed class EtlLoader : IDisposable, ITombstoneAware
+    internal sealed class EtlLoader : IDisposable, ITombstoneAware
     {
         private const string AlertTitle = "ETL loader";
 

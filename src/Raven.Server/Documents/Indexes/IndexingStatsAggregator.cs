@@ -12,7 +12,7 @@ using Sparrow.Server.Exceptions;
 
 namespace Raven.Server.Documents.Indexes
 {
-    public sealed class IndexingStatsAggregator : StatsAggregator<IndexingRunStats, IndexingStatsScope>
+    internal sealed class IndexingStatsAggregator : StatsAggregator<IndexingRunStats, IndexingStatsScope>
     {
         private volatile IndexingPerformanceStats _performanceStats;
 
@@ -95,7 +95,7 @@ namespace Raven.Server.Documents.Indexes
         }
     }
 
-    public sealed class IndexingStatsScope : StatsScope<IndexingRunStats, IndexingStatsScope>
+    internal sealed class IndexingStatsScope : StatsScope<IndexingRunStats, IndexingStatsScope>
     {
         private readonly IndexingRunStats _stats;
 

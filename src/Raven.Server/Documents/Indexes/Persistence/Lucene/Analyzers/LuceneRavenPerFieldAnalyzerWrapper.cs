@@ -15,7 +15,7 @@ using Raven.Server.Documents.Indexes.Static;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers
 {
-    public sealed class LuceneRavenPerFieldAnalyzerWrapper : Analyzer
+    internal sealed class LuceneRavenPerFieldAnalyzerWrapper : Analyzer
     {
         private readonly Analyzer _defaultAnalyzer;
         private Analyzer _defaultExactAnalyzer;
@@ -27,7 +27,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers
         private readonly Dictionary<string, Analyzer> _analyzerMap = new Dictionary<string, Analyzer>(default(PerFieldAnalyzerComparer));
         private readonly bool _hasDynamicFields;
 
-        public struct PerFieldAnalyzerComparer : IEqualityComparer<string>
+        internal struct PerFieldAnalyzerComparer : IEqualityComparer<string>
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool Equals(string inDictionary, string value)

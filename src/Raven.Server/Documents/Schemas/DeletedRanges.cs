@@ -5,7 +5,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Documents.Schemas
 {
-    public static class DeletedRanges
+    internal static class DeletedRanges
     {
 
         internal static readonly TableSchema DeleteRangesSchemaBase = new TableSchema();

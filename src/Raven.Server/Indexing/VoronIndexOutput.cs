@@ -10,7 +10,7 @@ using Voron;
 
 namespace Raven.Server.Indexing
 {
-    public sealed class VoronIndexOutput : BufferedIndexOutput
+    internal sealed class VoronIndexOutput : BufferedIndexOutput
     {
         private static readonly Logger Logger = LoggingSource.Instance.GetLogger<LuceneVoronDirectory>("VoronIndexOutput");
 

@@ -19,7 +19,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedOutgoingReplicationHandler : AbstractOutgoingReplicationHandler<TransactionContextPool, TransactionOperationContext>
+    internal sealed class ShardedOutgoingReplicationHandler : AbstractOutgoingReplicationHandler<TransactionContextPool, TransactionOperationContext>
     {
         private readonly string _sourceDatabaseId;
         private readonly ShardedDatabaseContext.ShardedReplicationContext _parent;

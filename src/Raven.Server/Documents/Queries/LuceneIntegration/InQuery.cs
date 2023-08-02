@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Raven.Server.Documents.Queries.LuceneIntegration
 {
-    public sealed class InQuery : Query
+    internal sealed class InQuery : Query
     {
         public List<string> Matches;
 

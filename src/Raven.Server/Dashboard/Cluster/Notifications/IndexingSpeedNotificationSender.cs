@@ -4,7 +4,7 @@ using Raven.Server.NotificationCenter;
 
 namespace Raven.Server.Dashboard.Cluster.Notifications
 {
-    public sealed class IndexingSpeedNotificationSender : AbstractClusterDashboardNotificationSender
+    internal sealed class IndexingSpeedNotificationSender : AbstractClusterDashboardNotificationSender
     {
         private readonly ClusterDashboardPayloadType _payloadType;
         private readonly DatabasesInfoRetriever _databasesInfoRetriever;

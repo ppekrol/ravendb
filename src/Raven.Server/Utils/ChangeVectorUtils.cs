@@ -21,7 +21,7 @@ namespace Raven.Server.Utils
         AlreadyMerged,
     }
 
-    public static class ChangeVectorUtils
+    internal static class ChangeVectorUtils
     {
         public static ConflictStatus GetConflictStatus(ChangeVector remoteChangeVector, ChangeVector localChangeVector, HashSet<string> exclude = null, ChangeVectorMode mode = ChangeVectorMode.Version)
         {

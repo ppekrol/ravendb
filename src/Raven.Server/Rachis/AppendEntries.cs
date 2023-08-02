@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Rachis
 {
-    public sealed class AppendEntries 
+    internal sealed class AppendEntries 
     {
         public long Term { get; set; }
         public long PrevLogIndex { get; set; }
@@ -16,7 +16,7 @@ namespace Raven.Server.Rachis
         public int MinCommandVersion { get; set; }
     }
 
-    public sealed class RachisEntry
+    internal sealed class RachisEntry
     {
         public long Term { get; set; }
         public long Index { get; set; }

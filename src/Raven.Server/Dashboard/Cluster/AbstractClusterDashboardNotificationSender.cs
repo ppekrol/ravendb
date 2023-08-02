@@ -14,7 +14,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Dashboard.Cluster
 {
-    public abstract class AbstractClusterDashboardNotificationSender : BackgroundWorkBase
+    internal abstract class AbstractClusterDashboardNotificationSender : BackgroundWorkBase
     {
         private readonly int _widgetId;
         private readonly ConnectedWatcher _watcher;

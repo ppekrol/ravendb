@@ -12,7 +12,7 @@ using Sparrow.Server.Platform.Posix;
 
 namespace Raven.Server.Documents.Handlers.Debugging
 {
-    public sealed class DatabaseDebugInfoPackageHandler : DatabaseRequestHandler
+    internal sealed class DatabaseDebugInfoPackageHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/debug/info-package", "GET", AuthorizationStatus.ValidUser, EndpointType.Read, IsDebugInformationEndpoint = true)]
         public async Task GetInfoPackage()

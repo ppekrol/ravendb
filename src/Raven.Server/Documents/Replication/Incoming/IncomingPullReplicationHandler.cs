@@ -17,7 +17,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Replication.Incoming
 {
-    public sealed class IncomingPullReplicationHandler : IncomingReplicationHandler
+    internal sealed class IncomingPullReplicationHandler : IncomingReplicationHandler
     {
         public readonly ReplicationLoader.PullReplicationParams _incomingPullReplicationParams;
 

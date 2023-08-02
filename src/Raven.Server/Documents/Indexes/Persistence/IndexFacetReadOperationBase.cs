@@ -12,7 +12,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Indexes.Persistence;
 
-public abstract class IndexFacetReadOperationBase : IndexOperationBase
+internal abstract class IndexFacetReadOperationBase : IndexOperationBase
 {
     protected readonly QueryBuilderFactories _queryBuilderFactories;
 

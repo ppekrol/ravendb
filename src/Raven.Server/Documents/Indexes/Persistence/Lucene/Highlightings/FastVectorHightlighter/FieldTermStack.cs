@@ -31,7 +31,7 @@ namespace Lucene.Net.Search.Vectorhighlight
     /// <c>FieldTermStack</c> is a stack that keeps query terms in the specified field
     /// of the document to be highlighted.
     /// </summary>
-    public sealed class FieldTermStack
+    internal sealed class FieldTermStack
     {
         private String fieldName;
         public LinkedList<TermInfo> termList = new LinkedList<TermInfo>();
@@ -203,7 +203,7 @@ namespace Lucene.Net.Search.Vectorhighlight
             return termList == null || termList.Count == 0;
         }
 
-        public sealed class TermInfo : IComparable<TermInfo>
+        internal sealed class TermInfo : IComparable<TermInfo>
         {
 
             String text;

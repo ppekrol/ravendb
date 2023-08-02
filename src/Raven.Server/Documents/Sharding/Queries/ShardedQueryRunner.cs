@@ -2,6 +2,6 @@
 
 namespace Raven.Server.Documents.Sharding.Queries;
 
-public sealed class ShardedQueryRunner : AbstractQueryRunner
+internal sealed class ShardedQueryRunner : AbstractQueryRunner
 {
 }

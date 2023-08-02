@@ -7,7 +7,7 @@ using Voron.Impl;
 
 namespace Raven.Server.ServerWide.Context
 {
-    public sealed class ClusterOperationContext : TransactionOperationContext<ClusterTransaction>
+    internal sealed class ClusterOperationContext : TransactionOperationContext<ClusterTransaction>
     {
         private readonly ClusterChanges _changes;
 
@@ -37,7 +37,7 @@ namespace Raven.Server.ServerWide.Context
         }
     }
 
-    public sealed class ClusterTransaction : RavenTransaction
+    internal sealed class ClusterTransaction : RavenTransaction
     {
         private List<CompareExchangeChange> _compareExchangeNotifications;
 

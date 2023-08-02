@@ -20,7 +20,7 @@ using JavaScriptFieldName = Raven.Client.Constants.Documents.Indexing.Fields.Jav
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
 {
-    public sealed class JintLuceneDocumentConverter : JintLuceneDocumentConverterBase
+    internal sealed class JintLuceneDocumentConverter : JintLuceneDocumentConverterBase
     {
         public JintLuceneDocumentConverter(MapIndex index, bool storeValue = false)
             : base(index, index.Definition.IndexDefinition, storeValue: storeValue)
@@ -33,7 +33,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
         }
     }
 
-    public abstract class JintLuceneDocumentConverterBase : LuceneDocumentConverterBase
+    internal abstract class JintLuceneDocumentConverterBase : LuceneDocumentConverterBase
     {
         private readonly IndexFieldOptions _allFields;
 

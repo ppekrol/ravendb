@@ -6,7 +6,7 @@ using Raven.Server.SqlMigration.Oracle;
 
 namespace Raven.Server.SqlMigration
 {
-    public static class DatabaseDriverDispatcher
+    internal static class DatabaseDriverDispatcher
     {
         public static IDatabaseDriver CreateDriver(MigrationProvider provider, string connectionString, string[] schemas = null)
         {

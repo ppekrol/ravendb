@@ -12,7 +12,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Sharding.Smuggler;
 
-public sealed class ShardedDatabaseSmugglerFactory : AbstractDatabaseSmugglerFactory
+internal sealed class ShardedDatabaseSmugglerFactory : AbstractDatabaseSmugglerFactory
 {
     private readonly ShardedDocumentDatabase _database;
 

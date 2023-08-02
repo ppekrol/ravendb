@@ -10,7 +10,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class PutServerWideBackupConfigurationCommand : UpdateValueCommand<ServerWideBackupConfiguration>
+    internal sealed class PutServerWideBackupConfigurationCommand : UpdateValueCommand<ServerWideBackupConfiguration>
     {
         public PutServerWideBackupConfigurationCommand()
         {

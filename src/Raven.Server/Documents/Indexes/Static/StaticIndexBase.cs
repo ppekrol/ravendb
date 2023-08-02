@@ -24,15 +24,15 @@ namespace Raven.Server.Documents.Indexes.Static
 {
     public delegate IEnumerable IndexingFunc(IEnumerable<dynamic> items);
 
-    public abstract class StaticCountersIndexBase : StaticCountersAndTimeSeriesIndexBase
+    internal abstract class StaticCountersIndexBase : StaticCountersAndTimeSeriesIndexBase
     {
     }
 
-    public abstract class StaticTimeSeriesIndexBase : StaticCountersAndTimeSeriesIndexBase
+    internal abstract class StaticTimeSeriesIndexBase : StaticCountersAndTimeSeriesIndexBase
     {
     }
 
-    public abstract class StaticCountersAndTimeSeriesIndexBase : AbstractStaticIndexBase
+    internal abstract class StaticCountersAndTimeSeriesIndexBase : AbstractStaticIndexBase
     {
         public void AddMap(string collection, string name, IndexingFunc map)
         {
@@ -40,7 +40,7 @@ namespace Raven.Server.Documents.Indexes.Static
         }
     }
 
-    public abstract class StaticIndexBase : AbstractStaticIndexBase
+    internal abstract class StaticIndexBase : AbstractStaticIndexBase
     {
         public void AddMap(string collection, IndexingFunc map)
         {
@@ -176,7 +176,7 @@ namespace Raven.Server.Documents.Indexes.Static
         }
     }
 
-    public abstract class AbstractStaticIndexBase
+    internal abstract class AbstractStaticIndexBase
     {
         protected readonly Dictionary<string, CollectionName> _collectionsCache = new Dictionary<string, CollectionName>(StringComparer.OrdinalIgnoreCase);
 

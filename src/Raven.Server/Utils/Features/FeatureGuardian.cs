@@ -5,7 +5,7 @@ using Raven.Server.Exceptions;
 
 namespace Raven.Server.Utils.Features;
 
-public sealed class FeatureGuardian
+internal sealed class FeatureGuardian
 {
     private readonly RavenConfiguration _configuration;
 

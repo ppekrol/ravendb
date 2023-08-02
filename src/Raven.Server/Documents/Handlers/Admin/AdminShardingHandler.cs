@@ -7,7 +7,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Documents.Handlers.Admin
 {
-    public sealed class AdminShardingHandler : DatabaseRequestHandler
+    internal sealed class AdminShardingHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/admin/sharding/resharding/cleanup", "POST", AuthorizationStatus.DatabaseAdmin)]
         public async Task ExecuteMoveDocuments()

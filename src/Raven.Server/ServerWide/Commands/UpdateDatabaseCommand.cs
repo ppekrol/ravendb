@@ -9,7 +9,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public abstract class UpdateDatabaseCommand : CommandBase
+    internal abstract class UpdateDatabaseCommand : CommandBase
     {
         public string DatabaseName;
         public bool ErrorOnDatabaseDoesNotExists = true;

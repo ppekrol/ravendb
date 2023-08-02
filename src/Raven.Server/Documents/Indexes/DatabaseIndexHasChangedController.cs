@@ -4,7 +4,7 @@ using Raven.Server.Config;
 
 namespace Raven.Server.Documents.Indexes;
 
-public sealed class DatabaseIndexHasChangedController : AbstractIndexHasChangedController
+internal sealed class DatabaseIndexHasChangedController : AbstractIndexHasChangedController
 {
     private readonly DocumentDatabase _database;
 

@@ -5,7 +5,7 @@ using Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters;
 
 namespace Raven.Server.Documents.Indexes.Static.Roslyn
 {
-    public sealed class MapFunctionProcessor : CSharpSyntaxRewriter
+    internal sealed class MapFunctionProcessor : CSharpSyntaxRewriter
     {
         public readonly CSharpSyntaxRewriter CollectionRetriever;
         private readonly ReferencedCollectionsRetriever _refCollectionsRetriever;

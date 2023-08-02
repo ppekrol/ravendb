@@ -6,7 +6,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Extensions
 {
-    public static class JsonSerializationExtensions
+    internal static class JsonSerializationExtensions
     {
         public static DynamicJsonValue ToJson(this IndexHistoryEntry entry)
         {

@@ -5,7 +5,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.ETL.Providers.ElasticSearch.Handlers
 {
-    public sealed class ElasticSearchEtlConnectionHandler : DatabaseRequestHandler
+    internal sealed class ElasticSearchEtlConnectionHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/admin/etl/elasticsearch/test-connection", "POST", AuthorizationStatus.DatabaseAdmin)]
         public async Task TestConnection()

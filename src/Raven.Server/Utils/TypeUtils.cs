@@ -11,7 +11,7 @@ using Sparrow.Utils;
 namespace Raven.Server.Utils
 {
     
-    public static class TypeUtils
+    internal static class TypeUtils
     {
         private struct VisitedResetBehavior : IResetSupport<HashSet<object>>
         {

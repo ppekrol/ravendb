@@ -17,7 +17,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Documents.Indexes.MapReduce.OutputToCollection
 {
-    public sealed class OutputReduceToCollectionCommandBatcher : IDisposable
+    internal sealed class OutputReduceToCollectionCommandBatcher : IDisposable
     {
         private static int BatchSize = PlatformDetails.Is32Bits == false
             ? 4096
@@ -201,7 +201,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce.OutputToCollection
         }
     }
 
-    public abstract class OutputReduceAbstractCommand : MergedTransactionCommand<DocumentsOperationContext, DocumentsTransaction>
+    internal abstract class OutputReduceAbstractCommand : MergedTransactionCommand<DocumentsOperationContext, DocumentsTransaction>
     {
         protected readonly DocumentDatabase _database;
 
@@ -221,7 +221,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce.OutputToCollection
         }
     }
 
-    public sealed class OutputReduceToCollectionCommand : OutputReduceAbstractCommand
+    internal sealed class OutputReduceToCollectionCommand : OutputReduceAbstractCommand
     {
         private const string MultipleOutputsForSameReduceKeyHashSeparator = "/";
 
@@ -439,7 +439,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce.OutputToCollection
             return GetOutputDocumentKey(reduceKeyHash) + MultipleOutputsForSameReduceKeyHashSeparator;
         }
 
-        public sealed class OutputReduceToCollectionReferencesCommand
+        internal sealed class OutputReduceToCollectionReferencesCommand
         {
             private readonly OutputReduceToCollectionCommand _parent;
             private readonly MapReduceIndex _index;
@@ -607,7 +607,7 @@ namespace Raven.Server.Documents.Indexes.MapReduce.OutputToCollection
         }
     }
 
-    public sealed class OutputReduceToCollectionCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, OutputReduceToCollectionCommand>
+    internal sealed class OutputReduceToCollectionCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, OutputReduceToCollectionCommand>
     {
         public string OutputReduceToCollection;
         public long? ReduceOutputIndex;

@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Subscriptions.Processor;
 
-public sealed class SubscriptionBatchResult
+internal sealed class SubscriptionBatchResult
 {
     public string LastChangeVectorSentInThisBatch;
     public List<SubscriptionBatchItem> CurrentBatch;

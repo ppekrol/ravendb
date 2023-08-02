@@ -26,7 +26,7 @@ using Sparrow.Server;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public sealed class JavaScriptIndex : AbstractJavaScriptIndex
+    internal sealed class JavaScriptIndex : AbstractJavaScriptIndex
     {
         public const string NoTracking = "noTracking";
 
@@ -196,7 +196,7 @@ function map(name, lambda) {
         }
     }
 
-    public abstract class AbstractJavaScriptIndex : AbstractStaticIndexBase
+    internal abstract class AbstractJavaScriptIndex : AbstractStaticIndexBase
     {
         protected const string GlobalDefinitions = "globalDefinition";
         protected const string CollectionProperty = "collection";

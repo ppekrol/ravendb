@@ -7,7 +7,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public abstract class CommandBase
+    internal abstract class CommandBase
     {
         public virtual DynamicJsonValue ToJson(JsonOperationContext context)
         {

@@ -9,7 +9,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.ETL.Providers.Queue.RabbitMq;
 
-public sealed class RabbitMqDocumentTransformer<T> : QueueDocumentTransformer<T, RabbitMqItem>
+internal sealed class RabbitMqDocumentTransformer<T> : QueueDocumentTransformer<T, RabbitMqItem>
     where T : QueueItem
 {
     public RabbitMqDocumentTransformer(Transformation transformation, DocumentDatabase database, DocumentsOperationContext context, QueueEtlConfiguration config) : base(transformation, database, context, config)

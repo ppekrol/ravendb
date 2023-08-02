@@ -6,7 +6,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class EditRefreshCommand : UpdateDatabaseCommand
+    internal sealed class EditRefreshCommand : UpdateDatabaseCommand
     {
         public RefreshConfiguration Configuration;
         public void UpdateDatabaseRecord(DatabaseRecord databaseRecord)

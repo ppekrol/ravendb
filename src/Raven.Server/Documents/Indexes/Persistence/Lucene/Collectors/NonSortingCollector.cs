@@ -7,7 +7,7 @@ using Lucene.Net.Store;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Collectors
 {
-    public sealed class NonSortingCollector : Collector, IDisposable
+    internal sealed class NonSortingCollector : Collector, IDisposable
     {
         private readonly int _numberOfDocsToCollect;
         private readonly List<ScoreDoc> _docs;

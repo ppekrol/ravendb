@@ -6,7 +6,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Queries.LuceneIntegration
 {
-    public struct FastBitArray 
+    internal struct FastBitArray 
     {
         public ulong[] Bits;
         public bool Disposed => Bits == null;

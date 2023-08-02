@@ -23,7 +23,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Subscriptions
 {
-    public class SubscriptionStorage : AbstractSubscriptionStorage<SubscriptionConnectionsState>
+    interal class SubscriptionStorage : AbstractSubscriptionStorage<SubscriptionConnectionsState>
     {
         internal readonly DocumentDatabase _db;
 
@@ -283,7 +283,7 @@ namespace Raven.Server.Documents.Subscriptions
             return subscription;
         }
 
-        public sealed class SubscriptionGeneralDataAndStats : SubscriptionState
+        internal sealed class SubscriptionGeneralDataAndStats : SubscriptionState
         {
             public SubscriptionConnection Connection => Connections?.FirstOrDefault();
             public List<SubscriptionConnection> Connections;

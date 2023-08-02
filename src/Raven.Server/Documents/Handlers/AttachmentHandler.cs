@@ -20,7 +20,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Handlers
 {
-    public sealed class AttachmentHandler : DatabaseRequestHandler
+    internal sealed class AttachmentHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/attachments", "HEAD", AuthorizationStatus.ValidUser, EndpointType.Read)]
         public async Task Head()
@@ -160,7 +160,7 @@ namespace Raven.Server.Documents.Handlers
             }
         }
 
-        public sealed class MergedPutAttachmentCommand : MergedTransactionCommand<DocumentsOperationContext, DocumentsTransaction>
+        internal sealed class MergedPutAttachmentCommand : MergedTransactionCommand<DocumentsOperationContext, DocumentsTransaction>
         {
             public string DocumentId;
             public string Name;
@@ -216,7 +216,7 @@ namespace Raven.Server.Documents.Handlers
         }
     }
 
-    public sealed class MergedPutAttachmentCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, AttachmentHandler.MergedPutAttachmentCommand>
+    internal sealed class MergedPutAttachmentCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, AttachmentHandler.MergedPutAttachmentCommand>
     {
         public string DocumentId;
         public string Name;

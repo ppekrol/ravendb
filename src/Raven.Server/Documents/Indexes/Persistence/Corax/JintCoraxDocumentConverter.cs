@@ -19,7 +19,7 @@ using CoraxLib = global::Corax;
 using JavaScriptFieldName = Raven.Client.Constants.Documents.Indexing.Fields.JavaScript;
 namespace Raven.Server.Documents.Indexes.Persistence.Corax;
 
-public sealed class CoraxJintDocumentConverter : CoraxJintDocumentConverterBase
+internal sealed class CoraxJintDocumentConverter : CoraxJintDocumentConverterBase
 {
     public CoraxJintDocumentConverter(MapIndex index, bool storeValue = false) : base(index, index.Definition.IndexDefinition, storeValue, 1, keyFieldName: Constants.Documents.Indexing.Fields.DocumentIdFieldName, storeValueFieldName: Constants.Documents.Indexing.Fields.ValueFieldName, canContainSourceDocumentId: true) 
     {
@@ -30,7 +30,7 @@ public sealed class CoraxJintDocumentConverter : CoraxJintDocumentConverterBase
     }
 }
 
-public abstract class CoraxJintDocumentConverterBase : CoraxDocumentConverterBase
+internal abstract class CoraxJintDocumentConverterBase : CoraxDocumentConverterBase
 {
     private readonly IndexFieldOptions _allFields;
 

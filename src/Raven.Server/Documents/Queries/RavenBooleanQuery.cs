@@ -9,7 +9,7 @@ using Query = Lucene.Net.Search.Query;
 
 namespace Raven.Server.Documents.Queries
 {
-    public sealed class RavenBooleanQuery : BooleanQuery
+    internal sealed class RavenBooleanQuery : BooleanQuery
     {
         private readonly OperatorType _operator;
 

@@ -4,7 +4,7 @@ using Sparrow;
 
 namespace Raven.Server.Smuggler.Documents.Iteration
 {
-    public sealed class CountersIterationState : CollectionAwareIterationState<CounterGroupDetail>
+    internal sealed class CountersIterationState : CollectionAwareIterationState<CounterGroupDetail>
     {
         public CountersIterationState(DocumentsOperationContext context, Size pulseLimit) : base(context, pulseLimit)
         {

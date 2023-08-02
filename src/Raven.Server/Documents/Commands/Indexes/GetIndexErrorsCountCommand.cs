@@ -52,7 +52,7 @@ internal sealed class GetIndexErrorsCountCommand : RavenCommand<GetIndexErrorsCo
         Result = indexErrors;
     }
 
-    public sealed class IndexErrorsCount
+    internal sealed class IndexErrorsCount
     {
         public IndexErrorsCount()
         {
@@ -64,7 +64,7 @@ internal sealed class GetIndexErrorsCountCommand : RavenCommand<GetIndexErrorsCo
         public IndexingErrorCount[] Errors { get; set; }
     }
 
-    public sealed class IndexingErrorCount
+    internal sealed class IndexingErrorCount
     {
         public string Action { get; set; }
 

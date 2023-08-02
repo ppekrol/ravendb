@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class EditTimeSeriesConfigurationCommand : UpdateDatabaseCommand
+    internal sealed class EditTimeSeriesConfigurationCommand : UpdateDatabaseCommand
     {
         public TimeSeriesConfiguration Configuration { get; private set; }
 

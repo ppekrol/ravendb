@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Commands.Studio
 {
-    public sealed class GetStudioFooterStatisticsOperation : IMaintenanceOperation<FooterStatistics>
+    internal sealed class GetStudioFooterStatisticsOperation : IMaintenanceOperation<FooterStatistics>
     {
         public RavenCommand<FooterStatistics> GetCommand(DocumentConventions conventions, JsonOperationContext context)
         {

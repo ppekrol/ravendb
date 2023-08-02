@@ -12,7 +12,7 @@ using Raven.Server.Integrations.PostgreSQL.Types;
 
 namespace Raven.Server.Integrations.PostgreSQL.PowerBI
 {
-    public sealed class PowerBIPreviewQuery : PowerBIRqlQuery
+    internal sealed class PowerBIPreviewQuery : PowerBIRqlQuery
     {
         private readonly List<PgDataRow> _results;
 

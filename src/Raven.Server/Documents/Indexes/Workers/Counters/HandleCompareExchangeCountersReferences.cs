@@ -9,7 +9,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Indexes.Workers.Counters
 {
-    public sealed class HandleCompareExchangeCountersReferences : HandleCompareExchangeReferences
+    internal sealed class HandleCompareExchangeCountersReferences : HandleCompareExchangeReferences
     {
         private readonly HashSet<string> _collectionsWithCompareExchangeReferences;
         private readonly CountersStorage _countersStorage;

@@ -2,7 +2,7 @@
 
 namespace Raven.Server.SqlMigration.Model
 {
-    public abstract class AbstractCollection
+    internal abstract class AbstractCollection
     {
         // SQL Schema name
         public string SourceTableSchema { get; set; }

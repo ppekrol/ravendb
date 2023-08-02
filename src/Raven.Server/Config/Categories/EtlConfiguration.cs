@@ -6,7 +6,7 @@ using Sparrow;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.Etl)]
-    public sealed class EtlConfiguration : ConfigurationCategory
+    internal sealed class EtlConfiguration : ConfigurationCategory
     {
         [Description("Number of seconds after which SQL command will timeout. Default: null (use provider default). Can be overriden by setting CommandTimeout property value in SQL ETL configuration.")]
         [DefaultValue(null)]

@@ -11,7 +11,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Dashboard.Cluster.Notifications
 {
-    public sealed class IoStatsPayload : AbstractClusterDashboardNotification
+    internal sealed class IoStatsPayload : AbstractClusterDashboardNotification
     {
         public List<IoStatsResult> Items { get; set; }
 

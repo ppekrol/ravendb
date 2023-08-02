@@ -15,7 +15,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Subscriptions.Processor;
 
-public sealed class OrchestratedSubscriptionProcessor : AbstractSubscriptionProcessor<OrchestratorIncludesCommandImpl, SubscriptionBatchBase<BlittableJsonReaderObject>.Item>
+internal sealed class OrchestratedSubscriptionProcessor : AbstractSubscriptionProcessor<OrchestratorIncludesCommandImpl, SubscriptionBatchBase<BlittableJsonReaderObject>.Item>
 {
     private readonly ShardedDatabaseContext _databaseContext;
     private SubscriptionConnectionsStateOrchestrator _state;

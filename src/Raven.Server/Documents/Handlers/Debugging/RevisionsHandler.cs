@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Handlers.Debugging
 {
-    public sealed class RevisionsHandler : DatabaseRequestHandler
+    internal sealed class RevisionsHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/debug/documents/get-revisions", "GET", AuthorizationStatus.ValidUser, EndpointType.Read)]
         public async Task GetRevisions()

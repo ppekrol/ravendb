@@ -8,7 +8,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Maintenance.Sharding
 {
-    public static class BucketsMigrator
+    internal static class BucketsMigrator
     {
         public delegate bool MoveStrategy(DatabaseRecord record, Dictionary<int, ShardReport> shards, MigrationPolicy policy, ref ShardMigrationResult result);
 
@@ -184,14 +184,14 @@ namespace Raven.Server.ServerWide.Maintenance.Sharding
         }
     }
 
-    public sealed class ShardReport
+    internal sealed class ShardReport
     {
         public ShardNumber Shard;
         public Dictionary<int, BucketReport> ReportPerBucket;
         public long TotalSize => ReportPerBucket.Sum(r => r.Value.Size);
     }
 
-    public sealed class BucketReport : IDynamicJson
+    internal sealed class BucketReport : IDynamicJson
     {
         public long Size;
         public long NumberOfDocuments;
@@ -210,7 +210,7 @@ namespace Raven.Server.ServerWide.Maintenance.Sharding
         }
     }
 
-    public sealed class MigrationPolicy
+    internal sealed class MigrationPolicy
     {
         public static MigrationPolicy Default = new MigrationPolicy();
         public static MigrationPolicy Min = new MigrationPolicy
@@ -224,7 +224,7 @@ namespace Raven.Server.ServerWide.Maintenance.Sharding
         public long? SizeThreshold = 10 * 1024 * 1024; // 10 MB 
     }
     
-    public struct ShardNumber
+    internal struct ShardNumber
     {
         private int _value = 0;
 

@@ -43,7 +43,7 @@ public readonly struct ShardedLastChangeVectorForCollectionOperation : IShardedO
 
     public RavenCommand<LastChangeVectorForCollectionResult> CreateCommandForShard(int shardNumber) => new LastChangeVectorForCollectionCommand(_collection, null);
 
-    public sealed class LastChangeVectorForCollectionCommand : RavenCommand<LastChangeVectorForCollectionResult>
+    internal sealed class LastChangeVectorForCollectionCommand : RavenCommand<LastChangeVectorForCollectionResult>
     {
         private readonly string _collection;
 
@@ -80,13 +80,13 @@ public readonly struct ShardedLastChangeVectorForCollectionOperation : IShardedO
     }
 }
 
-public sealed class LastChangeVectorForCollectionResult
+internal sealed class LastChangeVectorForCollectionResult
 {
     public string Collection { get; set; }
     public string LastChangeVector { get; set; }
 }
 
-public sealed class LastChangeVectorForCollectionCombinedResult
+internal sealed class LastChangeVectorForCollectionCombinedResult
 {
     public string Collection { get; set; }
     public Dictionary<string, string> LastChangeVectors { get; set; }

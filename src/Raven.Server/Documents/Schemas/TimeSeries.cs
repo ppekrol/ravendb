@@ -5,7 +5,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Documents.Schemas
 {
-    public static class TimeSeries
+    internal static class TimeSeries
     {
 
         internal static readonly TableSchema TimeSeriesSchemaBase = new TableSchema

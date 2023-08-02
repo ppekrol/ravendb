@@ -8,7 +8,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Indexes.Workers.Counters
 {
-    public sealed class HandleCountersReferences : HandleReferences
+    internal sealed class HandleCountersReferences : HandleReferences
     {
         private readonly CountersStorage _countersStorage;
 

@@ -21,7 +21,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Commercial.LetsEncrypt;
 
-public sealed class LetsEncryptSimulationHelper
+internal sealed class LetsEncryptSimulationHelper
 {
     internal static readonly Logger Logger = LoggingSource.Instance.GetLogger<LicenseManager>("Server");
 

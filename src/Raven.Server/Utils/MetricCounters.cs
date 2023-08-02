@@ -11,7 +11,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Utils
 {
-    public sealed class MetricCounters 
+    internal sealed class MetricCounters 
     {
         public readonly RequestCounters Requests = new RequestCounters();
 
@@ -55,7 +55,7 @@ namespace Raven.Server.Utils
             TimeSeries.Initialize();
         }
 
-        public sealed class RequestCounters
+        internal sealed class RequestCounters
         {
             public MeterMetric RequestsPerSec { get; internal set; }
             
@@ -70,7 +70,7 @@ namespace Raven.Server.Utils
             }
         }
 
-        public abstract class MetricsWritesBase : IDynamicJson
+        internal abstract class MetricsWritesBase : IDynamicJson
         {
             public MeterMetric PutsPerSec { get; internal set; }
 
@@ -92,34 +92,34 @@ namespace Raven.Server.Utils
             }
         }
 
-        public sealed class DocCounters : MetricsWritesBase
+        internal sealed class DocCounters : MetricsWritesBase
         {
         }
 
-        public sealed class AttachmentCounters : MetricsWritesBase
+        internal sealed class AttachmentCounters : MetricsWritesBase
         {
         }
 
-        public sealed class CounterCounters : MetricsWritesBase
+        internal sealed class CounterCounters : MetricsWritesBase
         {
         }
 
-        public sealed class TimeSeriesCounters : MetricsWritesBase
+        internal sealed class TimeSeriesCounters : MetricsWritesBase
         {
         }
 
-        public sealed class MapIndexCounters
+        internal sealed class MapIndexCounters
         {
             public MeterMetric IndexedPerSec { get; internal set; }
         }
 
-        public sealed class MapReduceIndexCounters
+        internal sealed class MapReduceIndexCounters
         {
             public MeterMetric MappedPerSec { get; internal set; }
             public MeterMetric ReducedPerSec { get; internal set; }
         }
 
-        public sealed class SqlReplicationCounters
+        internal sealed class SqlReplicationCounters
         {
             public MeterMetric BatchSize { get; internal set; }
         }
@@ -197,7 +197,7 @@ namespace Raven.Server.Utils
         }
     }
 
-    public static class MetricsExtensions
+    internal static class MetricsExtensions
     {
         public static void SetMinimalHumaneMeterData(this MeterMetric self, string name, DynamicJsonValue obj)
         {

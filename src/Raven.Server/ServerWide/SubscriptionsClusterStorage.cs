@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.ServerWide;
 
-public sealed class SubscriptionsClusterStorage
+internal sealed class SubscriptionsClusterStorage
 {
     private readonly ClusterStateMachine _cluster;
     public SubscriptionsClusterStorage(ClusterStateMachine cluster)

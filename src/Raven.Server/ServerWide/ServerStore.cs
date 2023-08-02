@@ -3346,7 +3346,7 @@ namespace Raven.Server.ServerWide
             public string RaftUniqueRequestId { get; } = RaftIdGenerator.NewId();
         }
 
-        public sealed class PutRaftCommandResult
+        internal sealed class PutRaftCommandResult
         {
             public long RaftCommandIndex { get; set; }
 

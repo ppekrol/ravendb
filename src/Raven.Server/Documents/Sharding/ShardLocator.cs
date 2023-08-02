@@ -5,7 +5,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Sharding
 {
-    public static class ShardLocator
+    internal static class ShardLocator
     {
         public static Dictionary<int, IdsByShard<string>> GetDocumentIdsByShards(TransactionOperationContext context, ShardedDatabaseContext databaseContext, IEnumerable<string> ids) =>
             GetDocumentIdsByShardsGeneric(context, databaseContext, ids);
@@ -55,7 +55,7 @@ namespace Raven.Server.Documents.Sharding
             return result;
         }
 
-        public sealed class IdsByShard<T>
+        internal sealed class IdsByShard<T>
         {
             public List<T> Ids;
             public List<int> Positions; // positions in the final result

@@ -6,7 +6,7 @@ using Raven.Client.Documents.Operations.Configuration;
 
 namespace Raven.Server.Commercial;
 
-public sealed class GetSetupZipFileParameters
+internal sealed class GetSetupZipFileParameters
 {
     public CompleteClusterConfigurationResult CompleteClusterConfigurationResult; 
     public SetupProgressAndResult Progress;

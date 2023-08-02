@@ -18,7 +18,7 @@ using Raven.Server.Web;
 
 namespace Raven.Server.NotificationCenter.Handlers
 {
-    public sealed class ServerNotificationCenterHandler : ServerNotificationHandlerBase
+    internal sealed class ServerNotificationCenterHandler : ServerNotificationHandlerBase
     {
         [RavenAction("/server/notification-center/watch", "GET", AuthorizationStatus.ValidUser, EndpointType.Read)]
         public async Task Get()
@@ -108,7 +108,7 @@ namespace Raven.Server.NotificationCenter.Handlers
         }
     }
 
-    public abstract class ServerNotificationHandlerBase : ServerRequestHandler
+    internal abstract class ServerNotificationHandlerBase : ServerRequestHandler
     {
         protected CanAccessDatabase GetDatabaseAccessValidationFunc(RavenServer.AuthenticateConnection authenticationStatus = null)
         {

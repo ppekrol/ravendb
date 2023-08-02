@@ -39,7 +39,7 @@ namespace Raven.Server.Rachis
         Error,
     }
 
-    public sealed class FollowerAmbassador : IDisposable
+    internal sealed class FollowerAmbassador : IDisposable
     {
         private readonly RachisConsensus _engine;
         private readonly Leader _leader;

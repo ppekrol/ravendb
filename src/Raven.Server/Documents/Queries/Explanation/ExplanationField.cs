@@ -4,7 +4,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries.Explanation
 {
-    public sealed class ExplanationField
+    internal sealed class ExplanationField
     {
         private string _optionsAsStringOrParameterName;
 

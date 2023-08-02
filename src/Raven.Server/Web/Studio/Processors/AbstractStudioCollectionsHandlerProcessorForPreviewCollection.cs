@@ -16,7 +16,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Web.Studio.Processors;
 
-public abstract class AbstractStudioCollectionsHandlerProcessorForPreviewCollection<TRequestHandler, TResult> : IDisposable
+internal abstract class AbstractStudioCollectionsHandlerProcessorForPreviewCollection<TRequestHandler, TResult> : IDisposable
     where TRequestHandler : RequestHandler
 {
     private const int ColumnsSamplingLimit = 10;

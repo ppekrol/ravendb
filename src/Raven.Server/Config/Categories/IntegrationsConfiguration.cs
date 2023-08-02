@@ -7,7 +7,7 @@ using Raven.Server.ServerWide;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.Integrations)]
-    public sealed class IntegrationsConfiguration : ConfigurationCategory
+    internal sealed class IntegrationsConfiguration : ConfigurationCategory
     {
         public IntegrationsConfiguration()
         {
@@ -24,7 +24,7 @@ namespace Raven.Server.Config.Categories
             Initialized = true;
         }
 
-        public sealed class PostgreSqlConfiguration : ConfigurationCategory
+        internal sealed class PostgreSqlConfiguration : ConfigurationCategory
         {
             [Description("Indicates if PostgreSQL integration is enabled or not. Default: false")]
             [DefaultValue(false)]

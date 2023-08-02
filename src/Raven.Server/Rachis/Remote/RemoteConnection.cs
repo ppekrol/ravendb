@@ -18,7 +18,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Rachis.Remote
 {
-    public sealed class RemoteConnection : IDisposable
+    internal sealed class RemoteConnection : IDisposable
     {
         private string _destTag;
         private string _src;
@@ -56,7 +56,7 @@ namespace Raven.Server.Rachis.Remote
             RegisterConnection(dest, term, caller);
         }
 
-        public sealed class RemoteConnectionInfo
+        internal sealed class RemoteConnectionInfo
         {
             public string Caller;
             public DateTime StartAt;

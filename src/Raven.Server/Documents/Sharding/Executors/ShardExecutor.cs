@@ -15,7 +15,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Executors
 {
-    public sealed class ShardExecutor : AbstractExecutor
+    internal sealed class ShardExecutor : AbstractExecutor
     {
         private readonly DatabaseRecord _databaseRecord;
         private readonly string _databaseName;

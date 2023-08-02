@@ -3,7 +3,7 @@ using Raven.Client;
 
 namespace Raven.Server.Web
 {
-    public abstract class ServerRequestHandler : RequestHandler
+    internal abstract class ServerRequestHandler : RequestHandler
     {
         public override Task CheckForChanges(RequestHandlerContext context)
         {

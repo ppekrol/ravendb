@@ -11,7 +11,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Comparers;
 
-public sealed class DocumentsComparer : IComparer<BlittableJsonReaderObject>
+internal sealed class DocumentsComparer : IComparer<BlittableJsonReaderObject>
 {
     private readonly OrderByField[] _orderByFields;
     private readonly bool _extractFromData;

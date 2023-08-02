@@ -20,7 +20,7 @@ namespace Raven.Server.Utils.Cpu
         void Init();
     }
 
-    public sealed class CpuUsageStats
+    internal sealed class CpuUsageStats
     {
         public static readonly CpuUsageStats EmptyCpuUsage = new(0.0, 0.0, (double?)null);
         public CpuUsageStats(double machineCpuUsage, double processCpuUsage, double? machineIoWait)

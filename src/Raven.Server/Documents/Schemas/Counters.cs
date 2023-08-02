@@ -5,7 +5,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Documents.Schemas
 {
-    public static class Counters
+    internal static class Counters
     {
 
         internal static readonly TableSchema CountersSchemaBase = new TableSchema

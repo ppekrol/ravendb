@@ -18,7 +18,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Operations.Queries;
 
-public sealed class ShardedSuggestionQueryOperation : AbstractShardedQueryOperation<SuggestionQueryResult, SuggestionResult, Document>
+internal sealed class ShardedSuggestionQueryOperation : AbstractShardedQueryOperation<SuggestionQueryResult, SuggestionResult, Document>
 {
     private readonly Dictionary<string, SuggestionField> _fieldsWithOptions;
     private readonly BlittableJsonReaderObject _queryParameters;

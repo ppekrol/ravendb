@@ -4,7 +4,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Documents.Schemas;
 
-public static class Notifications
+internal static class Notifications
 {
     public static TableSchema Current => NotificationsSchemaBase;
 
@@ -16,7 +16,7 @@ public static class Notifications
 
     public const string NotificationsTree = "Notifications";
 
-    public static class NotificationsTable
+    internal static class NotificationsTable
     {
 #pragma warning disable 169
         public const int IdIndex = 0;

@@ -6,7 +6,7 @@ using Voron.Impl;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Corax;
 
-public sealed class OutputReduceCoraxIndexWriteOperation : CoraxIndexWriteOperation
+internal sealed class OutputReduceCoraxIndexWriteOperation : CoraxIndexWriteOperation
 {
     private readonly OutputReduceIndexWriteOperationScope<OutputReduceCoraxIndexWriteOperation> _outputScope;
 

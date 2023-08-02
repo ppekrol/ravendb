@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Raven.Server.Documents.ETL.Providers.ElasticSearch
 {
-    public static class ElasticSearchIndexValidator
+    internal static class ElasticSearchIndexValidator
     {
         private static int MaxIndexNameBytesLength = 255;
 

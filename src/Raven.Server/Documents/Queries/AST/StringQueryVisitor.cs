@@ -8,7 +8,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Queries.AST
 {
-    public sealed class StringQueryVisitor : QueryVisitor
+    internal sealed class StringQueryVisitor : QueryVisitor
     {
         private readonly StringBuilder _sb;
 

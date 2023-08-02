@@ -5,7 +5,7 @@ using Raven.Server.Config.Settings;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.License)]
-    public sealed class LicenseConfiguration : ConfigurationCategory
+    internal sealed class LicenseConfiguration : ConfigurationCategory
     {
         // these are actually ServerWideOnly, but we want to support configuring this via env variables, in which
         // case it leaks to the database level and throws

@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 namespace Raven.Server.Smuggler.Migration.ApiKey
 {
-    public static class CryptoTransformExtensions
+    internal static class CryptoTransformExtensions
     {
         public static byte[] TransformEntireBlock(this ICryptoTransform transform, byte[] data)
         {

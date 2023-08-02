@@ -10,7 +10,7 @@ using Raven.Server.Utils.Stats;
 
 namespace Raven.Server.Documents.Subscriptions.Stats
 {
-    public sealed class SubscriptionBatchStatsAggregator : StatsAggregator<SubscriptionBatchRunStats, SubscriptionBatchStatsScope>
+    internal sealed class SubscriptionBatchStatsAggregator : StatsAggregator<SubscriptionBatchRunStats, SubscriptionBatchStatsScope>
     {
         private volatile SubscriptionBatchPerformanceStats _batchPerformanceStats;
         

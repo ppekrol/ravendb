@@ -14,7 +14,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.ETL.Providers.Queue.RabbitMq;
 
-public sealed class RabbitMqEtl : QueueEtl<RabbitMqItem>
+internal sealed class RabbitMqEtl : QueueEtl<RabbitMqItem>
 {
     public static readonly string DefaultExchange = string.Empty;
     public static readonly string DefaultRoutingKey = string.Empty;

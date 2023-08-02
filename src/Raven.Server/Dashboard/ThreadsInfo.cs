@@ -7,7 +7,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Dashboard
 {
-    public sealed class ThreadsInfo : IDynamicJson
+    internal sealed class ThreadsInfo : IDynamicJson
     {
         private readonly int? _take;
 
@@ -60,7 +60,7 @@ namespace Raven.Server.Dashboard
         }
     }
 
-    public sealed class ThreadInfo : IDynamicJson
+    internal sealed class ThreadInfo : IDynamicJson
     {
         public int Id { get; set; }
 

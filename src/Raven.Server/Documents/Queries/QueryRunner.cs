@@ -19,7 +19,7 @@ using PatchRequest = Raven.Server.Documents.Patch.PatchRequest;
 
 namespace Raven.Server.Documents.Queries
 {
-    public sealed class QueryRunner : AbstractDatabaseQueryRunner
+    internal sealed class QueryRunner : AbstractDatabaseQueryRunner
     {
         private const int NumberOfRetries = 3;
 

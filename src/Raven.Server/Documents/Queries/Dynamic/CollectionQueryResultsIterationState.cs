@@ -4,7 +4,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Queries.Dynamic
 {
-    public sealed class CollectionQueryResultsIterationState : PulsedEnumerationState<Document>
+    internal sealed class CollectionQueryResultsIterationState : PulsedEnumerationState<Document>
     {
         public CollectionQueryResultsIterationState(DocumentsOperationContext context, Size pulseLimit) : base(context, pulseLimit)
         {

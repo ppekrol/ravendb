@@ -3,7 +3,7 @@ using Lextm.SharpSnmpLib;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class CpuCreditsAlertRaised : ScalarObjectBase<OctetString>
+    internal sealed class CpuCreditsAlertRaised : ScalarObjectBase<OctetString>
     {
         private readonly RavenServer.CpuCreditsState _state;
 

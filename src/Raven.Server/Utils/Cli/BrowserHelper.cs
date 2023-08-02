@@ -4,7 +4,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Utils.Cli
 {
-    public static class BrowserHelper
+    internal static class BrowserHelper
     {
         public static bool OpenStudioInBrowser(string url, Action<object> onError = null)
         {

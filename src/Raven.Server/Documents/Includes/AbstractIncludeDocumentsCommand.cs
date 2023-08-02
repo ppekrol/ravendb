@@ -1,6 +1,6 @@
 ﻿namespace Raven.Server.Documents.Includes;
 
-public abstract class AbstractIncludeDocumentsCommand
+internal abstract class AbstractIncludeDocumentsCommand
 {
     public abstract int Count { get; }
 }

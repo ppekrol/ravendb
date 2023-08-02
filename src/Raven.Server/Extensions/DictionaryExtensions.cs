@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Raven.Server.Extensions
 {
-    public static class DictionaryExtensions
+    internal static class DictionaryExtensions
     {
         public static TVal GetOrAdd<TKey, TVal>(this IDictionary<TKey, TVal> self, TKey key) where TVal : new()
         {

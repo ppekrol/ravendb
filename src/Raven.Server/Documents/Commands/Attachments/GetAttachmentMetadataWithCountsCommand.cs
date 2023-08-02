@@ -13,7 +13,7 @@ namespace Raven.Server.Documents.Commands.Attachments
     {
         private readonly string _documentId;
 
-        public sealed class Response
+        internal sealed class Response
         {
             public string Id { get; set; }
 

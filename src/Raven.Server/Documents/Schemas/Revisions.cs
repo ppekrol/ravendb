@@ -5,7 +5,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Documents.Schemas
 {
-    public static class Revisions
+    internal static class Revisions
     {
         internal static readonly TableSchema RevisionsSchemaBase = new TableSchema()
         {

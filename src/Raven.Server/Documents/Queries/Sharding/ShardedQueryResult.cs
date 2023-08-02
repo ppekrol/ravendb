@@ -9,7 +9,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries.Sharding;
 
-public sealed class ShardedQueryResult : QueryResultServerSide<BlittableJsonReaderObject>
+internal sealed class ShardedQueryResult : QueryResultServerSide<BlittableJsonReaderObject>
 {
     private IRevisionIncludes _includeRevisions;
     private ICounterIncludes _counterIncludes;

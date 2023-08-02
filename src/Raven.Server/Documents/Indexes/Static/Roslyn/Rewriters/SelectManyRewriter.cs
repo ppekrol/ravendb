@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters
 {
-    public abstract class SelectManyRewriter : CSharpSyntaxRewriter
+    internal abstract class SelectManyRewriter : CSharpSyntaxRewriter
     {
         public static SelectManyRewriter MethodSyntax => new MethodSyntaxRewriter();
 

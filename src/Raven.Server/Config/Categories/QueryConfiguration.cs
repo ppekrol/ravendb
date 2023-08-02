@@ -6,7 +6,7 @@ using Raven.Server.Documents.Indexes.Configuration;
 namespace Raven.Server.Config.Categories
 {
     [ConfigurationCategory(ConfigurationCategoryType.Query)]
-    public sealed class QueryConfiguration : ConfigurationCategory
+    internal sealed class QueryConfiguration : ConfigurationCategory
     {
         [DefaultValue(null)]//1024 is Lucene.net default, but we don't set it by default
         [ConfigurationEntry("Query.MaxClauseCount", ConfigurationEntryScope.ServerWideOnly)]

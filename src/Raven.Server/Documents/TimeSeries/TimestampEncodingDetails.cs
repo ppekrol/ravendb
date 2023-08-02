@@ -1,6 +1,6 @@
 ﻿namespace Raven.Server.Documents.TimeSeries
 {
-    public struct TimestampEncodingDetails
+    internal struct TimestampEncodingDetails
     {
         public int BitsForValue;
         public int ControlValue;

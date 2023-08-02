@@ -4,7 +4,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers;
 
-public sealed class ShardedReplicationHandler : ShardedDatabaseRequestHandler
+internal sealed class ShardedReplicationHandler : ShardedDatabaseRequestHandler
 {
     [RavenShardedAction("/databases/*/replication/conflicts/solver", "GET")]
     public async Task GetConflictSolver()

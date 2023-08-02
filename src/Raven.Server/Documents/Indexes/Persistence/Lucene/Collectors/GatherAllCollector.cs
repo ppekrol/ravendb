@@ -13,7 +13,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Collectors
 {
-    public sealed class GatherAllCollector : Collector, IDisposable
+    internal sealed class GatherAllCollector : Collector, IDisposable
     {       
         private int _docBase;
         private readonly List<ScoreDoc> _docs;

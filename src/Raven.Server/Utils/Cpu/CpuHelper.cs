@@ -12,7 +12,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Utils.Cpu
 {
-    public static class CpuHelper
+    internal static class CpuHelper
     {
         private static readonly Logger Logger = LoggingSource.Instance.GetLogger<MachineCpu>("Server");
 

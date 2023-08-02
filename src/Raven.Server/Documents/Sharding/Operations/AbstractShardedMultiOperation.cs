@@ -10,7 +10,7 @@ using Raven.Client.Http;
 
 namespace Raven.Server.Documents.Sharding.Operations;
 
-public abstract class AbstractShardedMultiOperation
+internal abstract class AbstractShardedMultiOperation
 {
     protected readonly long Id;
     protected readonly ShardedDatabaseContext ShardedDatabaseContext;

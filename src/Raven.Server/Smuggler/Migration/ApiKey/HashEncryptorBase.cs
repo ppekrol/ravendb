@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 namespace Raven.Server.Smuggler.Migration.ApiKey
 {
-    public abstract class HashEncryptorBase
+    internal abstract class HashEncryptorBase
     {
         protected bool AllowNonThreadSafeMethods { get; private set; }
 

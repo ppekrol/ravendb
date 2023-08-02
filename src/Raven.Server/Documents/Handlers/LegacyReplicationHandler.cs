@@ -22,7 +22,7 @@ using DatabaseSmuggler = Raven.Server.Smuggler.Documents.DatabaseSmuggler;
 
 namespace Raven.Server.Documents.Handlers
 {
-    public sealed class LegacyReplicationHandler : DatabaseRequestHandler
+    internal sealed class LegacyReplicationHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/replication/lastEtag", "GET", AuthorizationStatus.ValidUser, EndpointType.Write)]
         public async Task LastEtag()
@@ -517,7 +517,7 @@ namespace Raven.Server.Documents.Handlers
         }
     }
 
-    public sealed class LegacySourceReplicationInformation
+    internal sealed class LegacySourceReplicationInformation
     {
         public LegacySourceReplicationInformation()
         {

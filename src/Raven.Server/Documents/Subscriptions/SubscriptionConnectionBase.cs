@@ -34,7 +34,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Subscriptions
 {
-    public abstract class SubscriptionConnectionBase<TIncludesCommand> : ISubscriptionConnection
+    internal abstract class SubscriptionConnectionBase<TIncludesCommand> : ISubscriptionConnection
         where TIncludesCommand : AbstractIncludesCommand
     {
         private static readonly byte[] Heartbeat = Encoding.UTF8.GetBytes("\r\n");
@@ -792,7 +792,7 @@ namespace Raven.Server.Documents.Subscriptions
             Info
         }
 
-        public sealed class StatusMessageDetails
+        internal sealed class StatusMessageDetails
         {
             public string DatabaseName;
             public string ClientType;
@@ -1096,7 +1096,7 @@ namespace Raven.Server.Documents.Subscriptions
             _disposeOnce.Dispose();
         }
 
-        public sealed class SubscriptionConnectionInUse : IDisposable
+        internal sealed class SubscriptionConnectionInUse : IDisposable
         {
             private readonly IDisposable _release;
             private bool _disposed;

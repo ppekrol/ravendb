@@ -9,7 +9,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Web.Studio.Processors;
 
-public sealed class StudioCollectionsHandlerProcessorForPreviewCollection : AbstractStudioCollectionsHandlerProcessorForPreviewCollection<DatabaseRequestHandler, Document>
+internal sealed class StudioCollectionsHandlerProcessorForPreviewCollection : AbstractStudioCollectionsHandlerProcessorForPreviewCollection<DatabaseRequestHandler, Document>
 {
     private readonly DocumentDatabase _database;
 

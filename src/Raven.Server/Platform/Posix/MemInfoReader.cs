@@ -9,7 +9,7 @@ using Sparrow.Platform;
 
 namespace Raven.Server.Platform.Posix
 {
-    public static class MemInfoReader
+    internal static class MemInfoReader
     {
         internal const string MemInfoFileName = "/proc/meminfo";
 
@@ -69,7 +69,7 @@ namespace Raven.Server.Platform.Posix
         }
     }
 
-    public sealed class MemInfo
+    internal sealed class MemInfo
     {
         public static readonly Dictionary<string, PropertyInfo> AllProperties = new Dictionary<string, PropertyInfo>();
 

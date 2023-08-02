@@ -21,7 +21,7 @@ namespace Raven.Server.Smuggler.Migration.ApiKey
         public uint D;
     }
 
-    public sealed class MD5Core
+    internal sealed class MD5Core
     {
         //Prevent CSC from adding a default public constructor
         private MD5Core() { }

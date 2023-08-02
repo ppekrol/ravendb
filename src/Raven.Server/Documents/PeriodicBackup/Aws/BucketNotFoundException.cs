@@ -2,7 +2,7 @@ using System;
 
 namespace Raven.Server.Documents.PeriodicBackup.Aws
 {
-    public sealed class BucketNotFoundException : Exception
+    internal sealed class BucketNotFoundException : Exception
     {
         public BucketNotFoundException()
         {

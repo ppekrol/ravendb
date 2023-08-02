@@ -5,7 +5,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class UpdateExternalReplicationStateCommand : UpdateValueForDatabaseCommand
+    internal sealed class UpdateExternalReplicationStateCommand : UpdateValueForDatabaseCommand
     {
         public ExternalReplicationState ExternalReplicationState { get; set; }
 

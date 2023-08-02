@@ -7,7 +7,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Patch
 {
-    public sealed class JintStringConverter : IObjectConverter
+    internal sealed class JintStringConverter : IObjectConverter
     {
         public bool TryConvert(Engine engine, object value, out JsValue result)
         {

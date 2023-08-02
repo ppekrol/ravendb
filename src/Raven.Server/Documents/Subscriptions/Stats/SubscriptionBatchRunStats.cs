@@ -6,7 +6,7 @@
 
 namespace Raven.Server.Documents.Subscriptions.Stats
 {
-    public sealed class SubscriptionBatchRunStats
+    internal sealed class SubscriptionBatchRunStats
     {
         public long TaskId { get; set; }
         public string TaskName { get; set; }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Raven.Server.Utils
 {
     // credits to: http://www.hanselman.com/blog/ComparingTwoTechniquesInNETAsynchronousCoordinationPrimitives.aspx
-    public sealed class AsyncLock
+    internal sealed class AsyncLock
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly Task<IDisposable> _releaser;

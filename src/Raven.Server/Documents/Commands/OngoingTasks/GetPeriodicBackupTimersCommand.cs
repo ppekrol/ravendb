@@ -11,7 +11,7 @@ namespace Raven.Server.Documents.Commands.OngoingTasks;
 
 internal sealed class GetPeriodicBackupTimersCommand : RavenCommand<GetPeriodicBackupTimersCommand.PeriodicBackupTimersResponse>
 {
-    public sealed class PeriodicBackupTimersResponse
+    internal sealed class PeriodicBackupTimersResponse
     {
         public List<PeriodicBackupInfo> Timers { get; set; } = new();
 

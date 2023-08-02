@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents
 {
-    public sealed class JsonClassGenerator
+    internal sealed class JsonClassGenerator
     {
         private readonly Lazy<IDictionary<Type, FieldType>> _knownTypes = new Lazy<IDictionary<Type, FieldType>>(InitializeKnownTypes, true);
 
@@ -251,7 +251,7 @@ namespace Raven.Server.Documents
             for (var i = 0; i < classes.Count; i++)
             {
                 var @class = classes[i];
-                codeBuilder.Append("\tpublic class " + @class.Name + Environment.NewLine);
+                codeBuilder.Append("\tinteral class " + @class.Name + Environment.NewLine);
                 codeBuilder.Append("\t{" + Environment.NewLine);
 
                 foreach (var field in @class.Properties)

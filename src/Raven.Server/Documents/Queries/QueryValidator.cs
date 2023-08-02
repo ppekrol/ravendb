@@ -5,7 +5,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries
 {
-    public static class QueryValidator
+    internal static class QueryValidator
     {
         public static void ValidateTimings(List<QueryExpression> arguments, string queryText, BlittableJsonReaderObject parameters)
         {

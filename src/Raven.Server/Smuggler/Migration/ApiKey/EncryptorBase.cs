@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Smuggler.Migration.ApiKey
 {
-    public abstract class EncryptorBase<THashEncryptor, TSymmetricalEncryptor, TAsymmetricalEncryptor> : IEncryptor
+    internal abstract class EncryptorBase<THashEncryptor, TSymmetricalEncryptor, TAsymmetricalEncryptor> : IEncryptor
         where THashEncryptor : IHashEncryptor, new()
         where TSymmetricalEncryptor : ISymmetricalEncryptor, new()
         where TAsymmetricalEncryptor : IAsymmetricalEncryptor, new()

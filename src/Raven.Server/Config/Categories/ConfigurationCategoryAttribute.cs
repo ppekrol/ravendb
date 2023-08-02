@@ -3,7 +3,7 @@
 namespace Raven.Server.Config.Categories
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public sealed class ConfigurationCategoryAttribute : Attribute
+    internal sealed class ConfigurationCategoryAttribute : Attribute
     {
         public ConfigurationCategoryType Type { get; set; }
 

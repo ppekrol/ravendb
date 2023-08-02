@@ -13,7 +13,7 @@ using Raven.Client.Documents.Indexes;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene;
 
-public static class LuceneIndexingHelpers
+internal static class LuceneIndexingHelpers
 {
     private static readonly ConcurrentDictionary<Type, bool> NotForQuerying = new ConcurrentDictionary<Type, bool>();
 

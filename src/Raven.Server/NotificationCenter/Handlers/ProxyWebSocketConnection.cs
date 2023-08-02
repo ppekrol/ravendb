@@ -12,7 +12,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.NotificationCenter.Handlers
 {
-    public sealed class ProxyWebSocketConnection : IDisposable
+    internal sealed class ProxyWebSocketConnection : IDisposable
     {
         private static readonly Logger Logger = LoggingSource.Instance.GetLogger<ProxyWebSocketConnection>(nameof(ProxyWebSocketConnection));
 

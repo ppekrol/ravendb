@@ -3,7 +3,7 @@ using Raven.Server.Documents;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database
 {
-    public sealed class DatabaseRehabs : DatabaseScalarObjectBase<Integer32>
+    internal sealed class DatabaseRehabs : DatabaseScalarObjectBase<Integer32>
     {
         public DatabaseRehabs(string databaseName, DatabasesLandlord landlord, int index)
             : base(databaseName, landlord, SnmpOids.Databases.Rehabs, index)

@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters
 {
-    public sealed class MethodDynamicParametersRewriter : CSharpSyntaxRewriter
+    internal sealed class MethodDynamicParametersRewriter : CSharpSyntaxRewriter
     {
         public SemanticModel SemanticModel
         {

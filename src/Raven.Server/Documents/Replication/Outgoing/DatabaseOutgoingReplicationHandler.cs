@@ -29,7 +29,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Replication.Outgoing
 {
-    public abstract class DatabaseOutgoingReplicationHandler : AbstractOutgoingReplicationHandler<DocumentsContextPool, DocumentsOperationContext>
+    internal abstract class DatabaseOutgoingReplicationHandler : AbstractOutgoingReplicationHandler<DocumentsContextPool, DocumentsOperationContext>
     {
         public const string AlertTitle = "Replication";
 
@@ -466,7 +466,7 @@ namespace Raven.Server.Documents.Replication.Outgoing
         IncomingReplicationPerformanceStats[] GetReplicationPerformance();
     }
 
-    public static class ReplicationMessageType
+    internal static class ReplicationMessageType
     {
         public const string Heartbeat = "Heartbeat";
         public const string Documents = "Documents";

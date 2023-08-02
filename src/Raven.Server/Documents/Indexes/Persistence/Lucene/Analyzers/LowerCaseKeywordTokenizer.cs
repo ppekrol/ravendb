@@ -4,7 +4,7 @@ using Lucene.Net.Util;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers
 {
-    public struct LowerCaseKeywordTokenizerHelper : ILowerCaseTokenizerHelper
+    internal struct LowerCaseKeywordTokenizerHelper : ILowerCaseTokenizerHelper
     {
         private static readonly TextInfo _invariantTextInfo = CultureInfo.InvariantCulture.TextInfo;
 
@@ -38,7 +38,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Analyzers
         }
     }
 
-    public sealed class LowerCaseKeywordTokenizer : LowerCaseTokenizerBase<LowerCaseKeywordTokenizerHelper>
+    internal sealed class LowerCaseKeywordTokenizer : LowerCaseTokenizerBase<LowerCaseKeywordTokenizerHelper>
     {
         public LowerCaseKeywordTokenizer(System.IO.TextReader input)
             : base(input)

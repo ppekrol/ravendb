@@ -7,7 +7,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.ServerWide.Sharding;
 
-public sealed class RawShardingConfiguration
+internal sealed class RawShardingConfiguration
 {
     private ShardingConfiguration _materializedConfiguration;
 

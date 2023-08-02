@@ -4,7 +4,7 @@ using Lucene.Net.Documents;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents.Fields
 {
-    public sealed class FieldCacheKeyEqualityComparer<T> : IEqualityComparer<CachedFieldItem<T>> where T : AbstractField
+    internal sealed class FieldCacheKeyEqualityComparer<T> : IEqualityComparer<CachedFieldItem<T>> where T : AbstractField
     {
         public static readonly FieldCacheKeyEqualityComparer<T> Default = new FieldCacheKeyEqualityComparer<T>();
 

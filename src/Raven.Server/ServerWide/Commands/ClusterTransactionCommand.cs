@@ -27,7 +27,7 @@ using static Raven.Client.Exceptions.ClusterTransactionConcurrencyException;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class ClusterTransactionCommand : CommandBase
+    internal sealed class ClusterTransactionCommand : CommandBase
     {
         public string DatabaseName;
 
@@ -38,7 +38,7 @@ namespace Raven.Server.ServerWide.Commands
         //We take the current ticks in advance to ensure consistent results of the command execution on all nodes
         public long CommandCreationTicks = long.MinValue;
 
-        public sealed class ClusterTransactionDataCommand
+        internal sealed class ClusterTransactionDataCommand
         {
             public CommandType Type;
             public string Id;
@@ -85,7 +85,7 @@ namespace Raven.Server.ServerWide.Commands
             }
         }
 
-        public sealed class ClusterTransactionErrorInfo : IDynamicJsonValueConvertible
+        internal sealed class ClusterTransactionErrorInfo : IDynamicJsonValueConvertible
         {
             public string Message;
             public ConcurrencyViolation Violation;
@@ -100,7 +100,7 @@ namespace Raven.Server.ServerWide.Commands
             }
         }
 
-        public sealed class ClusterTransactionOptions : IDynamicJson
+        internal sealed class ClusterTransactionOptions : IDynamicJson
         {
             public string TaskId;
             public TimeSpan? WaitForIndexesTimeout;
@@ -780,7 +780,7 @@ namespace Raven.Server.ServerWide.Commands
             }
         }
 
-        public sealed class SingleClusterDatabaseCommand : IDynamicJson
+        internal sealed class SingleClusterDatabaseCommand : IDynamicJson
         {
             public ClusterTransactionOptions Options;
             public BlittableJsonReaderArray Commands;

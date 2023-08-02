@@ -38,7 +38,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Smuggler.Documents.Handlers
 {
-    public sealed class SmugglerHandler : DatabaseRequestHandler
+    internal sealed class SmugglerHandler : DatabaseRequestHandler
     {
         public static readonly RavenHttpClient HttpClient = new();
 

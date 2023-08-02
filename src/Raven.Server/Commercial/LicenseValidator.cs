@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Raven.Server.Commercial
 {
-    public static class LicenseValidator
+    internal static class LicenseValidator
     {
         private const int TypeBitsToShift = 5;
         private const int Mask = 0x1F;

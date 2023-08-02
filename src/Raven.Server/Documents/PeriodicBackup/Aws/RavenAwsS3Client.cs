@@ -17,7 +17,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Documents.PeriodicBackup.Aws
 {
-    public sealed class RavenAwsS3Client : IDisposable
+    internal sealed class RavenAwsS3Client : IDisposable
     {
         private readonly Progress _progress;
         private readonly CancellationToken _cancellationToken;

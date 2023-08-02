@@ -3,7 +3,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public abstract class UpdateValueCommand<T> : CommandBase
+    internal abstract class UpdateValueCommand<T> : CommandBase
     {
         public string Name;
 

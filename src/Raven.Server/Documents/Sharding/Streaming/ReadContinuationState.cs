@@ -8,7 +8,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Sharding.Streaming;
 
-public sealed class ReadContinuationState : IDisposable
+internal sealed class ReadContinuationState : IDisposable
 {
     private StreamResult _response;
     private readonly CancellationToken _token;

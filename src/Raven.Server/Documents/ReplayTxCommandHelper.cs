@@ -340,7 +340,7 @@ namespace Raven.Server.Documents
         }
     }
 
-    public sealed class ReplayTransactionsException : Exception
+    internal sealed class ReplayTransactionsException : Exception
     {
         public string Context { get; }
 

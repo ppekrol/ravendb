@@ -5,7 +5,7 @@ using Sparrow.Server.Utils;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database;
 
-public sealed class ServerStorageDiskWriteThroughput : ScalarObjectBase<Gauge32>
+internal sealed class ServerStorageDiskWriteThroughput : ScalarObjectBase<Gauge32>
 {
     private readonly ServerStore _store;
 

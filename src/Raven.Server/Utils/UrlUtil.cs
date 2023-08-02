@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Utils
 {
-    public static class UrlUtil
+    internal static class UrlUtil
     {
         public static string EnsureValidExternalUrl(string url)
         {

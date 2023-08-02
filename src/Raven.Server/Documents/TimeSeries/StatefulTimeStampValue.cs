@@ -72,7 +72,7 @@ namespace Raven.Server.Documents.TimeSeries
         public int NumberOfEntries => Span.Length > 0 ? Span[0].Count : 0;
     }
 
-    public struct TimestampState
+    internal struct TimestampState
     {
         public byte LeadingZeroes;
         public byte TrailingZeroes;

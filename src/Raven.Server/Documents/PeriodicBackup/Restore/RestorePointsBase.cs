@@ -13,7 +13,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.PeriodicBackup.Restore
 {
-    public abstract class RestorePointsBase : IDisposable
+    internal abstract class RestorePointsBase : IDisposable
     {
         public static Regex BackupFolderRegex = new Regex(@"([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}(-[0-9]{2})?(-[0-9]{7})?).ravendb-(.+)-([A-Za-z]+)-(.+)$", RegexOptions.Compiled);
         public static Regex FileNameRegex = new Regex(@"([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}(-[0-9]{2})?(-[0-9]{7})?)", RegexOptions.Compiled);
@@ -87,7 +87,7 @@ namespace Raven.Server.Documents.PeriodicBackup.Restore
             return true;
         }
 
-        public sealed class ParsedBackupFolderName
+        internal sealed class ParsedBackupFolderName
         {
             public string BackupTimeAsString { get; set; }
 
@@ -253,7 +253,7 @@ namespace Raven.Server.Documents.PeriodicBackup.Restore
             return path.Substring(0, index + 1);
         }
 
-        public sealed class DescendedDateComparer : IComparer<DateTime>
+        internal sealed class DescendedDateComparer : IComparer<DateTime>
         {
             public int Compare(DateTime x, DateTime y)
             {

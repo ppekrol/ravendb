@@ -22,7 +22,7 @@ using Sparrow.Threading;
 
 namespace Raven.Server.Smuggler.Documents
 {
-    public sealed class MultiShardedDestination : ISmugglerDestination
+    internal sealed class MultiShardedDestination : ISmugglerDestination
     {
         private readonly ShardedDatabaseContext _databaseContext;
         private readonly ShardedDatabaseRequestHandler _handler;

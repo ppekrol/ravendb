@@ -5,7 +5,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedTimeSeriesHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedTimeSeriesHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/timeseries", "POST")]
         public async Task Batch()

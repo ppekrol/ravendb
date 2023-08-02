@@ -11,7 +11,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.PeriodicBackup.Retention
 {
-    public abstract class RetentionPolicyRunnerBase
+    internal abstract class RetentionPolicyRunnerBase
     {
         private static readonly Logger Logger = LoggingSource.Instance.GetLogger<RetentionPolicyRunnerBase>("BackupTask");
 

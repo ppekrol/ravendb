@@ -12,7 +12,7 @@ using Constants = Raven.Client.Constants;
 
 namespace Raven.Server.Documents.Queries.Results
 {
-    public sealed class MapQueryResultRetriever : QueryResultRetrieverBase
+    internal sealed class MapQueryResultRetriever : QueryResultRetrieverBase
     {
         private readonly DocumentsOperationContext _context;
         private QueryTimingsScope _storageScope;

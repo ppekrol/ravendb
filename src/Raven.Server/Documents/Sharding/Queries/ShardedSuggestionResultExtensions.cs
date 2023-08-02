@@ -5,7 +5,7 @@ using Raven.Server.Documents.Sharding.Queries.Suggestions;
 
 namespace Raven.Server.Documents.Sharding.Queries;
 
-public static class ShardedSuggestionResultExtensions
+internal static class ShardedSuggestionResultExtensions
 {
     internal static ShardedSuggestionResult AddPopularity(this SuggestionResult result, SuggestWord suggestion)
     {

@@ -12,7 +12,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Utils.Stats
 {
-    public abstract class LivePerformanceCollector<T> : IDisposable
+    internal abstract class LivePerformanceCollector<T> : IDisposable
     {
         private readonly CancellationTokenSource _cts;
         private Task _task;

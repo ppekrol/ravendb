@@ -8,7 +8,7 @@ using Raven.Server.Documents.TcpHandlers;
 
 namespace Raven.Server.Documents.Subscriptions;
 
-public sealed class SubscriptionStatsCollector : IDisposable
+internal sealed class SubscriptionStatsCollector : IDisposable
 {
     public readonly SubscriptionConnectionMetrics Metrics;
     public readonly int ConnectionStatsIdForConnection;

@@ -9,7 +9,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database
 {
-    public sealed class DatabaseOldestBackup : ScalarObjectBase<TimeTicks>
+    internal sealed class DatabaseOldestBackup : ScalarObjectBase<TimeTicks>
     {
         private readonly ServerStore _serverStore;
         

@@ -27,7 +27,7 @@ using Sparrow.Server.Json.Sync;
 namespace Raven.Server.Documents.Patch
 {
     [DebuggerDisplay("Blittable JS object")]
-    public sealed class BlittableObjectInstance : ObjectInstance
+    internal sealed class BlittableObjectInstance : ObjectInstance
     {
         public bool Changed;
         private readonly BlittableObjectInstance _parent;
@@ -86,7 +86,7 @@ namespace Raven.Server.Documents.Patch
             }
         }
 
-        public sealed class BlittableObjectProperty : PropertyDescriptor
+        internal sealed class BlittableObjectProperty : PropertyDescriptor
         {
             private readonly BlittableObjectInstance _parent;
             private readonly string _property;

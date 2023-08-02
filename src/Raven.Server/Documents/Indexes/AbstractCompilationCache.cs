@@ -8,7 +8,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Documents.Indexes
 {
-    public abstract class AbstractCompilationCache<TType>
+    internal abstract class AbstractCompilationCache<TType>
         where TType : class
     {
         private readonly ConcurrentDictionary<CacheKey, Lazy<TType>> _compilationCache = new();

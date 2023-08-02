@@ -15,7 +15,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Operations.Queries;
 
-public sealed class ShardedFacetedQueryOperation : AbstractShardedQueryOperation<FacetedQueryResult, FacetResult, Document>
+internal sealed class ShardedFacetedQueryOperation : AbstractShardedQueryOperation<FacetedQueryResult, FacetResult, Document>
 {
     private readonly Dictionary<string, FacetOptions> _facetOptions;
 

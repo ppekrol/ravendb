@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Raven.Server.Documents.Queries.Counters
 {
-    public sealed class CounterIncludesField
+    internal sealed class CounterIncludesField
     {
         public CounterIncludesField()
         {

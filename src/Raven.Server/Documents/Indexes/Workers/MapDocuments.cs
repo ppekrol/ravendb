@@ -5,7 +5,7 @@ using Raven.Server.Documents.Indexes.MapReduce;
 
 namespace Raven.Server.Documents.Indexes.Workers
 {
-    public sealed class MapDocuments : MapItems
+    internal sealed class MapDocuments : MapItems
     {
         private readonly DocumentsStorage _documentsStorage;
 

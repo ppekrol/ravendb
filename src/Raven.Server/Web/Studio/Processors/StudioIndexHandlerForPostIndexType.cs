@@ -41,7 +41,7 @@ internal sealed class StudioIndexHandlerForPostIndexType<TOperationContext> : Ab
     }
 }
 
-public sealed class IndexTypeInfo
+internal sealed class IndexTypeInfo
 {
     public IndexType IndexType { get; set; }
     public IndexSourceType IndexSourceType { get; set; }

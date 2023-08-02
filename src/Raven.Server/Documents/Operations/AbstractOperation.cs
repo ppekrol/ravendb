@@ -11,7 +11,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Operations;
 
-public abstract class AbstractOperation
+internal abstract class AbstractOperation
 {
     private readonly TimeSpan _throttleTime = TimeSpan.FromSeconds(1);
 

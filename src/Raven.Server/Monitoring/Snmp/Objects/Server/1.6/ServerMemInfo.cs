@@ -7,7 +7,7 @@ using Sparrow;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public static class ServerMemInfo
+    internal static class ServerMemInfo
     {
         public static void Register(ObjectStore store, MetricCacher metricCacher)
         {

@@ -3,7 +3,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Utils.Configuration;
 
-public static class ClientConfigurationHelper
+internal static class ClientConfigurationHelper
 {
     public static bool HasClientConfigurationChanged(ClientConfiguration clientConfiguration, ServerStore serverStore, long index)
     {

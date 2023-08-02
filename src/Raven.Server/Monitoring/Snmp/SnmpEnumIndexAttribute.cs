@@ -3,7 +3,7 @@
 namespace Raven.Server.Monitoring.Snmp
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public sealed class SnmpEnumIndexAttribute : Attribute
+    internal sealed class SnmpEnumIndexAttribute : Attribute
     {
         public SnmpEnumIndexAttribute(Type type)
         {

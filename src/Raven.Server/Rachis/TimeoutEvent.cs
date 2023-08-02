@@ -7,7 +7,7 @@ using Sparrow.Threading;
 
 namespace Raven.Server.Rachis
 {
-    public sealed class TimeoutEvent : IDisposable, ILowMemoryHandler
+    internal sealed class TimeoutEvent : IDisposable, ILowMemoryHandler
     {
         public bool Disable;
 

@@ -13,7 +13,7 @@ using Raven.Server.Extensions;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public sealed class JavaScriptMapOperation
+    internal sealed class JavaScriptMapOperation
     {
         public FunctionInstance MapFunc;
 

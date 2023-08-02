@@ -13,7 +13,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class ShardedOngoingTasksHandler : ShardedDatabaseRequestHandler
+    internal sealed class ShardedOngoingTasksHandler : ShardedDatabaseRequestHandler
     {
         [RavenShardedAction("/databases/*/tasks", "GET")]
         public async Task GetOngoingTasks()

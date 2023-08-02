@@ -5,7 +5,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Smuggler.Documents
 {
-    public sealed class ShardedDatabaseSource : DatabaseSource
+    internal sealed class ShardedDatabaseSource : DatabaseSource
     {
         private readonly ShardedDocumentDatabase _database;
 

@@ -16,7 +16,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Indexes.Workers
 {
-    public class HandleDocumentReferences : HandleReferences
+    interal class HandleDocumentReferences : HandleReferences
     {
         public HandleDocumentReferences(Index index, Dictionary<string, HashSet<CollectionName>> referencedCollections, DocumentsStorage documentsStorage, IndexStorage indexStorage, IndexingConfiguration configuration)
             : this(index, referencedCollections, documentsStorage, indexStorage, indexStorage.ReferencesForDocuments, configuration)
@@ -50,7 +50,7 @@ namespace Raven.Server.Documents.Indexes.Workers
         }
     }
 
-    public abstract class HandleReferences : HandleReferencesBase
+    internal abstract class HandleReferences : HandleReferencesBase
     {
         private readonly Dictionary<string, HashSet<CollectionName>> _referencedCollections;
 
@@ -454,7 +454,7 @@ namespace Raven.Server.Documents.Indexes.Workers
 
         public abstract void HandleDelete(Tombstone tombstone, string collection, Lazy<IndexWriteOperationBase> writer, TransactionOperationContext indexContext, IndexingStatsScope stats);
 
-        public sealed class Reference : IDisposable
+        internal sealed class Reference : IDisposable
         {
             public LazyStringValue Key;
 
@@ -472,7 +472,7 @@ namespace Raven.Server.Documents.Indexes.Workers
             Tombstone
         }
 
-        public sealed class InMemoryReferencesInfo
+        internal sealed class InMemoryReferencesInfo
         {
             public static InMemoryReferencesInfo Default = new InMemoryReferencesInfo();
 

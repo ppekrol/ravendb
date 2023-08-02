@@ -7,7 +7,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands.Sharding
 {
-    public sealed class DestinationMigrationConfirmCommand : UpdateDatabaseCommand
+    internal sealed class DestinationMigrationConfirmCommand : UpdateDatabaseCommand
     {
         public int Bucket;
         public long MigrationIndex;

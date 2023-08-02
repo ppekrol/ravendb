@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries
 {
-    public struct OrderByField
+    internal struct OrderByField
     {
         public OrderByField(QueryFieldName name, OrderByFieldType orderingType, bool ascending, MethodType? method = null, Argument[] arguments = null)
         {
@@ -37,7 +37,7 @@ namespace Raven.Server.Documents.Queries
 
         public readonly string OrderByName;
 
-        public struct Argument
+        internal struct Argument
         {
             public Argument(string nameOrValue, ValueTokenType type)
             {

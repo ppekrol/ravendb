@@ -6,7 +6,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.ServerWide
 {
-    public sealed class ClusterValidator : RachisVersionValidation
+    internal sealed class ClusterValidator : RachisVersionValidation
     {
         public ClusterValidator([NotNull] ClusterCommandsVersionManager commandsVersionManager)
             : base(commandsVersionManager)
@@ -52,7 +52,7 @@ namespace Raven.Server.ServerWide
         }
     }
 
-    public sealed class RejectPutClusterCommandException : Exception
+    internal sealed class RejectPutClusterCommandException : Exception
     {
         public RejectPutClusterCommandException()
         {
@@ -73,7 +73,7 @@ namespace Raven.Server.ServerWide
         }
     }
 
-    public sealed class RejectSendToFollowerException : Exception
+    internal sealed class RejectSendToFollowerException : Exception
     {
         public RejectSendToFollowerException()
         {

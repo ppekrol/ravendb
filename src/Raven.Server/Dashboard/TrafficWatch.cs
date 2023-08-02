@@ -5,7 +5,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Dashboard
 {
-    public sealed class TrafficWatch : AbstractDashboardNotification
+    internal sealed class TrafficWatch : AbstractDashboardNotification
     {
         public List<TrafficWatchItem> Items { get; set; }
 
@@ -17,7 +17,7 @@ namespace Raven.Server.Dashboard
         }
     }
 
-    public sealed class TrafficWatchItem : IDynamicJson
+    internal sealed class TrafficWatchItem : IDynamicJson
     {
         public string Database { get; set; }
 

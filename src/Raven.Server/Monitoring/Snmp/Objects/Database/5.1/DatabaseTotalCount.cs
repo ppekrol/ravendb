@@ -5,7 +5,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database
 {
-    public sealed class DatabaseTotalCount : DatabaseBase<Integer32>
+    internal sealed class DatabaseTotalCount : DatabaseBase<Integer32>
     {
         public DatabaseTotalCount(ServerStore serverStore)
             : base(serverStore, SnmpOids.Databases.General.TotalCount)

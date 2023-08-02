@@ -7,7 +7,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.ETL
 {
-    public abstract class ExtractedItem : IDisposable
+    internal abstract class ExtractedItem : IDisposable
     {
         public bool Filtered;
 

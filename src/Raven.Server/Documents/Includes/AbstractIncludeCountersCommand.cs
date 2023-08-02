@@ -5,7 +5,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Includes;
 
-public abstract class AbstractIncludeCountersCommand : ICounterIncludes
+internal abstract class AbstractIncludeCountersCommand : ICounterIncludes
 {
     public abstract ValueTask WriteIncludesAsync(AsyncBlittableJsonTextWriter writer, JsonOperationContext context, CancellationToken token);
 

@@ -5,7 +5,7 @@ using Voron.Data.Tables;
 
 namespace Raven.Server.Documents.Schemas
 {
-    public static class Documents
+    internal static class Documents
     {
         public static readonly Slice CollectionEtagsSlice;
 

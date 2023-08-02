@@ -6,7 +6,7 @@ using Raven.Client.Exceptions.Documents.Indexes;
 
 namespace Raven.Server.Documents.Indexes;
 
-public class DatabaseIndexLockModeController : AbstractIndexLockModeController
+interal class DatabaseIndexLockModeController : AbstractIndexLockModeController
 {
     private readonly DocumentDatabase _database;
 

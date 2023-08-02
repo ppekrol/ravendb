@@ -42,7 +42,7 @@ using Voron.Exceptions;
 
 namespace Raven.Server
 {
-    public sealed class RavenServerStartup
+    internal sealed class RavenServerStartup
     {
         private RequestRouter _router;
         private RavenServer _server;

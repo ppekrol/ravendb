@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Raven.Server.Documents.Indexes
 {
-    public sealed class ConcurrentLruRegexCache
+    internal sealed class ConcurrentLruRegexCache
     {
         public const int DefaultCapacity = 1024;
         

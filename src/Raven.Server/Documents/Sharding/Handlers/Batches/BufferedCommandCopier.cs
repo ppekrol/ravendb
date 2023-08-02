@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Sharding.Handlers.Batches;
 
-public sealed class BufferedCommandCopier : BatchCommandStreamCopier
+internal sealed class BufferedCommandCopier : BatchCommandStreamCopier
 {
     private BufferedCommand _bufferedCommand;
 

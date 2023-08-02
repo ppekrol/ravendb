@@ -10,7 +10,7 @@ using Sparrow.Server;
 
 namespace Raven.Server.NotificationCenter.BackgroundWork
 {
-    public sealed class PostponedNotificationsSender : BackgroundWorkBase
+    internal sealed class PostponedNotificationsSender : BackgroundWorkBase
     {
         private readonly NotificationsStorage _notificationsStorage;
         private readonly ConcurrentSet<ConnectedWatcher> _watchers;

@@ -5,7 +5,7 @@ using Sparrow;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class ServerGcHighMemoryLoadThreshold : ServerGcBase<Gauge32>
+    internal sealed class ServerGcHighMemoryLoadThreshold : ServerGcBase<Gauge32>
     {
         public ServerGcHighMemoryLoadThreshold(MetricCacher metricCacher, GCKind gcKind)
             : base(metricCacher, gcKind, SnmpOids.Server.GcHighMemoryLoadThreshold)

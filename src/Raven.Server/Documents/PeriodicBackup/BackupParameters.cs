@@ -4,7 +4,7 @@ using Raven.Server.Config.Settings;
 
 namespace Raven.Server.Documents.PeriodicBackup
 {
-    public sealed class BackupParameters
+    internal sealed class BackupParameters
     {
         public PeriodicBackupStatus BackupStatus { get; set; }
         public long OperationId { get; set; }

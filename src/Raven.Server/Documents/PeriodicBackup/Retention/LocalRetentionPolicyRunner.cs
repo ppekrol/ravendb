@@ -8,7 +8,7 @@ using Voron.Util.Settings;
 
 namespace Raven.Server.Documents.PeriodicBackup.Retention
 {
-    public sealed class LocalRetentionPolicyRunner : RetentionPolicyRunnerBase
+    internal sealed class LocalRetentionPolicyRunner : RetentionPolicyRunnerBase
     {
         private readonly string _folderPath;
 

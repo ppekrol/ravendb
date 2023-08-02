@@ -12,7 +12,7 @@ using Voron.Data.BTrees;
 
 namespace Raven.Server.Documents.Indexes
 {
-    public sealed class CollectionOfBloomFilters : IDisposable
+    internal sealed class CollectionOfBloomFilters : IDisposable
     {
         private const string BloomFiltersTreeName = "BloomFilters";
 
@@ -312,7 +312,7 @@ namespace Raven.Server.Documents.Indexes
         {
         }
 
-        public sealed class BloomFilter32 : BloomFilter
+        internal sealed class BloomFilter32 : BloomFilter
         {
             public const int PtrSize = 32 * 1024;
             public const int MaxCapacity = 25000;
@@ -325,7 +325,7 @@ namespace Raven.Server.Documents.Indexes
             }
         }
 
-        public sealed class BloomFilter64 : BloomFilter
+        internal sealed class BloomFilter64 : BloomFilter
         {
             public const int PtrSize = 16 * 1024 * 1024;
             public const int MaxCapacity = 10000000;
@@ -595,7 +595,7 @@ namespace Raven.Server.Documents.Indexes
         }
     }
 
-    public static class BloomFilterVersion
+    internal static class BloomFilterVersion
     {
         public const long BaseVersion = 40_000;
 

@@ -4,7 +4,7 @@ using Raven.Client.Documents.Operations.Backups;
 
 namespace Raven.Server.Documents.PeriodicBackup.Retention
 {
-    public sealed class RetentionPolicyBaseParameters
+    internal sealed class RetentionPolicyBaseParameters
     {
         public RetentionPolicy RetentionPolicy { get; set; }
 

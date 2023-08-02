@@ -7,7 +7,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries
 {
-    public static class QueryMethod
+    internal static class QueryMethod
     {
         public static MethodType GetMethodType(string methodName, bool throwIfNoMatch = true)
         {
@@ -125,7 +125,7 @@ namespace Raven.Server.Documents.Queries
             throw new InvalidQueryException($"Method '{methodType}' is not supported.", queryText, parameters);
         }
 
-        public static class TimeSeries
+        internal static class TimeSeries
         {
             public static TimeValue LastWithTime(MethodExpression expression, string queryText, BlittableJsonReaderObject parameters)
             {
@@ -163,7 +163,7 @@ namespace Raven.Server.Documents.Queries
             }
         }
 
-        public static class Helpers
+        internal static class Helpers
         {
             public static string GetString(QueryExpression expression, BlittableJsonReaderObject parameters)
             {

@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Commercial
 {
-    public sealed class LicenseLimits
+    internal sealed class LicenseLimits
     {
         public LicenseLimits()
         {

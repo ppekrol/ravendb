@@ -4,7 +4,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.PeriodicBackup.Restore
 {
-    public sealed class RestoreSettings
+    internal sealed class RestoreSettings
     {
         public RestoreSettings()
         {

@@ -4,7 +4,7 @@ using Raven.Server.NotificationCenter.Notifications.Details;
 
 namespace Raven.Server.Documents.ETL.Providers.SQL.Test
 {
-    public sealed class SqlEtlTestScriptResult : TestEtlScriptResult
+    internal sealed class SqlEtlTestScriptResult : TestEtlScriptResult
     {
         public List<TableQuerySummary> Summary { get; set; }
 

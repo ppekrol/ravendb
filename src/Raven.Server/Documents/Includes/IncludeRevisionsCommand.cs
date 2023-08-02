@@ -10,7 +10,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Includes
 {
-    public sealed class IncludeRevisionsCommand : IRevisionIncludes
+    internal sealed class IncludeRevisionsCommand : IRevisionIncludes
     {
         private readonly DocumentDatabase _database;
         private readonly DocumentsOperationContext _context;

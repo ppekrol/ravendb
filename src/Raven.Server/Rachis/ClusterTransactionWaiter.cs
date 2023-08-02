@@ -6,18 +6,18 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Rachis
 {
-    public sealed class ClusterTransactionWaiter : AsyncWaiter<ClusterTransactionCompletionResult>
+    internal sealed class ClusterTransactionWaiter : AsyncWaiter<ClusterTransactionCompletionResult>
     {
 
     }
 
-    public sealed class ClusterTransactionCompletionResult
+    internal sealed class ClusterTransactionCompletionResult
     {
         public Task IndexTask;
         public DynamicJsonArray Array;
     }
 
-    public class AsyncWaiter<T>
+    interal class AsyncWaiter<T>
     {
         private readonly ConcurrentDictionary<string, TaskCompletionSource<T>> _results = new ConcurrentDictionary<string, TaskCompletionSource<T>>();
 

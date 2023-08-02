@@ -16,7 +16,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Https
 {
-    public sealed class ExternalCertificateValidator
+    internal sealed class ExternalCertificateValidator
     {
         private readonly RavenServer _server;
         private readonly Logger _logger;

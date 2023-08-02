@@ -4,7 +4,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Extensions
 {
-    public static class ClusterTopologyExtensions
+    internal static class ClusterTopologyExtensions
     {
         public static void ReplaceCurrentNodeUrlWithClientRequestedNodeUrlIfNecessary(this ClusterTopology topology, ServerStore serverStore, HttpContext httpContext)
         {

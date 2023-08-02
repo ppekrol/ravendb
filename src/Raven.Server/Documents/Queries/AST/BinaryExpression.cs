@@ -2,7 +2,7 @@ using System;
 
 namespace Raven.Server.Documents.Queries.AST
 {
-    public sealed class BinaryExpression : QueryExpression
+    internal sealed class BinaryExpression : QueryExpression
     {
         public QueryExpression Left;
         public OperatorType Operator;

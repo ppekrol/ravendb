@@ -18,7 +18,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public sealed class MapIndex : MapIndexBase<MapIndexDefinition, IndexField>
+    internal sealed class MapIndex : MapIndexBase<MapIndexDefinition, IndexField>
     {
         private readonly HashSet<string> _referencedCollections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _suggestionsActive = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

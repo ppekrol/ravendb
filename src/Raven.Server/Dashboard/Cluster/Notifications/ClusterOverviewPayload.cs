@@ -11,7 +11,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Dashboard.Cluster.Notifications
 {
-    public sealed class ClusterOverviewPayload : AbstractClusterDashboardNotification
+    internal sealed class ClusterOverviewPayload : AbstractClusterDashboardNotification
     {
         public string NodeTag { get; set; }
         public string NodeUrl { get; set; }

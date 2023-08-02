@@ -14,7 +14,7 @@ using Voron;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public class CurrentIndexingScope : IDisposable
+    interal class CurrentIndexingScope : IDisposable
     {
         private IndexingStatsScope _stats;
         private IndexingStatsScope _loadDocumentStats;
@@ -112,7 +112,7 @@ namespace Raven.Server.Documents.Indexes.Static
             }
         }
 
-        public sealed class MetadataFieldCache
+        internal sealed class MetadataFieldCache
         {
             public readonly LazyStringValue Id;
             public readonly LazyStringValue Key;

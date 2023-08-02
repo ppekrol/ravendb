@@ -6,7 +6,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands.Sharding
 {
-    public sealed class SourceMigrationCleanupCommand : UpdateDatabaseCommand
+    internal sealed class SourceMigrationCleanupCommand : UpdateDatabaseCommand
     {
         public int Bucket;
         public long MigrationIndex;

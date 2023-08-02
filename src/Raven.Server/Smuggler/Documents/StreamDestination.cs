@@ -43,7 +43,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Smuggler.Documents
 {
-    public sealed class StreamDestination : ISmugglerDestination
+    internal sealed class StreamDestination : ISmugglerDestination
     {
         private readonly Stream _stream;
         private GZipStream _gzipStream;

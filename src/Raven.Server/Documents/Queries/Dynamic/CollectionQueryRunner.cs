@@ -20,7 +20,7 @@ using PatchRequest = Raven.Server.Documents.Patch.PatchRequest;
 
 namespace Raven.Server.Documents.Queries.Dynamic
 {
-    public sealed class CollectionQueryRunner : AbstractDatabaseQueryRunner
+    internal sealed class CollectionQueryRunner : AbstractDatabaseQueryRunner
     {
         public CollectionQueryRunner(DocumentDatabase database) : base(database)
         {

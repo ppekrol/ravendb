@@ -50,7 +50,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Documents.ETL
 {
-    public abstract class EtlProcess : IDisposable
+    internal abstract class EtlProcess : IDisposable
     {
         public string Tag { get; protected set; }
 
@@ -118,7 +118,7 @@ namespace Raven.Server.Documents.ETL
         }
     }
 
-    public abstract class EtlProcess<TExtracted, TTransformed, TConfiguration, TConnectionString, TStatsScope, TEtlPerformanceOperation> : EtlProcess, ILowMemoryHandler where TExtracted : ExtractedItem
+    internal abstract class EtlProcess<TExtracted, TTransformed, TConfiguration, TConnectionString, TStatsScope, TEtlPerformanceOperation> : EtlProcess, ILowMemoryHandler where TExtracted : ExtractedItem
         where TConfiguration : EtlConfiguration<TConnectionString>
         where TConnectionString : ConnectionString
         where TStatsScope : AbstractEtlStatsScope<TStatsScope, TEtlPerformanceOperation>

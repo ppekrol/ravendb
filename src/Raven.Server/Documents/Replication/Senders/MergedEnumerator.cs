@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Raven.Server.Documents.Replication.Senders
 {
-    public class MergedEnumerator<T> : IEnumerator<T>
+    interal class MergedEnumerator<T> : IEnumerator<T>
     {
         protected readonly IComparer<T> Comparer;
         protected readonly List<IEnumerator<T>> WorkEnumerators = new();
@@ -84,7 +84,7 @@ namespace Raven.Server.Documents.Replication.Senders
         }
     }
 
-    public sealed class MergedAsyncEnumerator<T> : IAsyncEnumerator<T>
+    internal sealed class MergedAsyncEnumerator<T> : IAsyncEnumerator<T>
     {
         private readonly IComparer<T> _comparer;
         private readonly List<IAsyncEnumerator<T>> _workEnumerators = new();

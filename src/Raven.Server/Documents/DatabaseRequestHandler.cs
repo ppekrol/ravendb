@@ -14,7 +14,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents
 {
-    public abstract class DatabaseRequestHandler : AbstractDatabaseRequestHandler<DocumentsOperationContext>
+    internal abstract class DatabaseRequestHandler : AbstractDatabaseRequestHandler<DocumentsOperationContext>
     {
         public DocumentDatabase Database;
 

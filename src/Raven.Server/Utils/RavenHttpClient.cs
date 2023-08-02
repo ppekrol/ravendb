@@ -5,7 +5,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Utils;
 
-public sealed class RavenHttpClient : HttpClient
+internal sealed class RavenHttpClient : HttpClient
 {
     private static readonly string UserAgent = $"RavenDB/{ServerVersion.Version} (" +
                                                $"{RuntimeInformation.OSDescription};" +

@@ -7,7 +7,7 @@ using Raven.Client.Util;
 
 namespace Raven.Server.Utils
 {
-    public static class SecurityClearanceValidator
+    internal static class SecurityClearanceValidator
     {
         internal static void AssertSecurityClearance(object input, RavenServer.AuthenticationStatus? status)
         {

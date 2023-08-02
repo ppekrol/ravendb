@@ -7,7 +7,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Queries
 {
-    public static class FieldOptionsHelper
+    internal static class FieldOptionsHelper
     {
         public static T GetOptions<T>(string optionsAsStringOrParameterName, ValueTokenType optionsType, BlittableJsonReaderObject parameters, JsonOperationContext context)
         {

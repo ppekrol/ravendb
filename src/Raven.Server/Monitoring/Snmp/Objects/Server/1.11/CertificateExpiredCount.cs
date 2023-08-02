@@ -3,7 +3,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class CertificateExpiredCount : ScalarObjectBase<Integer32>
+    internal sealed class CertificateExpiredCount : ScalarObjectBase<Integer32>
     {
         private readonly ServerStore _store;
 

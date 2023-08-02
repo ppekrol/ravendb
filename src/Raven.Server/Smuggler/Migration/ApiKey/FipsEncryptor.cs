@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 
 namespace Raven.Server.Smuggler.Migration.ApiKey
 {
-    public sealed class FipsEncryptor : EncryptorBase<FipsEncryptor.FipsHashEncryptor, FipsEncryptor.FipsSymmetricalEncryptor, FipsEncryptor.FipsAsymmetricalEncryptor>
+    internal sealed class FipsEncryptor : EncryptorBase<FipsEncryptor.FipsHashEncryptor, FipsEncryptor.FipsSymmetricalEncryptor, FipsEncryptor.FipsAsymmetricalEncryptor>
     {
         public FipsEncryptor()
         {
@@ -13,7 +13,7 @@ namespace Raven.Server.Smuggler.Migration.ApiKey
 
         public override IHashEncryptor Hash { get; protected set; }
 
-        public sealed class FipsHashEncryptor : HashEncryptorBase, IHashEncryptor
+        internal sealed class FipsHashEncryptor : HashEncryptorBase, IHashEncryptor
         {
             public FipsHashEncryptor()
                 : this(true)
@@ -153,7 +153,7 @@ namespace Raven.Server.Smuggler.Migration.ApiKey
             }
         }
 
-        public sealed class FipsSymmetricalEncryptor : ISymmetricalEncryptor
+        internal sealed class FipsSymmetricalEncryptor : ISymmetricalEncryptor
         {
             private readonly SymmetricAlgorithm algorithm;
 
@@ -233,7 +233,7 @@ namespace Raven.Server.Smuggler.Migration.ApiKey
             }
         }
 
-        public sealed class FipsAsymmetricalEncryptor : IAsymmetricalEncryptor
+        internal sealed class FipsAsymmetricalEncryptor : IAsymmetricalEncryptor
         {
             private readonly RSACryptoServiceProvider algorithm;
 

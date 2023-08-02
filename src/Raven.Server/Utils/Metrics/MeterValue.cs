@@ -5,7 +5,7 @@ namespace Raven.Server.Utils.Metrics
     /// <summary>
     /// The value reported by a Meter Tickable
     /// </summary>
-    public struct MeterValue
+    internal struct MeterValue
     {
         public readonly long Count;
         public readonly double MeanRate;

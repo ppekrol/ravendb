@@ -9,7 +9,7 @@ using Raven.Server.NotificationCenter.Notifications;
 
 namespace Raven.Server.NotificationCenter.BackgroundWork;
 
-public abstract class AbstractDatabaseStatsSender : BackgroundWorkBase
+internal abstract class AbstractDatabaseStatsSender : BackgroundWorkBase
 {
     private readonly string _databaseName;
     private readonly AbstractDatabaseNotificationCenter _notificationCenter;

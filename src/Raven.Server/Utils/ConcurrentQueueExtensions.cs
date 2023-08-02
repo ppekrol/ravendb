@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Utils
 {
-    public static class ConcurrentQueueExtensions
+    internal static class ConcurrentQueueExtensions
     {
         public static void LimitedSizeEnqueue<T>(this ConcurrentQueue<T> queue, T item, int sizeOfQueue)
         {

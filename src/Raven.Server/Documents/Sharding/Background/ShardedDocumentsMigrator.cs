@@ -7,7 +7,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Sharding.Background
 {
-    public sealed class ShardedDocumentsMigrator
+    internal sealed class ShardedDocumentsMigrator
     {
         private readonly ShardedDocumentDatabase _database;
         private readonly CancellationToken _token;

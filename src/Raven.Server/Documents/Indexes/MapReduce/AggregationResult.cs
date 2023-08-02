@@ -4,7 +4,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Indexes.MapReduce
 {
-    public abstract class AggregationResult : IDisposable
+    internal abstract class AggregationResult : IDisposable
     {
         public abstract int Count { get; }
 

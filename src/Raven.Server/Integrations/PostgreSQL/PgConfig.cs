@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Raven.Server.Integrations.PostgreSQL
 {
-    public static class PgConfig
+    internal static class PgConfig
     {
         // TODO: Customize these
         // TODO: Maybe support changing these after startup by the user (it will send queries that start with "SET")

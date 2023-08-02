@@ -14,7 +14,7 @@ using Raven.Server.Utils;
 
 namespace Raven.Server.Documents.PeriodicBackup
 {
-    public abstract class RavenStorageClient : IDisposable
+    internal abstract class RavenStorageClient : IDisposable
     {
         private readonly List<RavenHttpClient> _clients = new();
         protected readonly CancellationToken CancellationToken;
@@ -66,7 +66,7 @@ namespace Raven.Server.Documents.PeriodicBackup
                 throw new AggregateException(exceptions);
         }
 
-        public sealed class Blob : IDisposable
+        internal sealed class Blob : IDisposable
         {
             private IDisposable _toDispose;
 
@@ -88,14 +88,14 @@ namespace Raven.Server.Documents.PeriodicBackup
             }
         }
 
-        public sealed class ListBlobResult
+        internal sealed class ListBlobResult
         {
             public IEnumerable<BlobProperties> List { get; set; }
 
             public string ContinuationToken { get; set; }
         }
 
-        public sealed class BlobProperties
+        internal sealed class BlobProperties
         {
             public string Name { get; set; }
         }

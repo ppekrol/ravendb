@@ -24,7 +24,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Monitoring;
 
-public sealed class MetricsProvider
+internal sealed class MetricsProvider
 {
     private readonly RavenServer _server;
     private readonly ServerStore _serverStore;

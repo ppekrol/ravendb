@@ -33,7 +33,7 @@ using Voron.Util.Settings;
 
 namespace Raven.Server.Documents
 {
-    public sealed class DatabasesLandlord : IDisposable
+    internal sealed class DatabasesLandlord : IDisposable
     {
         public const string DoNotRemove = "DoNotRemove";
         private readonly AsyncReaderWriterLock _disposing = new AsyncReaderWriterLock();
@@ -632,7 +632,7 @@ namespace Raven.Server.Documents
             return task.Result.DatabaseShutdown.IsCancellationRequested == false;
         }
 
-        public sealed class DatabaseSearchResult
+        internal sealed class DatabaseSearchResult
         {
             public readonly Task<DocumentDatabase> DatabaseTask;
             public readonly ShardedDatabaseContext DatabaseContext;
@@ -1588,7 +1588,7 @@ namespace Raven.Server.Documents
             }
         }
 
-        public sealed class StateChange
+        internal sealed class StateChange
         {
             public readonly object Locker = new object();
             public readonly ServerStore ServerStore;
@@ -1611,7 +1611,7 @@ namespace Raven.Server.Documents
         }
     }
 
-    public sealed class IdleDatabaseActivity
+    internal sealed class IdleDatabaseActivity
     {
         public long LastEtag { get; }
         public IdleDatabaseActivityType Type { get; }

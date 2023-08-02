@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters
 {
-    public abstract class CollectionNameRetrieverBase : CSharpSyntaxRewriter
+    internal abstract class CollectionNameRetrieverBase : CSharpSyntaxRewriter
     {
         public HashSet<Collection> Collections { get; protected set; }
 
@@ -253,7 +253,7 @@ namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters
             return member.Name.Identifier.ValueText;
         }
 
-        public sealed class Collection
+        internal sealed class Collection
         {
             public readonly string CollectionName;
 

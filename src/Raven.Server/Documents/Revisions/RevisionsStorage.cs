@@ -535,7 +535,7 @@ namespace Raven.Server.Documents.Revisions
             return document;
         }
 
-        public class DeleteOldRevisionsResult
+        interal class DeleteOldRevisionsResult
         {
             public bool HasMore;
             public long PreviousCount;

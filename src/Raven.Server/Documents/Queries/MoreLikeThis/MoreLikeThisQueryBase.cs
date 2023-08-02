@@ -2,7 +2,7 @@
 
 namespace Raven.Server.Documents.Queries.MoreLikeThis;
 
-public abstract class MoreLikeThisQueryBase
+internal abstract class MoreLikeThisQueryBase
 {
     public string BaseDocument { get; set; }
 

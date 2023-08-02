@@ -497,7 +497,7 @@ namespace Raven.Server.Documents.TimeSeries
                 throw new InvalidOperationException("This segment contains duplicate values and need to be recomputed");
         }
 
-        public sealed class ReadTimestampState
+        internal sealed class ReadTimestampState
         {
             public int Delta;
             public ulong Status;
@@ -726,7 +726,7 @@ namespace Raven.Server.Documents.TimeSeries
             ParseTimeSeriesKey(key.Content.Ptr, key.Size, context, out docId, out name, out baseLine);
         }
 
-        public struct TagPointer
+        internal struct TagPointer
         {
             public byte* Pointer;
             public int Length;
@@ -766,7 +766,7 @@ namespace Raven.Server.Documents.TimeSeries
             return status == Live && (value & 0x7FFFFFFFFFFFFFFF) > 0x7FF0000000000000 == false;
         }
 
-        public struct Enumerator : IDisposable
+        internal struct Enumerator : IDisposable
         {
             private readonly TimeSeriesValuesSegment _parent;
             private int _bitsPosition;

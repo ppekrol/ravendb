@@ -6,7 +6,7 @@ using Raven.Server.Routing;
 
 namespace Raven.Server.Documents.ETL.Handlers
 {
-    public sealed class EtlHandler : DatabaseRequestHandler
+    internal sealed class EtlHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/etl/stats", "GET", AuthorizationStatus.ValidUser, EndpointType.Read, IsDebugInformationEndpoint = true)]
         public async Task Stats()

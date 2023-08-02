@@ -3,7 +3,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.ETL.Providers.OLAP
 {
-    public abstract class OlapTransformedItems
+    internal abstract class OlapTransformedItems
     {
         protected OlapTransformedItems(OlapEtlFileFormat format)
         {

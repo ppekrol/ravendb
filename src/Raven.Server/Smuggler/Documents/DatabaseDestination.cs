@@ -36,7 +36,7 @@ using Size = Sparrow.Size;
 
 namespace Raven.Server.Smuggler.Documents
 {
-    public class DatabaseDestination : ISmugglerDestination
+    interal class DatabaseDestination : ISmugglerDestination
     {
         protected readonly DocumentDatabase _database;
         protected readonly CancellationToken _token;
@@ -170,7 +170,7 @@ namespace Raven.Server.Smuggler.Documents
             return new DatabaseIndexActions(_database.IndexStore.Create, _database.Time);
         }
 
-        public sealed class DuplicateDocsHandler : IDisposable
+        internal sealed class DuplicateDocsHandler : IDisposable
         {
             private readonly DocumentDatabase _database;
             private DocumentsOperationContext _context;
@@ -207,7 +207,7 @@ namespace Raven.Server.Smuggler.Documents
             }
         }
 
-        public sealed class DatabaseDocumentActions : IDocumentActions
+        internal sealed class DatabaseDocumentActions : IDocumentActions
         {
             private readonly DocumentDatabase _database;
             private readonly BuildVersionType _buildType;
@@ -531,7 +531,7 @@ namespace Raven.Server.Smuggler.Documents
             }
         }
 
-        public sealed class MergedBatchPutCommand : MergedTransactionCommand<DocumentsOperationContext, DocumentsTransaction>, IDisposable
+        internal sealed class MergedBatchPutCommand : MergedTransactionCommand<DocumentsOperationContext, DocumentsTransaction>, IDisposable
         {
             public bool IsRevision;
             public Action<DocumentItem> DocumentCollectionMismatchHandler;
@@ -914,7 +914,7 @@ namespace Raven.Server.Smuggler.Documents
             }
         }
 
-        public sealed class MergedBatchPutCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, MergedBatchPutCommand>
+        internal sealed class MergedBatchPutCommandDto : IReplayableCommandDto<DocumentsOperationContext, DocumentsTransaction, MergedBatchPutCommand>
         {
             public BuildVersionType BuildType;
             public List<DocumentItem> Documents;

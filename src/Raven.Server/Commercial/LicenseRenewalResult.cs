@@ -3,7 +3,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Commercial
 {
-    public sealed class LicenseRenewalResult
+    internal sealed class LicenseRenewalResult
     {
         public string SentToEmail  { get; set; }
 

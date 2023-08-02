@@ -12,7 +12,7 @@ using Voron.Platform.Win32;
 
 namespace Raven.Server.Utils
 {
-    public static class ExceptionHelper
+    internal static class ExceptionHelper
     {
         private const int ERROR_COMMITMENT_LIMIT = 1455;
 

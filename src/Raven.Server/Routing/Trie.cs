@@ -13,7 +13,7 @@ using Sparrow.Binary;
 
 namespace Raven.Server.Routing
 {
-    public struct RouteMatch
+    internal struct RouteMatch
     {
         public string Url;
         public string Method;
@@ -33,7 +33,7 @@ namespace Raven.Server.Routing
     /// match anything until the next /.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public sealed class Trie<T>
+    internal sealed class Trie<T>
     {
         public string DebugKey;
         public string Key;
@@ -46,7 +46,7 @@ namespace Raven.Server.Routing
                 ?.Where(x => x != null)
                 .ToArray();
 
-        public struct MatchResult
+        internal struct MatchResult
         {
             public RouteMatch Match;
             public T Value;

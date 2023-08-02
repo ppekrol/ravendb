@@ -8,7 +8,7 @@ using Raven.Client;
 
 namespace Raven.Server.Documents.Patch
 {
-    public abstract class JintNullPropagationReferenceResolver : IReferenceResolver
+    internal abstract class JintNullPropagationReferenceResolver : IReferenceResolver
     {
         private static readonly JsNumber _numberPositiveZero = new(0);
         private static readonly JsNumber _numberNegativeOne = new(-1);

@@ -3,7 +3,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Commercial
 {
-    public sealed class NodeLicenseLimits : IDynamicJson
+    internal sealed class NodeLicenseLimits : IDynamicJson
     {
         public string NodeTag { get; set; }
 

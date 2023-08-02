@@ -9,7 +9,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
 {
-    public sealed class AnonymousLuceneDocumentConverter : AnonymousLuceneDocumentConverterBase
+    internal sealed class AnonymousLuceneDocumentConverter : AnonymousLuceneDocumentConverterBase
     {
         public AnonymousLuceneDocumentConverter(Index index, bool storeValue = false)
             : base(index, numberOfBaseFields: 1, storeValue: storeValue)
@@ -23,7 +23,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
         }
     }
 
-    public abstract class AnonymousLuceneDocumentConverterBase : LuceneDocumentConverterBase
+    internal abstract class AnonymousLuceneDocumentConverterBase : LuceneDocumentConverterBase
     {
         private readonly bool _isMultiMap;
         private IPropertyAccessor _propertyAccessor;

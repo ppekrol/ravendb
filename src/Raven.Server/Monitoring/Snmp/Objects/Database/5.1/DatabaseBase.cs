@@ -8,7 +8,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database
 {
-    public abstract class DatabaseBase<TData> : ScalarObjectBase<TData> where TData : ISnmpData
+    internal abstract class DatabaseBase<TData> : ScalarObjectBase<TData> where TData : ISnmpData
     {
         protected readonly ServerStore ServerStore;
 

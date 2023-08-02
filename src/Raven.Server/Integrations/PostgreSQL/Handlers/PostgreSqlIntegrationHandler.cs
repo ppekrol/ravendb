@@ -6,7 +6,7 @@ using Raven.Server.ServerWide.Context;
 
 namespace Raven.Server.Integrations.PostgreSQL.Handlers
 {
-    public sealed class PostgreSqlIntegrationHandler : DatabaseRequestHandler
+    internal sealed class PostgreSqlIntegrationHandler : DatabaseRequestHandler
     {
         [RavenAction("/databases/*/admin/integrations/postgresql/server/status", "GET", AuthorizationStatus.DatabaseAdmin)]
         public async Task GetServerStatus()

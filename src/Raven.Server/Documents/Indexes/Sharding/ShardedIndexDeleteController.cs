@@ -7,7 +7,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Documents.Indexes.Sharding;
 
-public sealed class ShardedIndexDeleteController : AbstractIndexDeleteController
+internal sealed class ShardedIndexDeleteController : AbstractIndexDeleteController
 {
     private readonly ShardedDatabaseContext _context;
 

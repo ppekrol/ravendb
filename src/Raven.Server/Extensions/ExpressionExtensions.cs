@@ -21,7 +21,7 @@ namespace Raven.Server.Extensions
     ///<summary>
     /// Extensions for Linq expressions
     ///</summary>
-    public static class ExpressionExtensions
+    internal static class ExpressionExtensions
     {
         public static void ThrowIfInvalidMethodInvocationInWhere(this QueryExpression where, BlittableJsonReaderObject parameters, string queryText, string whereCollectionName = null)
         {
@@ -154,7 +154,7 @@ namespace Raven.Server.Extensions
             return builder.ToString().Trim(propertySeparator, collectionSeparator);
         }
 
-        public sealed class PropertyPathExpressionVisitor : ExpressionVisitor
+        internal sealed class PropertyPathExpressionVisitor : ExpressionVisitor
         {
             private readonly string _propertySeparator;
             private readonly string _collectionSeparator;

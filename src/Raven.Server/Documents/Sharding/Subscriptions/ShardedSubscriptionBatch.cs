@@ -14,7 +14,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Documents.Sharding.Subscriptions;
 
-public sealed class ShardedSubscriptionBatch : SubscriptionBatchBase<BlittableJsonReaderObject>
+internal sealed class ShardedSubscriptionBatch : SubscriptionBatchBase<BlittableJsonReaderObject>
 {
     public TaskCompletionSource SendBatchToClientTcs;
     public TaskCompletionSource ConfirmFromShardSubscriptionConnectionTcs;

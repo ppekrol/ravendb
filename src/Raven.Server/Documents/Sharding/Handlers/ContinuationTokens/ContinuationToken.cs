@@ -9,7 +9,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Sharding.Handlers.ContinuationTokens
 {
-    public abstract class ContinuationToken : IDynamicJson
+    internal abstract class ContinuationToken : IDynamicJson
     {
         public const string ContinuationTokenQueryString = "continuationToken";
         public const string PropertyName = "ContinuationToken";

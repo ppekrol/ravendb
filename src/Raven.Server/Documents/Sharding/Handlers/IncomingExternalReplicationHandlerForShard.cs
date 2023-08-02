@@ -11,7 +11,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Sharding.Handlers
 {
-    public sealed class IncomingExternalReplicationHandlerForShard : IncomingReplicationHandler
+    internal sealed class IncomingExternalReplicationHandlerForShard : IncomingReplicationHandler
     {
         private readonly ShardedDocumentDatabase _shardedDatabase;
 

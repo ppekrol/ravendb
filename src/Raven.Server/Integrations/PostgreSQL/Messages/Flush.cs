@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Raven.Server.Integrations.PostgreSQL.Messages
 {
-    public sealed class Flush : Message
+    internal sealed class Flush : Message
     {
         protected override Task<int> InitMessage(MessageReader messageReader, PipeReader reader, int msgLen, CancellationToken token)
         {

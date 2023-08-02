@@ -23,7 +23,7 @@ using TermInfo = Lucene.Net.Search.Vectorhighlight.FieldTermStack.TermInfo;
 
 namespace Lucene.Net.Search.Vectorhighlight
 {
-    public sealed class FieldQuery
+    internal sealed class FieldQuery
     {
         bool fieldMatch;
 
@@ -355,7 +355,7 @@ namespace Lucene.Net.Search.Vectorhighlight
             return termOrPhraseNumber++;
         }
 
-        public sealed class QueryPhraseMap
+        internal sealed class QueryPhraseMap
         {
 
             public bool terminal;

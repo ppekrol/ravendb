@@ -4,7 +4,7 @@ using Raven.Server.Config;
 
 namespace Raven.Server.Documents.Indexes;
 
-public abstract class AbstractIndexHasChangedController
+internal abstract class AbstractIndexHasChangedController
 {
     protected abstract IndexInformationHolder GetIndex(string name);
 

@@ -3,7 +3,7 @@ using Raven.Server.ServerWide;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Database;
 
-public sealed class ServerStorageDiskQueueLength : ScalarObjectBase<Gauge32>
+internal sealed class ServerStorageDiskQueueLength : ScalarObjectBase<Gauge32>
 {
     private readonly ServerStore _store;
 

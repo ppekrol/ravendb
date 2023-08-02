@@ -8,7 +8,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Includes.Sharding;
 
-public sealed class ShardedRevisionIncludes : IRevisionIncludes
+internal sealed class ShardedRevisionIncludes : IRevisionIncludes
 {
     private Dictionary<string, List<BlittableJsonReaderObject>> _revisionsByDocumentId;
 

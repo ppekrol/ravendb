@@ -5,7 +5,7 @@ using Sparrow.Server.Utils;
 
 namespace Raven.Server.Documents;
 
-public static class CompoundKeyHelper
+internal static class CompoundKeyHelper
 {
     public static string ExtractDocumentId(ReadOnlySpan<byte> key)
     {

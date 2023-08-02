@@ -8,7 +8,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Commands.TimeSeries
 {
-    public sealed class GetTimeSeriesCommand : RavenCommand
+    internal sealed class GetTimeSeriesCommand : RavenCommand
     {
         private readonly string _docId;
         private readonly string _name;

@@ -25,7 +25,7 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Sharding;
 
-public sealed class ShardedDocumentDatabase : DocumentDatabase
+internal sealed class ShardedDocumentDatabase : DocumentDatabase
 {
     public readonly int ShardNumber;
     
@@ -272,7 +272,7 @@ public sealed class ShardedDocumentDatabase : DocumentDatabase
 
     public static ShardedDocumentDatabase CastToShardedDocumentDatabase(DocumentDatabase database) => database as ShardedDocumentDatabase ?? throw new ArgumentException($"Database {database.Name} must be sharded!");
 
-    public sealed class DeleteBucketCommand : DocumentMergedTransactionCommand
+    internal sealed class DeleteBucketCommand : DocumentMergedTransactionCommand
     {
         private readonly ShardedDocumentDatabase _database;
         private readonly int _bucket;

@@ -9,7 +9,7 @@ namespace Raven.Server.Utils.Stats
         TimeSpan Duration { get; }
     }
 
-    public abstract class StatsScope<T, TStatsScope> : IStatsScope, IDisposable 
+    internal abstract class StatsScope<T, TStatsScope> : IStatsScope, IDisposable 
         where TStatsScope : StatsScope<T, TStatsScope>
     {
         private readonly Stopwatch _sw;

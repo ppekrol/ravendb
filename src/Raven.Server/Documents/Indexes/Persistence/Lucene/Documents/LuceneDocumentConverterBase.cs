@@ -30,11 +30,11 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene.Documents
         IList<IFieldable> GetFields();
     }
 
-    public abstract class LuceneDocumentConverterBase : ConverterBase
+    internal abstract class LuceneDocumentConverterBase : ConverterBase
     {
         protected const float LuceneDefaultBoost = 1f;
         
-        public struct DefaultDocumentLuceneWrapper : ILuceneDocumentWrapper
+        internal struct DefaultDocumentLuceneWrapper : ILuceneDocumentWrapper
         {
             private readonly LuceneDocument _doc;
 

@@ -8,7 +8,7 @@ using Sparrow.Platform.Posix;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class ServerWorkingSetSwapUsage : ScalarObjectBase<Gauge32>
+    internal sealed class ServerWorkingSetSwapUsage : ScalarObjectBase<Gauge32>
     {
         private readonly MetricCacher _metricCacher;
 

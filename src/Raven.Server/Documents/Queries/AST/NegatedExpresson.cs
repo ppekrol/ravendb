@@ -1,6 +1,6 @@
 namespace Raven.Server.Documents.Queries.AST
 {
-    public sealed class NegatedExpression : QueryExpression
+    internal sealed class NegatedExpression : QueryExpression
     {
         public QueryExpression Expression;
 

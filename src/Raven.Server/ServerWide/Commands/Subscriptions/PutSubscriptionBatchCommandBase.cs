@@ -4,7 +4,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands.Subscriptions;
 
-public abstract class PutSubscriptionBatchCommandBase<T> : CommandBase
+internal abstract class PutSubscriptionBatchCommandBase<T> : CommandBase
     where T : PutSubscriptionCommand
 {
     public List<T> Commands;

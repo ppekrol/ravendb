@@ -50,7 +50,7 @@ public abstract partial class AbstractTransactionOperationsMerger<TOperationCont
         }
     }
 
-    public sealed class EnabledRecordingState : RecordingState
+    internal sealed class EnabledRecordingState : RecordingState
     {
         private readonly AbstractTransactionOperationsMerger<TOperationContext, TTransaction> _txMerger;
         private int _isDisposed = 0;
@@ -128,7 +128,7 @@ public abstract partial class AbstractTransactionOperationsMerger<TOperationCont
         }
     }
 
-    public abstract class RecordingState : IDisposable
+    internal abstract class RecordingState : IDisposable
     {
         public abstract void TryRecord(TOperationContext context, MergedTransactionCommand<TOperationContext, TTransaction> cmd);
 
@@ -152,7 +152,7 @@ public abstract partial class AbstractTransactionOperationsMerger<TOperationCont
         }
 
 
-        public sealed class BeforeEnabledRecordingState : RecordingState
+        internal sealed class BeforeEnabledRecordingState : RecordingState
         {
             private readonly AbstractTransactionOperationsMerger<TOperationContext, TTransaction> _txMerger;
 

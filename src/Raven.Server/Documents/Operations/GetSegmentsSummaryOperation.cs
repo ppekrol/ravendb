@@ -89,7 +89,7 @@ namespace Raven.Server.Documents.Operations
         }
     }
 
-    public sealed class SegmentsSummary
+    internal sealed class SegmentsSummary
     {
         public List<TimeSeriesStorage.SegmentSummary> Results { get; set; }
     }

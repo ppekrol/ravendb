@@ -3,7 +3,7 @@ using Lextm.SharpSnmpLib;
 
 namespace Raven.Server.Monitoring.Snmp.Objects.Server
 {
-    public sealed class MachineProcessorCount : ScalarObjectBase<Integer32>
+    internal sealed class MachineProcessorCount : ScalarObjectBase<Integer32>
     {
         public MachineProcessorCount()
             : base(SnmpOids.Server.MachineProcessorCount)

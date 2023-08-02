@@ -8,7 +8,7 @@ using Sparrow.Server.Platform.Posix;
 
 namespace Raven.Server.Utils
 {
-    public static class IOExtensions
+    internal static class IOExtensions
     {
         private const int Retries = 50;
 

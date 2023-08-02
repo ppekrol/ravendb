@@ -13,7 +13,7 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.Indexes.Static
 {
-    public static class JavaScriptIndexUtils
+    internal static class JavaScriptIndexUtils
     {
         public static IEnumerable<ReturnStatement> GetReturnStatements(IFunction function)
         {

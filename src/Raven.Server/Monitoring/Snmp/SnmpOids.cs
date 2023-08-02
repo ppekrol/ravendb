@@ -9,7 +9,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.Monitoring.Snmp
 {
-    public sealed class SnmpOids
+    internal sealed class SnmpOids
     {
         private SnmpOids()
         {
@@ -17,7 +17,7 @@ namespace Raven.Server.Monitoring.Snmp
 
         public const string Root = "1.3.6.1.4.1.45751.1.1.";
 
-        public sealed class Server
+        internal sealed class Server
         {
             private Server()
             {
@@ -337,7 +337,7 @@ namespace Raven.Server.Monitoring.Snmp
             }
         }
 
-        public sealed class Cluster
+        internal sealed class Cluster
         {
             private Cluster()
             {
@@ -372,7 +372,7 @@ namespace Raven.Server.Monitoring.Snmp
             }
         }
 
-        public sealed class Databases
+        internal sealed class Databases
         {
             private Databases()
             {
@@ -501,7 +501,7 @@ namespace Raven.Server.Monitoring.Snmp
             [Description("Number of bytes written (documents, attachments, counters)")]
             public const string DataWrittenPerSecond = "5.2.{0}.6.2";
 
-            public sealed class Indexes
+            internal sealed class Indexes
             {
                 private Indexes()
                 {
@@ -581,7 +581,7 @@ namespace Raven.Server.Monitoring.Snmp
                 }
             }
 
-            public sealed class General
+            internal sealed class General
             {
                 private General()
                 {

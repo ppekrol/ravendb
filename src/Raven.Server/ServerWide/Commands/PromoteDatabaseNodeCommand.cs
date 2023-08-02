@@ -5,7 +5,7 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Server.ServerWide.Commands
 {
-    public sealed class PromoteDatabaseNodeCommand : UpdateDatabaseCommand
+    internal sealed class PromoteDatabaseNodeCommand : UpdateDatabaseCommand
     {
         public string NodeTag;
         public int? ShardNumber;

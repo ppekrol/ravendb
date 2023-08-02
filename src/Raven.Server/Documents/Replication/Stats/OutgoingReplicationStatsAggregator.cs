@@ -7,7 +7,7 @@ using Sparrow;
 
 namespace Raven.Server.Documents.Replication.Stats
 {
-    public sealed class OutgoingReplicationStatsAggregator : StatsAggregator<OutgoingReplicationRunStats, OutgoingReplicationStatsScope>
+    internal sealed class OutgoingReplicationStatsAggregator : StatsAggregator<OutgoingReplicationRunStats, OutgoingReplicationStatsScope>
     {
         private volatile OutgoingReplicationPerformanceStats _performanceStats;
 
@@ -85,7 +85,7 @@ namespace Raven.Server.Documents.Replication.Stats
         }
     }
 
-    public sealed class OutgoingReplicationStatsScope : StatsScope<OutgoingReplicationRunStats, OutgoingReplicationStatsScope>
+    internal sealed class OutgoingReplicationStatsScope : StatsScope<OutgoingReplicationRunStats, OutgoingReplicationStatsScope>
     {
         private readonly OutgoingReplicationRunStats _stats;
 
@@ -186,7 +186,7 @@ namespace Raven.Server.Documents.Replication.Stats
         }
     }
 
-    public sealed class OutgoingReplicationRunStats : ReplicationRunStatsBase
+    internal sealed class OutgoingReplicationRunStats : ReplicationRunStatsBase
     {
         public long LastEtag;
 
