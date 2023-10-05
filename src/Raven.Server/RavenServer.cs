@@ -248,6 +248,7 @@ namespace Raven.Server
                             services.Configure<ResponseCompressionOptions>(options =>
                             {
                                 options.EnableForHttps = Configuration.Http.AllowResponseCompressionOverHttps;
+                                options.Providers.Add(typeof(BrotliCompressionProvider));
                                 options.Providers.Add(typeof(GzipCompressionProvider));
                                 options.Providers.Add(typeof(DeflateCompressionProvider));
                             });
@@ -255,6 +256,8 @@ namespace Raven.Server
                             services.Configure<GzipCompressionProviderOptions>(options => { options.Level = Configuration.Http.GzipResponseCompressionLevel; });
 
                             services.Configure<DeflateCompressionProviderOptions>(options => { options.Level = Configuration.Http.DeflateResponseCompressionLevel; });
+
+                            services.Configure<BrotliCompressionProviderOptions>(options => { options.Level = Configuration.Http.BrotliResponseCompressionLevel; });
 
                             services.AddResponseCompression();
                         }
