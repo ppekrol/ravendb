@@ -289,9 +289,6 @@ namespace Raven.Client.Documents.Conventions
             _disposeCertificate = true;
 
             _httpCompressionAlgorithm = HttpCompressionAlgorithm.Gzip;
-            #if NET6_0_OR_GREATER
-            _httpCompressionAlgorithm = HttpCompressionAlgorithm.Brotli;
-            #endif
         }
 
         private bool _frozen;
