@@ -33,6 +33,7 @@ using Sparrow.Json;
 using Sparrow.Logging;
 using Sparrow.Platform;
 using Sparrow.Threading;
+using Sparrow.Utils;
 
 namespace Raven.Client.Http
 {
@@ -539,7 +540,7 @@ namespace Raven.Client.Http
                             var msg = $"Expected topology for database '{_databaseName}', but got the database '{node.Database}' (reason: {parameters.DebugTag})";
                             Debug.Assert(false, msg);
                         }
-                    }          
+                    }
 #endif
 
                     await DatabaseTopologyLocalCache.TrySavingAsync(_databaseName, TopologyHash, topology, Conventions, context, CancellationToken.None).ConfigureAwait(false);
@@ -1247,6 +1248,11 @@ namespace Raven.Client.Http
             if (_disableClientConfigurationUpdates == false)
                 request.Headers.TryAddWithoutValidation(Constants.Headers.ClientConfigurationEtag, $"\"{ClientConfigurationEtag.ToInvariantString()}\"");
 
+#if FEATURE_ZSTD_SUPPORT
+            if (Conventions.HttpCompressionAlgorithm == HttpCompressionAlgorithm.Zstd)
+                request.Headers.TryAddWithoutValidation(Constants.Headers.AcceptEncoding, Constants.Headers.Encodings.Zstd);
+#endif
+
             if (sessionInfo?.LastClusterTransactionIndex != null)
             {
                 request.Headers.TryAddWithoutValidation(Constants.Headers.LastKnownClusterTransactionIndex, sessionInfo.LastClusterTransactionIndex.ToString());
@@ -1664,6 +1670,10 @@ namespace Raven.Client.Http
 #if FEATURE_BROTLI_SUPPORT
             if (encoding != null && encoding.Contains(Constants.Headers.Encodings.Brotli))
                 return new BrotliStream(stream, CompressionMode.Decompress);
+#endif
+#if FEATURE_ZSTD_SUPPORT
+            if (encoding != null && encoding.Contains(Constants.Headers.Encodings.Zstd))
+                return ZstdStream.Decompress(stream);
 #endif
             if (encoding != null && encoding.Contains(Constants.Headers.Encodings.Deflate))
                 return new DeflateStream(stream, CompressionMode.Decompress);

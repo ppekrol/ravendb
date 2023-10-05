@@ -248,6 +248,7 @@ namespace Raven.Server
                             services.Configure<ResponseCompressionOptions>(options =>
                             {
                                 options.EnableForHttps = Configuration.Http.AllowResponseCompressionOverHttps;
+                                options.Providers.Add(typeof(ZstdCompressionProvider));
                                 options.Providers.Add(typeof(BrotliCompressionProvider));
                                 options.Providers.Add(typeof(GzipCompressionProvider));
                                 options.Providers.Add(typeof(DeflateCompressionProvider));

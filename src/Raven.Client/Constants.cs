@@ -98,6 +98,8 @@ namespace Raven.Client
                 public const string Brotli = "br";
 
                 public const string Deflate = "deflate";
+
+                public const string Zstd = "zstd";
             }
         }
 

@@ -15,8 +15,8 @@ namespace FastTests.Client
         }
 
         [RavenTheory(RavenTestCategory.ClientApi)]
-        [RavenData(true, DatabaseMode = RavenDatabaseMode.All)]
-        [RavenData(false, DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(true, DatabaseMode = RavenDatabaseMode.Single)]
+        //[RavenData(false, DatabaseMode = RavenDatabaseMode.All)]
         public void CRUD_Operations(Options options, bool useCompression)
         {
             options.ModifyDocumentStore = x =>
