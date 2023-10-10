@@ -2,6 +2,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using FastTests.Client;
+using Raven.Client.Http;
 using Tests.Infrastructure;
 using Raven.Server.Utils;
 using SlowTests.Corax;
@@ -29,10 +31,11 @@ public static class Program
             {
                 TryRemoveDatabasesFolder();
                 using (var testOutputHelper = new ConsoleTestOutputHelper())
-                using (var test = new ShardedClusterObserverTests(testOutputHelper))
+                using (var test = new RavenDB_XXXXX(testOutputHelper))
                 {
                     DebuggerAttachedTimeout.DisableLongTimespan = true;
-                    await test.ClusterObserverWillSkipCommandIfChangingTheSameDatabaseRecordTwiceInOneIteration();
+                    await test.Session(HttpCompressionAlgorithm.Zstd, 1, 1);
+                    //await test.BulkInsert(HttpCompressionAlgorithm.Brotli, 1_000_000);
                 }
             }
             catch (Exception e)
@@ -41,6 +44,8 @@ public static class Program
                 Console.WriteLine(e);
                 Console.ForegroundColor = ConsoleColor.White;
             }
+
+            return;
         }
     }
 

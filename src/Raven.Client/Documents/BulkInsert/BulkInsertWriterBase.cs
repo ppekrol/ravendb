@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Raven.Client.Http;
+using Raven.Client.Json;
+using Sparrow;
 using Sparrow.Json;
 using Sparrow.Threading;
 using Sparrow.Utils;
@@ -25,6 +29,8 @@ internal abstract class BulkInsertWriterBase : IAsyncDisposable
     private bool _isInitialWrite = true;
 
     private Stream _requestBodyStream;
+
+    private Stream _originalStream;
 
     internal readonly BulkInsertOperation.BulkInsertStreamExposerContent StreamExposer;
 
@@ -57,6 +63,14 @@ internal abstract class BulkInsertWriterBase : IAsyncDisposable
 
                         await WriteToStreamAsync(_currentWriteStream, _requestBodyStream, _memoryBuffer).ConfigureAwait(false);
                         await _requestBodyStream.FlushAsync(_token).ConfigureAwait(false);
+
+                        if (_originalStream != null)
+                        {
+                            var propertyInfo = _originalStream.GetType().GetProperty("BytesWritten", BindingFlags.Instance | BindingFlags.Public);
+                            var bytesWritten = (long)propertyInfo.GetValue(_originalStream);
+
+                            Console.WriteLine($"Written: {new Size(bytesWritten, SizeUnit.Bytes)}");
+                        }
                     }
                 }
                 finally
@@ -139,6 +153,7 @@ internal abstract class BulkInsertWriterBase : IAsyncDisposable
     public async Task EnsureStreamAsync(HttpCompressionAlgorithm compressionAlgorithm, CompressionLevel compressionLevel)
     {
         var stream = await StreamExposer.OutputStream.ConfigureAwait(false);
+        _originalStream = stream;
 
         if (compressionLevel != CompressionLevel.NoCompression)
         {
@@ -154,7 +169,7 @@ internal abstract class BulkInsertWriterBase : IAsyncDisposable
 #endif
 #if FEATURE_ZSTD_SUPPORT
                 case HttpCompressionAlgorithm.Zstd:
-                    stream = ZstdStream.Compress(stream, level: 1, leaveOpen: true);
+                    stream = ZstdStream.Compress(stream, compressionLevel, leaveOpen: true);
                     break;
 #endif
                 default:

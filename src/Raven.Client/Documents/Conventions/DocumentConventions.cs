@@ -34,13 +34,15 @@ namespace Raven.Client.Documents.Conventions
     /// </summary>
     public sealed class DocumentConventions : Client.Conventions
     {
+        public Guid Id = Guid.NewGuid();
+
         public delegate LinqPathProvider.Result CustomQueryTranslator(LinqPathProvider provider, Expression expression);
 
         public delegate bool TryConvertValueForQueryDelegate<in T>(string fieldName, T value, bool forRange, out string strValue);
 
         public delegate bool TryConvertValueToObjectForQueryDelegate<in T>(string fieldName, T value, bool forRange, out object objValue);
 
-        internal static readonly DocumentConventions Default = new();
+        internal static readonly DocumentConventions Default = new() { Id = Guid.Empty };
 
         internal static readonly DocumentConventions DefaultForServer = new()
         {
@@ -50,7 +52,8 @@ namespace Raven.Client.Documents.Conventions
             HttpPooledConnectionLifetime = TimeSpan.FromMinutes(19),
 #endif
             DisposeCertificate = false,
-            DisableTopologyCache = true
+            DisableTopologyCache = true,
+            Id = Guid.Empty
         };
 
         private static readonly bool DefaultDisableTcpCompression = false;
