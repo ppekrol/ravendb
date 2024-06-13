@@ -88,12 +88,14 @@ internal static class BackupUtils
         if (parameters.PeriodicBackups.Count == 0 && oneTimeBackupStatus == null)
             return null;
 
+        var oneTimeBackupStatusPerNode = oneTimeBackupStatus.GetStatusPerNode(parameters.ServerStore.NodeTag, out _);
+
         var lastBackup = 0L;
         PeriodicBackupStatus lastBackupStatus = null;
         var intervalUntilNextBackupInSec = long.MaxValue;
-        if (oneTimeBackupStatus?.LastFullBackup != null && oneTimeBackupStatus.LastFullBackup.Value.Ticks > lastBackup)
+        if (oneTimeBackupStatusPerNode?.LastFullBackup != null && oneTimeBackupStatusPerNode.LastFullBackup.Value.Ticks > lastBackup)
         {
-            lastBackup = oneTimeBackupStatus.LastFullBackup.Value.Ticks;
+            lastBackup = oneTimeBackupStatusPerNode.LastFullBackup.Value.Ticks;
             lastBackupStatus = oneTimeBackupStatus;
         }
 
@@ -103,15 +105,17 @@ internal static class BackupUtils
                 backupStatus: GetBackupStatusFromCluster(parameters.ServerStore, parameters.Context, parameters.DatabaseName, periodicBackup.Configuration.TaskId),
                 inMemoryBackupStatus: periodicBackup.BackupStatus);
 
-            if (status.LastFullBackup != null && status.LastFullBackup.Value.Ticks > lastBackup)
+            var statusPerNode = status.GetStatusPerNode(parameters.ServerStore.NodeTag, out _);
+
+            if (statusPerNode.LastFullBackup != null && statusPerNode.LastFullBackup.Value.Ticks > lastBackup)
             {
-                lastBackup = status.LastFullBackup.Value.Ticks;
+                lastBackup = statusPerNode.LastFullBackup.Value.Ticks;
                 lastBackupStatus = status;
             }
 
-            if (status.LastIncrementalBackup != null && status.LastIncrementalBackup.Value.Ticks > lastBackup)
+            if (statusPerNode.LastIncrementalBackup != null && statusPerNode.LastIncrementalBackup.Value.Ticks > lastBackup)
             {
-                lastBackup = status.LastIncrementalBackup.Value.Ticks;
+                lastBackup = statusPerNode.LastIncrementalBackup.Value.Ticks;
                 lastBackupStatus = status;
             }
 
@@ -130,12 +134,14 @@ internal static class BackupUtils
                 intervalUntilNextBackupInSec = nextBackup.TimeSpan.Ticks;
         }
 
+        var lastStatusPerNode = lastBackupStatus?.GetStatusPerNode(parameters.ServerStore.NodeTag, out _);
+
         return new BackupInfo
         {
             LastBackup = lastBackup == 0L ? null : new DateTime(lastBackup),
             IntervalUntilNextBackupInSec = intervalUntilNextBackupInSec == long.MaxValue ? 0 : new TimeSpan(intervalUntilNextBackupInSec).TotalSeconds,
             BackupTaskType = lastBackupStatus?.TaskId == 0 ? BackupTaskType.OneTime : BackupTaskType.Periodic,
-            Destinations = AddDestinations(lastBackupStatus)
+            Destinations = AddDestinations(lastStatusPerNode)
         };
     }
 
@@ -205,7 +211,7 @@ internal static class BackupUtils
         return backupStatus;
     }
 
-    private static List<string> AddDestinations(PeriodicBackupStatus backupStatus)
+    private static List<string> AddDestinations(IReadOnlyPeriodicBackupStatusPerNode backupStatus)
     {
         if (backupStatus == null)
             return null;
@@ -233,8 +239,10 @@ internal static class BackupUtils
     {
         var nowUtc = DateTime.UtcNow;
 
-        var lastFullBackupUtc = parameters.BackupStatus.LastFullBackupInternal ?? parameters.DatabaseWakeUpTimeUtc ?? parameters.Configuration.CreatedAt ?? nowUtc;
-        var lastIncrementalBackupUtc = parameters.BackupStatus.LastIncrementalBackupInternal ?? parameters.BackupStatus.LastFullBackupInternal ?? parameters.DatabaseWakeUpTimeUtc ?? nowUtc;
+        var statusPerNode = parameters.BackupStatus.GetStatusPerNode(parameters.NodeTag, out _);
+
+        var lastFullBackupUtc = statusPerNode.LastFullBackupInternal ?? parameters.DatabaseWakeUpTimeUtc ?? parameters.Configuration.CreatedAt ?? nowUtc;
+        var lastIncrementalBackupUtc = statusPerNode.LastIncrementalBackupInternal ?? statusPerNode.LastFullBackupInternal ?? parameters.DatabaseWakeUpTimeUtc ?? nowUtc;
         var nextFullBackup = GetNextBackupOccurrence(new NextBackupOccurrenceParameters
         {
             BackupFrequency = parameters.Configuration.FullBackupFrequency,
@@ -258,7 +266,7 @@ internal static class BackupUtils
 
         Debug.Assert(parameters.Configuration.TaskId != 0);
 
-        var isFullBackup = IsFullBackup(parameters.BackupStatus, parameters.Configuration, nextFullBackup, nextIncrementalBackup, parameters.ResponsibleNodeTag);
+        var isFullBackup = IsFullBackup(parameters.NodeTag, parameters.BackupStatus, parameters.Configuration, nextFullBackup, nextIncrementalBackup, parameters.ResponsibleNodeTag);
         var nextBackupTimeUtc = GetNextBackupDateTime(nextFullBackup, nextIncrementalBackup, parameters.BackupStatus.DelayUntil);
         var timeSpan = nextBackupTimeUtc - nowUtc;
 
@@ -333,14 +341,16 @@ internal static class BackupUtils
             ? delayUntil.Value : nextBackup.Value;
     }
 
-    private static bool IsFullBackup(PeriodicBackupStatus backupStatus,
+    private static bool IsFullBackup(string nodeTag, PeriodicBackupStatus backupStatus,
         PeriodicBackupConfiguration configuration,
         DateTime? nextFullBackup, DateTime? nextIncrementalBackup, string responsibleNodeTag)
     {
-        if (backupStatus.LastFullBackup == null ||
-            backupStatus.NodeTag != responsibleNodeTag ||
+        var statusPerNode = backupStatus.GetStatusPerNode(nodeTag, out var lastNodeTag);
+
+        if (statusPerNode.LastFullBackup == null ||
+            (lastNodeTag != null && lastNodeTag != responsibleNodeTag) ||
             backupStatus.BackupType != configuration.BackupType ||
-            backupStatus.LastEtag == null)
+            statusPerNode.LastEtag == null)
         {
             // Reasons to start a new full backup:
             // 1. there is no previous full backup, we are going to create one now
@@ -480,7 +490,9 @@ internal static class BackupUtils
             return new IdleDatabaseActivity(IdleDatabaseActivityType.WakeUpDatabase, DateTime.UtcNow);
         }
 
-        if (backupStatus.LastEtag != parameters.LastEtag)
+        var backupStatusPerNode = backupStatus.GetStatusPerNode(parameters.ServerStore.NodeTag, out string _);
+
+        if (backupStatusPerNode.LastEtag != parameters.LastEtag)
         {
             // we have changes since last backup
             var type = nextBackup.IsFull ? "full" : "incremental";
@@ -497,7 +509,7 @@ internal static class BackupUtils
         }
 
         // we don't have changes since the last backup and the next backup are incremental
-        var lastFullBackup = backupStatus.LastFullBackupInternal ?? nowUtc;
+        var lastFullBackup = backupStatusPerNode.LastFullBackupInternal ?? nowUtc;
         var nextFullBackup = GetNextBackupOccurrence(new NextBackupOccurrenceParameters
         {
             BackupFrequency = parameters.Configuration.FullBackupFrequency,

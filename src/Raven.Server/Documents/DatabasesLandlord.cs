@@ -1363,12 +1363,10 @@ namespace Raven.Server.Documents
                             using (context.OpenReadTransaction())
                                 backupStatus = BackupUtils.GetBackupStatusFromCluster(_serverStore, context, databaseName, nextIdleDatabaseActivity.TaskId);
 
-                            backupStatus.LastIncrementalBackup = backupStatus.LastIncrementalBackupInternal = nextIdleDatabaseActivity.DateTime;
-                            backupStatus.LocalBackup.LastIncrementalBackup = nextIdleDatabaseActivity.DateTime;
-                            backupStatus.LocalBackup.IncrementalBackupDurationInMs = 0;
-
+                            backupStatus.SetLastIncrementalBackup(_serverStore.NodeTag, nextIdleDatabaseActivity.DateTime);
+                            var statusPerNode = backupStatus.GetStatusPerNode(_serverStore.NodeTag, out _);
                             var backupResult = new BackupResult();
-                            backupResult.AddMessage($"Skipping incremental backup because no changes were made from last full backup on {backupStatus.LastFullBackup}.");
+                            backupResult.AddMessage($"Skipping incremental backup because no changes were made from last full backup on {statusPerNode.LastFullBackup}.");
 
                             BackupUtils.SaveBackupStatus(backupStatus, databaseName, _serverStore, _logger, backupResult);
 

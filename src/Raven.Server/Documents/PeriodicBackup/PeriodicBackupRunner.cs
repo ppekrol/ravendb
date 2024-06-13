@@ -230,13 +230,13 @@ namespace Raven.Server.Documents.PeriodicBackup
                     continue;
 
                 var nextBackup = GetNextBackupDetails(
-                    periodicBackup.Value.Configuration, 
+                    periodicBackup.Value.Configuration,
                     periodicBackup.Value.BackupStatus,
-                    periodicBackup.Value.Configuration.MentorNode, 
+                    periodicBackup.Value.Configuration.MentorNode,
                     skipErrorLog: true);
 
-                var originalBackupTime = delayUntil > nextBackup.DateTime 
-                    ? nextBackup.DateTime 
+                var originalBackupTime = delayUntil > nextBackup.DateTime
+                    ? nextBackup.DateTime
                     : periodicBackup.Value.StartTimeInUtc;
 
                 var command = new DelayBackupCommand(_database.Name, RaftIdGenerator.NewId())
@@ -257,7 +257,7 @@ namespace Raven.Server.Documents.PeriodicBackup
                     {
                         var msg =
                             $"Fail to delay backup task with task id '{taskId}' cluster-wide, the task was delayed until '{delayUntil}' UTC only on the current node.";
-                        
+
                         _logger.Operations(msg, e);
                     }
                 }
@@ -267,7 +267,7 @@ namespace Raven.Server.Documents.PeriodicBackup
 
                 _forTestingPurposes?.OnBackupTaskRunHoldBackupExecution?.SetResult(null);
                 await _database.Operations.KillOperationAsync(taskId, token);
-                
+
                 try
                 {
                     await runningTask.Task; // wait for the running task to complete
@@ -276,7 +276,7 @@ namespace Raven.Server.Documents.PeriodicBackup
                 {
                     // task has ended, nothing we can do here
                 }
-                
+
                 return;
             }
 
@@ -335,12 +335,14 @@ namespace Raven.Server.Documents.PeriodicBackup
                     var backupStatus = periodicBackup.BackupStatus = GetBackupStatus(periodicBackup.Configuration.TaskId, periodicBackup.BackupStatus);
                     var backupToLocalFolder = BackupConfiguration.CanBackupUsing(periodicBackup.Configuration.LocalSettings);
 
+                    var statusPerNode = backupStatus.GetStatusPerNode(_serverStore.NodeTag, out var lastNodeTag);
+
                     // check if we need to do a new full backup
-                    if (backupStatus.LastFullBackup == null || // no full backup was previously performed
-                        backupStatus.NodeTag != _serverStore.NodeTag || // last backup was performed by a different node
+                    if (statusPerNode.LastFullBackup == null || // no full backup was previously performed
+                        (lastNodeTag != null && lastNodeTag != _serverStore.NodeTag) || // last backup was performed by a different node (backward compatibility)
                         backupStatus.BackupType != periodicBackup.Configuration.BackupType || // backup type has changed
-                        backupStatus.LastEtag == null || // last document etag wasn't updated
-                        backupToLocalFolder && BackupTask.DirectoryContainsBackupFiles(backupStatus.LocalBackup.BackupDirectory, IsFullBackupOrSnapshot) == false)
+                        statusPerNode.LastEtag == null || // last document etag wasn't updated
+                        backupToLocalFolder && BackupTask.DirectoryContainsBackupFiles(statusPerNode.LocalBackup.BackupDirectory, IsFullBackupOrSnapshot) == false)
                     // the local folder already includes a full backup or snapshot
                     {
                         isFullBackup = true;
@@ -391,17 +393,14 @@ namespace Raven.Server.Documents.PeriodicBackup
                     // in order to reschedule the next full/incremental backup
                     tcs.TrySetException(e);
                     periodicBackup.BackupStatus.Version++;
-                    periodicBackup.BackupStatus.Error = new Error
+                    periodicBackup.BackupStatus.SetError(_serverStore.NodeTag, new Error
                     {
                         Exception = e.ToString(),
                         At = DateTime.UtcNow
-                    };
+                    });
 
-                    if (isFullBackup)
-                        periodicBackup.BackupStatus.LastFullBackupInternal = startTimeInUtc;
-                    else
-                        periodicBackup.BackupStatus.LastIncrementalBackupInternal = startTimeInUtc;
-                    
+                    periodicBackup.BackupStatus.SetLastInternalBackupTime(_serverStore.NodeTag, startTimeInUtc, isFullBackup);
+
                     BackupUtils.SaveBackupStatus(periodicBackup.BackupStatus, _database.Name, _database.ServerStore, _logger, operationCancelToken: periodicBackup.CancelToken);
 
                     var message = $"Failed to start the backup task: '{periodicBackup.Configuration.Name}'";
@@ -448,7 +447,8 @@ namespace Raven.Server.Documents.PeriodicBackup
                 LocalBackup = periodicBackup.BackupStatus.LocalBackup,
                 LastOperationId = periodicBackup.BackupStatus.LastOperationId,
                 FolderName = periodicBackup.BackupStatus.FolderName,
-                LastDatabaseChangeVector = periodicBackup.BackupStatus.LastDatabaseChangeVector
+                LastDatabaseChangeVector = periodicBackup.BackupStatus.LastDatabaseChangeVector,
+                StatusPerNode = periodicBackup.BackupStatus.StatusPerNode
             };
 
             periodicBackup.RunningBackupStatus = runningBackupStatus;
@@ -460,7 +460,7 @@ namespace Raven.Server.Documents.PeriodicBackup
 
                 using (_database.PreventFromUnloadingByIdleOperations())
                 {
-                    backupResult = (BackupResult)backupTask.RunPeriodicBackup(onProgress, ref runningBackupStatus);
+                    backupResult = backupTask.RunPeriodicBackup(onProgress, ref runningBackupStatus);
                     tcs.SetResult(backupResult);
                 }
             }
@@ -495,7 +495,7 @@ namespace Raven.Server.Documents.PeriodicBackup
         {
             try
             {
-                _serverStore.ConcurrentBackupsCounter.FinishBackup(periodicBackup.Configuration.Name, periodicBackup.RunningBackupStatus, elapsed, _logger);
+                _serverStore.ConcurrentBackupsCounter.FinishBackup(_serverStore.NodeTag, periodicBackup.Configuration.Name, periodicBackup.RunningBackupStatus, elapsed, _logger);
 
                 periodicBackup.RunningTask = null;
                 periodicBackup.CancelToken = null;
@@ -594,10 +594,10 @@ namespace Raven.Server.Documents.PeriodicBackup
 
             if (_forTestingPurposes != null && _forTestingPurposes.BackupStatusFromMemoryOnly)
                 return inMemoryBackupStatus;
-            
+
             return GetBackupStatus(taskId, inMemoryBackupStatus);
         }
-        
+
         private PeriodicBackupStatus GetBackupStatus(long taskId, PeriodicBackupStatus inMemoryBackupStatus)
         {
             var backupStatus = GetBackupStatusFromCluster(_serverStore, _database.Name, taskId);
@@ -635,7 +635,9 @@ namespace Raven.Server.Documents.PeriodicBackup
                         // if there is no status for this, we don't need to take into account tombstones
                         return 0; // cannot delete the tombstones until we've done a full backup
                     }
-                    var etag = ChangeVectorUtils.GetEtagById(status.LastDatabaseChangeVector, _database.DbBase64Id);
+
+                    var statusPerNode = status.GetStatusPerNode(_serverStore.NodeTag, out _);
+                    var etag = ChangeVectorUtils.GetEtagById(statusPerNode.LastDatabaseChangeVector, _database.DbBase64Id);
                     min = Math.Min(etag, min);
                 }
 
@@ -968,10 +970,12 @@ namespace Raven.Server.Documents.PeriodicBackup
             if (runningTask == null)
                 return null;
 
+            var runningBackupStatusPerNode = periodicBackup.RunningBackupStatus?.GetStatusPerNode(_serverStore.NodeTag, out _);
+
             return new RunningBackup
             {
                 StartTime = periodicBackup.StartTimeInUtc,
-                IsFull = periodicBackup.RunningBackupStatus?.IsFull ?? false,
+                IsFull = runningBackupStatusPerNode?.IsFull ?? false,
                 RunningBackupTaskId = runningTask.Id
             };
         }

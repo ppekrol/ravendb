@@ -109,13 +109,9 @@ namespace Raven.Server.Documents.PeriodicBackup
                 if (Database.ForTestingPurposes != null && Database.ForTestingPurposes.ActionToCallOnGetTempPath != null)
                     Database.ForTestingPurposes.ActionToCallOnGetTempPath?.Invoke(_tempBackupPath);
 
-                if (runningBackupStatus.LocalBackup == null)
-                    runningBackupStatus.LocalBackup = new LocalBackup();
-
-                if (runningBackupStatus.LastRaftIndex == null)
-                    runningBackupStatus.LastRaftIndex = new LastRaftIndex();
-
-                runningBackupStatus.IsFull = _isFullBackup;
+                runningBackupStatus.EnsureLocalBackup(Database.ServerStore.NodeTag);
+                runningBackupStatus.EnsureLastRaftIndex(Database.ServerStore.NodeTag);
+                runningBackupStatus.SetBackupType(Database.ServerStore.NodeTag, _isFullBackup);
 
                 if (_logger.IsInfoEnabled)
                 {
@@ -126,27 +122,23 @@ namespace Raven.Server.Documents.PeriodicBackup
                 if (_isFullBackup == false)
                 {
                     // if we come from old version the _previousBackupStatus won't have LastRaftIndex
-                    _previousBackupStatus.LastRaftIndex ??= new LastRaftIndex();
+                    _previousBackupStatus.EnsureLastRaftIndex(Database.ServerStore.NodeTag);
 
                     // no-op if nothing has changed
                     var (currentLastEtag, currentChangeVector) = Database.ReadLastEtagAndChangeVector();
                     var currentLastRaftIndex = GetDatabaseEtagForBackup();
 
-                    // if we come from old version the _previousBackupStatus won't have LastRaftIndex
-                    _previousBackupStatus.LastRaftIndex ??= new LastRaftIndex();
-
-                    if (currentLastEtag == _previousBackupStatus.LastEtag
-                        && currentChangeVector == _previousBackupStatus.LastDatabaseChangeVector
-                        && currentLastRaftIndex == _previousBackupStatus.LastRaftIndex.LastEtag)
+                    var previousStatusPerNode = _previousBackupStatus.GetStatusPerNode(Database.ServerStore.NodeTag, out _);
+                    if (currentLastEtag == previousStatusPerNode.LastEtag
+                        && currentChangeVector == previousStatusPerNode.LastDatabaseChangeVector
+                        && currentLastRaftIndex == previousStatusPerNode.LastRaftIndex.LastEtag)
                     {
-                        var message = $"Skipping incremental backup because no changes were made from last full backup on {_previousBackupStatus.LastFullBackup}.";
+                        var message = $"Skipping incremental backup because no changes were made from last full backup on {previousStatusPerNode.LastFullBackup}.";
 
                         if (_logger.IsInfoEnabled)
                             _logger.Info(message);
 
-                        runningBackupStatus.LastIncrementalBackup = _startTimeUtc;
-                        runningBackupStatus.LocalBackup.LastIncrementalBackup = _startTimeUtc;
-                        runningBackupStatus.LocalBackup.IncrementalBackupDurationInMs = 0;
+                        runningBackupStatus.SetLastIncrementalBackup(Database.ServerStore.NodeTag, _startTimeUtc);
                         SmugglerBase.EnsureProcessed(BackupResult);
                         AddInfo(message);
 
@@ -157,16 +149,16 @@ namespace Raven.Server.Documents.PeriodicBackup
                 // update the local configuration before starting the local backup
                 var localSettings = GetBackupConfigurationFromScript(Configuration.LocalSettings, x => JsonDeserializationServer.LocalSettings(x),
                     settings => PutServerWideBackupConfigurationCommand.UpdateSettingsForLocal(settings, Database.Name));
-
+                var prevStatusPerNode = _previousBackupStatus.GetStatusPerNode(Database.ServerStore.NodeTag, out _);
                 GenerateFolderNameAndBackupDirectory(localSettings, _startTimeUtc, out var nowAsString, out var folderName, out var backupDirectory);
-                var startEtag = _isFullBackup == false ? _previousBackupStatus.LastEtag : null;
-                var startRaftIndex = _isFullBackup == false ? _previousBackupStatus.LastRaftIndex.LastEtag : null;
+                var startEtag = _isFullBackup == false ? prevStatusPerNode.LastEtag : null;
+                var startRaftIndex = _isFullBackup == false ? prevStatusPerNode.LastRaftIndex.LastEtag : null;
 
                 var fileName = GetFileName(_isFullBackup, backupDirectory.FullPath, nowAsString, Configuration.BackupType, out string backupFilePath);
                 var internalBackupResult = CreateLocalBackupOrSnapshot(runningBackupStatus, backupFilePath, folderName, fileName, startEtag, startRaftIndex);
 
-                runningBackupStatus.LocalBackup.BackupDirectory = _backupToLocalFolder ? backupDirectory.FullPath : null;
-                runningBackupStatus.LocalBackup.TempFolderUsed = _backupToLocalFolder == false;
+                runningBackupStatus.SetLocalBackupBackupDirectory(Database.ServerStore.NodeTag, _backupToLocalFolder ? backupDirectory.FullPath : null);
+                runningBackupStatus.SetLocalBackupTempFolderUsed(Database.ServerStore.NodeTag, _backupToLocalFolder == false);
                 runningBackupStatus.IsEncrypted = _isBackupEncrypted;
 
                 try
@@ -175,11 +167,11 @@ namespace Raven.Server.Documents.PeriodicBackup
                 }
                 finally
                 {
-                    runningBackupStatus.UploadToS3 = BackupResult.S3Backup;
-                    runningBackupStatus.UploadToAzure = BackupResult.AzureBackup;
-                    runningBackupStatus.UploadToGoogleCloud = BackupResult.GoogleCloudBackup;
-                    runningBackupStatus.UploadToGlacier = BackupResult.GlacierBackup;
-                    runningBackupStatus.UploadToFtp = BackupResult.FtpBackup;
+                    runningBackupStatus.SetUploadToS3(Database.ServerStore.NodeTag, BackupResult.S3Backup);
+                    runningBackupStatus.SetUploadToAzure(Database.ServerStore.NodeTag, BackupResult.AzureBackup);
+                    runningBackupStatus.SetUploadToGoogleCloud(Database.ServerStore.NodeTag, BackupResult.GoogleCloudBackup);
+                    runningBackupStatus.SetUploadToGlacier(Database.ServerStore.NodeTag, BackupResult.GlacierBackup);
+                    runningBackupStatus.SetUploadToFtp(Database.ServerStore.NodeTag, BackupResult.FtpBackup);
 
                     BackupResult.LocalBackup = new LocalBackup
                     {
@@ -194,15 +186,12 @@ namespace Raven.Server.Documents.PeriodicBackup
                     }
                 }
 
-                runningBackupStatus.LastEtag = internalBackupResult.LastEtag;
-                runningBackupStatus.LastDatabaseChangeVector = internalBackupResult.LastDatabaseChangeVector;
-                runningBackupStatus.LastRaftIndex.LastEtag = internalBackupResult.LastRaftIndex;
-                runningBackupStatus.FolderName = folderName;
+                runningBackupStatus.SetLastEtag(Database.ServerStore.NodeTag, internalBackupResult.LastEtag);
+                runningBackupStatus.SetLastDatabaseChangeVector(Database.ServerStore.NodeTag, internalBackupResult.LastDatabaseChangeVector);
+                runningBackupStatus.SetLastRaftIndexLastEtag(Database.ServerStore.NodeTag, internalBackupResult.LastRaftIndex);
+                runningBackupStatus.SetFolderName(Database.ServerStore.NodeTag, folderName);
 
-                if (_isFullBackup)
-                    runningBackupStatus.LastFullBackup = _startTimeUtc;
-                else
-                    runningBackupStatus.LastIncrementalBackup = _startTimeUtc;
+                runningBackupStatus.SetLastBackupTime(Database.ServerStore.NodeTag, _startTimeUtc, _isFullBackup);
 
                 totalSw.Stop();
 
@@ -231,11 +220,11 @@ namespace Raven.Server.Documents.PeriodicBackup
             {
                 const string message = "Error when performing periodic backup";
 
-                runningBackupStatus.Error = new Error
+                runningBackupStatus.SetError(Database.ServerStore.NodeTag, new Error
                 {
                     Exception = e.ToString(),
                     At = DateTime.UtcNow
-                };
+                });
 
                 if (_logger.IsOperationsEnabled)
                     _logger.Operations(message, e);
@@ -257,13 +246,10 @@ namespace Raven.Server.Documents.PeriodicBackup
                     // whether we succeeded or not,
                     // in periodic backup we need to update the last backup time to avoid
                     // starting a new backup right after this one
-                    if (_isFullBackup)
-                        runningBackupStatus.LastFullBackupInternal = _startTimeUtc;
-                    else
-                        runningBackupStatus.LastIncrementalBackupInternal = _startTimeUtc;
+                    runningBackupStatus.SetLastInternalBackupTime(Database.ServerStore.NodeTag, _startTimeUtc, _isFullBackup);
 
                     runningBackupStatus.NodeTag = Database.ServerStore.NodeTag;
-                    runningBackupStatus.DurationInMs = totalSw.ElapsedMilliseconds;
+                    runningBackupStatus.SetDurationInMs(Database.ServerStore.NodeTag, totalSw.ElapsedMilliseconds);
                     UpdateOperationId(runningBackupStatus);
 
                     if (_isOneTimeBackup == false)
@@ -421,10 +407,11 @@ namespace Raven.Server.Documents.PeriodicBackup
             }
             else
             {
-                Debug.Assert(_previousBackupStatus.FolderName != null);
+                var previousStatusPerNode = _previousBackupStatus.GetStatusPerNode(Database.ServerStore.NodeTag, out _);
+                Debug.Assert(previousStatusPerNode.FolderName != null);
 
-                folderName = _previousBackupStatus.FolderName;
-                backupDirectory = _backupToLocalFolder ? new PathSetting(_previousBackupStatus.LocalBackup.BackupDirectory) : _tempBackupPath;
+                folderName = previousStatusPerNode.FolderName;
+                backupDirectory = _backupToLocalFolder ? new PathSetting(previousStatusPerNode.LocalBackup.BackupDirectory) : _tempBackupPath;
                 nowAsString = GetFormattedDate(nowInLocalTime);
             }
         }
@@ -562,7 +549,7 @@ namespace Raven.Server.Documents.PeriodicBackup
         {
             var internalBackupResult = new InternalBackupResult();
 
-            using (status.LocalBackup.UpdateStats(_isFullBackup))
+            using (status.UpdateLocalBackupStats(Database.ServerStore.NodeTag, _isFullBackup))
             {
                 // will rename the file after the backup is finished
                 var tempBackupFilePath = backupFilePath + InProgressExtension;
@@ -593,11 +580,13 @@ namespace Raven.Server.Documents.PeriodicBackup
                         }
                         else
                         {
-                            if (BackupResult.GetLastEtag() == _previousBackupStatus.LastEtag &&
-                                BackupResult.GetLastRaftIndex() == _previousBackupStatus.LastRaftIndex.LastEtag)
+                            var previousStatusPerNode = _previousBackupStatus.GetStatusPerNode(Database.ServerStore.NodeTag, out _);
+
+                            if (BackupResult.GetLastEtag() == previousStatusPerNode.LastEtag &&
+                                BackupResult.GetLastRaftIndex() == previousStatusPerNode.LastRaftIndex.LastEtag)
                             {
                                 internalBackupResult.LastEtag = startEtag ?? 0;
-                                internalBackupResult.LastDatabaseChangeVector = _previousBackupStatus.LastDatabaseChangeVector;
+                                internalBackupResult.LastDatabaseChangeVector = previousStatusPerNode.LastDatabaseChangeVector;
                                 internalBackupResult.LastRaftIndex = startRaftIndex ?? 0;
                             }
                             else
@@ -657,11 +646,11 @@ namespace Raven.Server.Documents.PeriodicBackup
 
                     RenameFile(tempBackupFilePath, backupFilePath);
 
-                    status.LocalBackup.Exception = null;
+                    status.SetLocalBackupException(Database.ServerStore.NodeTag, null);
                 }
                 catch (Exception e)
                 {
-                    status.LocalBackup.Exception = e.ToString();
+                    status.SetLocalBackupException(Database.ServerStore.NodeTag, e.ToString());
 
                     // deleting the temp backup file if the backup failed
                     DeleteFile(tempBackupFilePath);
@@ -676,7 +665,7 @@ namespace Raven.Server.Documents.PeriodicBackup
                 var localRetentionPolicy = new LocalRetentionPolicyRunner(RetentionPolicyParameters, Configuration.LocalSettings.FolderPath);
                 localRetentionPolicy.Execute();
                 sp.Stop();
-                status.LocalRetentionDurationInMs = sp.ElapsedMilliseconds;
+                status.SetLocalRetentionDurationInMs(Database.ServerStore.NodeTag, sp.ElapsedMilliseconds);
             }
 
             return internalBackupResult;
@@ -898,14 +887,17 @@ namespace Raven.Server.Documents.PeriodicBackup
 
         private void UpdateOperationId(PeriodicBackupStatus runningBackupStatus)
         {
-            runningBackupStatus.LastOperationId = _operationId;
-            if (_previousBackupStatus.LastOperationId == null ||
-                _previousBackupStatus.NodeTag != Database.ServerStore.NodeTag ||
-                _previousBackupStatus.Error != null)
+            runningBackupStatus.SetLastOperationId(Database.ServerStore.NodeTag, _operationId);
+
+            var previousStatusPerNode = _previousBackupStatus.GetStatusPerNode(Database.ServerStore.NodeTag, out var lastNodeTag);
+
+            if (previousStatusPerNode.LastOperationId == null ||
+                (lastNodeTag != null && lastNodeTag != Database.ServerStore.NodeTag) ||
+                previousStatusPerNode.Error != null)
                 return;
 
             // dismiss the previous operation
-            var id = $"{NotificationType.OperationChanged}/{_previousBackupStatus.LastOperationId.Value}";
+            var id = $"{NotificationType.OperationChanged}/{previousStatusPerNode.LastOperationId.Value}";
             Database.NotificationCenter.Dismiss(id);
         }
 

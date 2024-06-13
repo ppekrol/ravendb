@@ -5,7 +5,16 @@ using Sparrow.Json.Parsing;
 
 namespace Raven.Client.Documents.Operations.Backups
 {
-    public abstract class BackupStatus
+    internal interface IReadOnlyBackupStatus
+    {
+        DateTime? LastFullBackup { get; }
+        DateTime? LastIncrementalBackup { get; }
+        long? FullBackupDurationInMs { get; }
+        long? IncrementalBackupDurationInMs { get; }
+        string Exception { get; }
+    }
+
+    public abstract class BackupStatus : IReadOnlyBackupStatus
     {
         public DateTime? LastFullBackup { get; set; }
 
@@ -50,7 +59,12 @@ namespace Raven.Client.Documents.Operations.Backups
         }
     }
 
-    public sealed class LastRaftIndex
+    internal interface IReadOnlyLastRaftIndex
+    {
+        long? LastEtag { get; }
+    }
+
+    public sealed class LastRaftIndex : IReadOnlyLastRaftIndex
     {
         public long? LastEtag { get; set; }
 
@@ -63,7 +77,14 @@ namespace Raven.Client.Documents.Operations.Backups
         }
     }
 
-    public sealed class LocalBackup : BackupStatus
+    internal interface IReadOnlyLocalBackup : IReadOnlyBackupStatus
+    {
+        string BackupDirectory { get; }
+        string FileName { get; }
+        bool TempFolderUsed { get; }
+    }
+
+    public sealed class LocalBackup : BackupStatus, IReadOnlyLocalBackup
     {
         public string BackupDirectory { get; set; }
         public string FileName { get; set; }
@@ -80,7 +101,13 @@ namespace Raven.Client.Documents.Operations.Backups
         }
     }
 
-    public abstract class CloudUploadStatus : BackupStatus
+    internal interface IReadOnlyCloudUploadStatus : IReadOnlyBackupStatus
+    {
+        bool Skipped { get; }
+        IReadOnlyUploadProgress UploadProgress { get; }
+    }
+
+    public abstract class CloudUploadStatus : BackupStatus, IReadOnlyCloudUploadStatus
     {
         protected CloudUploadStatus()
         {
@@ -91,6 +118,8 @@ namespace Raven.Client.Documents.Operations.Backups
 
         public UploadProgress UploadProgress { get; set; }
 
+        IReadOnlyUploadProgress IReadOnlyCloudUploadStatus.UploadProgress => UploadProgress;
+
         public override DynamicJsonValue ToJson()
         {
             var json = base.ToJson();
@@ -100,32 +129,62 @@ namespace Raven.Client.Documents.Operations.Backups
         }
     }
 
-    public sealed class UploadToS3 : CloudUploadStatus
+    internal interface IReadOnlyUploadToS3 : IReadOnlyCloudUploadStatus
     {
-        
     }
 
-    public sealed class UploadToGlacier : CloudUploadStatus
-    {
-
-    }
-
-    public sealed class UploadToAzure : CloudUploadStatus
+    public sealed class UploadToS3 : CloudUploadStatus, IReadOnlyUploadToS3
     {
 
     }
 
-    public sealed class UploadToGoogleCloud : CloudUploadStatus
+    internal interface IReadOnlyUploadToGlacier : IReadOnlyCloudUploadStatus
+    {
+    }
+
+    public sealed class UploadToGlacier : CloudUploadStatus, IReadOnlyUploadToGlacier
     {
 
     }
 
-    public sealed class UploadToFtp : CloudUploadStatus
+    internal interface IReadOnlyUploadToAzure : IReadOnlyCloudUploadStatus
+    {
+    }
+
+    public sealed class UploadToAzure : CloudUploadStatus, IReadOnlyUploadToAzure
     {
 
     }
 
-    public sealed class UploadProgress
+    internal interface IReadOnlyUploadToGoogleCloud : IReadOnlyCloudUploadStatus
+    {
+    }
+
+    public sealed class UploadToGoogleCloud : CloudUploadStatus, IReadOnlyUploadToGoogleCloud
+    {
+
+    }
+
+    internal interface IReadOnlyUploadToFtp : IReadOnlyCloudUploadStatus
+    {
+    }
+
+    public sealed class UploadToFtp : CloudUploadStatus, IReadOnlyUploadToFtp
+    {
+
+    }
+
+    internal interface IReadOnlyUploadProgress
+    {
+        UploadType UploadType { get; }
+        UploadState UploadState { get; }
+        long UploadedInBytes { get; }
+        long TotalInBytes { get; }
+        double BytesPutsPerSec { get; }
+        long UploadTimeInMs { get; }
+    }
+
+    public sealed class UploadProgress : IReadOnlyUploadProgress
     {
         public UploadProgress()
         {

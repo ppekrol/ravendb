@@ -321,6 +321,7 @@ public abstract class AbstractOngoingTasks<TSubscriptionConnectionsState>
         var backupStatus = GetBackupStatus(backupConfiguration.TaskId, backupConfiguration, out var responsibleNodeTag, out var nextBackup,
             out var onGoingBackup, out var isEncrypted);
         var backupDestinations = backupConfiguration.GetFullBackupDestinations();
+        var lastStatusPerNode = backupStatus?.GetStatusPerNode(backupStatus.NodeTag, out _);
 
         return new OngoingTaskBackup
         {
@@ -331,8 +332,8 @@ public abstract class AbstractOngoingTasks<TSubscriptionConnectionsState>
             MentorNode = backupConfiguration.MentorNode,
             PinToMentorNode = backupConfiguration.PinToMentorNode,
             LastExecutingNodeTag = backupStatus?.NodeTag,
-            LastFullBackup = backupStatus?.LastFullBackup,
-            LastIncrementalBackup = backupStatus?.LastIncrementalBackup,
+            LastFullBackup = lastStatusPerNode?.LastFullBackup,
+            LastIncrementalBackup = lastStatusPerNode?.LastIncrementalBackup,
             OnGoingBackup = onGoingBackup,
             NextBackup = nextBackup,
             TaskConnectionStatus = backupConfiguration.Disabled

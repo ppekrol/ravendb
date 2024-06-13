@@ -81,7 +81,8 @@ namespace Raven.Server.Monitoring.Snmp.Objects.Database
                     if (status == null)
                         continue; // we have a backup task but no backup was ever done
 
-                    var currentLatestBackup = LastBackupDate(status.LastFullBackup, status.LastIncrementalBackup);
+                    var statusPerNode = status.GetStatusPerNode(serverStore.NodeTag, out _);
+                    var currentLatestBackup = LastBackupDate(statusPerNode.LastFullBackup, statusPerNode.LastIncrementalBackup);
                     if (currentLatestBackup > lastBackup)
                         lastBackup = currentLatestBackup;
                 }

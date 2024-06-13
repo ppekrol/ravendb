@@ -82,7 +82,7 @@ namespace Raven.Server.Documents.PeriodicBackup
                 logger.Operations($"Starting backup task '{backupName}'");
         }
 
-        public void FinishBackup(string backupName, PeriodicBackupStatus backupStatus, TimeSpan? elapsed, Logger logger)
+        public void FinishBackup(string nodeTag, string backupName, PeriodicBackupStatus backupStatus, TimeSpan? elapsed, Logger logger)
         {
             lock (_locker)
             {
@@ -95,17 +95,18 @@ namespace Raven.Server.Documents.PeriodicBackup
                 string extendedBackupTimings = string.Empty;
                 if (backupStatus != null)
                 {
-                    backupTypeString = BackupTask.GetBackupDescription(backupStatus.BackupType, backupStatus.IsFull);
+                    var backupStatusPerNode = backupStatus.GetStatusPerNode(nodeTag, out _);
+                    backupTypeString = BackupTask.GetBackupDescription(backupStatus.BackupType, backupStatusPerNode.IsFull);
                     
                     var first = true;
-                    AddBackupTimings(backupStatus.LocalBackup, "local");
-                    AddBackupTimings(backupStatus.UploadToS3, "Amazon S3");
-                    AddBackupTimings(backupStatus.UploadToGlacier, "Amazon Glacier");
-                    AddBackupTimings(backupStatus.UploadToAzure, "Azure");
-                    AddBackupTimings(backupStatus.UploadToGoogleCloud, "Google Cloud");
-                    AddBackupTimings(backupStatus.UploadToFtp, "FTP");
+                    AddBackupTimings(backupStatusPerNode.LocalBackup, "local");
+                    AddBackupTimings(backupStatusPerNode.UploadToS3, "Amazon S3");
+                    AddBackupTimings(backupStatusPerNode.UploadToGlacier, "Amazon Glacier");
+                    AddBackupTimings(backupStatusPerNode.UploadToAzure, "Azure");
+                    AddBackupTimings(backupStatusPerNode.UploadToGoogleCloud, "Google Cloud");
+                    AddBackupTimings(backupStatusPerNode.UploadToFtp, "FTP");
 
-                    void AddBackupTimings(BackupStatus perDestinationBackupStatus, string backupTypeName)
+                    void AddBackupTimings(IReadOnlyBackupStatus perDestinationBackupStatus, string backupTypeName)
                     {
                         if (perDestinationBackupStatus == null || 
                             perDestinationBackupStatus is CloudUploadStatus cus && cus.Skipped)
@@ -117,7 +118,7 @@ namespace Raven.Server.Documents.PeriodicBackup
                         first = false;
                         extendedBackupTimings +=
                             $"backup to {backupTypeName} took: " +
-                            $"{(backupStatus.IsFull ? perDestinationBackupStatus.FullBackupDurationInMs : perDestinationBackupStatus.IncrementalBackupDurationInMs)}ms";
+                            $"{(backupStatusPerNode.IsFull ? perDestinationBackupStatus.FullBackupDurationInMs : perDestinationBackupStatus.IncrementalBackupDurationInMs)}ms";
                     }
                 }
 
