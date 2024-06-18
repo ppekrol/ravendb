@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.ServerWide;
 using Raven.Client.Util;
@@ -16,6 +19,31 @@ namespace Raven.Server.ServerWide.Commands.Indexes
 {
     public sealed class PutAutoIndexCommand : UpdateDatabaseCommand
     {
+        private static StreamWriter Writer = new StreamWriter(File.Create("D:\\temp\\autoIndexes.json"));
+
+        static PutAutoIndexCommand()
+        {
+        }
+
+        private static void Write(AutoIndexDefinition def)
+        {
+            if (def == null)
+                return;
+
+            lock (Writer)
+            {
+                var s = JsonConvert.SerializeObject(def, Formatting.None, new JsonSerializerSettings
+                {
+                    Converters =
+                    {
+                        new StringEnumConverter()
+                    }
+                });
+                Writer.WriteLine(s);
+                Writer.Flush();
+            }
+        }
+
         public DateTime CreatedAt;
         public AutoIndexDefinition Definition;
         public IndexDeploymentMode? DefaultStaticDeploymentMode;
@@ -33,6 +61,8 @@ namespace Raven.Server.ServerWide.Commands.Indexes
 
         public override void UpdateDatabaseRecord(DatabaseRecord record, long etag)
         {
+            Write(Definition);
+
             try
             {
                 record.AddIndex(Definition, CreatedAt, etag, DefaultStaticDeploymentMode ?? IndexDeploymentMode.Parallel);
