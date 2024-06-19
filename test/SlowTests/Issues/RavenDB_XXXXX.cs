@@ -19,12 +19,10 @@ using Raven.Client.Documents.Operations.Indexes;
 using Raven.Client.ServerWide.Operations;
 using Raven.Server.Documents.Indexes;
 using Raven.Server.Json;
-using Raven.Tests.Core.Utils.Entities;
 using Sparrow.Json;
 using Tests.Infrastructure.Entities;
 using Xunit;
 using Xunit.Abstractions;
-using static Lucene.Net.Index.SegmentReader;
 
 namespace SlowTests.Issues;
 
@@ -128,12 +126,14 @@ public class RavenDB_XXXXX : RavenTestBase
             if (autoIndex == null)
                 throw new ArgumentNullException(nameof(autoIndex));
 
+            var context = new AutoIndexConversionContext();
+
             var indexDefinition = new IndexDefinition();
             indexDefinition.Name = GenerateName(autoIndex.Name);
 
-            indexDefinition.Maps = ConstructMaps(autoIndex);
+            indexDefinition.Maps = ConstructMaps(autoIndex, context);
             indexDefinition.Reduce = ConstructReduce(autoIndex);
-            indexDefinition.Fields = ConstructFields(autoIndex);
+            indexDefinition.Fields = ConstructFields(autoIndex, context);
 
             return indexDefinition;
 
@@ -154,7 +154,7 @@ public class RavenDB_XXXXX : RavenTestBase
                 return "Index/" + name;
             }
 
-            static HashSet<string> ConstructMaps(AutoIndexDefinition autoIndex)
+            static HashSet<string> ConstructMaps(AutoIndexDefinition autoIndex, AutoIndexConversionContext context)
             {
                 var sb = new StringBuilder();
                 sb
@@ -162,7 +162,7 @@ public class RavenDB_XXXXX : RavenTestBase
                     .AppendLine("select new")
                     .AppendLine("{");
 
-                HandleMapFields(sb, autoIndex);
+                HandleMapFields(sb, autoIndex, context);
 
                 sb.AppendLine("};");
 
@@ -181,7 +181,7 @@ public class RavenDB_XXXXX : RavenTestBase
                 return sb.ToString();
             }
 
-            static Dictionary<string, IndexFieldOptions> ConstructFields(AutoIndexDefinition autoIndex)
+            static Dictionary<string, IndexFieldOptions> ConstructFields(AutoIndexDefinition autoIndex, AutoIndexConversionContext context)
             {
                 Dictionary<string, IndexFieldOptions> fields = null;
                 if (autoIndex.MapFields is { Count: > 0 })
@@ -191,7 +191,7 @@ public class RavenDB_XXXXX : RavenTestBase
                         var fieldName = GenerateFieldName(kvp.Key);
 
                         HandleFieldIndexing(fieldName, kvp.Value.Indexing);
-                        HandleSpatial(fieldName, kvp.Value.Spatial);
+                        HandleSpatial(fieldName, kvp.Value.Spatial, context);
                         HandleStorage(fieldName, kvp.Value.Storage);
                         HandleSuggestions(fieldName, kvp.Value.Suggestions);
                     }
@@ -262,12 +262,15 @@ public class RavenDB_XXXXX : RavenTestBase
                     throw new NotImplementedException();
                 }
 
-                void HandleSpatial(string fieldName, AutoSpatialOptions spatialOptions)
+                void HandleSpatial(string fieldName, AutoSpatialOptions spatialOptions, AutoIndexConversionContext context)
                 {
                     if (spatialOptions == null)
                         return;
 
-                    throw new NotImplementedException();
+                    var realFieldName = context.FieldNameMapping[fieldName];
+
+                    var options = GetFieldOptions(realFieldName);
+                    options.Spatial = spatialOptions;
                 }
             }
         }
@@ -276,6 +279,8 @@ public class RavenDB_XXXXX : RavenTestBase
         {
             if (autoIndex == null)
                 throw new ArgumentNullException(nameof(autoIndex));
+
+            var context = new AutoIndexConversionContext();
 
             var sb = new StringBuilder();
 
@@ -288,9 +293,9 @@ public class RavenDB_XXXXX : RavenTestBase
                 .AppendLine($"public {name}()")
                 .AppendLine("{");
 
-            ConstructMap(autoIndex, sb);
+            ConstructMap(autoIndex, sb, context);
             ConstructReduce(autoIndex, sb);
-            ConstructFieldOptions(autoIndex, sb);
+            ConstructFieldOptions(autoIndex, sb, context);
 
             sb
             .AppendLine("}")
@@ -306,14 +311,14 @@ public class RavenDB_XXXXX : RavenTestBase
             }
 
 
-            static void ConstructMap(AutoIndexDefinition autoIndex, StringBuilder sb)
+            static void ConstructMap(AutoIndexDefinition autoIndex, StringBuilder sb, AutoIndexConversionContext context)
             {
                 sb
                     .AppendLine("Map = items => from item in items")
                     .AppendLine("select new")
                     .AppendLine("{");
 
-                HandleMapFields(sb, autoIndex);
+                HandleMapFields(sb, autoIndex, context);
 
                 sb.AppendLine("};");
             }
@@ -328,7 +333,7 @@ public class RavenDB_XXXXX : RavenTestBase
                 ConstructReduceInternal(sb, autoIndex);
             }
 
-            static void ConstructFieldOptions(AutoIndexDefinition autoIndex, StringBuilder sb)
+            static void ConstructFieldOptions(AutoIndexDefinition autoIndex, StringBuilder sb, AutoIndexConversionContext context)
             {
                 sb.AppendLine();
                 foreach (var kvp in autoIndex.MapFields)
@@ -337,6 +342,54 @@ public class RavenDB_XXXXX : RavenTestBase
                     var indexing = kvp.Value.Indexing;
                     if (indexing.HasValue && (indexing.Value & AutoFieldIndexing.Search) == AutoFieldIndexing.Search)
                         sb.AppendLine($"Index(\"{fieldName}\", {typeof(FieldIndexing).FullName}.{nameof(FieldIndexing.Search)});");
+
+                    if (kvp.Value.Spatial != null)
+                    {
+                        var realFieldName = context.FieldNameMapping[fieldName];
+
+                        sb.Append($"Spatial(\"{realFieldName}\", factory => factory.{kvp.Value.Spatial.Type}.");
+
+                        switch (kvp.Value.Spatial.Type)
+                        {
+                            case SpatialFieldType.Cartesian:
+
+                                switch (kvp.Value.Spatial.Strategy)
+                                {
+                                    case SpatialSearchStrategy.QuadPrefixTree:
+                                        sb.Append($"{nameof(CartesianSpatialOptionsFactory.QuadPrefixTreeIndex)}({kvp.Value.Spatial.MaxTreeLevel}, new {nameof(SpatialBounds)} {{ {nameof(SpatialBounds.MaxX)} = {kvp.Value.Spatial.MaxX}, {nameof(SpatialBounds.MaxY)} = {kvp.Value.Spatial.MaxY}, {nameof(SpatialBounds.MinX)} = {kvp.Value.Spatial.MinX}, {nameof(SpatialBounds.MinY)} = {kvp.Value.Spatial.MinY} }})");
+                                        break;
+                                    case SpatialSearchStrategy.BoundingBox:
+                                        sb.Append($"{nameof(CartesianSpatialOptionsFactory.BoundingBoxIndex)}()");
+                                        break;
+                                    default:
+                                        throw new ArgumentOutOfRangeException();
+                                }
+
+                                break;
+                            case SpatialFieldType.Geography:
+
+                                switch (kvp.Value.Spatial.Strategy)
+                                {
+                                    case SpatialSearchStrategy.QuadPrefixTree:
+                                        sb.Append($"{nameof(GeographySpatialOptionsFactory.QuadPrefixTreeIndex)}({kvp.Value.Spatial.MaxTreeLevel}, {typeof(SpatialUnits).FullName}.{kvp.Value.Spatial.Units})");
+                                        break;
+                                    case SpatialSearchStrategy.GeohashPrefixTree:
+                                        sb.Append($"{nameof(GeographySpatialOptionsFactory.GeohashPrefixTreeIndex)}({kvp.Value.Spatial.MaxTreeLevel}, {typeof(SpatialUnits).FullName}.{kvp.Value.Spatial.Units})");
+                                        break;
+                                    case SpatialSearchStrategy.BoundingBox:
+                                        sb.Append($"{nameof(GeographySpatialOptionsFactory.BoundingBoxIndex)}({typeof(SpatialUnits).FullName}.{kvp.Value.Spatial.Units})");
+                                        break;
+                                    default:
+                                        throw new ArgumentOutOfRangeException();
+                                }
+
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+
+                        sb.AppendLine(");");
+                    }
                 }
             }
 
@@ -348,8 +401,9 @@ public class RavenDB_XXXXX : RavenTestBase
             }
         }
 
-        private static void HandleMapFields(StringBuilder sb, AutoIndexDefinition autoIndex)
+        private static void HandleMapFields(StringBuilder sb, AutoIndexDefinition autoIndex, AutoIndexConversionContext context)
         {
+            var spatialCounter = 0;
             foreach (var kvp in autoIndex.MapFields)
             {
                 var fieldName = GenerateFieldName(kvp.Key);
@@ -357,21 +411,41 @@ public class RavenDB_XXXXX : RavenTestBase
                 if (fieldName.Contains("[]"))
                     throw new NotSupportedException($"Invalid field name '{fieldName}'.");
 
-                switch (kvp.Value.Aggregation)
+                if (kvp.Value.Spatial == null)
                 {
-                    case AggregationOperation.None:
-                        {
-                            var fieldPath = $"item.{kvp.Key}";
+                    switch (kvp.Value.Aggregation)
+                    {
+                        case AggregationOperation.None:
+                            {
+                                var fieldPath = $"item.{kvp.Key}";
 
-                            sb.AppendLine($"{fieldName} = {fieldPath},");
+                                sb.AppendLine($"{fieldName} = {fieldPath},");
+                                break;
+                            }
+                        case AggregationOperation.Count:
+                        case AggregationOperation.Sum:
+                            sb.AppendLine($"{fieldName} = 1,");
                             break;
-                        }
-                    case AggregationOperation.Count:
-                    case AggregationOperation.Sum:
-                        sb.AppendLine($"{fieldName} = 1,");
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+                else
+                {
+                    var newFieldName = spatialCounter == 0 ? "Coordinates" : $"Coordinates{spatialCounter}";
+                    context.FieldNameMapping.Add(fieldName, newFieldName);
+
+                    switch (kvp.Value.Spatial.MethodType)
+                    {
+                        case AutoSpatialOptions.AutoSpatialMethodType.Point:
+                        case AutoSpatialOptions.AutoSpatialMethodType.Wkt:
+                            sb.AppendLine($"{newFieldName} = {nameof(AbstractIndexCreationTask.CreateSpatialField)}({string.Join(", ", kvp.Value.Spatial.MethodArguments.Select(x => $"item.{x}"))}),");
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    spatialCounter++;
                 }
             }
 
@@ -443,5 +517,12 @@ public class RavenDB_XXXXX : RavenTestBase
             return name
                 .Replace(".", "_");
         }
+
+        public class AutoIndexConversionContext
+        {
+            public Dictionary<string, string> FieldNameMapping = new Dictionary<string, string>();
+        }
     }
 }
+
+
