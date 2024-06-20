@@ -339,57 +339,89 @@ public class RavenDB_XXXXX : RavenTestBase
                 foreach (var kvp in autoIndex.MapFields)
                 {
                     var fieldName = GenerateFieldName(kvp.Key);
-                    var indexing = kvp.Value.Indexing;
-                    if (indexing.HasValue && (indexing.Value & AutoFieldIndexing.Search) == AutoFieldIndexing.Search)
+
+                    HandleFieldIndexing(fieldName, kvp.Value.Indexing);
+                    HandleStorage(fieldName, kvp.Value.Storage);
+                    HandleSuggestions(fieldName, kvp.Value.Suggestions);
+                    HandleSpatial(fieldName, kvp.Value.Spatial, context);
+                }
+
+                return;
+
+                void HandleFieldIndexing(string fieldName, AutoFieldIndexing? indexing)
+                {
+                    if (indexing.HasValue == false)
+                        return;
+
+                    if (indexing.Value.HasFlag(AutoFieldIndexing.Search))
                         sb.AppendLine($"Index(\"{fieldName}\", {typeof(FieldIndexing).FullName}.{nameof(FieldIndexing.Search)});");
+                }
 
-                    if (kvp.Value.Spatial != null)
+                void HandleStorage(string fieldName, FieldStorage? fieldStorage)
+                {
+                    if (fieldStorage.HasValue == false || fieldStorage == FieldStorage.No)
+                        return;
+
+                    sb.AppendLine($"Store(\"{fieldName}\", {typeof(FieldStorage).FullName}.{nameof(FieldStorage.Yes)});");
+                }
+
+                void HandleSuggestions(string fieldName, bool? suggestions)
+                {
+                    if (suggestions.HasValue == false || suggestions == false)
+                        return;
+
+                    throw new NotImplementedException();
+                }
+
+                void HandleSpatial(string fieldName, AutoSpatialOptions spatial, AutoIndexConversionContext context)
+                {
+                    if (spatial == null)
+                        return;
+
+                    var realFieldName = context.FieldNameMapping[fieldName];
+
+                    sb.Append($"Spatial(\"{realFieldName}\", factory => factory.{spatial.Type}.");
+
+                    switch (spatial.Type)
                     {
-                        var realFieldName = context.FieldNameMapping[fieldName];
+                        case SpatialFieldType.Cartesian:
 
-                        sb.Append($"Spatial(\"{realFieldName}\", factory => factory.{kvp.Value.Spatial.Type}.");
+                            switch (spatial.Strategy)
+                            {
+                                case SpatialSearchStrategy.QuadPrefixTree:
+                                    sb.Append($"{nameof(CartesianSpatialOptionsFactory.QuadPrefixTreeIndex)}({spatial.MaxTreeLevel}, new {nameof(SpatialBounds)} {{ {nameof(SpatialBounds.MaxX)} = {spatial.MaxX}, {nameof(SpatialBounds.MaxY)} = {spatial.MaxY}, {nameof(SpatialBounds.MinX)} = {spatial.MinX}, {nameof(SpatialBounds.MinY)} = {spatial.MinY} }})");
+                                    break;
+                                case SpatialSearchStrategy.BoundingBox:
+                                    sb.Append($"{nameof(CartesianSpatialOptionsFactory.BoundingBoxIndex)}()");
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
 
-                        switch (kvp.Value.Spatial.Type)
-                        {
-                            case SpatialFieldType.Cartesian:
+                            break;
+                        case SpatialFieldType.Geography:
 
-                                switch (kvp.Value.Spatial.Strategy)
-                                {
-                                    case SpatialSearchStrategy.QuadPrefixTree:
-                                        sb.Append($"{nameof(CartesianSpatialOptionsFactory.QuadPrefixTreeIndex)}({kvp.Value.Spatial.MaxTreeLevel}, new {nameof(SpatialBounds)} {{ {nameof(SpatialBounds.MaxX)} = {kvp.Value.Spatial.MaxX}, {nameof(SpatialBounds.MaxY)} = {kvp.Value.Spatial.MaxY}, {nameof(SpatialBounds.MinX)} = {kvp.Value.Spatial.MinX}, {nameof(SpatialBounds.MinY)} = {kvp.Value.Spatial.MinY} }})");
-                                        break;
-                                    case SpatialSearchStrategy.BoundingBox:
-                                        sb.Append($"{nameof(CartesianSpatialOptionsFactory.BoundingBoxIndex)}()");
-                                        break;
-                                    default:
-                                        throw new ArgumentOutOfRangeException();
-                                }
+                            switch (spatial.Strategy)
+                            {
+                                case SpatialSearchStrategy.QuadPrefixTree:
+                                    sb.Append($"{nameof(GeographySpatialOptionsFactory.QuadPrefixTreeIndex)}({spatial.MaxTreeLevel}, {typeof(SpatialUnits).FullName}.{spatial.Units})");
+                                    break;
+                                case SpatialSearchStrategy.GeohashPrefixTree:
+                                    sb.Append($"{nameof(GeographySpatialOptionsFactory.GeohashPrefixTreeIndex)}({spatial.MaxTreeLevel}, {typeof(SpatialUnits).FullName}.{spatial.Units})");
+                                    break;
+                                case SpatialSearchStrategy.BoundingBox:
+                                    sb.Append($"{nameof(GeographySpatialOptionsFactory.BoundingBoxIndex)}({typeof(SpatialUnits).FullName}.{spatial.Units})");
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
 
-                                break;
-                            case SpatialFieldType.Geography:
-
-                                switch (kvp.Value.Spatial.Strategy)
-                                {
-                                    case SpatialSearchStrategy.QuadPrefixTree:
-                                        sb.Append($"{nameof(GeographySpatialOptionsFactory.QuadPrefixTreeIndex)}({kvp.Value.Spatial.MaxTreeLevel}, {typeof(SpatialUnits).FullName}.{kvp.Value.Spatial.Units})");
-                                        break;
-                                    case SpatialSearchStrategy.GeohashPrefixTree:
-                                        sb.Append($"{nameof(GeographySpatialOptionsFactory.GeohashPrefixTreeIndex)}({kvp.Value.Spatial.MaxTreeLevel}, {typeof(SpatialUnits).FullName}.{kvp.Value.Spatial.Units})");
-                                        break;
-                                    case SpatialSearchStrategy.BoundingBox:
-                                        sb.Append($"{nameof(GeographySpatialOptionsFactory.BoundingBoxIndex)}({typeof(SpatialUnits).FullName}.{kvp.Value.Spatial.Units})");
-                                        break;
-                                    default:
-                                        throw new ArgumentOutOfRangeException();
-                                }
-
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-
-                        sb.AppendLine(");");
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
+
+                    sb.AppendLine(");");
                 }
             }
 
