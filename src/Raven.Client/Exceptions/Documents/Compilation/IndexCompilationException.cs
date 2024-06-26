@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Raven.Client.Exceptions.Compilation;
 using Raven.Client.Extensions;
 using Sparrow.Json.Parsing;
@@ -67,6 +68,9 @@ namespace Raven.Client.Exceptions.Documents.Compilation
             });
         }
 
+#if !NETSTANDARD2_0
+        [DoesNotReturn]
+#endif
         internal static void Throw(string name, string code, List<IndexCompilationDiagnostic> diagnostics)
         {
             throw new IndexCompilationException($"Failed to compile index '{name}'.")

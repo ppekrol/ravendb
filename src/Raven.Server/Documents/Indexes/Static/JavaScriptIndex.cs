@@ -13,6 +13,8 @@ using Jint.Runtime.Descriptors;
 using Jint.Runtime.Interop;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
+using Raven.Client.Exceptions.Compilation;
+using Raven.Client.Exceptions.Documents.Compilation;
 using Raven.Client.Exceptions.Documents.Indexes;
 using Raven.Server.Config;
 using Raven.Server.Documents.Indexes.Configuration;
@@ -396,7 +398,7 @@ function map(name, lambda) {
             {
                 foreach (var script in definition.AdditionalSources.Values)
                 {
-                    _engine.ExecuteWithReset(script);
+                    CompileScript(() => _engine.ExecuteWithReset(script), script, definition);
 
                     sb.Append(Environment.NewLine);
                     sb.AppendLine(script);
@@ -407,16 +409,34 @@ function map(name, lambda) {
             var additionalSources = sb.ToString();
             foreach (var map in maps)
             {
-                var result = ExecuteCodeAndCollectReferencedCollections(map, additionalSources);
-                mapReferencedCollections.Add(result);
+                CompileScript(() =>
+                {
+                    var result = ExecuteCodeAndCollectReferencedCollections(map, additionalSources);
+                    mapReferencedCollections.Add(result);
+                }, map, definition);
             }
 
             if (definition.Reduce != null)
             {
-                _engine.ExecuteWithReset(definition.Reduce);
+                CompileScript(() => _engine.ExecuteWithReset(definition.Reduce), definition.Reduce, definition);
             }
 
             return mapReferencedCollections;
+        }
+
+        private static void CompileScript(Action action, string code, IndexDefinition definition)
+        {
+            try
+            {
+                action();
+            }
+            catch (ParserException e)
+            {
+                IndexCompilationException.Throw(
+                    definition.Name,
+                    code,
+                    [new(id: null, e.Error?.Description, CompilationDiagnosticSeverity.Error, new CompilationDiagnosticLocation(e.LineNumber, e.Column))]);
+            }
         }
 
         [DoesNotReturn]
