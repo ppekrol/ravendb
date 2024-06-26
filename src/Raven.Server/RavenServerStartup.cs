@@ -357,8 +357,7 @@ namespace Raven.Server
         {
             if (exception is IndexCompilationException indexCompilationException)
             {
-                djv[nameof(IndexCompilationException.IndexDefinitionProperty)] = indexCompilationException.IndexDefinitionProperty;
-                djv[nameof(IndexCompilationException.ProblematicText)] = indexCompilationException.ProblematicText;
+                indexCompilationException.FillJson(djv);
                 return;
             }
 

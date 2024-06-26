@@ -47,7 +47,7 @@ namespace Raven.Server.Documents.Indexes.Static.Roslyn.Rewriters.ReduceIndex
                     var myLambda = node.ArgumentList.Arguments.First().Expression as SimpleLambdaExpressionSyntax;
                     if (myLambda == null)
                     {
-                        throw new IndexCompilationException("Select expression must contain parameter(s)");
+                        throw new IndexCompilationException("Select expression must contain parameter(s).");
                     }
 
                     _root = myLambda.Parameter;

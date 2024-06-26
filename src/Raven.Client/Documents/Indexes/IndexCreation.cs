@@ -80,7 +80,7 @@ namespace Raven.Client.Documents.Indexes
                     }
                     catch (IndexCompilationException e)
                     {
-                        indexCompilationExceptions.Add(new IndexCompilationException("Failed to compile index name = " + task.IndexName, e));
+                        indexCompilationExceptions.Add(new IndexCompilationException($"Failed to compile index name '{task.IndexName}'.", e));
                     }
                 }
             }

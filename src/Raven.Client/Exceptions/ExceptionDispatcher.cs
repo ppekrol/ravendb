@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Raven.Client.Exceptions.Compilation;
 using Raven.Client.Exceptions.Documents;
 using Raven.Client.Exceptions.Documents.Compilation;
 using Raven.Client.Http;
@@ -111,7 +113,7 @@ namespace Raven.Client.Exceptions
                     throw RavenException.Generic(schema.Error, json);
                 }
 
-                if (unsuccessfulResponseBehavior == AbstractCommandResponseBehavior.CommandUnsuccessfulResponseBehavior.WrapException && 
+                if (unsuccessfulResponseBehavior == AbstractCommandResponseBehavior.CommandUnsuccessfulResponseBehavior.WrapException &&
                     typeof(RavenException).IsAssignableFrom(type) == false)
                     throw new RavenException(schema.Error, exception);
 
@@ -128,6 +130,27 @@ namespace Raven.Client.Exceptions
                 case IndexCompilationException indexCompilationException:
                     json.TryGet(nameof(IndexCompilationException.IndexDefinitionProperty), out indexCompilationException.IndexDefinitionProperty);
                     json.TryGet(nameof(IndexCompilationException.ProblematicText), out indexCompilationException.ProblematicText);
+                    json.TryGet(nameof(IndexCompilationException.Code), out indexCompilationException.Code);
+                    if (json.TryGet(nameof(IndexCompilationException.Diagnostics), out BlittableJsonReaderArray diagnosticsArray) && diagnosticsArray != null)
+                    {
+                        indexCompilationException.Diagnostics = new List<IndexCompilationDiagnostic>();
+                        foreach (BlittableJsonReaderObject diagnosticJson in diagnosticsArray)
+                        {
+                            diagnosticJson.TryGet(nameof(IndexCompilationDiagnostic.Id), out string id);
+                            diagnosticJson.TryGet(nameof(IndexCompilationDiagnostic.Message), out string diagnosticMessage);
+                            diagnosticJson.TryGet(nameof(IndexCompilationDiagnostic.Severity), out CompilationDiagnosticSeverity diagnosticSeverity);
+
+                            CompilationDiagnosticLocation diagnosticLocation = null;
+                            if (diagnosticJson.TryGet(nameof(IndexCompilationDiagnostic.Severity), out BlittableJsonReaderObject diagnosticLocationJson) && diagnosticLocationJson != null)
+                            {
+                                diagnosticLocationJson.TryGet(nameof(CompilationDiagnosticLocation.StartLine), out int diagnosticLocationStartLine);
+                                diagnosticLocationJson.TryGet(nameof(CompilationDiagnosticLocation.StartCharacter), out int diagnosticLocationStartCharacter);
+                                diagnosticLocation = new CompilationDiagnosticLocation(diagnosticLocationStartLine, diagnosticLocationStartCharacter);
+                            }
+
+                            indexCompilationException.Diagnostics.Add(new IndexCompilationDiagnostic(id, diagnosticMessage, diagnosticSeverity, diagnosticLocation));
+                        }
+                    }
                     break;
                 case RavenTimeoutException timeoutException:
                     json.TryGet(nameof(RavenTimeoutException.FailImmediately), out timeoutException.FailImmediately);

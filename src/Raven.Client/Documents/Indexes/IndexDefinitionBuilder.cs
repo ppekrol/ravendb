@@ -261,7 +261,7 @@ namespace Raven.Client.Documents.Indexes
             }
             catch (Exception e)
             {
-                throw new IndexCompilationException("Failed to create index " + _indexName, e);
+                throw new IndexCompilationException($"Failed to create index '{_indexName}'.", e);
             }
         }
 

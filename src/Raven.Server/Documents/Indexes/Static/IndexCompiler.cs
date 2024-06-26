@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -18,6 +19,7 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Formatting;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
+using Raven.Client.Exceptions.Compilation;
 using Raven.Client.Exceptions.Documents.Compilation;
 using Raven.Client.Util;
 using Raven.Server.Documents.Indexes.Static.NuGet;
@@ -229,19 +231,12 @@ namespace Raven.Server.Documents.Indexes.Static
 
             if (result.Success == false)
             {
-                IEnumerable<Diagnostic> failures = result.Diagnostics
-                    .Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
+                var failures = result.Diagnostics
+                    .Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error)
+                    .Select(CreateIndexCompilationDiagnostic)
+                    .ToList();
 
-                var sb = new StringBuilder();
-                sb.AppendLine($"Failed to compile index {originalName}");
-                sb.AppendLine();
-                sb.AppendLine(code);
-                sb.AppendLine();
-
-                foreach (var diagnostic in failures)
-                    sb.AppendLine(diagnostic.ToString());
-
-                throw new IndexCompilationException(sb.ToString());
+                IndexCompilationException.Throw(originalName, code, failures);
             }
 
             asm.Position = 0;
@@ -263,6 +258,42 @@ namespace Raven.Server.Documents.Indexes.Static
                 Code = code,
                 Type = assembly.GetType($"{IndexNamespace}.{cSharpSafeName}")
             };
+
+            static IndexCompilationDiagnostic CreateIndexCompilationDiagnostic(Diagnostic diagnostic)
+            {
+                var severity = ToCompilationDiagnosticSeverity(diagnostic.Severity);
+                var message = diagnostic.GetMessage(CultureInfo.InvariantCulture);
+                var location = ToCompilationDiagnosticLocation(diagnostic.Location);
+
+                return new IndexCompilationDiagnostic(diagnostic.Id, message, severity, location);
+            }
+
+            static CompilationDiagnosticSeverity ToCompilationDiagnosticSeverity(DiagnosticSeverity severity)
+            {
+                switch (severity)
+                {
+                    case DiagnosticSeverity.Hidden:
+                        return CompilationDiagnosticSeverity.Hidden;
+                    case DiagnosticSeverity.Info:
+                        return CompilationDiagnosticSeverity.Info;
+                    case DiagnosticSeverity.Warning:
+                        return CompilationDiagnosticSeverity.Warning;
+                    case DiagnosticSeverity.Error:
+                        return CompilationDiagnosticSeverity.Error;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(severity), severity, null);
+                }
+            }
+
+            static CompilationDiagnosticLocation ToCompilationDiagnosticLocation(Location location)
+            {
+                if (location == null || location.IsInSource == false)
+                    return null;
+
+                var fileLinePosition = location.GetLineSpan();
+
+                return new CompilationDiagnosticLocation(fileLinePosition.StartLinePosition.Line + 1, fileLinePosition.StartLinePosition.Character);
+            }
         }
 
         private static (UsingDirectiveSyntax[] UsingDirectiveSyntaxes, List<SyntaxTree> SyntaxTrees, MetadataReference[] References) GetUsingDirectiveAndSyntaxTreesAndReferences(IndexDefinition definition, string cSharpSafeName)
