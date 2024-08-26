@@ -41,6 +41,8 @@ using Voron.Impl;
 using Sparrow.Threading;
 using Size = Sparrow.Size;
 using System.Diagnostics.CodeAnalysis;
+using Raven.Server.Logging;
+using Sparrow.Server.Logging;
 
 namespace Raven.Server.Rachis
 {
@@ -176,7 +178,7 @@ namespace Raven.Server.Rachis
         public ClusterTransactionOperationsMerger TxMerger { get; private set; }
 
         private StorageEnvironment _persistentState;
-        internal Logger Log;
+        internal RavenLogger Log;
 
         private readonly ConcurrentQueue<Elector> _electors = new ConcurrentQueue<Elector>();
         private readonly List<IDisposable> _disposables = new List<IDisposable>();
@@ -316,7 +318,7 @@ namespace Raven.Server.Rachis
 
                     RequestSnapshot = GetSnapshotRequest(context);
 
-                    Log = LoggingSource.Instance.GetLogger<RachisConsensus>(_tag);
+                    Log = RavenLogManager.Instance.GetLoggerForCluster(typeof(RachisConsensus), LoggingComponent.NodeTag(_tag));
                     LogsTable.Create(tx.InnerTransaction, EntriesSlice, 16);
 
                     CurrentTerm = ReadTerm(context);
@@ -854,9 +856,9 @@ namespace Raven.Server.Rachis
                     var elapsed = sp.Elapsed;
                     if (elapsed > ElectionTimeout / 2)
                     {
-                        if (Log.IsOperationsEnabled)
+                        if (Log.IsWarnEnabled)
                         {
-                            Log.Operations($"Took way too much time ({elapsed}) to change the state to {rachisState} in term {expectedTerm:#,#;;0}. (Election timeout:{ElectionTimeout})");
+                            Log.Warn($"Took way too much time ({elapsed}) to change the state to {rachisState} in term {expectedTerm:#,#;;0}. (Election timeout:{ElectionTimeout})");
                         }
                     }
                 }
@@ -1697,9 +1699,9 @@ namespace Raven.Server.Rachis
                 $"FATAL ERROR: got an append entries request with index={firstEntry.Index:#,#;;0} term={firstEntry.Term:#,#;;0} " +
                 $"while my term for this index is {myTermForTheIndex:#,#;;0}. " +
                 $"(last commit index={lastCommitIndex:#,#;;0} with term={lastCommitTerm:#,#;;0}), this means something went wrong badly.";
-            if (Log.IsOperationsEnabled)
+            if (Log.IsFatalEnabled)
             {
-                Log.Operations(message);
+                Log.Fatal(message);
             }
             RachisInvalidOperationException.Throw(message);
         }

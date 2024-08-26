@@ -20,6 +20,7 @@ using Raven.Server.Documents.Indexes.Static.TimeSeries;
 using Raven.Server.Documents.Queries;
 using Raven.Server.Exceptions;
 using Raven.Server.Indexing;
+using Raven.Server.Logging;
 using Raven.Server.Utils;
 using Sparrow.Json;
 using Sparrow.Logging;
@@ -63,13 +64,13 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 
         private bool _initialized;
         private readonly Dictionary<string, IndexField> _fields;
-        private readonly Logger _logger;
+        private readonly RavenLogger _logger;
 
         private readonly object _readersLock = new object();
 
         public LuceneIndexPersistence(Index index, IIndexReadOperationFactory indexReadOperationFactory) : base(index, indexReadOperationFactory)
         {
-            _logger = LoggingSource.Instance.GetLogger<LuceneIndexPersistence>(index.DocumentDatabase.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForIndex<LuceneIndexPersistence>(index);
             _suggestionsDirectories = new Dictionary<string, LuceneVoronDirectory>();
             _suggestionsIndexSearcherHolders = new Dictionary<string, LuceneIndexSearcherHolder>();
             _disposeOnce = new DisposeOnce<SingleAttempt>(() =>
@@ -140,7 +141,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 
             _fields = fields.ToDictionary(x => x.Name, x => x);
 
-            _luceneIndexSearcherHolder = new LuceneIndexSearcherHolder(CreateIndexSearcher, _index._indexStorage.DocumentDatabase);
+            _luceneIndexSearcherHolder = new LuceneIndexSearcherHolder(CreateIndexSearcher, _index);
 
             foreach (var field in _fields)
             {
@@ -148,7 +149,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
                     continue;
 
                 string fieldName = field.Key;
-                _suggestionsIndexSearcherHolders[fieldName] = new LuceneIndexSearcherHolder(state => new IndexSearcher(_suggestionsDirectories[fieldName], true, state), _index._indexStorage.DocumentDatabase);
+                _suggestionsIndexSearcherHolders[fieldName] = new LuceneIndexSearcherHolder(state => new IndexSearcher(_suggestionsDirectories[fieldName], true, state), _index);
             }
 
             IndexSearcher CreateIndexSearcher(IState state)
@@ -296,7 +297,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
         {
             tx.ImmutableExternalState = _streamsCache;
         }
-        
+
         private void FillCollectionEtags(Transaction tx,
             Dictionary<string, IndexTransactionCache.CollectionEtags> map)
         {
@@ -388,7 +389,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
                 }
             }
         }
-        
+
         private void InitializeSuggestionsIndexStorage(Transaction tx, StorageEnvironment environment)
         {
             foreach (var field in _fields)
@@ -396,7 +397,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
                 if (!field.Value.HasSuggestions)
                     continue;
 
-                var directory = new LuceneVoronDirectory(tx, environment, TempFileCache, $"Suggestions-{field.Key}", _index.Configuration.LuceneIndexInput);
+                var directory = new LuceneVoronDirectory(_index, tx, environment, TempFileCache, $"Suggestions-{field.Key}", _index.Configuration.LuceneIndexInput);
                 _suggestionsDirectories[field.Key] = directory;
 
                 using (directory.SetTransaction(tx, out IState state))
@@ -410,7 +411,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 
         private void InitializeMainIndexStorage(Transaction tx, StorageEnvironment environment)
         {
-            _directory = new LuceneVoronDirectory(tx, environment, TempFileCache, _index.Configuration.LuceneIndexInput);
+            _directory = new LuceneVoronDirectory(_index, tx, environment, TempFileCache, _index.Configuration.LuceneIndexInput);
 
             using (_directory.SetTransaction(tx, out IState state))
             {
@@ -592,12 +593,12 @@ namespace Raven.Server.Documents.Indexes.Persistence.Lucene
 
         public override void AssertCanOptimize()
         {
-            
+
         }
-        
+
         public override void AssertCanDump()
         {
-            
+
         }
     }
 }

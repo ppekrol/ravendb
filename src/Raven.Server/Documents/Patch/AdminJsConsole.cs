@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils.Cli;
 using Sparrow.Json;
@@ -10,19 +11,19 @@ namespace Raven.Server.Documents.Patch
     public sealed class AdminJsConsole
     {
         private readonly DocumentDatabase _database;
-        public readonly Logger Log = LoggingSource.Instance.GetLogger<AdminJsConsole>("Server");
+        public readonly RavenLogger Log = RavenLogManager.Instance.GetLoggerForServer<AdminJsConsole>();
         private readonly RavenServer _server;
 
         public AdminJsConsole(RavenServer server, DocumentDatabase database)
         {
             _server = server;
             _database = database;
-            if (Log.IsOperationsEnabled)
+            if (Log.IsWarnEnabled)
             {
                 if (database != null)
-                    Log.Operations($"AdminJSConsole : Preparing to execute database script for \"{database.Name}\"");
+                    Log.Warn($"AdminJSConsole : Preparing to execute database script for \"{database.Name}\"");
                 else
-                    Log.Operations("AdminJSConsole : Preparing to execute server script");
+                    Log.Warn("AdminJSConsole : Preparing to execute server script");
 
             }
         }
@@ -30,9 +31,9 @@ namespace Raven.Server.Documents.Patch
         public string ApplyScript(AdminJsScript script)
         {
             var sw = Stopwatch.StartNew();
-            if (Log.IsOperationsEnabled)
+            if (Log.IsWarnEnabled)
             {
-                Log.Operations($"Script : \"{script.Script}\"");
+                Log.Warn($"Script : \"{script.Script}\"");
             }
 
             try
@@ -46,14 +47,14 @@ namespace Raven.Server.Documents.Patch
                 {
                     var toJson = RavenCli.ConvertResultToString(result);
 
-                    if (Log.IsOperationsEnabled)
+                    if (Log.IsWarnEnabled)
                     {
-                        Log.Operations($"Output: {toJson}");
+                        Log.Warn($"Output: {toJson}");
                     }
 
-                    if (Log.IsOperationsEnabled)
+                    if (Log.IsWarnEnabled)
                     {
-                        Log.Operations($"Finished executing database script. Total time: {sw.Elapsed} ");
+                        Log.Warn($"Finished executing database script. Total time: {sw.Elapsed} ");
                     }
 
                     return toJson;
@@ -61,9 +62,9 @@ namespace Raven.Server.Documents.Patch
             }
             catch (Exception e)
             {
-                if (Log.IsOperationsEnabled)
+                if (Log.IsErrorEnabled)
                 {
-                    Log.Operations("An Exception was thrown while executing the script: ", e);
+                    Log.Error("An Exception was thrown while executing the script: ", e);
                 }
 
                 throw;

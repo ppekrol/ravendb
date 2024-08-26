@@ -6,6 +6,7 @@ using Raven.Client.Documents.Indexes;
 using Raven.Server.Config.Categories;
 using Raven.Server.Documents.Indexes.MapReduce;
 using Raven.Server.Documents.Indexes.Persistence;
+using Raven.Server.Logging;
 using Raven.Server.ServerWide.Context;
 using Sparrow.Logging;
 
@@ -13,7 +14,7 @@ namespace Raven.Server.Documents.Indexes.Workers
 {
     public class CleanupDocuments : IIndexingWork
     {
-        private readonly Logger _logger;
+        private readonly RavenLogger _logger;
 
         private readonly Index _index;
         private readonly IndexingConfiguration _configuration;
@@ -29,8 +30,7 @@ namespace Raven.Server.Documents.Indexes.Workers
             _mapReduceContext = mapReduceContext;
             _documentsStorage = documentsStorage;
             _indexStorage = indexStorage;
-            _logger = LoggingSource.Instance
-                .GetLogger<CleanupDocuments>(indexStorage.DocumentDatabase.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForIndex<CleanupDocuments>(index);
         }
 
         public string Name => "Cleanup";

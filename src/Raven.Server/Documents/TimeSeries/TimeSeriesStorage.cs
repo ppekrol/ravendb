@@ -13,6 +13,7 @@ using Raven.Client.Documents.Changes;
 using Raven.Client.Documents.Operations.TimeSeries;
 using Raven.Server.Documents.Handlers.Processors.TimeSeries;
 using Raven.Server.Documents.Replication.ReplicationItems;
+using Raven.Server.Logging;
 using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Smuggler.Documents;
@@ -46,7 +47,7 @@ namespace Raven.Server.Documents.TimeSeries
         private readonly DocumentDatabase _documentDatabase;
         private readonly DocumentsStorage _documentsStorage;
         private HashSet<string> _tableCreated = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private readonly Logger _logger;
+        private readonly RavenLogger _logger;
 
         public TimeSeriesStorage([NotNull] DocumentDatabase documentDatabase, [NotNull] Transaction tx, [NotNull] TableSchema timeSeriesSchema, [NotNull] TableSchema deleteRangesSchema)
         {
@@ -64,7 +65,7 @@ namespace Raven.Server.Documents.TimeSeries
 
             Stats = new TimeSeriesStats(this, tx);
             Rollups = new TimeSeriesRollups(_documentDatabase);
-            _logger = LoggingSource.Instance.GetLogger<TimeSeriesStorage>(documentDatabase.Name);
+            _logger = RavenLogManager.Instance.GetLoggerForDatabase<TimeSeriesStorage>(documentDatabase.Name);
         }
 
         public long PurgeSegmentsAndDeletedRanges(DocumentsOperationContext context, string collection, long upto, long numberOfEntriesToDelete)

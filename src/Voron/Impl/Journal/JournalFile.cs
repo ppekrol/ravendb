@@ -16,6 +16,7 @@ using Sparrow.Collections;
 using Sparrow.Server;
 using Voron.Util;
 using Constants = Voron.Global.Constants;
+using Voron.Logging;
 
 namespace Voron.Impl.Journal
 {
@@ -33,7 +34,7 @@ namespace Voron.Impl.Journal
 
         private readonly FastList<PagePosition> _unusedPages;
         private readonly ContentionLoggingLocker _locker2;
-        private Logger _logger;
+        private RavenLogger _logger;
 
         public JournalFile(StorageEnvironment env, IJournalWriter journalWriter, long journalNumber)
         {
@@ -43,7 +44,7 @@ namespace Voron.Impl.Journal
             _journalWriter = journalWriter;
             _writePosIn4Kb = 0;
             _unusedPages = new FastList<PagePosition>();
-            _logger = LoggingSource.Instance.GetLogger<JournalFile>(JournalWriter.FileName.FullPath);
+            _logger = RavenLogManager.Instance.GetLoggerForVoron<JournalFile>(_env.Options, JournalWriter.FileName.FullPath);
             _locker2 = new ContentionLoggingLocker(_logger, JournalWriter.FileName.FullPath);
         }
 
