@@ -23,6 +23,7 @@ using Raven.Server.Config;
 using Raven.Server.Documents.Operations;
 using Raven.Server.Extensions;
 using Raven.Server.Json;
+using Raven.Server.Logging;
 using Raven.Server.Routing;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Commands;
@@ -39,9 +40,11 @@ namespace Raven.Server.Web.Authentication
 {
     public sealed class AdminCertificatesHandler : ServerRequestHandler
     {
-        private static readonly Logger Logger = LoggingSource.Instance.GetLogger<AdminCertificatesHandler>("Server");
-        
-        
+        private static readonly RavenLogger Logger = RavenLogManager.Instance.GetLoggerForServer<AdminCertificatesHandler>();
+
+        private static readonly RavenAuditLogger AuditLogger = RavenLogManager.Instance.GetAuditLoggerForServer();
+
+
         public const string HasTwoFactorFieldName = "HasTwoFactor";
         public const string TwoFactorExpirationDate = "TwoFactorExpirationDate";
         
@@ -221,7 +224,7 @@ namespace Raven.Server.Web.Authentication
                     throw new ArgumentException("Unable to load the provided certificate.", e);
                 }
 
-                if (LoggingSource.AuditLog.IsInfoEnabled)
+                if (AuditLogger.IsAuditEnabled)
                 {
                     var permissions = certificate?.Permissions != null
                         ? Environment.NewLine + string.Join(Environment.NewLine, certificate.Permissions.Select(kvp => kvp.Key + ": " + kvp.Value.ToString()))
@@ -405,7 +408,7 @@ namespace Raven.Server.Web.Authentication
                 if (definition != null)
                     keysToDelete.AddRange(definition.CollectionSecondaryKeys);
 
-                if (LoggingSource.AuditLog.IsInfoEnabled)
+                if (AuditLogger.IsAuditEnabled)
                 {
                     LogAuditFor("Certificates", "DELETE", $"Certificate '{thumbprint}'.");
                 }
@@ -1075,9 +1078,9 @@ namespace Raven.Server.Web.Authentication
                             throw new InvalidOperationException("Cannot replace the server certificate. Only a ClusterAdmin can do this.");
 
                         var timeoutTask = TimeoutManager.WaitFor(TimeSpan.FromSeconds(60), ServerStore.ServerShutdown);
-                        if (Logger.IsOperationsEnabled)
+                        if (Logger.IsDebugEnabled)
                         {
-                            Logger.Operations("Initiating the replacement of the certificate upon explicit request - '/admin/certificates/replace-cluster-cert'.");
+                            Logger.Debug("Initiating the replacement of the certificate upon explicit request - '/admin/certificates/replace-cluster-cert'.");
                         }
                         var replicationTask = Server.StartCertificateReplicationAsync(certBytes, replaceImmediately, GetRaftRequestIdFromQuery());
 
