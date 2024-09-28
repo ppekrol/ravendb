@@ -78,6 +78,7 @@ namespace Sparrow.Platform.Posix
         private readonly SmapsReaderResults _smapsReaderResults = new SmapsReaderResults();
 
         private readonly byte[] _rwsBytes = Encoding.UTF8.GetBytes("rw-s");
+        private readonly byte[] _pBytes = Encoding.UTF8.GetBytes("---p");
         private readonly byte[] _sizeBytes = Encoding.UTF8.GetBytes("Size:");
         private readonly byte[] _swapBytes = Encoding.UTF8.GetBytes("Swap:");
         private readonly byte[] _rssBytes = Encoding.UTF8.GetBytes("Rss:");
@@ -120,7 +121,7 @@ namespace Sparrow.Platform.Posix
 
         public static string GetSmapsPath(int pid)
         {
-            return $"/proc/{pid}/smaps";
+            return $"/proc/{pid}/smaps_rollup";
         }
 
         public struct SmapsReadResult<T> where T : struct, ISmapsReaderResultAction
@@ -180,6 +181,8 @@ namespace Sparrow.Platform.Posix
                     var offset = 0;
                     if (_smapsBuffer[_currentBuffer][i] == 'r')
                         term = _rwsBytes;
+                    else if (_smapsBuffer[_currentBuffer][i] == '-')
+                        term = _pBytes;
                     else if (_smapsBuffer[_currentBuffer][i] == 'R')
                         term = _rssBytes;
                     else if (_smapsBuffer[_currentBuffer][i] == 'S')
@@ -289,7 +292,7 @@ namespace Sparrow.Platform.Posix
 
                         var currentChar = _smapsBuffer[searchedBuffer][valueSearchPosition];
 
-                        if (term == _rwsBytes) // value is filename which comes after last white-space and before '\n'
+                        if (term == _rwsBytes || term == _pBytes) // value is filename which comes after last white-space and before '\n'
                         {
                             // zero previous entries
                             if (posInTempBuf == 0)
@@ -333,7 +336,7 @@ namespace Sparrow.Platform.Posix
                         ++bytesSearched;
                     }
 
-                    if (term != _rwsBytes)
+                    if (term != _rwsBytes && term != _pBytes)
                     {
                         if (foundValue == false)
                             ThrowNotContainsValidValue(term, pid);
@@ -355,7 +358,7 @@ namespace Sparrow.Platform.Posix
 
 
                     long resultLong = 0;
-                    if (term != _rwsBytes)
+                    if (term != _rwsBytes && term != _pBytes)
                     {
                         var multiplier = 1;
                         for (var j = posInTempBuf - 1; j >= 0; j--)
@@ -371,7 +374,7 @@ namespace Sparrow.Platform.Posix
                         resultString = posInTempBuf > 0 ? Encoding.UTF8.GetString(_tempBufferBytes, 0, posInTempBuf) : "";
                     }
 
-                    if (term == _rwsBytes)
+                    if (term == _rwsBytes || term == _pBytes)
                     {
                         if (state != SearchState.None)
                             ThrowNotRwsTermAfterLockedTerm(state, term, pid);
@@ -386,7 +389,7 @@ namespace Sparrow.Platform.Posix
                     }
                     else if (term == _rssBytes)
                     {
-                        if (state != SearchState.Size)
+                        if (state != SearchState.Rws)
                             continue; // found Rss but not after rw-s - irrelevant
                         state = SearchState.Rss;
                         tmpRss += resultLong;
@@ -443,9 +446,9 @@ namespace Sparrow.Platform.Posix
                         if (resultString == null)
                             ThrowOnNullString();
 
-                        if (resultString.EndsWith(".voron") == false &&
-                            resultString.EndsWith(".buffers") == false)
-                            continue;
+                        //if (resultString.EndsWith(".voron") == false &&
+                        //    resultString.EndsWith(".buffers") == false)
+                        //    continue;
 
                         _smapsReaderResults.ResultString = resultString;
                         _smapsReaderResults.Size = valSize;

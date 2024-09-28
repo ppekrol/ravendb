@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Text.RegularExpressions;
+using Amazon.S3.Model;
 using FastTests;
 using Sparrow.Platform.Posix;
 using Xunit;
@@ -14,6 +16,45 @@ namespace SlowTests.Utils
     {
         public SmapsReaderTests(ITestOutputHelper output) : base(output)
         {
+        }
+
+        private const string SmapsRollup = @"605f1bf67000-7fff4b6e2000 ---p 00000000 00:00 0                          [rollup]
+Rss:              843564 kB
+Pss:              809811 kB
+Pss_Dirty:        543903 kB
+Pss_Anon:         422104 kB
+Pss_File:         265771 kB
+Pss_Shmem:        121935 kB
+Shared_Clean:      61696 kB
+Shared_Dirty:         32 kB
+Private_Clean:    237944 kB
+Private_Dirty:    543892 kB
+Referenced:       713176 kB
+Anonymous:        422104 kB
+LazyFree:              0 kB
+AnonHugePages:         0 kB
+ShmemPmdMapped:        0 kB
+FilePmdMapped:         0 kB
+Shared_Hugetlb:        0 kB
+Private_Hugetlb:       0 kB
+Swap:                  0 kB
+SwapPss:               0 kB
+Locked:                0 kB
+";
+
+
+        [Fact]
+        public void ParsesSmapsProperlyFromRollup()
+        {
+            var smapsReader = new SmapsReader(new[] { new byte[SmapsReader.BufferSize], new byte[SmapsReader.BufferSize] });
+            SmapsReader.SmapsReadResult<SmapsReaderTests.SmapsTestResult> result;
+            using (var smapsStream = new FakeProcSmapsEntriesStream(new MemoryStream(Encoding.UTF8.GetBytes(SmapsRollup))))
+            {
+                result = smapsReader
+                    .CalculateMemUsageFromSmaps<SmapsTestResult>(smapsStream, pid: 1234);
+            }
+
+            Assert.Single(result.SmapsResults.Entries);
         }
 
         [Fact]
@@ -73,7 +114,7 @@ namespace SlowTests.Utils
 
             private IEnumerable<string> ReadEntry()
             {
-                using (StreamReader reader = new StreamReader(_smapsSnapshotStream))
+                using (StreamReader reader = new(_smapsSnapshotStream))
                 {
                     var currentEntry = new StringBuilder();
                     string line;
@@ -88,6 +129,8 @@ namespace SlowTests.Utils
                             currentEntry = new StringBuilder();
                         }
                     }
+                    
+                    yield return currentEntry.ToString();
                 }
             }
             
