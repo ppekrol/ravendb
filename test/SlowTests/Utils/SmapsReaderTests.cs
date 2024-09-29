@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
-using System.Text.RegularExpressions;
-using Amazon.S3.Model;
 using FastTests;
 using Sparrow.Platform.Posix;
 using Xunit;
@@ -46,8 +44,8 @@ Locked:                0 kB
         [Fact]
         public void ParsesSmapsProperlyFromRollup()
         {
-            var smapsReader = new SmapsReader(new[] { new byte[SmapsReader.BufferSize], new byte[SmapsReader.BufferSize] });
-            SmapsReader.SmapsReadResult<SmapsReaderTests.SmapsTestResult> result;
+            var smapsReader = new SmapsRollupReader(new[] { new byte[AbstractSmapsReader.BufferSize], new byte[AbstractSmapsReader.BufferSize] });
+            AbstractSmapsReader.SmapsReadResult<SmapsTestResult> result;
             using (var smapsStream = new FakeProcSmapsEntriesStream(new MemoryStream(Encoding.UTF8.GetBytes(SmapsRollup))))
             {
                 result = smapsReader
@@ -63,12 +61,12 @@ Locked:                0 kB
             var assembly = typeof(SmapsReaderTests).Assembly;
             var smapsReader = new SmapsReader(new[]
             {
-                new byte[SmapsReader.BufferSize], new byte[SmapsReader.BufferSize]
+                new byte[AbstractSmapsReader.BufferSize], new byte[AbstractSmapsReader.BufferSize]
             });
 
-            SmapsReader.SmapsReadResult<SmapsTestResult> result;
-            
-            using (var fs = 
+            AbstractSmapsReader.SmapsReadResult<SmapsTestResult> result;
+
+            using (var fs =
                 assembly.GetManifestResourceStream("SlowTests.Data.RavenDB_15159.12119.smaps.gz"))
             using (var deflated = new GZipStream(fs, CompressionMode.Decompress))
             using (var smapsStream = new FakeProcSmapsEntriesStream(deflated))
@@ -76,14 +74,14 @@ Locked:                0 kB
                 result = smapsReader
                     .CalculateMemUsageFromSmaps<SmapsTestResult>(smapsStream, pid: 1234);
             }
-            
+
             // 385 .buffers
             // 181 .voron
-            Assert.Equal(385 + 181, result.SmapsResults.Entries.Count); 
-            
+            Assert.Equal(385 + 181, result.SmapsResults.Entries.Count);
+
             // cat 12119.smaps | grep -e "rw-s" -A 3 | awk '$1 ~ /Rss/ {sum += $2} END {print sum}'
             Assert.Equal(722136L * 1024, result.Rss);
-            
+
             // cat 12119.smaps | grep -e "rw-s" -A 16 | awk '$1 ~ /Swap/ {sum += $2} END {print sum}'
             Assert.Equal(1348L * 1024, result.Swap);
         }
@@ -95,12 +93,12 @@ Locked:                0 kB
             {
                 if (Entries == null)
                     Entries = new List<SmapsReaderResults>();
-                
+
                 Entries.Add(results);
             }
         }
 
-        private class FakeProcSmapsEntriesStream : Stream 
+        private class FakeProcSmapsEntriesStream : Stream
         {
             private readonly Stream _smapsSnapshotStream;
 
@@ -118,22 +116,22 @@ Locked:                0 kB
                 {
                     var currentEntry = new StringBuilder();
                     string line;
-                    
+
                     while ((line = reader.ReadLine()) != null)
                     {
                         currentEntry.Append(line + '\n');
-                        
+
                         if (line.StartsWith("VmFlags"))
                         {
                             yield return currentEntry.ToString();
                             currentEntry = new StringBuilder();
                         }
                     }
-                    
+
                     yield return currentEntry.ToString();
                 }
             }
-            
+
             public override void Flush()
             {
                 throw new System.NotImplementedException();
@@ -143,7 +141,7 @@ Locked:                0 kB
             {
                 if (_entriesEnumerator.MoveNext() == false)
                     return 0;
-                
+
                 var currentEntryString = _entriesEnumerator.Current;
                 var entryBytes = Encoding.UTF8.GetBytes(currentEntryString);
                 entryBytes.CopyTo(new Memory<byte>(buffer));
@@ -171,6 +169,6 @@ Locked:                0 kB
             public override long Length => 0;
             public override long Position { get; set; }
         }
-    
+
     }
 }
