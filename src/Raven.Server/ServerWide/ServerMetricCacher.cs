@@ -22,15 +22,15 @@ namespace Raven.Server.ServerWide
             _server = server;
 
             if (PlatformDetails.RunningOnLinux)
-                _smapsReader = new SmapsReader(new[] { new byte[SmapsReader.BufferSize], new byte[SmapsReader.BufferSize] });
+                _smapsReader = new SmapsReader(new[] { new byte[AbstractSmapsReader.BufferSize], new byte[AbstractSmapsReader.BufferSize] });
         }
 
         public void Initialize()
         {
             Register(MetricCacher.Keys.Server.CpuUsage, TimeSpan.FromMilliseconds(DefaultCpuRefreshRateInMs), _server.CpuUsageCalculator.Calculate, asyncRefresh: false);
             Register(MetricCacher.Keys.Server.MemoryInfo, TimeSpan.FromSeconds(1), CalculateMemoryInfo);
-            Register(MetricCacher.Keys.Server.MemoryInfoExtended.RefreshRate15Seconds, TimeSpan.FromSeconds(15), CalculateMemoryInfoExtended);
-            Register(MetricCacher.Keys.Server.MemoryInfoExtended.RefreshRate5Seconds, TimeSpan.FromSeconds(5), CalculateMemoryInfoExtended);
+            Register(MetricCacher.Keys.Server.MemoryInfoExtended.RefreshRate15Seconds, _server.Configuration.Memory.ExtendedMemoryInformationRefreshRate15.AsTimeSpan, CalculateMemoryInfoExtended);
+            Register(MetricCacher.Keys.Server.MemoryInfoExtended.RefreshRate5Seconds, _server.Configuration.Memory.ExtendedMemoryInformationRefreshRate5.AsTimeSpan, CalculateMemoryInfoExtended);
             Register(MetricCacher.Keys.Server.DiskSpaceInfo, TimeSpan.FromSeconds(15), CalculateDiskSpaceInfo);
             Register(MetricCacher.Keys.Server.MemInfo, TimeSpan.FromSeconds(15), CalculateMemInfo);
             Register(MetricCacher.Keys.Server.MaxServerLimits, TimeSpan.FromHours(1), CalculateMaxServerLimits);
@@ -41,7 +41,7 @@ namespace Raven.Server.ServerWide
             Register(MetricCacher.Keys.Server.GcFullBlocking, TimeSpan.FromSeconds(15), () => CalculateGcMemoryInfo(GCKind.FullBlocking));
         }
 
-        private object CalculateMemoryInfo()
+        private static object CalculateMemoryInfo()
         {
             return MemoryInformation.GetMemoryInfo();
         }
@@ -56,7 +56,7 @@ namespace Raven.Server.ServerWide
             return DiskUtils.GetDiskSpaceInfo(_server.ServerStore.Configuration.Core.DataDirectory.FullPath);
         }
 
-        private GCMemoryInfo CalculateGcMemoryInfo(GCKind gcKind)
+        private static GCMemoryInfo CalculateGcMemoryInfo(GCKind gcKind)
         {
             return GC.GetGCMemoryInfo(gcKind);
         }
