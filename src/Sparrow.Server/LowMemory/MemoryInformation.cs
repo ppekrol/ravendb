@@ -299,27 +299,18 @@ namespace Sparrow.LowMemory
 
         public static MemoryInfoResult GetMemoryInformationUsingOneTimeSmapsReader()
         {
-            ISmapsReader smapsReader = null;
-            byte[][] buffers = null;
+            IDisposable releaseSmapsReader = null;
             try
             {
+                ISmapsReader smapsReader = null;
                 if (PlatformDetails.RunningOnLinux)
-                {
-                    var buffer1 = ArrayPool<byte>.Shared.Rent(SmapsFactory.BufferSize);
-                    var buffer2 = ArrayPool<byte>.Shared.Rent(SmapsFactory.BufferSize);
-                    buffers = new[] { buffer1, buffer2 };
-                    smapsReader = SmapsFactory.CreateSmapsReader(new[] { buffer1, buffer2 });
-                }
+                    releaseSmapsReader = SmapsFactory.CreateSmapsReader(out smapsReader);
 
                 return GetMemoryInfo(smapsReader, extended: true);
             }
             finally
             {
-                if (buffers != null)
-                {
-                    ArrayPool<byte>.Shared.Return(buffers[0]);
-                    ArrayPool<byte>.Shared.Return(buffers[1]);
-                }
+                releaseSmapsReader?.Dispose();
             }
         }
 

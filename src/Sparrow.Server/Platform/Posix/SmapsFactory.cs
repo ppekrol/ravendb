@@ -1,6 +1,7 @@
 ﻿using Sparrow.Platform.Posix;
 using System.Diagnostics;
 using System;
+using System.Buffers;
 using System.IO;
 using Sparrow.Platform;
 
@@ -16,7 +17,7 @@ internal static class SmapsFactory
     {
         var envSmapsReaderType = Environment.GetEnvironmentVariable("RAVEN_SMAPS_READER_TYPE");
 
-        if (PlatformDetails.RunningOnPosix == false)
+        if (PlatformDetails.RunningOnLinux == false)
             return;
 
         if (string.IsNullOrWhiteSpace(envSmapsReaderType) == false && Enum.TryParse<SmapsReaderType>(envSmapsReaderType, ignoreCase: true, out var smapsReaderType))
@@ -32,12 +33,22 @@ internal static class SmapsFactory
         }
     }
 
-    public static ISmapsReader CreateSmapsReader(byte[][] smapsBuffer)
+    public static IDisposable CreateSmapsReader(out ISmapsReader smapsReader) => CreateSmapsReader(DefaultSmapsReaderType, out smapsReader);
+
+    public static IDisposable CreateSmapsReader(SmapsReaderType type, out ISmapsReader smapsReader)
     {
-        return CreateSmapsReader(DefaultSmapsReaderType, smapsBuffer);
+        var buffers = new[]
+        {
+            ArrayPool<byte>.Shared.Rent(BufferSize),
+            ArrayPool<byte>.Shared.Rent(BufferSize)
+        };
+
+        smapsReader = CreateSmapsReader(type, buffers);
+
+        return new ReleaseSmapsReader(buffers);
     }
 
-    public static ISmapsReader CreateSmapsReader(SmapsReaderType type, byte[][] smapsBuffer)
+    private static ISmapsReader CreateSmapsReader(SmapsReaderType type, byte[][] smapsBuffer)
     {
         switch (type)
         {
@@ -47,6 +58,22 @@ internal static class SmapsFactory
                 return new SmapsRollupReader(smapsBuffer);
             default:
                 throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    public struct ReleaseSmapsReader : IDisposable
+    {
+        private readonly byte[][] _smapsBuffer;
+
+        public ReleaseSmapsReader(byte[][] smapsBuffer)
+        {
+            _smapsBuffer = smapsBuffer;
+        }
+
+        public void Dispose()
+        {
+            ArrayPool<byte>.Shared.Return(_smapsBuffer[0]);
+            ArrayPool<byte>.Shared.Return(_smapsBuffer[1]);
         }
     }
 }

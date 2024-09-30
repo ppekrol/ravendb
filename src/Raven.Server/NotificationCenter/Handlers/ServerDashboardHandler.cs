@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Raven.Server.Dashboard;
 using Raven.Server.Routing;
+using Raven.Server.ServerWide.Memory;
 using Sparrow.Logging;
 using Sparrow.Server.LowMemory;
 
@@ -24,7 +25,7 @@ namespace Raven.Server.NotificationCenter.Handlers
                     var isValidFor = GetDatabaseAccessValidationFunc();
                     try
                     {
-                        using (var lowMemoryMonitor = new LowMemoryMonitor())
+                        using (var lowMemoryMonitor = new CachingLowMemoryMonitor(Server))
                         {
                             var machineResources = MachineResourcesNotificationSender.GetMachineResources(Server.MetricCacher, lowMemoryMonitor, Server.CpuUsageCalculator);
                             await writer.WriteToWebSocket(machineResources.ToJson());

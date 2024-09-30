@@ -147,7 +147,7 @@ public class MetricsProvider
         result.InstalledMemoryInMb = memoryInfoResult.InstalledMemory.GetValue(SizeUnit.Megabytes);
         result.PhysicalMemoryInMb = memoryInfoResult.TotalPhysicalMemory.GetValue(SizeUnit.Megabytes);
         result.AllocatedMemoryInMb = memoryInfoResult.WorkingSet.GetValue(SizeUnit.Megabytes);
-        result.LowMemorySeverity = LowMemoryNotification.Instance.IsLowMemory(memoryInfoResult,
+        result.LowMemorySeverity = LowMemoryNotification.Instance.Heavy_IsLowMemory(memoryInfoResult,
             new LowMemoryMonitor(), out _);
 
         result.TotalSwapSizeInMb = memoryInfoResult.TotalSwapSize.GetValue(SizeUnit.Megabytes);

@@ -214,14 +214,9 @@ namespace Raven.Server.Documents.Handlers.Debugging
 
             using (ServerStore.ContextPool.AllocateOperationContext(out JsonOperationContext context))
             {
-                var buffers = new[]
+                using (SmapsFactory.CreateSmapsReader(out var smapsReader))
                 {
-                    ArrayPool<byte>.Shared.Rent(SmapsFactory.BufferSize),
-                    ArrayPool<byte>.Shared.Rent(SmapsFactory.BufferSize)
-                };
-                try
-                {
-                    var result = SmapsFactory.CreateSmapsReader(buffers).CalculateMemUsageFromSmaps<SmapsReaderJsonResults>();
+                    var result = smapsReader.CalculateMemUsageFromSmaps<SmapsReaderJsonResults>();
                     var procStatus = MemoryInformation.GetMemoryUsageFromProcStatus();
                     var djv = new DynamicJsonValue
                     {
@@ -248,13 +243,6 @@ namespace Raven.Server.Documents.Handlers.Debugging
                     {
                         context.Write(write, djv);
                     }
-
-                    return;
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(buffers[0]);
-                    ArrayPool<byte>.Shared.Return(buffers[1]);
                 }
             }
         }

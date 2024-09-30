@@ -8,6 +8,7 @@ using System;
 using System.Threading;
 using Raven.Client.Util;
 using Raven.Server.NotificationCenter;
+using Raven.Server.ServerWide.Memory;
 using Raven.Server.Utils;
 using Sparrow;
 using Sparrow.LowMemory;
@@ -20,12 +21,13 @@ namespace Raven.Server.Dashboard.Cluster.Notifications
     public class MemoryUsageNotificationSender : AbstractClusterDashboardNotificationSender
     {
         private readonly RavenServer _server;
-        private readonly LowMemoryMonitor _lowMemoryMonitor = new();
+        private readonly LowMemoryMonitor _lowMemoryMonitor;
         private readonly TimeSpan _defaultInterval = TimeSpan.FromSeconds(5);
 
         public MemoryUsageNotificationSender(int widgetId, RavenServer server, ConnectedWatcher watcher, CancellationToken shutdown) : base(widgetId, watcher, shutdown)
         {
             _server = server;
+            _lowMemoryMonitor = new CachingLowMemoryMonitor(_server);
         }
 
         protected override TimeSpan NotificationInterval => _defaultInterval;
@@ -48,7 +50,7 @@ namespace Raven.Server.Dashboard.Cluster.Notifications
             return new MemoryUsagePayload
             {
                 Time = SystemTime.UtcNow,
-                LowMemorySeverity = LowMemoryNotification.Instance.IsLowMemory(memoryInfo, _lowMemoryMonitor, out _),
+                LowMemorySeverity = LowMemoryNotification.Instance.Heavy_IsLowMemory(memoryInfo, _lowMemoryMonitor, out _),
                 PhysicalMemory = memoryInfo.TotalPhysicalMemory.GetValue(SizeUnit.Bytes),
                 WorkingSet = memoryInfo.WorkingSet.GetValue(SizeUnit.Bytes),
                 ManagedAllocations = managedMemoryInBytes,

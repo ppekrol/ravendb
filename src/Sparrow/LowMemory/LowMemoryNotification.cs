@@ -402,13 +402,13 @@ namespace Sparrow.LowMemory
             }
 
             memoryInfo = monitor.GetMemoryInfo();
-            var isLowMemory = IsLowMemory(memoryInfo, monitor, out _);
+            var isLowMemory = Heavy_IsLowMemory(memoryInfo, monitor, out _);
 
             // memInfo.AvailableMemory is updated in IsLowMemory for Linux (adding shared clean)
             return isLowMemory;
         }
 
-        internal LowMemorySeverity IsLowMemory(MemoryInfoResult memInfo, AbstractLowMemoryMonitor monitor, out Size commitChargeThreshold)
+        internal LowMemorySeverity Heavy_IsLowMemory(MemoryInfoResult memInfo, AbstractLowMemoryMonitor monitor, out Size commitChargeThreshold)
         {
             // We consider low memory only if we don't have enough free physical memory or
             // the commited memory size if larger than our physical memory.

@@ -16,7 +16,7 @@ namespace Tests.Infrastructure.TestMetrics
         public TestResourcesAnalyzerMetricCacher(ICpuUsageCalculator cpuUsageCalculator)
         {
             if (PlatformDetails.RunningOnLinux)
-                _smapsReader = SmapsFactory.CreateSmapsReader([new byte[SmapsFactory.BufferSize], new byte[SmapsFactory.BufferSize]]);
+                _ = SmapsFactory.CreateSmapsReader(out _smapsReader);
 
             Register(Keys.Server.CpuUsage, _cacheRefreshRate, cpuUsageCalculator.Calculate);
             Register(Keys.Server.MemoryInfo, _cacheRefreshRate, CalculateMemoryInfo);

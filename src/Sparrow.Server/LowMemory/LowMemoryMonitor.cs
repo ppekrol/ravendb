@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+﻿using System;
 using Sparrow.LowMemory;
 using Sparrow.Platform;
 using Sparrow.Platform.Posix;
@@ -8,19 +8,14 @@ namespace Sparrow.Server.LowMemory
 {
     public class LowMemoryMonitor : AbstractLowMemoryMonitor
     {
-        private readonly ISmapsReader _smapsReader;
+        private IDisposable _releaseSmapsReader;
 
-        private byte[][] _buffers;
+        private readonly ISmapsReader _smapsReader;
 
         public LowMemoryMonitor()
         {
             if (PlatformDetails.RunningOnLinux)
-            {
-                var buffer1 = ArrayPool<byte>.Shared.Rent(SmapsFactory.BufferSize);
-                var buffer2 = ArrayPool<byte>.Shared.Rent(SmapsFactory.BufferSize);
-                _buffers = new[] { buffer1, buffer2 };
-                _smapsReader = SmapsFactory.CreateSmapsReader(_buffers);
-            }
+                _releaseSmapsReader = SmapsFactory.CreateSmapsReader(out _smapsReader);
         }
 
         public override MemoryInfoResult GetMemoryInfoOnce()
@@ -50,13 +45,8 @@ namespace Sparrow.Server.LowMemory
 
         public override void Dispose()
         {
-            if (_buffers != null)
-            {
-                ArrayPool<byte>.Shared.Return(_buffers[0]);
-                ArrayPool<byte>.Shared.Return(_buffers[1]);
-
-                _buffers = null;
-            }
+            _releaseSmapsReader?.Dispose();
+            _releaseSmapsReader = null;
         }
     }
 }

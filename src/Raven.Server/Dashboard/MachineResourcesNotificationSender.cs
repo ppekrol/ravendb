@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Raven.Server.Background;
 using Raven.Server.NotificationCenter;
+using Raven.Server.ServerWide.Memory;
 using Raven.Server.Utils;
 using Raven.Server.Utils.Cpu;
 using Sparrow;
@@ -34,7 +35,7 @@ namespace Raven.Server.Dashboard
             _server = server;
             _watchers = watchers;
             _notificationsThrottle = notificationsThrottle;
-            _lowMemoryMonitor = new LowMemoryMonitor();
+            _lowMemoryMonitor = new CachingLowMemoryMonitor(_server);
         }
 
         protected override async Task DoWork()
@@ -87,7 +88,7 @@ namespace Raven.Server.Dashboard
                 CommittedMemory = memInfo.CurrentCommitCharge.GetValue(SizeUnit.Bytes),
                 ProcessMemoryUsage = memInfo.WorkingSet.GetValue(SizeUnit.Bytes),
                 IsWindows = PlatformDetails.RunningOnPosix == false,
-                LowMemorySeverity = LowMemoryNotification.Instance.IsLowMemory(memInfo, lowMemoryMonitor, out var commitChargeThreshold),
+                LowMemorySeverity = LowMemoryNotification.Instance.Heavy_IsLowMemory(memInfo, lowMemoryMonitor, out var commitChargeThreshold),
                 LowMemoryThreshold = LowMemoryNotification.Instance.LowMemoryThreshold.GetValue(SizeUnit.Bytes),
                 CommitChargeThreshold = commitChargeThreshold.GetValue(SizeUnit.Bytes),
                 MachineCpuUsage = cpuInfo.MachineCpuUsage,

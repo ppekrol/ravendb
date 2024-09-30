@@ -47,53 +47,56 @@ Locked:                0 kB
         [RavenFact(RavenTestCategory.Linux | RavenTestCategory.Memory)]
         public void ParsesSmapsProperlyFromRollup()
         {
-            var smapsReader = new SmapsRollupReader([new byte[SmapsFactory.BufferSize], new byte[SmapsFactory.BufferSize]]);
-            SmapsReadResult<SmapsTestResult> result;
-            using (var smapsStream = new FakeProcSmapsEntriesStream(new MemoryStream(Encoding.UTF8.GetBytes(SmapsRollup))))
+            using (SmapsFactory.CreateSmapsReader(SmapsReaderType.SmapsRollup, out var smapsReader))
             {
-                result = smapsReader
-                    .CalculateMemUsageFromSmaps<SmapsTestResult>(smapsStream, pid: 1234);
+                SmapsReadResult<SmapsTestResult> result;
+                using (var smapsStream = new FakeProcSmapsEntriesStream(new MemoryStream(Encoding.UTF8.GetBytes(SmapsRollup))))
+                {
+                    result = smapsReader
+                        .CalculateMemUsageFromSmaps<SmapsTestResult>(smapsStream, pid: 1234);
+                }
+
+                Assert.Single(result.SmapsResults.Entries);
+
+                var totalDirty = new Size(0, SizeUnit.Bytes);
+                totalDirty.Add(543892, SizeUnit.Kilobytes);
+                totalDirty.Add(32, SizeUnit.Kilobytes);
+
+                Assert.Equal(new Size(843564, SizeUnit.Kilobytes).GetValue(SizeUnit.Bytes), result.Rss);
+                Assert.Equal(new Size(61696, SizeUnit.Kilobytes).GetValue(SizeUnit.Bytes), result.SharedClean);
+                Assert.Equal(new Size(237944, SizeUnit.Kilobytes).GetValue(SizeUnit.Bytes), result.PrivateClean);
+                Assert.Equal(new Size(0, SizeUnit.Kilobytes).GetValue(SizeUnit.Bytes), result.Swap);
+                Assert.Equal(totalDirty.GetValue(SizeUnit.Bytes), result.TotalDirty);
             }
-
-            Assert.Single(result.SmapsResults.Entries);
-
-            var totalDirty = new Size(0, SizeUnit.Bytes);
-            totalDirty.Add(543892, SizeUnit.Kilobytes);
-            totalDirty.Add(32, SizeUnit.Kilobytes);
-
-            Assert.Equal(new Size(843564, SizeUnit.Kilobytes).GetValue(SizeUnit.Bytes), result.Rss);
-            Assert.Equal(new Size(61696, SizeUnit.Kilobytes).GetValue(SizeUnit.Bytes), result.SharedClean);
-            Assert.Equal(new Size(237944, SizeUnit.Kilobytes).GetValue(SizeUnit.Bytes), result.PrivateClean);
-            Assert.Equal(new Size(0, SizeUnit.Kilobytes).GetValue(SizeUnit.Bytes), result.Swap);
-            Assert.Equal(totalDirty.GetValue(SizeUnit.Bytes), result.TotalDirty);
         }
 
         [Fact]
         public void ParsesSmapsProperly()
         {
             var assembly = typeof(SmapsReaderTests).Assembly;
-            var smapsReader = new SmapsReader([new byte[SmapsFactory.BufferSize], new byte[SmapsFactory.BufferSize]]);
-
-            SmapsReadResult<SmapsTestResult> result;
-
-            using (var fs =
-                assembly.GetManifestResourceStream("SlowTests.Data.RavenDB_15159.12119.smaps.gz"))
-            using (var deflated = new GZipStream(fs, CompressionMode.Decompress))
-            using (var smapsStream = new FakeProcSmapsEntriesStream(deflated))
+            using (SmapsFactory.CreateSmapsReader(SmapsReaderType.Smaps, out var smapsReader))
             {
-                result = smapsReader
-                    .CalculateMemUsageFromSmaps<SmapsTestResult>(smapsStream, pid: 1234);
+                SmapsReadResult<SmapsTestResult> result;
+
+                using (var fs =
+                       assembly.GetManifestResourceStream("SlowTests.Data.RavenDB_15159.12119.smaps.gz"))
+                using (var deflated = new GZipStream(fs, CompressionMode.Decompress))
+                using (var smapsStream = new FakeProcSmapsEntriesStream(deflated))
+                {
+                    result = smapsReader
+                        .CalculateMemUsageFromSmaps<SmapsTestResult>(smapsStream, pid: 1234);
+                }
+
+                // 385 .buffers
+                // 181 .voron
+                Assert.Equal(385 + 181, result.SmapsResults.Entries.Count);
+
+                // cat 12119.smaps | grep -e "rw-s" -A 3 | awk '$1 ~ /Rss/ {sum += $2} END {print sum}'
+                Assert.Equal(722136L * 1024, result.Rss);
+
+                // cat 12119.smaps | grep -e "rw-s" -A 16 | awk '$1 ~ /Swap/ {sum += $2} END {print sum}'
+                Assert.Equal(1348L * 1024, result.Swap);
             }
-
-            // 385 .buffers
-            // 181 .voron
-            Assert.Equal(385 + 181, result.SmapsResults.Entries.Count);
-
-            // cat 12119.smaps | grep -e "rw-s" -A 3 | awk '$1 ~ /Rss/ {sum += $2} END {print sum}'
-            Assert.Equal(722136L * 1024, result.Rss);
-
-            // cat 12119.smaps | grep -e "rw-s" -A 16 | awk '$1 ~ /Swap/ {sum += $2} END {print sum}'
-            Assert.Equal(1348L * 1024, result.Swap);
         }
 
         private struct SmapsTestResult : ISmapsReaderResultAction

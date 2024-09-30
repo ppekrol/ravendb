@@ -89,9 +89,9 @@ namespace Raven.Server.ServerWide.Memory
             return true;
         }
 
-        public static bool CanIncreaseMemoryUsageForThread()
+        public static bool CanIncreaseMemoryUsageForThread(RavenServer server)
         {
-            var memoryInfo = MemoryInformation.GetMemoryInformationUsingOneTimeSmapsReader();
+            var memoryInfo = server.MetricCacher.GetValue<MemoryInfoResult>(MetricCacher.Keys.Server.MemoryInfoExtended.RefreshRate5Seconds);
             var memoryAssumedFreeOrCheapToFree = memoryInfo.AvailableMemoryForProcessing;
             var allocatedForProcessing = GetTotalCurrentlyAllocatedForProcessing();
             return memoryAssumedFreeOrCheapToFree >= allocatedForProcessing;

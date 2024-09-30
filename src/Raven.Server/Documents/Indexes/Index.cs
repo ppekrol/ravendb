@@ -4446,7 +4446,7 @@ namespace Raven.Server.Documents.Indexes
             if (cpuCreditsAlertFlag.IsRaised())
             {
                 HandleStoppedBatchesConcurrently(parameters.Stats, parameters.Count,
-                   canContinue: () => cpuCreditsAlertFlag.IsRaised() == false,
+                   canContinue: _ => cpuCreditsAlertFlag.IsRaised() == false,
                    reason: "CPU credits balance is low", parameters.WorkType);
 
                 parameters.Stats.RecordBatchCompletedReason(parameters.WorkType, $"The batch was stopped after processing {parameters.Count:#,#;;0} documents because the CPU credits balance is almost completely used");
@@ -4456,7 +4456,7 @@ namespace Raven.Server.Documents.Indexes
             if (_lowMemoryFlag.IsRaised() && parameters.Count > MinBatchSize)
             {
                 HandleStoppedBatchesConcurrently(parameters.Stats, parameters.Count,
-                    canContinue: () => _lowMemoryFlag.IsRaised() == false,
+                    canContinue: _ => _lowMemoryFlag.IsRaised() == false,
                     reason: "low memory", parameters.WorkType);
 
                 parameters.Stats.RecordBatchCompletedReason(parameters.WorkType, $"The batch was stopped after processing {parameters.Count:#,#;;0} documents because of low memory");
@@ -4680,7 +4680,7 @@ namespace Raven.Server.Documents.Indexes
 
         private void HandleStoppedBatchesConcurrently(
             IndexingStatsScope stats, long count,
-            Func<bool> canContinue, string reason, IndexingWorkType type)
+            Func<RavenServer, bool> canContinue, string reason, IndexingWorkType type)
         {
             if (_batchStopped)
             {
@@ -4708,7 +4708,7 @@ namespace Raven.Server.Documents.Indexes
                 if (_batchStopped)
                     break;
 
-                if (canContinue())
+                if (canContinue(DocumentDatabase.ServerStore.Server))
                     break;
 
                 if (_logger.IsInfoEnabled)

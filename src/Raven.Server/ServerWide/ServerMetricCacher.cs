@@ -22,7 +22,7 @@ namespace Raven.Server.ServerWide
             _server = server;
 
             if (PlatformDetails.RunningOnLinux)
-                _smapsReader = SmapsFactory.CreateSmapsReader([new byte[SmapsFactory.BufferSize], new byte[SmapsFactory.BufferSize]]);
+                _ = SmapsFactory.CreateSmapsReader(out _smapsReader);
         }
 
         public void Initialize()
