@@ -46,8 +46,8 @@
     <PackageReference Include="Npgsql" Version="5.0.18" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net6.0'">
-    <PackageReference Include="System.Text.Encodings.Web" Version="9.0.0-rc.1.24431.7" />
-    <PackageReference Include="System.Text.Json" Version="9.0.0-rc.1.24431.7" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="9.0.0-rc.2.24473.5" />
+    <PackageReference Include="System.Text.Json" Version="9.0.0-rc.2.24473.5" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
     <PackageReference Include="System.Text.Encodings.Web" Version="6.0.0" />

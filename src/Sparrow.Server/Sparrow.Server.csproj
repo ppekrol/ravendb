@@ -49,7 +49,7 @@
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Raven.Pal" Version="6.2.22" />
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.0-rc.1.24431.7" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.0-rc.2.24473.5" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sparrow\Sparrow.csproj" />
