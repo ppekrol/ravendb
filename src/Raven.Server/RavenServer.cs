@@ -1290,7 +1290,7 @@ namespace Raven.Server
                     ServerStore.GetLicenseType(),
                     ServerStore.Configuration.Security.CertificateValidationKeyUsages);
 
-                return CertificateLoaderUtil.CreateCertificate(certHolder.Certificate.Export(X509ContentType.Pfx), flags: CertificateLoaderUtil.FlagsForPersist);
+                return CertificateLoaderUtil.CreateCertificateWithPrivateKey(certHolder.Certificate.Export(X509ContentType.Pfx), password: null, flags: CertificateLoaderUtil.FlagsForPersist);
             }
             catch (Exception e)
             {
@@ -1397,8 +1397,8 @@ namespace Raven.Server
             X509Certificate2 refreshedCertificate;
             try
             {
-                refreshedCertificate = CertificateLoaderUtil.CreateCertificate(newCertBytes, flags: CertificateLoaderUtil.FlagsForPersist);
-        }
+                refreshedCertificate = CertificateLoaderUtil.CreateCertificateWithPrivateKey(newCertBytes, password: null, flags: CertificateLoaderUtil.FlagsForPersist);
+            }
             catch (Exception e)
             {
                 throw new InvalidOperationException("Failed to load (and validate) the new certificate which was received during the refresh process.", e);
@@ -1500,7 +1500,7 @@ namespace Raven.Server
                 using (_tempLetsEncryptRefreshCertificate.Certificate)
                 {
                     _tempLetsEncryptRefreshCertificate = default;
-            }
+                }
             }
             catch (Exception e)
             {
@@ -1783,7 +1783,7 @@ namespace Raven.Server
 
             public void SuccessfulTwoFactorAuthentication()
             {
-                    _status = _statusAfterTwoFactorAuth.Value;
+                _status = _statusAfterTwoFactorAuth.Value;
             }
 
             public AuthenticationStatus Status
@@ -1957,7 +1957,7 @@ namespace Raven.Server
             foreach (var certDef in certificatesWithSameHash.OrderByDescending(x => x.NotAfter))
             {
                 // Hash is good, let's validate it was signed by a known issuer, otherwise users can use the private key to register a new cert with a different issuer.
-                using (var goodKnownCert = CertificateLoaderUtil.CreateCertificate(Convert.FromBase64String(certDef.Certificate)))
+                using (var goodKnownCert = CertificateLoaderUtil.CreateCertificateWithoutPrivateKey(Convert.FromBase64String(certDef.Certificate)))
                 {
                     if (CertificateUtils.CertHasKnownIssuer(certificate, goodKnownCert, Configuration.Security))
                     {

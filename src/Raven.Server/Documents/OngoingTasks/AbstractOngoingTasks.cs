@@ -512,7 +512,7 @@ public abstract class AbstractOngoingTasks<TSubscriptionConnectionsState>
         {
             // fetch public key of certificate
             var certBytes = Convert.FromBase64String(sinkReplication.CertificateWithPrivateKey);
-            var certificate = CertificateLoaderUtil.CreateCertificate(certBytes,
+            var certificate = CertificateLoaderUtil.CreateCertificateWithPrivateKey(certBytes,
                 sinkReplication.CertificatePassword,
                 CertificateLoaderUtil.FlagsForExport);
 

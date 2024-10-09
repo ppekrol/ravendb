@@ -13,11 +13,12 @@ internal static class CertificateLoaderUtil
     private static readonly IRavenLogger Logger = RavenLogManager.Instance.GetLoggerForClient(typeof(CertificateLoaderUtil));
 
     private static bool FirstTime = true;
+
     public static X509KeyStorageFlags FlagsForExport => X509KeyStorageFlags.Exportable;
 
     public static X509KeyStorageFlags FlagsForPersist => X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet;
 
-    public static void Import(X509Certificate2Collection collection, byte[] rawData, string password = null, X509KeyStorageFlags? flags = null)
+    public static void ImportWithPrivateKey(X509Certificate2Collection collection, byte[] rawData, string password, X509KeyStorageFlags? flags)
     {
         DebugAssertDoesntContainKeySet(flags);
         var f = AddUserKeySet(flags);
@@ -34,7 +35,7 @@ internal static class CertificateLoaderUtil
             ImportCertificate(collection, rawData, password, f);
         }
 
-        LogIfNeeded(nameof(Import), f, exception);
+        LogIfNeeded(nameof(ImportWithPrivateKey), f, exception);
         return;
 
         static void ImportCertificate(X509Certificate2Collection collection, byte[] data, string password, X509KeyStorageFlags keyStorageFlags)
@@ -47,7 +48,16 @@ internal static class CertificateLoaderUtil
         }
     }
 
-    public static X509Certificate2 CreateCertificate(byte[] rawData, string password = null, X509KeyStorageFlags? flags = null)
+    public static void ImportWithoutPrivateKey(X509Certificate2Collection collection, byte[] rawData)
+    {
+#if NET9_0_OR_GREATER
+        collection.Add(X509CertificateLoader.LoadCertificate(rawData));
+#else
+        collection.Import(rawData);
+#endif
+    }
+
+    internal static X509Certificate2 CreateCertificateWithPrivateKey(byte[] rawData, string password, X509KeyStorageFlags? flags)
     {
 #if NET9_0_OR_GREATER
         return CreateCertificate(f => X509CertificateLoader.LoadPkcs12(rawData, password, f), flags);
@@ -56,7 +66,16 @@ internal static class CertificateLoaderUtil
 #endif
     }
 
-    internal static X509Certificate2 CreateCertificate(string fileName, string password = null, X509KeyStorageFlags? flags = null)
+    internal static X509Certificate2 CreateCertificateWithoutPrivateKey(byte[] rawData)
+    {
+#if NET9_0_OR_GREATER
+        return CreateCertificate(f => X509CertificateLoader.LoadCertificate(rawData), flags: null);
+#else
+        return CreateCertificate(f => new X509Certificate2(rawData), flags: null);
+#endif
+    }
+
+    internal static X509Certificate2 CreateCertificateWithPrivateKey(string fileName, string password, X509KeyStorageFlags? flags)
     {
 #if NET9_0_OR_GREATER
         return CreateCertificate(f => X509CertificateLoader.LoadPkcs12FromFile(fileName, password, f), flags);
@@ -65,10 +84,19 @@ internal static class CertificateLoaderUtil
 #endif
     }
 
-    private static X509Certificate2 CreateCertificate(Func<X509KeyStorageFlags, X509Certificate2> creator, X509KeyStorageFlags? flag)
+    internal static X509Certificate2 CreateCertificateWithoutPrivateKey(string fileName)
     {
-        DebugAssertDoesntContainKeySet(flag);
-        var f = AddUserKeySet(flag);
+#if NET9_0_OR_GREATER
+        return CreateCertificate(f => X509CertificateLoader.LoadCertificateFromFile(fileName), flags: null);
+#else
+        return CreateCertificate(f => new X509Certificate2(fileName), flags: null);
+#endif
+    }
+
+    private static X509Certificate2 CreateCertificate(Func<X509KeyStorageFlags, X509Certificate2> creator, X509KeyStorageFlags? flags)
+    {
+        DebugAssertDoesntContainKeySet(flags);
+        var f = AddUserKeySet(flags);
 
         Exception exception = null;
         X509Certificate2 certificate;
@@ -79,7 +107,7 @@ internal static class CertificateLoaderUtil
         catch (Exception e)
         {
             exception = e;
-            f = AddMachineKeySet(flag);
+            f = AddMachineKeySet(flags);
             certificate = creator(f);
         }
 
@@ -94,6 +122,7 @@ internal static class CertificateLoaderUtil
     {
         return (flag ?? X509KeyStorageFlags.DefaultKeySet) | X509KeyStorageFlags.UserKeySet;
     }
+
     private static X509KeyStorageFlags AddMachineKeySet(X509KeyStorageFlags? flag)
     {
         return (flag ?? X509KeyStorageFlags.DefaultKeySet) | X509KeyStorageFlags.MachineKeySet;
