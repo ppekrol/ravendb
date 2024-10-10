@@ -1,4 +1,8 @@
-﻿using System;
+﻿#if NET9_0_OR_GREATER2
+#define FEATURE_X509CERTIFICATELOADER_SUPPORT
+#endif
+
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
@@ -40,7 +44,7 @@ internal static class CertificateLoaderUtil
 
         static void ImportCertificate(X509Certificate2Collection collection, byte[] data, string password, X509KeyStorageFlags keyStorageFlags)
         {
-#if NET9_0_OR_GREATER
+#if FEATURE_X509CERTIFICATELOADER_SUPPORT
             collection.Add(X509CertificateLoader.LoadPkcs12(data, password, keyStorageFlags));
 #else
             collection.Import(data, password, keyStorageFlags);
@@ -50,7 +54,7 @@ internal static class CertificateLoaderUtil
 
     public static void ImportWithoutPrivateKey(X509Certificate2Collection collection, byte[] rawData)
     {
-#if NET9_0_OR_GREATER
+#if FEATURE_X509CERTIFICATELOADER_SUPPORT
         collection.Add(X509CertificateLoader.LoadCertificate(rawData));
 #else
         collection.Import(rawData);
@@ -59,7 +63,7 @@ internal static class CertificateLoaderUtil
 
     internal static X509Certificate2 CreateCertificateWithPrivateKey(byte[] rawData, string password, X509KeyStorageFlags? flags)
     {
-#if NET9_0_OR_GREATER
+#if FEATURE_X509CERTIFICATELOADER_SUPPORT
         return CreateCertificate(f => X509CertificateLoader.LoadPkcs12(rawData, password, f), flags);
 #else
         return CreateCertificate(f => new X509Certificate2(rawData, password, f), flags);
@@ -68,7 +72,7 @@ internal static class CertificateLoaderUtil
 
     internal static X509Certificate2 CreateCertificateWithoutPrivateKey(byte[] rawData)
     {
-#if NET9_0_OR_GREATER
+#if FEATURE_X509CERTIFICATELOADER_SUPPORT
         return CreateCertificate(f => X509CertificateLoader.LoadCertificate(rawData), flags: null);
 #else
         return CreateCertificate(f => new X509Certificate2(rawData), flags: null);
@@ -77,7 +81,7 @@ internal static class CertificateLoaderUtil
 
     internal static X509Certificate2 CreateCertificateWithPrivateKey(string fileName, string password, X509KeyStorageFlags? flags)
     {
-#if NET9_0_OR_GREATER
+#if FEATURE_X509CERTIFICATELOADER_SUPPORT
         return CreateCertificate(f => X509CertificateLoader.LoadPkcs12FromFile(fileName, password, f), flags);
 #else
         return CreateCertificate(f => new X509Certificate2(fileName, password, f), flags);
@@ -86,7 +90,7 @@ internal static class CertificateLoaderUtil
 
     internal static X509Certificate2 CreateCertificateWithoutPrivateKey(string fileName)
     {
-#if NET9_0_OR_GREATER
+#if FEATURE_X509CERTIFICATELOADER_SUPPORT
         return CreateCertificate(f => X509CertificateLoader.LoadCertificateFromFile(fileName), flags: null);
 #else
         return CreateCertificate(f => new X509Certificate2(fileName), flags: null);
