@@ -8,7 +8,6 @@ using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Indexes.Analysis;
 using Raven.Client.Documents.Operations.Attachments;
 using Raven.Client.Documents.Operations.Backups;
-using Raven.Client.Documents.Operations.Configuration;
 using Raven.Client.Documents.Operations.Counters;
 using Raven.Client.Documents.Operations.ETL;
 using Raven.Client.Documents.Operations.ETL.ElasticSearch;
@@ -925,43 +924,63 @@ namespace Raven.Server.Smuggler.Documents
             }
         }
 
-        private unsafe void SetBuffer(UnmanagedJsonParser parser, LazyStringValue value)
-        {
-            parser.SetBuffer(value.Buffer, value.Size);
-        }
-
         private async IAsyncEnumerable<(CompareExchangeKey Key, long Index, BlittableJsonReaderObject Value)> InternalGetCompareExchangeValuesAsync(INewCompareExchangeActions actions)
         {
-            var state = new JsonParserState();
-            using (var parser = new UnmanagedJsonParser(_context, state, "Import/CompareExchange"))
-            using (var builder = new BlittableJsonDocumentBuilder(actions.GetContextForNewCompareExchangeValue(),
-                BlittableJsonDocumentBuilder.UsageMode.ToDisk, "Import/CompareExchange", parser, state))
+            if (await UnmanagedJsonParserHelper.ReadAsync(_peepingTomStream, _parser, _state, _buffer) == false)
+                UnmanagedJsonParserHelper.ThrowInvalidJson("Unexpected end of json", _peepingTomStream, _parser);
+
+            if (_state.CurrentTokenType != JsonParserToken.StartArray)
+                UnmanagedJsonParserHelper.ThrowInvalidJson("Expected start array, but got " + _state.CurrentTokenType, _peepingTomStream, _parser);
+
+            JsonOperationContext context = _context;
+            BlittableJsonDocumentBuilder builder = null;
+
+            try
             {
-                await foreach (var reader in ReadArrayAsync())
+                while (true)
                 {
-                    using (reader)
+                    if (await UnmanagedJsonParserHelper.ReadAsync(_peepingTomStream, _parser, _state, _buffer) == false)
+                        UnmanagedJsonParserHelper.ThrowInvalidJson("Unexpected end of json while reading compare exchange values", _peepingTomStream, _parser);
+
+                    if (_state.CurrentTokenType == JsonParserToken.EndArray)
+                        break;
+
+                    if (actions != null)
                     {
-                        if (reader.TryGet("Key", out string key) == false ||
-                            reader.TryGet("Value", out LazyStringValue value) == false)
-                        {
-                            _result.CompareExchange.ErroredCount++;
-                            _result.AddWarning("Could not read compare exchange entry.");
-
-                            continue;
-                        }
-
-                        using (value)
-                        {
-                            builder.ReadNestedObject();
-                            SetBuffer(parser, value);
-                            parser.Read();
-                            builder.Read();
-                            builder.FinalizeDocument();
-                            yield return (new CompareExchangeKey(key), 0, builder.CreateReader());
-
-                            builder.Renew("import/cmpxchg", BlittableJsonDocumentBuilder.UsageMode.ToDisk);
-                        }
+                        context = actions.GetContextForNewCompareExchangeValue();
+                        builder = actions.GetBuilderForNewCompareExchangeValue(_parser, _state);
                     }
+                    else if (builder == null)
+                    {
+                        builder = CreateBuilder(context);
+                    }
+
+                    builder.Renew("import/object", BlittableJsonDocumentBuilder.UsageMode.ToDisk);
+
+                    context.CachedProperties.NewDocument();
+
+                    await ReadObjectAsync(builder);
+
+                    var data = builder.CreateReader();
+                    builder.Reset();
+
+                    if (data.TryGet("Key", out string key) == false ||
+                        data.TryGet("Value", out LazyStringValue value) == false)
+                    {
+                        _result.CompareExchange.ErroredCount++;
+                        _result.AddWarning("Could not read compare exchange entry.");
+
+                        continue;
+                    }
+
+                    yield return (new CompareExchangeKey(key), 0, data);
+                }
+            }
+            finally
+            {
+                if (actions == null)
+                {
+                    builder?.Dispose();
                 }
             }
         }

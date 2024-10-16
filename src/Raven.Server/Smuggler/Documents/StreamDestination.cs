@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Raven.Client;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Indexes.Analysis;
@@ -175,12 +176,12 @@ namespace Raven.Server.Smuggler.Documents
 
         public ICompareExchangeActions CompareExchange(JsonOperationContext context, BackupKind? backupKind, bool withDocuments)
         {
-            return withDocuments ? null : new StreamCompareExchangeActions(_writer, nameof(DatabaseItemType.CompareExchange));
+            return withDocuments ? null : new StreamCompareExchangeActions(_writer, context, nameof(DatabaseItemType.CompareExchange));
         }
 
         public ICompareExchangeActions CompareExchangeTombstones(JsonOperationContext context)
         {
-            return new StreamCompareExchangeActions(_writer, nameof(DatabaseItemType.CompareExchangeTombstones));
+            return new StreamCompareExchangeActions(_writer, context,nameof(DatabaseItemType.CompareExchangeTombstones));
         }
 
         public ICounterActions Counters(SmugglerResult result)
@@ -1412,6 +1413,11 @@ namespace Raven.Server.Smuggler.Documents
                 yield break;
             }
 
+            public ValueTask FlushAsync()
+            {
+                return ValueTask.CompletedTask;
+            }
+
             public Stream GetTempStream()
             {
                 throw new NotSupportedException();
@@ -1531,14 +1537,14 @@ namespace Raven.Server.Smuggler.Documents
             }
         }
 
-        private class StreamCompareExchangeActions : StreamActionsBase, ICompareExchangeActions
+        private class StreamCompareExchangeActions : StreamActionsBaseWithBuilder, ICompareExchangeActions
         {
-            public StreamCompareExchangeActions(AsyncBlittableJsonTextWriter writer, string name)
-                : base(writer, name)
+            public StreamCompareExchangeActions(AsyncBlittableJsonTextWriter writer, JsonOperationContext context, string name)
+                : base(context, writer, name)
             {
             }
 
-            public async ValueTask WriteKeyValueAsync(string key, BlittableJsonReaderObject value, Document existingDocument)
+            public async ValueTask<bool> WriteKeyValueAsync(string key, BlittableJsonReaderObject value, Document existingDocument)
             {
                 using (value)
                 {
@@ -1556,6 +1562,8 @@ namespace Raven.Server.Smuggler.Documents
 
                     await Writer.MaybeFlushAsync();
                 }
+
+                return false;
             }
 
             public async ValueTask WriteTombstoneKeyAsync(string key)
@@ -1575,6 +1583,11 @@ namespace Raven.Server.Smuggler.Documents
             public JsonOperationContext GetContextForNewCompareExchangeValue()
             {
                 throw new NotSupportedException();
+            }
+
+            public BlittableJsonDocumentBuilder GetBuilderForNewCompareExchangeValue(UnmanagedJsonParser parser, JsonParserState state)
+            {
+                return GetOrCreateBuilder(parser, state, "stream/cmpxchg");
             }
 
 
