@@ -13,7 +13,7 @@ using Sparrow.Logging;
 
 namespace Raven.Server.Commercial.LetsEncrypt;
 
-public class RavenDnsRecordHelper
+public static class RavenDnsRecordHelper
 {
     private const string GoogleDnsApi = "https://dns.google.com";
 
@@ -73,7 +73,7 @@ public class RavenDnsRecordHelper
                 parameters.Progress?.AddInfo("Please wait between 30 seconds and a few minutes.");
                 parameters.OnProgress?.Invoke(parameters.Progress);
 
-                response = await ApiHttpClient.Instance.PostAsync("api/v1/dns-n-cert/register",
+                response = await ApiHttpClient.PostAsync("api/v1/dns-n-cert/register",
                     new StringContent(serializeObject, Encoding.UTF8, "application/json"), parameters.Token).ConfigureAwait(false);
 
                 parameters.Progress?.AddInfo("Waiting for DNS records to update...");
@@ -113,7 +113,7 @@ public class RavenDnsRecordHelper
                     try
                     {
                         await Task.Delay(1000, cts.Token);
-                        response = await ApiHttpClient.Instance.PostAsync("api/v1/dns-n-cert/registration-result?id=" + id, new StringContent(serializeObject, Encoding.UTF8, "application/json"), cts.Token).ConfigureAwait(false);
+                        response = await ApiHttpClient.PostAsync($"api/v1/dns-n-cert/registration-result?id={id}", new StringContent(serializeObject, Encoding.UTF8, "application/json"), cts.Token).ConfigureAwait(false);
                     }
                     catch (Exception e)
                     {
@@ -266,7 +266,7 @@ public class RavenDnsRecordHelper
             HttpResponseMessage response;
             try
             {
-                response = await ApiHttpClient.Instance.PostAsync("api/v1/dns-n-cert/register", new StringContent(serializeObject, Encoding.UTF8, "application/json"), token).ConfigureAwait(false);
+                response = await ApiHttpClient.PostAsync("api/v1/dns-n-cert/register", new StringContent(serializeObject, Encoding.UTF8, "application/json"), token).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -290,7 +290,7 @@ public class RavenDnsRecordHelper
                     try
                     {
                         await Task.Delay(1000, cts.Token);
-                        response = await ApiHttpClient.Instance.PostAsync("api/v1/dns-n-cert/registration-result?id=" + id, new StringContent(serializeObject, Encoding.UTF8, "application/json"), cts.Token).ConfigureAwait(false);
+                        response = await ApiHttpClient.PostAsync($"api/v1/dns-n-cert/registration-result?id={id}", new StringContent(serializeObject, Encoding.UTF8, "application/json"), cts.Token).ConfigureAwait(false);
                     }
                     catch (Exception e)
                     {
