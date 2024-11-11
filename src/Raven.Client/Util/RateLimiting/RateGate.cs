@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Raven.Client.Util.RateLimiting
 {
@@ -167,6 +168,53 @@ namespace Raven.Client.Util.RateLimiting
         public void WaitToProceed()
         {
             WaitToProceed(Timeout.Infinite);
+        }
+
+        /// <summary>
+        /// Blocks the current thread until allowed to proceed or until the
+        /// specified timeout elapses.
+        /// </summary>
+        /// <param name="millisecondsTimeout">Number of milliseconds to wait, or -1 to wait indefinitely.</param>
+        /// <returns>true if the thread is allowed to proceed, or false if timed out</returns>
+        public async Task<bool> WaitToProceedAsync(int millisecondsTimeout)
+        {
+            // Check the arguments.
+            if (millisecondsTimeout < -1)
+                throw new ArgumentOutOfRangeException(nameof(millisecondsTimeout));
+
+            CheckDisposed();
+
+            // Block until we can enter the semaphore or until the timeout expires.
+            var entered = await _semaphore.WaitAsync(millisecondsTimeout).ConfigureAwait(false);
+
+            // If we entered the semaphore, compute the corresponding exit time 
+            // and add it to the queue.
+            if (entered)
+            {
+                var timeToExit = unchecked(Environment.TickCount + TimeUnitMilliseconds);
+                _exitTimes.Enqueue(timeToExit);
+            }
+
+            return entered;
+        }
+
+        /// <summary>
+        /// Blocks the current thread until allowed to proceed or until the
+        /// specified timeout elapses.
+        /// </summary>
+        /// <param name="timeout"></param>
+        /// <returns>true if the thread is allowed to proceed, or false if timed out</returns>
+        public Task<bool> WaitToProceedAsync(TimeSpan timeout)
+        {
+            return WaitToProceedAsync((int)timeout.TotalMilliseconds);
+        }
+
+        /// <summary>
+        /// Blocks the current thread indefinitely until allowed to proceed.
+        /// </summary>
+        public Task WaitToProceedAsync()
+        {
+            return WaitToProceedAsync(Timeout.Infinite);
         }
 
         // Throws an ObjectDisposedException if this object is disposed.

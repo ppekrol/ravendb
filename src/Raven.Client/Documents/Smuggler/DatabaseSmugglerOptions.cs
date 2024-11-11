@@ -92,6 +92,7 @@ namespace Raven.Client.Documents.Smuggler
         public string EncryptionKey { get; set; }
 
         public List<string> Collections { get; set; }
+        public int? MaxReadOpsPerSecond { get; set; }
 
         /// <summary>
         /// In case the database is corrupted (for example, Compression Dictionaries are lost), it is possible to export all the remaining data.
@@ -116,6 +117,7 @@ namespace Raven.Client.Documents.Smuggler
         string TransformScript { get; set; }
         int MaxStepsForTransformScript { get; set; }
         List<string> Collections { get; set; }
+        int? MaxReadOpsPerSecond { get; set; }
     }
 
     public enum ExportCompressionAlgorithm
