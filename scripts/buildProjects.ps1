@@ -80,9 +80,9 @@ function BuildServer ( $srcDir, $outDir, $target) {
 
     $commandArgs += '/p:SourceLinkCreate=true'
     
-    if ($target -and $global:isPublishBundlingEnabled) {
-        $commandArgs += '/p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:Client_IncludeZstd=false'
-    }
+    #if ($target -and $global:isPublishBundlingEnabled) {
+    #    $commandArgs += '/p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:Client_IncludeZstd=false'
+    #}
 
     if ($env:RAVEN_IS_RUNNING_ON_CI){
         $commandArgs += '/p:ContinuousIntegrationBuild=true'
@@ -245,9 +245,9 @@ function BuildTool ( $toolName, $srcDir, $outDir, $target ) {
 
     $commandArgs += "/p:SourceLinkCreate=true"
     
-    if ($target -and $global:isPublishBundlingEnabled) {
-        $commandArgs += "/p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:Client_IncludeZstd=false"
-    }
+    #if ($target -and $global:isPublishBundlingEnabled) {
+    #    $commandArgs += "/p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:Client_IncludeZstd=false"
+    #}
 
     if ($env:RAVEN_IS_RUNNING_ON_CI){
         $commandArgs += '/p:ContinuousIntegrationBuild=true'
@@ -261,23 +261,23 @@ function BuildTool ( $toolName, $srcDir, $outDir, $target ) {
 function BuildDebug ( $srcDir, $outDir, $target ) {
     BuildTool debug $srcDir $outDir $target
 
-    if ($target -and $global:isPublishBundlingEnabled) {
-        # workaround for https://github.com/microsoft/perfview/issues/2035
-        
-        $output = [io.path]::combine($outDir, "debug");
-        $amd64 = [io.path]::combine($output, "amd64");
-        $arm64 = [io.path]::combine($output, "arm64");
-        $x86 = [io.path]::combine($output, "x86");
-
-        Write-Host "Removing $amd64"
-        Remove-Item $amd64 -ErrorAction SilentlyContinue -Recurse
-
-        Write-Host "Removing $arm64"
-        Remove-Item $arm64 -ErrorAction SilentlyContinue -Recurse
-
-        Write-Host "Removing $x86"
-        Remove-Item $x86 -ErrorAction SilentlyContinue -Recurse
-    }
+    #if ($target -and $global:isPublishBundlingEnabled) {
+    #    # workaround for https://github.com/microsoft/perfview/issues/2035
+    #    
+    #    $output = [io.path]::combine($outDir, "debug");
+    #    $amd64 = [io.path]::combine($output, "amd64");
+    #    $arm64 = [io.path]::combine($output, "arm64");
+    #    $x86 = [io.path]::combine($output, "x86");
+	#
+    #    Write-Host "Removing $amd64"
+    #    Remove-Item $amd64 -ErrorAction SilentlyContinue -Recurse
+	#
+    #    Write-Host "Removing $arm64"
+    #    Remove-Item $arm64 -ErrorAction SilentlyContinue -Recurse
+	#
+    #    Write-Host "Removing $x86"
+    #    Remove-Item $x86 -ErrorAction SilentlyContinue -Recurse
+    #}
 }
 
 function BuildEmbedded ( $srcDir, $outDir, $framework) {
