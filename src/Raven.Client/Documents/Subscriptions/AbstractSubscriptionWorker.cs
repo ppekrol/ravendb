@@ -832,7 +832,7 @@ namespace Raven.Client.Documents.Subscriptions
                         (bool shouldTryToReconnect, _redirectNode) = CheckIfShouldReconnectWorker(ex, AssertLastConnectionFailure, OnUnexpectedSubscriptionError);
                         if (shouldTryToReconnect)
                         {
-                            await TimeoutManager.WaitFor(GetTimeToWaitBeforeConnectionRetry(), _processingCts.Token).ConfigureAwait(false);
+                            await TimeoutManager.WaitForDangerous(GetTimeToWaitBeforeConnectionRetry(), _processingCts.Token).ConfigureAwait(false);
 
                             if (_redirectNode == null)
                             {

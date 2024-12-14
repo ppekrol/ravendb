@@ -43,9 +43,8 @@ using Sparrow.Utils;
 
 namespace Raven.Server.Documents.Replication
 {
-    public class ReplicationLoader : AbstractReplicationLoader<DocumentsContextPool, DocumentsOperationContext>, ITombstoneAware
+    public class ReplicationLoader : AbstractReplicationLoader<DocumentsContextPool, DocumentsOperationContext>, ITombstoneAware, ITimerManagerWatcher
     {
-        private readonly Timer _reconnectAttemptTimer;
         private long _reconnectInProgress;
         private readonly ReaderWriterLockSlim _locker = new ReaderWriterLockSlim();
 
@@ -110,8 +109,7 @@ namespace Raven.Server.Documents.Replication
             server.Cluster.Changes.DatabaseChanged += DatabaseValueChanged;
             var config = database.Configuration.Replication;
             var reconnectTime = config.RetryReplicateAfter.AsTimeSpan;
-            _reconnectAttemptTimer = new Timer(state => ForceTryReconnectAll(),
-                null, reconnectTime, reconnectTime);
+            TimerManager.Register(this, reconnectTime);
             MinimalHeartbeatInterval = (int)config.ReplicationMinimalHeartbeat.AsTimeSpan.TotalMilliseconds;
         }
 
@@ -1657,16 +1655,6 @@ namespace Raven.Server.Documents.Replication
             {
                 var ea = new ExceptionAggregator("Failed during dispose of document replication loader");
                 ea.Execute(() => _server.Cluster.Changes.DatabaseChanged -= DatabaseValueChanged);
-                ea.Execute(() =>
-                {
-                    using (var waitHandle = new ManualResetEvent(false))
-                    {
-                        if (_reconnectAttemptTimer.Dispose(waitHandle))
-                        {
-                            waitHandle.WaitOne();
-                        }
-                    }
-                });
 
                 ea.Execute(() => ConflictResolver?.WaitForBackgroundResolveTask());
 
@@ -1833,7 +1821,7 @@ namespace Raven.Server.Documents.Replication
                 if (remaining < TimeSpan.Zero)
                     return ReplicatedPastInternalDestinations(context, internalDestinations, lastChangeVector);
 
-                var timeout = TimeoutManager.WaitFor(remaining);
+                var timeout = TimeoutManager.WaitForDangerous(remaining);
                 try
                 {
                     if (await Task.WhenAny(waitForNextReplicationAsync, timeout) == timeout)
@@ -1927,6 +1915,11 @@ namespace Raven.Server.Documents.Replication
             }
 
             return c;
+        }
+
+        public void ExecuteTimer()
+        {
+            ForceTryReconnectAll();
         }
     }
 

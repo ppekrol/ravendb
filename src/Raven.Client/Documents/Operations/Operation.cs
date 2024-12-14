@@ -131,7 +131,7 @@ namespace Raven.Client.Documents.Operations
                         if (_isProcessing == false)
                             break;
 
-                        await TimeoutManager.WaitFor(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                        await TimeoutManager.WaitFor(TimeoutValue.OneSecond).ConfigureAwait(false);
                     }
                     break;
                 default:

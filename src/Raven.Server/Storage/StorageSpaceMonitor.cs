@@ -10,11 +10,12 @@ using Sparrow;
 using Sparrow.Logging;
 using Sparrow.Platform;
 using Sparrow.Server.Utils;
+using Sparrow.Utils;
 using Voron;
 
 namespace Raven.Server.Storage
 {
-    public sealed class StorageSpaceMonitor : IDisposable
+    public sealed class StorageSpaceMonitor : IDisposable, ITimerManagerWatcher
     {
         private static readonly TimeSpan CheckFrequency = TimeSpan.FromMinutes(10);
 
@@ -26,15 +27,13 @@ namespace Raven.Server.Storage
 
         private readonly ServerNotificationCenter _notificationCenter;
 
-        private Timer _timer;
-
         internal bool SimulateLowDiskSpace;
 
         public StorageSpaceMonitor(ServerNotificationCenter notificationCenter)
         {
             _notificationCenter = notificationCenter;
 
-            _timer = new Timer(Run, null, CheckFrequency, CheckFrequency);
+            TimerManager.Register(this, CheckFrequency);
         }
 
         public void Subscribe(DocumentDatabase database)
@@ -214,8 +213,6 @@ namespace Raven.Server.Storage
 
         public void Dispose()
         {
-            _timer?.Dispose();
-            _timer = null;
         }
 
         private sealed class LowDiskSpace
@@ -254,6 +251,11 @@ namespace Raven.Server.Storage
 
                 return $" - '{drive}' {_reason}";
             }
+        }
+
+        public void ExecuteTimer()
+        {
+            Run(null);
         }
     }
 }

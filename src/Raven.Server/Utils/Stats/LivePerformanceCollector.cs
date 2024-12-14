@@ -43,7 +43,7 @@ namespace Raven.Server.Utils.Stats
         {
             while (CancellationToken.IsCancellationRequested == false)
             {
-                await TimeoutManager.WaitFor(SleepTime, CancellationToken).ConfigureAwait(false);
+                await TimeoutManager.WaitForDangerous(SleepTime, CancellationToken).ConfigureAwait(false);
 
                 if (CancellationToken.IsCancellationRequested)
                     break;

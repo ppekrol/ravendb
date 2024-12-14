@@ -12,14 +12,15 @@ using Sparrow.Json;
 using Sparrow.Logging;
 using Sparrow.Server;
 using Sparrow.Server.Meters;
+using Sparrow.Utils;
 
 namespace Raven.Server.NotificationCenter
 {
-    public sealed class SlowWriteNotifications : IDisposable
+    public sealed class SlowWriteNotifications : IDisposable, ITimerManagerWatcher
     {
         internal TimeSpan UpdateFrequency = TimeSpan.FromSeconds(15);
         private readonly AbstractDatabaseNotificationCenter _notificationCenter;
-        private Timer _timer;
+        private bool _timerRegistered;
         private bool _updateNotificationInStorageRequired;
         private readonly object _pagerCreationLock = new object();
         private readonly ConcurrentDictionary<string, SlowIoDetails.SlowWriteInfo> _slowWrites;
@@ -54,15 +55,16 @@ namespace Raven.Server.NotificationCenter
 
             _updateNotificationInStorageRequired = true;
 
-            if (_timer != null)
+            if (_timerRegistered)
                 return;
 
             lock (_pagerCreationLock)
             {
-                if (_timer != null)
+                if (_timerRegistered)
                     return;
 
-                _timer = new Timer(UpdateNotificationInStorage, null, TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(1));
+                TimerManager.Register(this, TimeSpan.FromMinutes(1));
+                _timerRegistered = true;
             }
         }
 
@@ -160,7 +162,11 @@ namespace Raven.Server.NotificationCenter
 
         public void Dispose()
         {
-            _timer?.Dispose();
+        }
+
+        public void ExecuteTimer()
+        {
+            UpdateNotificationInStorage(null);
         }
     }
 }

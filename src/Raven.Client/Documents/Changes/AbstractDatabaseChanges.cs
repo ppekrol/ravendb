@@ -426,7 +426,7 @@ internal abstract class AbstractDatabaseChanges<TDatabaseConnectionState> : IDis
             try
             {
                 timerInSec = Math.Min(timerInSec * 2, 60);
-                await TimeoutManager.WaitFor(TimeSpan.FromSeconds(timerInSec), _cts.Token).ConfigureAwait(false);
+                await TimeoutManager.WaitForDangerous(TimeSpan.FromSeconds(timerInSec), _cts.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {

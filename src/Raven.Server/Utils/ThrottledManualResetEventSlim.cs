@@ -156,7 +156,7 @@ namespace Raven.Server.Utils
                     {
                         while (cts.IsCancellationRequested == false)
                         {
-                            await TimeoutManager.WaitFor(_throttlingInterval.Value, cts.Token);
+                            await TimeoutManager.WaitForDangerous(_throttlingInterval.Value, cts.Token);
 
                             if (_setCalled.Lower()) 
                                 _mre.Set();

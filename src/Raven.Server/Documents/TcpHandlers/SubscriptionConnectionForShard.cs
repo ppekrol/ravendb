@@ -184,11 +184,11 @@ public sealed class SubscriptionConnectionForShard : SubscriptionConnection
     private async Task<bool> WaitForDocsMigrationAsync(AbstractSubscriptionConnectionsState state, Task pendingReply)
     {
         AddToStatusDescription(CreateStatusMessage(ConnectionStatus.Info, "Start waiting for documents migration"));
-        var migrationWaitTask = TimeoutManager.WaitFor(TimeSpan.FromSeconds(5));
+        var migrationWaitTask = TimeoutManager.WaitFor(TimeoutValue.FiveSeconds);
         do
         {
             CancellationTokenSource.Token.ThrowIfCancellationRequested();
-            var timeoutTask = TimeoutManager.WaitFor(ISubscriptionConnection.HeartbeatTimeout);
+            var timeoutTask = TimeoutManager.WaitForDangerous(ISubscriptionConnection.HeartbeatTimeout);
             var resultingTask = await Task
                 .WhenAny(migrationWaitTask, pendingReply, timeoutTask).ConfigureAwait(false);
 

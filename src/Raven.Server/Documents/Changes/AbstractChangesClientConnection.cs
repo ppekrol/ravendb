@@ -231,7 +231,7 @@ public abstract class AbstractChangesClientConnection<TOperationContext> : ILowM
 
         while (true)
         {
-            var waitTask = TimeoutManager.WaitFor(TimeSpan.FromSeconds(5), DisposeToken);
+            var waitTask = TimeoutManager.WaitFor(TimeoutValue.FiveSeconds, DisposeToken);
 
             var result = await Task.WhenAny(sendTask, waitTask);
             if (result == sendTask)

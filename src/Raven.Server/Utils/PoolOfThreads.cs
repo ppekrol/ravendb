@@ -23,7 +23,7 @@ namespace Raven.Server.Utils
     ///
     /// This is intended for _BIG_ tasks and it is not a replacement for the thread pool.
     /// </summary>
-    public sealed class PoolOfThreads : IDisposable, ILowMemoryHandler
+    public sealed class PoolOfThreads : IDisposable, ILowMemoryHandler, ITimerManagerWatcher
     {
         private static readonly Lazy<PoolOfThreads> _globalRavenThreadPool = new(() => new PoolOfThreads());
 
@@ -38,27 +38,17 @@ namespace Raven.Server.Utils
         {
             LowMemoryNotification.Instance?.RegisterLowMemoryHandler(this);
 
-            _cleanupTimer = new Timer(Cleanup, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+            TimerManager.Register(this, TimeSpan.FromMinutes(5));
         }
 
         private readonly CountingConcurrentStack<PooledThread> _pool = new();
         private bool _disposed;
-        private readonly Timer _cleanupTimer;
 
         public void Dispose()
         {
             lock (this)
             {
                 _disposed = true;
-
-                try
-                {
-                    _cleanupTimer?.Dispose();
-                }
-                catch
-                {
-                    // ignored
-                }
             }
 
             Clear();
@@ -426,6 +416,11 @@ namespace Raven.Server.Utils
             public override void Dispose()
             {
             }
+        }
+
+        public void ExecuteTimer()
+        {
+            Cleanup(null);
         }
     }
 }

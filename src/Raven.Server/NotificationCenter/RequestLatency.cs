@@ -6,10 +6,11 @@ using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Sparrow.Json;
 using Sparrow.Logging;
+using Sparrow.Utils;
 
 namespace Raven.Server.NotificationCenter
 {
-    public sealed class RequestLatency : IDisposable
+    public sealed class RequestLatency : IDisposable, ITimerManagerWatcher
     {
         private static readonly string QueryRequestLatenciesId = $"{NotificationType.PerformanceHint}/{PerformanceHintType.RequestLatency}/Query";
         private readonly object _locker = new();
@@ -20,7 +21,7 @@ namespace Raven.Server.NotificationCenter
         private PerformanceHint _performanceHint;
         private RequestLatencyDetail _details;
 
-        private Timer _timer;
+        private bool _timerRegistered;
 
         public RequestLatency([NotNull] AbstractDatabaseNotificationCenter notificationCenter)
         {
@@ -39,10 +40,11 @@ namespace Raven.Server.NotificationCenter
                 _details.Update(duration, action, query);
                 _needsSync = true;
 
-                if (_timer != null)
+                if (_timerRegistered)
                     return;
 
-                _timer = new Timer(UpdateRequestLatency, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                TimerManager.Register(this, TimeSpan.FromMinutes(1));
+                _timerRegistered = true;
             }
         }
 
@@ -105,8 +107,11 @@ namespace Raven.Server.NotificationCenter
 
         public void Dispose()
         {
-            _timer?.Dispose();
-            _timer = null;
+        }
+
+        public void ExecuteTimer()
+        {
+            UpdateRequestLatency(null);
         }
     }
 }

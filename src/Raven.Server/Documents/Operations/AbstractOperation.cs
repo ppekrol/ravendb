@@ -89,7 +89,7 @@ public abstract class AbstractOperation
 
         if (_throttle.Scheduled == null)
         {
-            _throttle.Scheduled = TimeoutManager.WaitFor(_throttleTime - sinceLastSent, Token.Token).ContinueWith(x =>
+            _throttle.Scheduled = TimeoutManager.WaitForDangerous(_throttleTime - sinceLastSent, Token.Token).ContinueWith(x =>
             {
                 if (State.Status == OperationStatus.InProgress)
                     addToNotificationCenter(_throttle.Notification);

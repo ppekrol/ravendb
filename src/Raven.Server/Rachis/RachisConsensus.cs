@@ -964,7 +964,7 @@ namespace Raven.Server.Rachis
             cmd.InUse.RaiseOrDie();
 
             //I think it is reasonable to expect timeout twice of error retry
-            var timeoutTask = TimeoutManager.WaitFor(OperationTimeout, token);
+            var timeoutTask = TimeoutManager.WaitForDangerous(OperationTimeout, token);
             Exception requestException = null;
             while (true)
             {
@@ -1818,7 +1818,7 @@ namespace Raven.Server.Rachis
 
         public async Task WaitForCommitIndexChange(CommitIndexModification modification, long value, TimeSpan? timeout = null, CancellationToken token = default)
         {
-            var timeoutTask = TimeoutManager.WaitFor(timeout ?? OperationTimeout, token);
+            var timeoutTask = TimeoutManager.WaitForDangerous(timeout ?? OperationTimeout, token);
             while (timeoutTask.IsCompleted == false)
             {
                 token.ThrowIfCancellationRequested();

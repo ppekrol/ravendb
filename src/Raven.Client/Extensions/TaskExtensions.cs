@@ -44,12 +44,12 @@ namespace Raven.Client.Extensions
                 return true;
             }
 
-            return task == await Task.WhenAny(task, TimeoutManager.WaitFor(timeout.Value)).ConfigureAwait(false);
+            return task == await Task.WhenAny(task, TimeoutManager.WaitForDangerous(timeout.Value)).ConfigureAwait(false);
         }
 
         internal static async Task WaitAndThrowOnTimeout(this Task task, TimeSpan timeout)
         {
-            var result = await Task.WhenAny(task, TimeoutManager.WaitFor(timeout)).ConfigureAwait(false);
+            var result = await Task.WhenAny(task, TimeoutManager.WaitForDangerous(timeout)).ConfigureAwait(false);
                 
             if (result != task)
                 throw new TimeoutException($"Task wasn't completed within {timeout}.");

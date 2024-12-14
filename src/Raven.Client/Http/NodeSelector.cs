@@ -5,10 +5,11 @@ using System.Linq;
 using System.Threading;
 using Raven.Client.Exceptions;
 using Raven.Client.Exceptions.Database;
+using Sparrow.Utils;
 
 namespace Raven.Client.Http
 {
-    public sealed class NodeSelector : IDisposable
+    public sealed class NodeSelector : IDisposable, ITimerManagerWatcher
     {
         internal sealed class NodeSelectorState
         {
@@ -75,7 +76,7 @@ namespace Raven.Client.Http
 
         public Topology Topology => _state.Topology;
 
-        private Timer _updateFastestNodeTimer;
+        private bool _registeredFastestNodeTimer;
 
         internal NodeSelectorState _state;
 
@@ -301,22 +302,27 @@ namespace Raven.Client.Http
 
         public void ScheduleSpeedTest()
         {
-            if (_updateFastestNodeTimer != null)
+            if (_registeredFastestNodeTimer)
                 return;
 
             lock (_timerCreationLocker)
             {
-                if (_updateFastestNodeTimer != null)
+                if (_registeredFastestNodeTimer)
                     return;
 
                 SwitchToSpeedTestPhase(null);
-                _updateFastestNodeTimer = new Timer(SwitchToSpeedTestPhase, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                TimerManager.Register(this, TimeSpan.FromMinutes(1));
+                _registeredFastestNodeTimer = true;
             }
         }
 
         public void Dispose()
         {
-            _updateFastestNodeTimer?.Dispose();
+        }
+
+        public void ExecuteTimer()
+        {
+            SwitchToSpeedTestPhase(null);
         }
     }
 }

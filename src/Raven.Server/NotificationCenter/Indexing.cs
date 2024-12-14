@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Threading;
 using JetBrains.Annotations;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Util;
@@ -10,10 +9,11 @@ using Raven.Server.NotificationCenter.Notifications.Details;
 using Sparrow.Collections;
 using Sparrow.Json;
 using Sparrow.Logging;
+using Sparrow.Utils;
 
 namespace Raven.Server.NotificationCenter
 {
-    public sealed class Indexing : IDisposable
+    public sealed class Indexing : IDisposable, ITimerManagerWatcher
     {
         private static readonly string Source = "Indexing";
         private static readonly string HighOutputsRate = PerformanceHint.GetKey(PerformanceHintType.Indexing, Source);
@@ -33,7 +33,7 @@ namespace Raven.Server.NotificationCenter
         private readonly ConcurrentSet<string> _cpuExhaustionWarningIndexNames = new();
         private bool _isCpuExhaustionWarningAdded = false;
 
-        private Timer _indexingTimer;
+        private bool _indexingTimerRegistered;
         private readonly Logger _logger;
         private readonly object _locker = new();
 
@@ -126,15 +126,16 @@ namespace Raven.Server.NotificationCenter
 
         private void EnsureTimer()
         {
-            if (_indexingTimer != null)
+            if (_indexingTimerRegistered)
                 return;
 
             lock (_locker)
             {
-                if (_indexingTimer != null)
+                if (_indexingTimerRegistered)
                     return;
 
-                _indexingTimer = new Timer(UpdateIndexing, null, TimeSpan.FromSeconds(0), TimeSpan.FromMinutes(5));
+                TimerManager.Register(this, TimeSpan.FromMinutes(5));
+                _indexingTimerRegistered = true;
             }
         }
 
@@ -267,7 +268,11 @@ namespace Raven.Server.NotificationCenter
 
         public void Dispose()
         {
-            _indexingTimer?.Dispose();
+        }
+
+        public void ExecuteTimer()
+        {
+            UpdateIndexing(null);
         }
     }
 }

@@ -220,7 +220,7 @@ namespace Voron
                     case false:
                         return;
                     case null:
-                        await TimeoutManager.WaitFor(TimeSpan.FromMilliseconds(1000), token)
+                        await TimeoutManager.WaitFor(TimeoutValue.OneSecond, token)
                                             .ConfigureAwait(false);
                         break;
                 }

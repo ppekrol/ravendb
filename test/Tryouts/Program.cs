@@ -9,6 +9,7 @@ using SlowTests.Sharding.Cluster;
 using Xunit;
 using FastTests.Voron.Util;
 using SlowTests.Server;
+using Sparrow.Utils;
 
 namespace Tryouts;
 
@@ -21,6 +22,15 @@ public static class Program
 
     public static async Task Main(string[] args)
     {
+        for (var i = 0; i < 10000; i++)
+        {
+            _ = TimeoutManager.WaitForDangerous(TimeSpan.FromMilliseconds(i));
+        }
+
+        Console.ReadLine();
+
+        return;
+
         Console.WriteLine(Process.GetCurrentProcess().Id);
 
         for (int i = 0; i < 1; i++)

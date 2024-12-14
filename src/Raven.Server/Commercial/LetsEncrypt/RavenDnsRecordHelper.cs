@@ -116,7 +116,7 @@ public static class RavenDnsRecordHelper
                 {
                     try
                     {
-                        await TimeoutManager.WaitFor(TimeSpan.FromSeconds(5), cts.Token);
+                        await TimeoutManager.WaitFor(TimeoutValue.FiveSeconds, cts.Token);
                         response = await ApiHttpClient.PostAsync($"api/v2/dns-n-cert/registration-result?id={id}", new StringContent(serializeObject, Encoding.UTF8, "application/json"), cts.Token).ConfigureAwait(false);
                     }
                     catch (Exception e)
@@ -300,7 +300,7 @@ public static class RavenDnsRecordHelper
                 {
                     try
                     {
-                        await TimeoutManager.WaitFor(TimeSpan.FromSeconds(5), cts.Token);
+                        await TimeoutManager.WaitFor(TimeoutValue.FiveSeconds, cts.Token);
                         response = await ApiHttpClient.PostAsync($"api/v2/dns-n-cert/registration-result?id={id}", new StringContent(serializeObject, Encoding.UTF8, "application/json"), cts.Token).ConfigureAwait(false);
                     }
                     catch (Exception e)

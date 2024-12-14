@@ -469,7 +469,7 @@ namespace Raven.Server.ServerWide
 
         private int ReconnectionBackoff(int delay)
         {
-            TimeoutManager.WaitFor(TimeSpan.FromMilliseconds(delay), ServerShutdown).Wait(ServerShutdown);
+            TimeoutManager.WaitForDangerous(TimeSpan.FromMilliseconds(delay), ServerShutdown).Wait(ServerShutdown);
             return Math.Min(15_000, delay * 2);
         }
 
@@ -3550,7 +3550,7 @@ namespace Raven.Server.ServerWide
             Task<TcpConnectionInfo> connectionInfo;
             try
             {
-                var timeout = TimeoutManager.WaitFor(Configuration.Cluster.OperationTimeout.AsTimeSpan);
+                var timeout = TimeoutManager.WaitForDangerous(Configuration.Cluster.OperationTimeout.AsTimeSpan);
 
                 using (var cts = new CancellationTokenSource(Server.Configuration.Cluster.OperationTimeout.AsTimeSpan))
                 {

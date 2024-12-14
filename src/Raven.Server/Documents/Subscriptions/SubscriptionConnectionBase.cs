@@ -235,7 +235,7 @@ namespace Raven.Server.Documents.Subscriptions
             //client sent DisposedNotification or cts was canceled
             CancellationTokenSource.Token.ThrowIfCancellationRequested();
 
-            var result = await Task.WhenAny(_lastReplyFromClientTask, TimeoutManager.WaitFor(ISubscriptionConnection.HeartbeatTimeout, CancellationTokenSource.Token));
+            var result = await Task.WhenAny(_lastReplyFromClientTask, TimeoutManager.WaitForDangerous(ISubscriptionConnection.HeartbeatTimeout, CancellationTokenSource.Token));
             CancellationTokenSource.Token.ThrowIfCancellationRequested();
             if (result == _lastReplyFromClientTask)
             {
@@ -406,7 +406,7 @@ namespace Raven.Server.Documents.Subscriptions
             do
             {
                 var hasMoreDocsTask = state.WaitForMoreDocs();
-                var timeoutTask = TimeoutManager.WaitFor(ISubscriptionConnection.HeartbeatTimeout);
+                var timeoutTask = TimeoutManager.WaitForDangerous(ISubscriptionConnection.HeartbeatTimeout);
                 var resultingTask = await Task
                     .WhenAny(hasMoreDocsTask, _lastReplyFromClientTask, timeoutTask).ConfigureAwait(false);
 
@@ -971,7 +971,7 @@ namespace Raven.Server.Documents.Subscriptions
             SubscriptionConnectionClientMessage clientReply;
             while (true)
             {
-                var timeoutTask = TimeoutManager.WaitFor(TimeSpan.FromMilliseconds(5000), CancellationTokenSource.Token);
+                var timeoutTask = TimeoutManager.WaitFor(TimeoutValue.FiveSeconds, CancellationTokenSource.Token);
                 var result = await Task.WhenAny(_lastReplyFromClientTask, timeoutTask);
                 CancellationTokenSource.Token.ThrowIfCancellationRequested();
                 if (result == _lastReplyFromClientTask)

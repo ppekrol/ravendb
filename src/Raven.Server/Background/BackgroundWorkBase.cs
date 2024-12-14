@@ -104,7 +104,7 @@ namespace Raven.Server.Background
                 }
 
                 // if cancellation requested then it will throw TaskCancelledException and we stop the work
-                await TimeoutManager.WaitFor(time, CancellationToken).ConfigureAwait(false);
+                await TimeoutManager.WaitForDangerous(time, CancellationToken).ConfigureAwait(false);
 
                 ThrowOperationCanceledExceptionIfNeeded();
             }

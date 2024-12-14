@@ -19,7 +19,7 @@ using Voron.Impl.Paging;
 
 namespace Voron.Impl
 {
-    public sealed unsafe class EncryptionBuffersPool : ILowMemoryHandler
+    public sealed unsafe class EncryptionBuffersPool : ILowMemoryHandler, ITimerManagerWatcher
     {
         private readonly object _locker = new object();
 
@@ -30,7 +30,6 @@ namespace Voron.Impl
         private readonly MultipleUseFlag _isExtremelyLowMemory = new MultipleUseFlag();
         private readonly PerCoreContainer<NativeAllocation>[] _items;
         private readonly CountingConcurrentStack<NativeAllocation>[] _globalStacks;
-        private readonly Timer _cleanupTimer;
         private long _generation;
         public bool Disabled;
         private long _currentlyInUseBytes;
@@ -73,7 +72,7 @@ namespace Voron.Impl
                 LowMemoryNotification.Instance.RegisterLowMemoryHandler(this);
 
             if (registerCleanup)
-                _cleanupTimer = new Timer(Cleanup, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                TimerManager.Register(this, TimeSpan.FromMinutes(1));
         }
 
         public byte* Get(int numberOfPages, out long size, out NativeMemory.ThreadStats thread)
@@ -433,6 +432,11 @@ namespace Voron.Impl
             public Action<long> OnFree4KbAlignedMemory;
 
             public Action<long> OnUpdateMemoryStatsForThread;
+        }
+
+        public void ExecuteTimer()
+        {
+            Cleanup(null);
         }
     }
 

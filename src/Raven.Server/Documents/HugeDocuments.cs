@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using JetBrains.Annotations;
 using Raven.Client.Documents.Conventions;
 using Raven.Server.Config;
@@ -10,10 +9,11 @@ using Raven.Server.Utils;
 using Sparrow;
 using Sparrow.Json;
 using Sparrow.Logging;
+using Sparrow.Utils;
 
 namespace Raven.Server.Documents
 {
-    public sealed class HugeDocuments : IDisposable
+    public sealed class HugeDocuments : IDisposable, ITimerManagerWatcher
     {
         private static readonly string PerformanceHintSource = "Documents";
         internal static readonly string HugeDocumentsId = $"{NotificationType.PerformanceHint}/{PerformanceHintType.HugeDocuments}/{PerformanceHintSource}";
@@ -27,7 +27,7 @@ namespace Raven.Server.Documents
         private PerformanceHint _performanceHint;
         private HugeDocumentsDetails _details;
 
-        private Timer _timer;
+        private bool _timerRegistered;
 
         public HugeDocuments([NotNull] DatabaseNotificationCenter notificationCenter, int maxCollectionSize, long maxWarnSize)
         {
@@ -64,10 +64,11 @@ namespace Raven.Server.Documents
                 _details.Update(id, size);
                 _needsSync = true;
 
-                if (_timer != null)
+                if (_timerRegistered)
                     return;
 
-                _timer = new Timer(UpdateHugeDocuments, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                TimerManager.Register(this, TimeSpan.FromMinutes(1));
+                _timerRegistered = true;
             }
         }
 
@@ -133,8 +134,11 @@ namespace Raven.Server.Documents
 
         public void Dispose()
         {
-            _timer?.Dispose();
-            _timer = null;
+        }
+
+        public void ExecuteTimer()
+        {
+            UpdateHugeDocuments(null);
         }
     }
 }

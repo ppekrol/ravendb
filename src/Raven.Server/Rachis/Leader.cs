@@ -388,7 +388,7 @@ namespace Raven.Server.Rachis
                             LogAndNotifyLeaderRunExceptions(ex);
                             Task.Run(async () =>
                             {
-                                await TimeoutManager.WaitFor(_engine.ElectionTimeout / 3);
+                                await TimeoutManager.WaitForDangerous(_engine.ElectionTimeout / 3);
                                 _newEntry.Set();
                             });
                             continue;

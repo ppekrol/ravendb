@@ -926,7 +926,7 @@ namespace Raven.Server.Utils.Cli
 
             try
             {
-                var timeoutTask = TimeoutManager.WaitFor(TimeSpan.FromSeconds(60), cli._server.ServerStore.ServerShutdown);
+                var timeoutTask = TimeoutManager.WaitFor(TimeoutValue.SixtySeconds, cli._server.ServerStore.ServerShutdown);
 
                 var replicationTask = cli._server.ServerStore.Server.StartCertificateReplicationAsync(loadedCert, password, replaceImmediately, RaftIdGenerator.NewId());
 

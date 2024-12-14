@@ -8,10 +8,11 @@ using Raven.Server.NotificationCenter.Notifications;
 using Raven.Server.NotificationCenter.Notifications.Details;
 using Sparrow.Json;
 using Sparrow.Logging;
+using Sparrow.Utils;
 
 namespace Raven.Server.NotificationCenter
 {
-    public sealed class Paging : IDisposable
+    public sealed class Paging : IDisposable, ITimerManagerWatcher
     {
         private static readonly string PagingDocumentsId = $"{NotificationType.PerformanceHint}/{PerformanceHintType.Paging}/{PagingOperationType.Documents}";
         private static readonly string PagingQueriesId = $"{NotificationType.PerformanceHint}/{PerformanceHintType.Paging}/{PagingOperationType.Queries}";
@@ -23,7 +24,7 @@ namespace Raven.Server.NotificationCenter
         private readonly object _locker = new object();
         private readonly ConcurrentQueue<PagingInformation> _pagingQueue = new();
         private readonly DateTime[] _pagingUpdates = new DateTime[Enum.GetNames(typeof(PagingOperationType)).Length];
-        private Timer _pagingTimer;
+        private bool _pagingTimerRegistered;
         private readonly Logger _logger;
 
         public Paging([NotNull] AbstractDatabaseNotificationCenter notificationCenter)
@@ -50,15 +51,16 @@ namespace Raven.Server.NotificationCenter
             while (_pagingQueue.Count > 50)
                 _pagingQueue.TryDequeue(out _);
 
-            if (_pagingTimer != null)
+            if (_pagingTimerRegistered)
                 return;
 
             lock (_locker)
             {
-                if (_pagingTimer != null)
+                if (_pagingTimerRegistered)
                     return;
 
-                _pagingTimer = new Timer(UpdatePaging, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                TimerManager.Register(this, TimeSpan.FromSeconds(1));
+                _pagingTimerRegistered = true;
             }
         }
 
@@ -197,7 +199,6 @@ namespace Raven.Server.NotificationCenter
 
         public void Dispose()
         {
-            _pagingTimer?.Dispose();
         }
 
         internal readonly struct PagingInformation
@@ -222,6 +223,11 @@ namespace Raven.Server.NotificationCenter
                 Occurrence = occurrence;
                 TotalDocumentsSizeInBytes = totalDocumentsSizeInBytes;
             }
+        }
+
+        public void ExecuteTimer()
+        {
+            UpdatePaging(null);
         }
     }
 }

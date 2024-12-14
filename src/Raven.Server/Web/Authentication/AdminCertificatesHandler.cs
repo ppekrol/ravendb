@@ -1110,7 +1110,7 @@ namespace Raven.Server.Web.Authentication
                         if (IsClusterAdmin() == false)
                             throw new InvalidOperationException("Cannot replace the server certificate. Only a ClusterAdmin can do this.");
 
-                        var timeoutTask = TimeoutManager.WaitFor(TimeSpan.FromSeconds(60), ServerStore.ServerShutdown);
+                        var timeoutTask = TimeoutManager.WaitFor(TimeoutValue.SixtySeconds, ServerStore.ServerShutdown);
                         if (Logger.IsOperationsEnabled)
                         {
                             Logger.Operations("Initiating the replacement of the certificate upon explicit request - '/admin/certificates/replace-cluster-cert'.");

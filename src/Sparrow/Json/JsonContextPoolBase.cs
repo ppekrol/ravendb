@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using Sparrow.Logging;
 using Sparrow.LowMemory;
 using Sparrow.Platform;
@@ -9,7 +10,7 @@ using Sparrow.Utils;
 
 namespace Sparrow.Json
 {
-    public abstract class JsonContextPoolBase<T> : ILowMemoryHandler, IDisposable
+    public abstract class JsonContextPoolBase<T> : ILowMemoryHandler, IDisposable, ITimerManagerWatcher
         where T : JsonOperationContext
     {
         private readonly object _locker = new object();
@@ -28,11 +29,10 @@ namespace Sparrow.Json
 
         private readonly PerCoreContainer<T> _perCoreCache = new PerCoreContainer<T>();
         private readonly CountingConcurrentStack<T> _globalStack = new CountingConcurrentStack<T>();
-        private readonly Timer _cleanupTimer;
 
         protected JsonContextPoolBase()
         {
-            _cleanupTimer = new Timer(Cleanup, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+            TimerManager.Register(this, TimeSpan.FromMinutes(1));
             LowMemoryNotification.Instance?.RegisterLowMemoryHandler(this);
             _maxContextSizeToKeepInBytes = long.MaxValue;
             _maxNumberOfContextsToKeepInGlobalStack = PlatformDetails.Is32Bits == false
@@ -299,7 +299,6 @@ namespace Sparrow.Json
 
                 _cts.Cancel();
                 _disposed = true;
-                _cleanupTimer.Dispose();
 
                 ClearStack(_globalStack);
 
@@ -359,6 +358,11 @@ namespace Sparrow.Json
         {
             LowMemoryFlag.Lower();
             _isExtremelyLowMemory.Lower();
+        }
+
+        public void ExecuteTimer()
+        {
+            Cleanup(null);
         }
     }
 }

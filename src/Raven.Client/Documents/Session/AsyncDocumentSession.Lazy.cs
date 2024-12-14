@@ -106,7 +106,7 @@ namespace Raven.Client.Documents.Session
 
                     while (await ExecuteLazyOperationsSingleStep(responseTimeDuration, requests, sw, token).ConfigureAwait(false))
                     {
-                        await TimeoutManager.WaitFor(TimeSpan.FromMilliseconds(100), token).ConfigureAwait(false);
+                        await TimeoutManager.WaitFor(TimeoutValue.OneHundredMilliseconds, token).ConfigureAwait(false);
                     }
 
                     responseTimeDuration.ComputeServerTotal();

@@ -110,7 +110,7 @@ namespace Raven.Server.Utils.IoMetrics
                 // 2. Prepare & put data from the Dictionary into the Queue every 3 seconds
                 while (token.IsCancellationRequested == false)
                 {
-                    await TimeoutManager.WaitFor(TimeSpan.FromMilliseconds(3000), token).ConfigureAwait(false);
+                    await TimeoutManager.WaitFor(TimeoutValue.ThreeSeconds, token).ConfigureAwait(false);
 
                     if (token.IsCancellationRequested)
                         break;

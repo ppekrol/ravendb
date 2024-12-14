@@ -7,9 +7,10 @@ using Raven.Server.NotificationCenter.Notifications;
 using Sparrow.Logging;
 using Sparrow.Json;
 using Sparrow.Server.Utils;
+using Sparrow.Utils;
 
 namespace Raven.Server.NotificationCenter;
-public class ConflictRevisionsExceeded
+public class ConflictRevisionsExceeded : ITimerManagerWatcher
 {
     private static readonly string ConflictRevisionExceededMaxId = "ConflictRevisionExceededMax";
 
@@ -24,7 +25,7 @@ public class ConflictRevisionsExceeded
         MinimumRevisionsToKeep
     }
 
-    private Timer _timer;
+    private bool _timerRegistered;
     private readonly Logger _logger;
 
     public ConflictRevisionsExceeded(AbstractDatabaseNotificationCenter notificationCenter)
@@ -40,15 +41,16 @@ public class ConflictRevisionsExceeded
         while (_queue.Count > QueueMaxSize)
             _queue.TryDequeue(out _);
 
-        if (_timer != null)
+        if (_timerRegistered)
             return;
 
         lock (_locker)
         {
-            if (_timer != null)
+            if (_timerRegistered)
                 return;
 
-            _timer = new Timer(Update, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+            TimerManager.Register(this, TimeSpan.FromMinutes(1));
+            _timerRegistered = true;
         }
     }
 
@@ -97,9 +99,7 @@ public class ConflictRevisionsExceeded
 
     public void Dispose()
     {
-        _timer?.Dispose();
     }
-
 
     public readonly struct ConflictInfo
     {
@@ -125,6 +125,10 @@ public class ConflictRevisionsExceeded
         }
     }
 
+    public void ExecuteTimer()
+    {
+        Update(null);
+    }
 }
 
 

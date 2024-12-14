@@ -12,12 +12,32 @@ using System.Threading.Tasks;
 
 namespace Sparrow.Utils
 {
+    internal sealed class TimeoutValue
+    {
+        public readonly TimeSpan AsTimeSpan;
+
+        private TimeoutValue(TimeSpan timeSpan)
+        {
+            AsTimeSpan = timeSpan;
+        }
+
+        public static readonly TimeoutValue OneHundredMilliseconds = new(TimeSpan.FromMilliseconds(100));
+
+        public static readonly TimeoutValue OneSecond = new(TimeSpan.FromSeconds(1));
+
+        public static readonly TimeoutValue ThreeSeconds = new(TimeSpan.FromSeconds(3));
+
+        public static readonly TimeoutValue FiveSeconds = new(TimeSpan.FromSeconds(5));
+
+        public static readonly TimeoutValue SixtySeconds = new(TimeSpan.FromSeconds(60));
+    }
+
     internal static class TimeoutManager
     {
         private static readonly ConcurrentDictionary<uint, TimerTaskHolder> Values = new ConcurrentDictionary<uint, TimerTaskHolder>();
         private static readonly Task InfiniteTask = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously).Task;
 
-        private sealed class TimerTaskHolder  : IDisposable
+        private sealed class TimerTaskHolder : IDisposable
         {
             private TaskCompletionSource<object> _nextTimeout;
             private readonly Timer _timer;
@@ -76,7 +96,7 @@ namespace Sparrow.Utils
 
             var value = GetHolderForDuration(duration);
 
-            using (token.Register(value.TimerCallback, null))
+            using (token != CancellationToken.None ? (IDisposable)token.Register(value.TimerCallback, null) : null)
             {
                 var sp = Stopwatch.StartNew();
                 await value.NextTask.ConfigureAwait(false);
@@ -111,7 +131,7 @@ namespace Sparrow.Utils
             return value;
         }
 
-        public static async Task<Task> WaitFor(this Task outer, TimeSpan duration, CancellationToken token = default)
+        public static async Task<Task> WaitForDangerous(this Task outer, TimeSpan duration, CancellationToken token = default)
         {
             if (duration == TimeSpan.Zero)
                 return Task.CompletedTask;
@@ -127,12 +147,12 @@ namespace Sparrow.Utils
                 task = WaitForInternal(duration, token);
             else
                 task = InfiniteTask;
-            
+
             if (token == CancellationToken.None || token.CanBeCanceled == false)
             {
                 return await Task.WhenAny(outer, task).ConfigureAwait(false);
             }
-            
+
             var onCancel = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             using (token.Register(tcs => onCancel.TrySetCanceled(), onCancel))
             {
@@ -140,7 +160,12 @@ namespace Sparrow.Utils
             }
         }
 
-        public static async Task WaitFor(TimeSpan duration, CancellationToken token = default)
+        public static Task<Task> WaitFor(this Task outer, TimeoutValue duration, CancellationToken token = default)
+        {
+            return outer.WaitForDangerous(duration.AsTimeSpan, token);
+        }
+
+        public static async Task WaitForDangerous(TimeSpan duration, CancellationToken token = default)
         {
             if (duration == TimeSpan.Zero)
                 return;
@@ -156,7 +181,7 @@ namespace Sparrow.Utils
                 task = WaitForInternal(duration, token);
             else
                 task = InfiniteTask;
-            
+
             if (token == CancellationToken.None || token.CanBeCanceled == false)
             {
                 await task.ConfigureAwait(false);
@@ -174,6 +199,11 @@ namespace Sparrow.Utils
             {
                 await Task.WhenAny(task, onCancel.Task).ConfigureAwait(false);
             }
+        }
+
+        public static Task WaitFor(TimeoutValue duration, CancellationToken token = default)
+        {
+            return WaitForDangerous(duration.AsTimeSpan, token);
         }
     }
 }

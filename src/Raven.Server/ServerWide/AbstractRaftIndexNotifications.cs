@@ -62,7 +62,7 @@ where TNotification : RaftIndexNotification
             ThrowTimeoutException(timeout, index, _raftIndexWaiter.LastIndex);
         }
 
-        if (await WaitForTaskCompletion(index, new Lazy<Task>(TimeoutManager.WaitFor(timeout))))
+        if (await WaitForTaskCompletion(index, new Lazy<Task>(TimeoutManager.WaitForDangerous(timeout))))
             return;
 
         ThrowTimeoutException(timeout, index, _raftIndexWaiter.LastIndex, isExecution: true);

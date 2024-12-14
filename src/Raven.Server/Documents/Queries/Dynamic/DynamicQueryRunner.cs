@@ -262,9 +262,7 @@ namespace Raven.Server.Documents.Queries.Dynamic
                     var timeout = Database.Configuration.Indexing.TimeBeforeDeletionOfSupersededAutoIndex.AsTimeSpan;
                     if (timeout != TimeSpan.Zero)
                     {
-                        await TimeoutManager.WaitFor(
-                            timeout
-                        ).ConfigureAwait(false);
+                        await TimeoutManager.WaitForDangerous(timeout).ConfigureAwait(false);
                     }
 
                     foreach (var supersededIndex in map.SupersededIndexes)
