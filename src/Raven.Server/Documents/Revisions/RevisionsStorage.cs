@@ -2727,7 +2727,7 @@ namespace Raven.Server.Documents.Revisions
                 return 1;
             }
 
-            return readResult.Reader.ReadLittleEndianInt64();
+            return readResult.Reader.Read<long>();
         }
 
         public static unsafe void SetLastRevisionsBinCleanerLastEtag(DocumentsOperationContext context, long etag)

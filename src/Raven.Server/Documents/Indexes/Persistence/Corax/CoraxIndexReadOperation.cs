@@ -1377,7 +1377,7 @@ namespace Raven.Server.Documents.Indexes.Persistence.Corax
                         continue;
                     
                     token.ThrowIfCancellationRequested();
-                    var reader = IndexSearcher.GetEntryTermsReader(coraxInternalEntryId, ref page);
+                    IndexSearcher.GetEntryTermsReader(coraxInternalEntryId, ref page, out var reader);
                     var id = _documentIdReader.GetTermFor(coraxInternalEntryId);
 
                     var dynamicJsonValue = coraxEntryReader.GetDocument(ref reader);
