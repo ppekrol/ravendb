@@ -166,7 +166,11 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.Onnx" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
     <PackageReference Include="Microsoft.Win32.Registry" />
     <PackageReference Include="MySqlConnector" />
     <PackageReference Include="NCrontab.Advanced" />
@@ -192,6 +196,7 @@
     <PackageReference Include="Snappier" />
     <PackageReference Include="Snowflake.Data" />
     <PackageReference Include="System.Collections.Immutable" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
     <PackageReference Include="System.Formats.Asn1" />
     <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="System.Net.Http" />
@@ -249,5 +254,5 @@
       <ResolvedFileToPublish ExcludeFromSingleFile="true" Condition="'%(ResolvedFileToPublish.Identity)' == '$(ProjectRuntimeConfigFilePath)'" />
     </ItemGroup>
   </Target>
-  <Import Project="../DownloadEmbeddings.targets"/>
+  <Import Project="../DownloadEmbeddings.targets" />
 </Project>

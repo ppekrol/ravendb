@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations.ETL;
+using Raven.Client.Documents.Operations.ETL.AI;
 using Raven.Client.Documents.Operations.ETL.ElasticSearch;
 using Raven.Client.Documents.Operations.ETL.OLAP;
 using Raven.Client.Documents.Operations.ETL.Queue;
@@ -361,6 +362,10 @@ namespace Raven.Server.Dashboard
             var amazonSqsEtlCount = database.EtlLoader.GetQueueDestinationCountByBroker(QueueBrokerType.AmazonSqs);
             long amazonSqsEtlCountOnNode = GetTaskCountOnNode<QueueEtlConfiguration>(database, dbRecord, serverStore, database.EtlLoader.QueueDestinations,
                 task => EtlLoader.GetProcessState(task.Transforms, database, task.Name), task => task.BrokerType == QueueBrokerType.AmazonSqs);
+
+            var vectorEmbeddingEnrichmentEtlCount = database.EtlLoader.VectorEmbeddingEnrichmentDestinations.Count;
+            long vectorEmbeddingEnrichmentEtlCountOnNode = GetTaskCountOnNode<VectorEmbeddingEnrichmentEtlConfiguration>(database, dbRecord, serverStore, database.EtlLoader.VectorEmbeddingEnrichmentDestinations,
+                task => EtlLoader.GetProcessState(task.Transforms, database, task.Name));
             
             var periodicBackupCount = database.PeriodicBackupRunner.PeriodicBackups.Count;
             long periodicBackupCountOnNode = BackupUtils.GetTasksCountOnNode(serverStore, database.Name, context);
@@ -379,7 +384,7 @@ namespace Raven.Server.Dashboard
             ongoingTasksCount = extRepCount + replicationHubCount + replicationSinkCount +
                                 ravenEtlCount + sqlEtlCount + elasticSearchEtlCount + olapEtlCount + kafkaEtlCount +
                                 rabbitMqEtlCount + azureQueueStorageEtlCount + amazonSqsEtlCount + periodicBackupCount +
-                                subscriptionCount + kafkaSinkCount + rabbitMqSinkCount;
+                                subscriptionCount + kafkaSinkCount + rabbitMqSinkCount + vectorEmbeddingEnrichmentEtlCount;
 
             return new DatabaseOngoingTasksInfoItem
             {
@@ -399,6 +404,7 @@ namespace Raven.Server.Dashboard
                 SubscriptionCount = subscriptionCountOnNode,
                 KafkaSinkCount = kafkaSinkCountOnNode,
                 RabbitMqSinkCount = rabbitMqSinkCountOnNode,
+                VectorEmbeddingEnrichmentEtlCount = vectorEmbeddingEnrichmentEtlCountOnNode,
             };
         }
 

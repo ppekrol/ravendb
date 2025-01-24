@@ -394,6 +394,9 @@ namespace Raven.Client.Documents.Operations.ETL
                             case EtlType.Queue:
                                 targetName = "Queue";
                                 break;
+                            case EtlType.VectorEmbeddingEnrichment:
+                                targetName = "Vector";
+                                break;
                             default:
                                 throw new ArgumentException($"Unknown ETL type: {type}");
 

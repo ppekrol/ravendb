@@ -1,6 +1,7 @@
 ﻿using System;
 using Raven.Client.Documents.Operations.ConnectionStrings;
 using Raven.Client.Documents.Operations.ETL;
+using Raven.Client.Documents.Operations.ETL.AI;
 using Raven.Client.Documents.Operations.ETL.ElasticSearch;
 using Raven.Client.Documents.Operations.ETL.OLAP;
 using Raven.Client.Documents.Operations.ETL.Queue;
@@ -14,21 +15,21 @@ namespace Raven.Server.ServerWide.Commands.ConnectionStrings
 {
     public abstract class PutConnectionStringCommand<T> : UpdateDatabaseCommand where T : ConnectionString
     {
-        public T ConnectionString { get; protected set; }
+        public T EtlConnectionString { get; protected set; }
 
         protected PutConnectionStringCommand()
         {
             // for deserialization
         }
 
-        protected PutConnectionStringCommand(T connectionString, string databaseName, string uniqueRequestId) : base(databaseName, uniqueRequestId)
+        protected PutConnectionStringCommand(T etlConnectionString, string databaseName, string uniqueRequestId) : base(databaseName, uniqueRequestId)
         {
-            ConnectionString = connectionString;
+            EtlConnectionString = etlConnectionString;
         }
 
         public override void FillJson(DynamicJsonValue json)
         {
-            json[nameof(ConnectionString)] = ConnectionString.ToJson();
+            json[nameof(EtlConnectionString)] = EtlConnectionString.ToJson();
         }
     }
 
@@ -46,14 +47,14 @@ namespace Raven.Server.ServerWide.Commands.ConnectionStrings
 
         public override void UpdateDatabaseRecord(DatabaseRecord record, long etag)
         {
-            if (ConnectionString.Name.StartsWith(ServerWideExternalReplication.RavenConnectionStringPrefix, StringComparison.OrdinalIgnoreCase))
+            if (EtlConnectionString.Name.StartsWith(ServerWideExternalReplication.RavenConnectionStringPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                var isNewConnectionString = record.RavenConnectionStrings.ContainsKey(ConnectionString.Name);
-                throw new InvalidOperationException($"Can't {(isNewConnectionString ? "create" : "update")} connection string: '{ConnectionString.Name}'. " +
+                var isNewConnectionString = record.RavenConnectionStrings.ContainsKey(EtlConnectionString.Name);
+                throw new InvalidOperationException($"Can't {(isNewConnectionString ? "create" : "update")} connection string: '{EtlConnectionString.Name}'. " +
                                                           $"A regular (non server-wide) connection string name can't start with prefix '{ServerWideExternalReplication.RavenConnectionStringPrefix}'");
             }
 
-            record.RavenConnectionStrings[ConnectionString.Name] = ConnectionString;
+            record.RavenConnectionStrings[EtlConnectionString.Name] = EtlConnectionString;
         }
     }
 
@@ -71,7 +72,7 @@ namespace Raven.Server.ServerWide.Commands.ConnectionStrings
 
         public override void UpdateDatabaseRecord(DatabaseRecord record, long etag)
         {
-            record.SqlConnectionStrings[ConnectionString.Name] = ConnectionString;
+            record.SqlConnectionStrings[EtlConnectionString.Name] = EtlConnectionString;
         }
     }
 
@@ -89,7 +90,7 @@ namespace Raven.Server.ServerWide.Commands.ConnectionStrings
 
         public override void UpdateDatabaseRecord(DatabaseRecord record, long etag)
         {
-            record.OlapConnectionStrings[ConnectionString.Name] = ConnectionString;
+            record.OlapConnectionStrings[EtlConnectionString.Name] = EtlConnectionString;
         }
     }
 
@@ -107,7 +108,7 @@ namespace Raven.Server.ServerWide.Commands.ConnectionStrings
 
         public override void UpdateDatabaseRecord(DatabaseRecord record, long etag)
         {
-            record.ElasticSearchConnectionStrings[ConnectionString.Name] = ConnectionString;
+            record.ElasticSearchConnectionStrings[EtlConnectionString.Name] = EtlConnectionString;
         }
     }
 
@@ -125,7 +126,7 @@ namespace Raven.Server.ServerWide.Commands.ConnectionStrings
 
         public override void UpdateDatabaseRecord(DatabaseRecord record, long etag)
         {
-            record.QueueConnectionStrings[ConnectionString.Name] = ConnectionString;
+            record.QueueConnectionStrings[EtlConnectionString.Name] = EtlConnectionString;
         }
     }
     
@@ -143,7 +144,25 @@ namespace Raven.Server.ServerWide.Commands.ConnectionStrings
 
         public override void UpdateDatabaseRecord(DatabaseRecord record, long etag)
         {
-            record.SnowflakeConnectionStrings[ConnectionString.Name] = ConnectionString;
+            record.SnowflakeConnectionStrings[EtlConnectionString.Name] = EtlConnectionString;
+        }
+    }
+
+    public sealed class PutAiConnectionStringCommand : PutConnectionStringCommand<AiEtlConnectionString>
+    {
+        public PutAiConnectionStringCommand()
+        {
+            // for deserialization
+        }
+
+        public PutAiConnectionStringCommand(AiEtlConnectionString etlConnectionString, string databaseName, string uniqueRequestId) : base(etlConnectionString, databaseName, uniqueRequestId)
+        {
+
+        }
+
+        public override void UpdateDatabaseRecord(DatabaseRecord record, long etag)
+        {
+            record.AiConnectionStrings[EtlConnectionString.Name] = EtlConnectionString;
         }
     }
 }

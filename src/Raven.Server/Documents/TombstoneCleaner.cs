@@ -538,7 +538,8 @@ namespace Raven.Server.Documents
             Backup,
             PullReplicationAsHub,
             PullReplicationAsSink,
-            Index
+            Index,
+            VectorEmbeddingEnrichmentEtl
         }
     }
 }
