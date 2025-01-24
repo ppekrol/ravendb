@@ -79,10 +79,8 @@ namespace Sparrow.Utils
         private int GetBucket(Type type)
         {
             var hashCode = type.GetHashCode();
-            if (hashCode < 0)
-                hashCode = -hashCode;
 
-            return hashCode % _size;
+            return (int) ((uint)hashCode % size);
     }
 }
 }

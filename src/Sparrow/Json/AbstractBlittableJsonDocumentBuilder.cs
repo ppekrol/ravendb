@@ -15,7 +15,7 @@ namespace Sparrow.Json
         protected readonly ListCache<int> _positionsCache;
         protected readonly ListCache<BlittableJsonToken> _tokensCache;
 
-        private static readonly ObjectPool<FastStack<BuildingState>> ContinuationPool = new (() => new FastStack<BuildingState>(32));
+        private static readonly ObjectPool<FastStack<BuildingState>> ContinuationPool = new(() => new FastStack<BuildingState>(32));
 
         protected readonly FastStack<BuildingState> _continuationState;
 
@@ -23,8 +23,8 @@ namespace Sparrow.Json
 
         static AbstractBlittableJsonDocumentBuilder()
         {
-            GlobalCache = PlatformDetails.Is32Bits 
-                ? new PerCoreContainer<GlobalPoolItem>(4) 
+            GlobalCache = PlatformDetails.Is32Bits
+                ? new PerCoreContainer<GlobalPoolItem>(4)
                 : new PerCoreContainer<GlobalPoolItem>();
         }
 
@@ -76,27 +76,8 @@ namespace Sparrow.Json
             public FastList<BlittableJsonToken> Types;
             public FastList<int> Positions;
             public long FirstWrite;
-            internal readonly bool PartialRead;
 
-            public BuildingState(ContinuationState state)
-            {
-                State = state;
-            }
-            
-            public BuildingState(ContinuationState state, int maxPropertyId = 0,
-                CachedProperties.PropertyName currentProperty = null,
-                FastList<PropertyTag> properties = null, FastList<BlittableJsonToken> types = null, FastList<int> positions = null,
-                int firstWrite = 0, bool partialRead = false)
-            {
-                State = state;
-                MaxPropertyId = maxPropertyId;
-                CurrentProperty = currentProperty;
-                Properties = properties;
-                Types = types;
-                Positions = positions;
-                FirstWrite = firstWrite;
-                PartialRead = partialRead;
-            }
+            internal bool PartialRead = partialRead;
         }
 
         protected const int AllowedAllStates = 0xFF;
@@ -126,15 +107,23 @@ namespace Sparrow.Json
             CompleteBufferedArrayValue = CompleteArrayValue | Buffered,
         }
 
-        public readonly struct PropertyTag(byte type = 0, CachedProperties.PropertyName property = null, int position = 0)
+        public struct PropertyTag
         {
-            public readonly int Position = position;
-            public readonly CachedProperties.PropertyName Property = property;
-            public readonly byte Type = type;
+            public int Position;
 
             public override string ToString()
             {
                 return $"{nameof(Position)}: {Position}, {nameof(Property)}: {Property.Comparer} {Property.PropertyId}, {nameof(Type)}: {(BlittableJsonToken)Type}";
+            }
+
+            public CachedProperties.PropertyName Property;
+            public byte Type;
+
+            public PropertyTag(byte type, CachedProperties.PropertyName property, int position)
+            {
+                Type = type;
+                Property = property;
+                Position = position;
             }
         }
 

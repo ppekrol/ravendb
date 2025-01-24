@@ -57,13 +57,13 @@ namespace Sparrow.Json
             }
         }
 
-        public sealed class PropertyName(int hash, LazyStringValue comparer, int globalSortOrder, int propertyId) : IComparable<PropertyName>
+        public sealed class PropertyName : IComparable<PropertyName>
         {
-            public readonly int HashCode = hash;
+            public readonly int HashCode;
 
-            public readonly LazyStringValue Comparer = comparer;
-            public int GlobalSortOrder = globalSortOrder;
-            public int PropertyId = propertyId;
+            public readonly LazyStringValue Comparer ;
+            public int GlobalSortOrder;
+            public int PropertyId;
             public bool IsVectorProperty;
 
             public PropertyName(int hash, LazyStringValue comparer, int globalSortOrder, int propertyId)
