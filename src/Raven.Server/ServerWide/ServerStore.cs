@@ -848,7 +848,7 @@ namespace Raven.Server.ServerWide
             _server.Statistics.Load(ContextPool, Logger);
 
             _timer = new Timer(IdleOperations, null, _frequencyToCheckForIdleDatabases, TimeSpan.FromDays(7));
-            _notificationsStorage.Initialize(_env, ContextPool);
+            _notificationsStorage.PreInitialize(_env, ContextPool);
             _operationsStorage.Initialize(_env, ContextPool);
             DatabaseInfoCache.Initialize(_env, ContextPool);
         }
@@ -862,6 +862,7 @@ namespace Raven.Server.ServerWide
             var myUrl = GetNodeHttpServerUrl();
             _engine.Initialize(_env, Configuration, clusterChanges, myUrl, Server.Time, out _lastClusterTopologyIndex, ServerShutdown);
 
+            _notificationsStorage.Initialize();
             NotificationCenter.Initialize();
             foreach (var alertRaised in _storeAlertForLateRaise)
             {

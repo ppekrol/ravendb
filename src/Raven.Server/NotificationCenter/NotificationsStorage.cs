@@ -31,7 +31,7 @@ namespace Raven.Server.NotificationCenter
 
         protected TransactionContextPool ContextPool;
 
-        public void Initialize(StorageEnvironment environment, TransactionContextPool contextPool)
+        public void PreInitialize(StorageEnvironment environment, TransactionContextPool contextPool)
         {
             Environment = environment;
             ContextPool = contextPool;
@@ -48,7 +48,10 @@ namespace Raven.Server.NotificationCenter
             {
                 CreateSchema();
             }
+        }
 
+        public void Initialize()
+        {
             Cleanup();
         }
 
@@ -430,7 +433,8 @@ namespace Raven.Server.NotificationCenter
                 throw new ArgumentNullException(nameof(database));
 
             var storage = new DatabaseNotificationStorage(ServerStore, database);
-            storage.Initialize(Environment, ContextPool);
+            storage.PreInitialize(Environment, ContextPool);
+            storage.Initialize();
 
             return storage;
         }
