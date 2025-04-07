@@ -198,5 +198,5 @@
     </ItemGroup>
   </Target>
 
-  <Import Project="../DownloadEmbeddings.targets"/>
+  <Import Project="../DownloadEmbeddings.targets" />
 </Project>

@@ -40,7 +40,7 @@ internal static class BackupUtils
     internal static BackupTask GetBackupTask(DocumentDatabase database, BackupParameters backupParameters, BackupConfiguration configuration, OperationCancelToken token, RavenLogger logger, PeriodicBackupRunner.TestingStuff forTestingPurposes = null)
     {
         return configuration.BackupUploadMode == BackupUploadMode.DirectUpload
-            ? new DirectUploadBackupTask(database, backupParameters, configuration, token, logger, forTestingPurposes) 
+            ? new DirectUploadBackupTask(database, backupParameters, configuration, token, logger, forTestingPurposes)
             : new BackupTask(database, backupParameters, configuration, token, logger, forTestingPurposes);
     }
 
@@ -183,13 +183,18 @@ internal static class BackupUtils
         using (serverStore.Engine.ContextPool.AllocateOperationContext(out ClusterOperationContext context))
         using (context.OpenReadTransaction())
         {
-            var blittable = GetResponsibleNodeInfoFromCluster(serverStore, context, databaseName, taskId);
-            if (blittable == null)
-                return null;
-
-            blittable.TryGet(nameof(ResponsibleNodeInfo.ResponsibleNode), out string responsibleNodeTag);
-            return responsibleNodeTag;
+            return GetResponsibleNodeTag(context, serverStore, databaseName, taskId);
         }
+    }
+
+    internal static string GetResponsibleNodeTag(ClusterOperationContext context, ServerStore serverStore, string databaseName, long taskId)
+    {
+        var blittable = GetResponsibleNodeInfoFromCluster(serverStore, context, databaseName, taskId);
+        if (blittable == null)
+            return null;
+
+        blittable.TryGet(nameof(ResponsibleNodeInfo.ResponsibleNode), out string responsibleNodeTag);
+        return responsibleNodeTag;
     }
 
     internal static async ValueTask<string> WaitAndGetResponsibleNodeAsync(long taskId, DocumentDatabase database)
@@ -481,7 +486,7 @@ internal static class BackupUtils
         {
             // we might reach here from periodic backup runner that check whether due time is far enough in the future to justify unloading the db
             // if we never backed up the db then we want to do it now. returning the time now will prevent the unloading
-            
+
             if (parameters.Logger.IsInfoEnabled)
                 parameters.Logger.Info($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' is never backed up yet.");
 
@@ -530,7 +535,7 @@ internal static class BackupUtils
             // we want to wait for the backup occurrence
             if (parameters.Logger.IsInfoEnabled)
                 parameters.Logger.Info($"Backup Task '{parameters.Configuration.TaskId}' of database '{parameters.DatabaseName}' is never backed up yet.");
-            
+
             return new IdleDatabaseActivity(IdleDatabaseActivityType.WakeUpDatabase, nextBackup.DateTime);
         }
 
