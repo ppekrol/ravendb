@@ -1076,6 +1076,7 @@ namespace Raven.Server.Documents.PeriodicBackup
                     using (context.OpenReadTransaction())
                     using (var rawRecord = _serverStore.Cluster.ReadRawDatabaseRecord(context, _database.Name))
                     {
+                        _serverStore.BackupRunner.HandleDatabaseRecordChange(rawRecord);
                         UpdateConfigurations(rawRecord.PeriodicBackups);
                     }
                     break;
@@ -1088,6 +1089,8 @@ namespace Raven.Server.Documents.PeriodicBackup
                     periodicBackup.BackupStatus ??= new PeriodicBackupStatus();
                     periodicBackup.BackupStatus.DelayUntil = state.DelayUntil;
                     periodicBackup.BackupStatus.OriginalBackupTime = state.OriginalBackupTime;
+
+                    // TODO [ppekrol]
                     break;
             }
         }

@@ -800,7 +800,7 @@ namespace Raven.Server.ServerWide
                 foreach (var command in subscriptionCommands)
                 {
                     updateCommand = command;
-                    
+
                     var database = updateCommand.DatabaseName;
                     if (DatabaseExists(context, database) == false)
                     {
@@ -815,12 +815,12 @@ namespace Raven.Server.ServerWide
                     {
                         actions.Add(() =>
                         Changes.OnDatabaseChanges(database, index, nameof(T), DatabasesLandlord.ClusterDatabaseChangeType.ValueChanged, changeState: null));
-                }
+                    }
                 }
 
                 ExecuteManyOnDispose(context, index, type, actions);
 
-                }
+            }
             catch (Exception e)
             {
                 exception = e;
@@ -2117,11 +2117,11 @@ namespace Raven.Server.ServerWide
         {
             foreach (var (name, topology) in remote)
             {
-                AddStampToRemote(context,index, topology);
+                AddStampToRemote(context, index, topology);
             }
         }
 
-        private void AddStampToRemote(ClusterOperationContext context,long index, DatabaseTopology topology)
+        private void AddStampToRemote(ClusterOperationContext context, long index, DatabaseTopology topology)
         {
             topology.Stamp = new LeaderStamp
             {
@@ -3228,13 +3228,13 @@ namespace Raven.Server.ServerWide
         }
 
         private void OnTransactionDispose(ClusterOperationContext context, long index)
-        {                
+        {
             _rachisLogIndexNotifications.AddTask(index);
             context.Transaction.InnerTransaction.LowLevelTransaction.OnDispose += tx =>
             {
                 if (tx.Committed == false)
                     return;
-                
+
                 NotifyAndSetCompleted(index);
             };
         }
