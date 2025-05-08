@@ -223,6 +223,7 @@ namespace Raven.Client.Util
             return sslStream;
         }
 
+
         private static TcpClient NewTcpClient(TimeSpan? timeout, bool useIPv6)
         {
             // We start with a IPv4 TcpClient and we fallback to use IPv6 TcpClient only if we fail.

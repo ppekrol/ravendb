@@ -11,6 +11,7 @@ using Raven.Client.Http;
 using Raven.Client.Util;
 using Raven.Server.Extensions;
 using Raven.Server.Logging;
+using Raven.Client.Util;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
 using Sparrow.Json;
@@ -62,7 +63,8 @@ namespace Raven.Server.NotificationCenter.Handlers
 
                 var expectedCert = CertificateLoaderUtil.CreateCertificateFromAny(Convert.FromBase64String(tcpConnection.Certificate));
 
-                handler.ServerCertificateCustomValidationCallback = (_, actualCert, _, _) => expectedCert.Equals(actualCert);
+                _remoteWebSocket.Options.RemoteCertificateValidationCallback += (sender, actualCert, _, _) =>
+                    expectedCert.Equals(actualCert);
             }
 
             _httpClient = new HttpClient(handler, disposeHandler: true).WithConventions(DocumentConventions.DefaultForServer);

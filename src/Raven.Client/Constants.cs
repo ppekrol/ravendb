@@ -175,6 +175,9 @@ namespace Raven.Client
 
             public const string Prefix = "certificates/";
             public const int MaxNumberOfCertsWithSameHash = 5;
+            internal const string ServerAuthenticationOid = "1.3.6.1.5.5.7.3.1";
+            internal const string ClientAuthenticationOid = "1.3.6.1.5.5.7.3.2";
+            internal const string ServerCertExtensionOid =  CompanyInformation.CompanyOid + ".2.1";
         }
 
         internal sealed class Network
@@ -564,6 +567,7 @@ namespace Raven.Client
                 }
 
                 public const string DatabasesMappingKey = "monitoring/snmp/databases/mapping";
+                public const string SnmpRootOid = CompanyInformation.CompanyOid + ".1.1";
             }
         }
 
@@ -640,6 +644,15 @@ namespace Raven.Client
 
             public const VectorEmbeddingType DefaultEmbeddingType = VectorEmbeddingType.Single;
             public const bool DefaultIsExact = false;
+        }
+
+        internal class CompanyInformation
+        {
+            private CompanyInformation()
+            {
+            }
+
+            public const string CompanyOid = "1.3.6.1.4.1.45751";
         }
     }
 }
