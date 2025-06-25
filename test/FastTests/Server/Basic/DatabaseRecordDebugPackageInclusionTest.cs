@@ -41,6 +41,7 @@ namespace FastTests.Server.Basic
                 nameof(DatabaseRecord.SnowflakeEtls),
                 nameof(DatabaseRecord.EmbeddingsGenerations),
                 nameof(DatabaseRecord.AiConnectionStrings),
+                nameof(DatabaseRecord.RetiredAttachments)
             };
             
             foreach (var safe in ServerWideDebugInfoPackageHandler.FieldsThatShouldBeExposedForDebug)

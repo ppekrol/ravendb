@@ -105,6 +105,8 @@ public abstract class SmugglerProgressBase : IOperationProgress
         
         public bool DataArchivalConfigurationUpdated { get; set; }
 
+        public bool RetireAttachmentsConfigurationUpdated { get; set; }
+
         public bool RavenConnectionStringsUpdated { get; set; }
 
         public bool SqlConnectionStringsUpdated { get; set; }
@@ -158,6 +160,9 @@ public abstract class SmugglerProgressBase : IOperationProgress
             
             if (DataArchivalConfigurationUpdated)
                 json[nameof(DataArchivalConfigurationUpdated)] = DataArchivalConfigurationUpdated;
+
+            if (RetireAttachmentsConfigurationUpdated)
+                json[nameof(RetireAttachmentsConfigurationUpdated)] = RetireAttachmentsConfigurationUpdated;
 
             if (RavenConnectionStringsUpdated)
                 json[nameof(RavenConnectionStringsUpdated)] = RavenConnectionStringsUpdated;
@@ -257,6 +262,9 @@ public abstract class SmugglerProgressBase : IOperationProgress
             
             if (DataArchivalConfigurationUpdated)
                 sb.AppendLine("- Data Archival");
+
+            if (RetireAttachmentsConfigurationUpdated)
+                sb.AppendLine("- Retire Attachments");
 
             if (RavenConnectionStringsUpdated)
                 sb.AppendLine("- RavenDB Connection Strings");

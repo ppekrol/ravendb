@@ -443,6 +443,7 @@ namespace Raven.Server.ServerWide
                     case nameof(EditExpirationCommand):
                     case nameof(EditRefreshCommand):
                     case nameof(EditDataArchivalCommand):
+                    case nameof(EditRetireAttachmentsCommand):
                     case nameof(ModifyConflictSolverCommand):
                     case nameof(UpdateTopologyCommand):
                     case nameof(CreateNewShardCommand):
@@ -2806,6 +2807,7 @@ namespace Raven.Server.ServerWide
                 case nameof(EditPostgreSqlConfigurationCommand):
                 case nameof(EditRefreshCommand):
                 case nameof(EditDataArchivalCommand):
+                case nameof(EditRetireAttachmentsCommand):
                 case nameof(EditRevisionsConfigurationCommand):
                 case nameof(EditRevisionsForConflictsConfigurationCommand):
                 case nameof(EditTimeSeriesConfigurationCommand):
@@ -3598,6 +3600,16 @@ namespace Raven.Server.ServerWide
             using (var raw = ReadRawDatabaseRecord(context, name))
             {
                 return raw?.Sharding.MaterializedConfiguration;
+            }
+        }
+
+        public Raven.Client.Documents.Attachments.RetiredAttachmentsConfiguration ReadRetireAttachmentsConfiguration(string name)
+        {
+            using (_parent.ContextPool.AllocateOperationContext(out ClusterOperationContext context))
+            using (context.OpenReadTransaction())
+            using (var raw = ReadRawDatabaseRecord(context, name))
+            {
+                return raw.RetiredAttachmentsConfiguration;
             }
         }
 
