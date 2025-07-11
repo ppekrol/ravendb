@@ -11,13 +11,6 @@ jobs:
     name: Label
     runs-on: windows-latest
     steps:
-      - uses: dorny/paths-filter@v2
-        id: changes
-        with:
-          filters: |
-            src:
-              - '!src/Raven.Studio/**/*'
-
       - uses: actions/checkout@v4
         if: steps.changes.outputs.src != 'true'
         
