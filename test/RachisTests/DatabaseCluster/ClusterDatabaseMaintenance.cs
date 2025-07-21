@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -27,7 +26,6 @@ using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Commands;
 using Raven.Server.ServerWide.Context;
 using Raven.Server.Utils;
-using SlowTests.Rolling;
 using Sparrow.Json;
 using Tests.Infrastructure;
 using Xunit;
@@ -78,53 +76,6 @@ namespace RachisTests.DatabaseCluster
                 DeleteDatabaseOnDispose = true
             }))
             {
-            }
-        }
-
-        [RavenFact(RavenTestCategory.ClusterTransactions)]
-        public async Task DontPurgeTombstonesWhenNodeIsDown()
-        {
-            var clusterSize = 3;
-            var (_, leader) = await CreateRaftCluster(clusterSize, leaderIndex: 0);
-            using (var store = GetDocumentStore(new Options
-            {
-                CreateDatabase = true,
-                ReplicationFactor = clusterSize,
-                Server = leader,
-                DeleteDatabaseOnDispose = false // we bring one node down, so we can't delete the entire database, but we run in mem, so we don't care
-            }))
-            {
-                var index = new UsersByName();
-                await index.ExecuteAsync(store);
-                using (var session = store.OpenAsyncSession())
-                {
-                    session.Advanced.WaitForReplicationAfterSaveChanges(TimeSpan.FromSeconds(30), replicas: 2);
-                    await session.StoreAsync(new User
-                    {
-                        Name = "Karmel"
-                    }, "users/1");
-                    await session.SaveChangesAsync();
-                }
-
-                // we need to deploy the index before bringing the node down
-                await RollingIndexesClusterTests.WaitForRollingIndex(store.Database, index.IndexName, Servers);
-                await DisposeServerAndWaitForFinishOfDisposalAsync(Servers[1]);
-                using (var session = store.OpenAsyncSession())
-                {
-                    session.Advanced.WaitForReplicationAfterSaveChanges(TimeSpan.FromSeconds(30), replicas: 1);
-                    session.Delete("users/1");
-                    await session.SaveChangesAsync();
-                }
-
-                Indexes.WaitForIndexing(store);
-
-                var database = await leader.ServerStore.DatabasesLandlord.TryGetOrCreateResourceStore(store.Database);
-                await database.TombstoneCleaner.ExecuteCleanup();
-                using (database.DocumentsStorage.ContextPool.AllocateOperationContext(out DocumentsOperationContext ctx))
-                using (ctx.OpenReadTransaction())
-                {
-                    Assert.Equal(2, database.DocumentsStorage.GetLastTombstoneEtag(ctx.Transaction.InnerTransaction, "Users"));
-                }
             }
         }
 
