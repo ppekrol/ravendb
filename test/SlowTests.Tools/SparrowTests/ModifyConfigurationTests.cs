@@ -23,7 +23,7 @@ using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SlowTests.SparrowTests;
+namespace SlowTests.Tools.SparrowTests;
 
 public class ModifyConfigurationTests : RavenTestBase
 {

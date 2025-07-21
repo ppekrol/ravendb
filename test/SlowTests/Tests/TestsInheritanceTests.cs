@@ -8,12 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using EmbeddedTests;
 using FastTests;
 using Raven.Server.Documents;
 using Raven.Server.Documents.Sharding.Handlers;
 using Raven.Server.Web;
-using Raven.TestDriver;
 using Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
@@ -52,7 +50,7 @@ namespace SlowTests.Tests
             var types = from assembly in GetAssemblies(typeof(TestsInheritanceTests).Assembly)
                         from test in GetAssemblyTypes(assembly)
                         where test.GetMethods().Any(x => x.GetCustomAttributes(typeof(FactAttribute), true).Count() != 0 || x.GetCustomAttributes(typeof(TheoryAttribute), true).Count() != 0)
-                        where test.IsSubclassOf(typeof(ParallelTestBase)) == false && test.IsSubclassOf(typeof(RavenTestDriver)) == false && test.Namespace.StartsWith("EmbeddedTests") == false
+                        where test.IsSubclassOf(typeof(ParallelTestBase)) == false
                         select test;
 
             var array = types.ToArray();
@@ -85,7 +83,6 @@ namespace SlowTests.Tests
         public void AllTestsShouldUseRavenFactOrRavenTheoryAttributes()
         {
             var types = from assembly in GetAssemblies(typeof(TestsInheritanceTests).Assembly)
-                        where FilterAssembly(assembly)
                         from test in GetAssemblyTypes(assembly)
                         from method in test.GetMethods()
                         where Filter(method)
@@ -125,11 +122,6 @@ namespace SlowTests.Tests
                 }
 
                 return false;
-            }
-            
-            static bool FilterAssembly(Assembly assembly)
-            {
-                return assembly != typeof(EmbeddedTestBase).Assembly;
             }
 
             static bool ValidNamespace(string @namespace)

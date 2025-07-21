@@ -11,7 +11,7 @@ using Raven.Client.Documents.Smuggler;
 using Voron.Recovery;
 using Xunit.Abstractions;
 
-namespace SlowTests.RecoveryTests
+namespace SlowTests.Tools.RecoveryTests
 {
     public abstract class RecoveryTestBase : RavenTestBase
     {

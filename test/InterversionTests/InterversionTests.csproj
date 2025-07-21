@@ -24,12 +24,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Raven.Embedded\Raven.Embedded.csproj" />
-    <ProjectReference Include="..\FastTests\FastTests.csproj" />
-    <ProjectReference Include="..\SlowTests\SlowTests.csproj" />
-    <ProjectReference Include="..\Tests.Infrastructure\Tests.Infrastructure.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="System.Text.RegularExpressions" />
     <PackageReference Include="xunit.runner.visualstudio">
@@ -37,5 +31,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SlowTests\SlowTests.csproj" />
   </ItemGroup>
 </Project>

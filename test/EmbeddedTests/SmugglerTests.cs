@@ -108,7 +108,7 @@ namespace EmbeddedTests
                                         {
                                             OperateOnTypes = DatabaseItemType.Documents | DatabaseItemType.Identities | DatabaseItemType.CompareExchange
                                         }, ms, cts.Token);
-                                
+
 
                                 await operation.WaitForCompletionAsync(TimeSpan.FromMinutes(5));
                             }
@@ -159,5 +159,5 @@ namespace EmbeddedTests
 
             return dummyDump;
         }
-                }
-            }
+    }
+}

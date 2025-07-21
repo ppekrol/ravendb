@@ -7,11 +7,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02838C57-DE0
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7C0225BB-6184-4859-8ED1-2251A492A449}"
 	ProjectSection(SolutionItems) = preProject
+		agents.md = agents.md
 		src\CommonAssemblyInfo.cs = src\CommonAssemblyInfo.cs
 		Directory.Packages.props = Directory.Packages.props
 		global.json = global.json
 		RavenDB.ruleset = RavenDB.ruleset
-		agents.md = agents.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{764C36EA-83A0-4BA3-BA36-53A6808C13A9}"
@@ -91,6 +91,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VxSort.Benchmark", "bench\VxSort.Benchmark\VxSort.Benchmark.csproj", "{BF70E6D6-9BF4-4580-85E9-E908CD7D823E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerStoreTxMerger.Benchmark", "bench\ServerStoreTxMerger.Benchmark\ServerStoreTxMerger.Benchmark.csproj", "{F3A0869F-CC53-4E09-9688-7A98A0AF2996}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlowTests.Tools", "test\SlowTests.Tools\SlowTests.Tools.csproj", "{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -750,6 +752,24 @@ Global
 		{F3A0869F-CC53-4E09-9688-7A98A0AF2996}.Validate|x64.Build.0 = Release|Any CPU
 		{F3A0869F-CC53-4E09-9688-7A98A0AF2996}.Validate|x86.ActiveCfg = Release|Any CPU
 		{F3A0869F-CC53-4E09-9688-7A98A0AF2996}.Validate|x86.Build.0 = Release|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Debug|x64.Build.0 = Debug|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Debug|x86.Build.0 = Debug|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Release|x64.ActiveCfg = Release|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Release|x64.Build.0 = Release|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Release|x86.ActiveCfg = Release|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Release|x86.Build.0 = Release|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Validate|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Validate|Any CPU.Build.0 = Debug|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Validate|x64.ActiveCfg = Debug|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Validate|x64.Build.0 = Debug|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Validate|x86.ActiveCfg = Debug|Any CPU
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA}.Validate|x86.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -791,6 +811,7 @@ Global
 		{4A27BC98-D655-4335-B761-A7084799CB77} = {FAAED88A-1C25-4853-9A1B-C41BCF9BED1F}
 		{BF70E6D6-9BF4-4580-85E9-E908CD7D823E} = {C3388268-F662-4D76-A25D-FC4F31CE6AA1}
 		{F3A0869F-CC53-4E09-9688-7A98A0AF2996} = {C3388268-F662-4D76-A25D-FC4F31CE6AA1}
+		{CDF4AC4D-65CA-4443-97BC-90F3E6D62DDA} = {764C36EA-83A0-4BA3-BA36-53A6808C13A9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {032D6274-16A5-43ED-920F-D37BBD4B9628}
