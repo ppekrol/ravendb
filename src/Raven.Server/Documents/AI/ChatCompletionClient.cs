@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -35,7 +36,7 @@ namespace Raven.Server.Documents.AI;
 internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClientForTesting
 {
     public static readonly string EmptySchema = GetSchemaFromSampleObject("{}");
-    
+
     private readonly string _model;
     private readonly string _organizationId;
     private readonly string _projectId;
@@ -45,7 +46,7 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
     private readonly IMemoryContextPool _contextPool;
     private readonly string _apiKey;
 
-    public static readonly DocumentConventions ConventionsToUse = new DocumentConventions
+    private static readonly DocumentConventions ConventionsToUse = new DocumentConventions
     {
         SendApplicationIdentifier = DocumentConventions.DefaultForServer.SendApplicationIdentifier,
         MaxContextSizeToKeep = DocumentConventions.DefaultForServer.MaxContextSizeToKeep,
@@ -70,6 +71,8 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
 
         return new ChatCompletionClient(contextPool, uri, apiKey, model, organizationId, projectId, think, ConventionsToUse);
     }
+    
+    public readonly FilesClient Files;
 
     internal ChatCompletionClient(IMemoryContextPool contextPool, string baseUri, string apiKey, string model, string organizationId, string projectId, bool? think = null, DocumentConventions conventions = null)
     {
@@ -92,6 +95,8 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
 
         _contextPool = contextPool;
         _apiKey = apiKey;
+
+        Files = new FilesClient(this);
     }
 
     public async Task<AiResponse> CompleteAsync(JsonOperationContext context, HttpRequestMessage request, AiUsage usage, CancellationToken token)
@@ -112,16 +117,16 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
         }
 
         var choice0 = (BlittableJsonReaderObject)choices[0];
-        
+
         if (choice0.TryGet(Constants.ResponseFields.Message, out BlittableJsonReaderObject msg) == false ||
             msg.TryGet(Constants.ResponseFields.Content, out string content) == false)
         {
             throw new UnexpectedResponseException("No message/content property in choice: " + responseContent) { RequestId = GetRequestId(response.Headers) };
         }
-        
+
         if (responseContent.TryGet(Constants.ResponseFields.Usage, out BlittableJsonReaderObject usageJson) == false)
             throw new UnexpectedResponseException("No choices property in response: " + responseContent) { RequestId = GetRequestId(response.Headers) };
-        
+
         usage.UpdateFrom(usageJson);
 
         if (msg.TryGet(Constants.ResponseFields.ToolCalls, out BlittableJsonReaderArray calls))
@@ -151,12 +156,14 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
             //TODO: full output if we get here?
             throw new RefusedToAnswerException($"The request was refused by the model: '{refusal}'")
             {
-                Refusal = refusal, FinishReason = finishReason, RequestId = GetRequestId(response.Headers)
+                Refusal = refusal,
+                FinishReason = finishReason,
+                RequestId = GetRequestId(response.Headers)
             };
         }
 
         var result = context.Sync.ReadForMemory(content, "ai/output");
-        return new AiResponse(AiResponseType.Result) { Result = result, Message = msg};
+        return new AiResponse(AiResponseType.Result) { Result = result, Message = msg };
     }
 
     public async Task<(string Result, AiUsage Usage)> CompleteAsync(string systemPrompt, string userPrompt, string schema, List<GenAiAttachment> contextOutputAttachments, CancellationToken token)
@@ -165,7 +172,10 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
             await _forTestingPurposes.SimulateFailureAsync(userPrompt);
 
         using var _ = _contextPool.AllocateOperationContext(out JsonOperationContext ctx);
+        await using var filesScope = Files.CreateFilesScope(ctx, contextOutputAttachments, token);
 
+        await filesScope.InitializeAsync();
+        
         var msg1 = new DynamicJsonValue
         {
             [Constants.RequestFields.Role] = Constants.RequestFields.RoleSystemValue,
@@ -177,7 +187,7 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
             [Constants.RequestFields.Content] = contextOutputAttachments switch
             {
                 null => userPrompt,
-                _ => CreateContentWithAttachments(userPrompt, contextOutputAttachments)
+                _ => CreateContentWithAttachments(userPrompt, filesScope)
             }
         };
 
@@ -190,7 +200,7 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
     }
 
 
-    private DynamicJsonArray CreateContentWithAttachments(string context, List<GenAiAttachment> attachments)
+    private static DynamicJsonArray CreateContentWithAttachments(string context, FilesClient.FilesScope filesScope)
     {
         var content = new DynamicJsonArray
         {
@@ -200,23 +210,25 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
                 ["text"] = context
             }
         };
-
-        foreach (var attachment in attachments)
+        
+        foreach ((GenAiAttachment attachment, string fileId) in filesScope.GetAttachments())
         {
             content.Add(attachment.Type switch
             {
                 "text/plain" => new DynamicJsonValue
                 {
                     ["type"] = "text",
-                    ["text"] = attachment.Data
+                    ["text"] = new DynamicJsonValue
+                    {
+                        ["file_id"] = fileId
+                    }
                 },
                 "application/pdf" => new DynamicJsonValue
                 {
                     ["type"] = "file",
                     ["file"] = new DynamicJsonValue
                     {
-                        ["filename"] = attachment.Name,
-                        ["file_data"] = "data:application/pdf;base64," + attachment.Data
+                        ["file_id"] = fileId
                     }
                 },
                 "image/jpeg" or "image/png" or "image/gif" or "image/webp" => new DynamicJsonValue
@@ -224,7 +236,7 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
                     ["type"] = "image_url",
                     ["image_url"] = new DynamicJsonValue
                     {
-                        ["url"] = "data:" + attachment.Type + ";base64," + attachment.Data
+                        ["url"] = fileId
                     }
                 },
                 _ => throw new InvalidOperationException("Unknown attachment type: " + attachment.Type)
@@ -259,16 +271,10 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
 
         var request = new HttpRequestMessage
         {
-            Method = HttpMethod.Post, 
-            Content = content, 
+            Method = HttpMethod.Post,
+            Content = content,
             RequestUri = new Uri(Constants.RequestFields.DefaultRelativeUri, UriKind.Relative)
         };
-
-        if (string.IsNullOrEmpty(_organizationId) == false)
-            request.Headers.TryAddWithoutValidation(Constants.RequestFields.OpenAiOrganization, _organizationId);
-
-        if (string.IsNullOrEmpty(_projectId) == false)
-            request.Headers.TryAddWithoutValidation(Constants.RequestFields.OpenAiProject, _projectId);
 
         return request;
     }
@@ -361,6 +367,12 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
     {
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(Constants.RequestFields.MediaTypeApplicationJson));
         request.Headers.Authorization = string.IsNullOrEmpty(_apiKey) ? null : new AuthenticationHeaderValue(Constants.RequestFields.AuthorizationApiKeyProperty, _apiKey);
+
+        if (string.IsNullOrEmpty(_organizationId) == false)
+            request.Headers.TryAddWithoutValidation(Constants.RequestFields.OpenAiOrganization, _organizationId);
+
+        if (string.IsNullOrEmpty(_projectId) == false)
+            request.Headers.TryAddWithoutValidation(Constants.RequestFields.OpenAiProject, _projectId);
     }
 
     public virtual async Task<BlittableJsonReaderObject> GetResponseContentAsync(JsonOperationContext context, HttpResponseMessage response, CancellationToken token)
@@ -382,8 +394,8 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
                 {
                     RequestId = GetRequestId(response.Headers)
                 };
+            }
         }
-    }
     }
 
     [DoesNotReturn]
@@ -544,7 +556,7 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
         {
             return GetSchemaFromSampleObject(sampleObject);
         }
-       
+
         throw new InvalidOperationException("Missing output schema and sample object in configuration (there must be at least one of them)");
     }
 
@@ -749,7 +761,145 @@ internal class ChatCompletionClient : IChatCompletionClient, IChatCompletionClie
             public const string DefaultRelativeUri = "/v1/chat/completions";
             public const string ModelsUri = "/v1/models";
             public const string AuthorizationApiKeyProperty = "Bearer";
+
+            public const string FilesUri = "/v1/files";
         }
     }
+    
+    internal sealed class FilesClient
+    {
+        private readonly ChatCompletionClient _parent;
 
+        internal FilesClient(ChatCompletionClient parent)
+        {
+            _parent = parent;
+        }
+
+        internal FilesScope CreateFilesScope(JsonOperationContext context, List<GenAiAttachment> attachments, CancellationToken token = default)
+        {
+            return new FilesScope(this, context, attachments, token);
+        }
+
+        // DELETE /v1/files/{file_id}
+        public async Task DeleteAsync(JsonOperationContext ctx, string fileId, CancellationToken token)
+        {
+            if (string.IsNullOrWhiteSpace(fileId))
+                throw new ArgumentNullException(nameof(fileId));
+
+            using var request = new HttpRequestMessage(
+                HttpMethod.Delete,
+                new Uri($"{Constants.RequestFields.FilesUri}/{Uri.EscapeDataString(fileId)}", UriKind.Relative));
+
+            _parent.AddDefaultHeaders(request);
+
+            using var r = await _parent._client.SendAsync(request, token).ConfigureAwait(false);
+            
+            if (r.IsSuccessStatusCode == false)
+            {
+                var content = await _parent.GetResponseContentAsync(ctx, r, token).ConfigureAwait(false);
+                _parent.HandleUnsuccessfulResponse(r, content);
+            }
+        }
+
+        // POST /v1/files (multipart/form-data)
+        public async Task<string> UploadAsync(JsonOperationContext ctx, [JetBrains.Annotations.NotNull] GenAiAttachment attachment, CancellationToken token)
+        {
+            if (attachment == null) 
+                throw new ArgumentNullException(nameof(attachment));
+            
+            using var form = new MultipartFormDataContent();
+
+            // Purpose
+            form.Add(new StringContent("user_data", Encoding.UTF8), "purpose");
+
+            // File
+            var bytes = Encoding.ASCII.GetBytes(attachment.Data);
+            var ms = new MemoryStream(bytes); // TODO
+            
+            var streamContent = new StreamContent(ms);
+            streamContent.Headers.ContentType = new MediaTypeHeaderValue(string.IsNullOrWhiteSpace(attachment.Type) ? "application/octet-stream" : attachment.Type);
+            form.Add(streamContent, "file", attachment.Name);
+
+            using var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(Constants.RequestFields.FilesUri, UriKind.Relative),
+                Content = form
+            };
+
+            _parent.AddDefaultHeaders(request); // Accept: application/json for JSON metadata
+
+            using var r = await _parent._client.SendAsync(request, token).ConfigureAwait(false);
+            var content = await _parent.GetResponseContentAsync(ctx, r, token).ConfigureAwait(false);
+            if (r.IsSuccessStatusCode == false)
+                _parent.HandleUnsuccessfulResponse(r, content);
+
+            if (content.TryGet("id", out string id) == false || string.IsNullOrEmpty(id))
+            {
+                throw new UnexpectedResponseException("Missing 'id' in response")
+                {
+                    RequestId = GetRequestId(r.Headers)
+                };
+            }
+            
+            return id;
+        }
+
+        internal class FilesScope : IAsyncDisposable
+        {
+            private readonly FilesClient _files;
+            private readonly JsonOperationContext _context;
+            private readonly CancellationToken _token;
+            private readonly Dictionary<GenAiAttachment, string> _attachments;
+
+            public FilesScope([JetBrains.Annotations.NotNull] FilesClient files, [JetBrains.Annotations.NotNull] JsonOperationContext context, List<GenAiAttachment> attachments, CancellationToken token = default)
+            {
+                _files = files ?? throw new ArgumentNullException(nameof(files));
+                _context = context ?? throw new ArgumentNullException(nameof(context));
+                _token = token;
+                _attachments = new Dictionary<GenAiAttachment, string>();
+
+                if (attachments != null)
+                {
+                    foreach (var attachment in attachments)
+                        _attachments[attachment] = null;
+                }
+            }
+
+            public async Task InitializeAsync()
+            {
+                foreach (var attachment in _attachments.Keys)
+                {
+                    var fileId = await _files.UploadAsync(_context, attachment, _token).ConfigureAwait(false);
+                    
+                    _attachments[attachment] = fileId;
+                }
+            }
+
+            public IEnumerable<(GenAiAttachment Attachment, string FileId)> GetAttachments()
+            {
+                foreach (var kvp in _attachments)
+                    yield return (kvp.Key, kvp.Value);
+            }
+            
+            public async ValueTask DisposeAsync()
+            {
+                foreach (var attachment in _attachments)
+                {
+                    if (attachment.Value == null)
+                        continue;
+
+                    try
+                    {
+                        await _files.DeleteAsync(null, attachment.Value, _token).ConfigureAwait(false);
+                    }
+                    catch (Exception)
+                    {
+                        // TODO
+                    }
+                }
+            }
+        }
+    }
 }
+
