@@ -266,7 +266,7 @@ namespace Raven.Server.ServerWide
             });
         }
 
-        private Lazy<ClusterRequestExecutor> CreateClusterRequestExecutor() => new(() => ClusterRequestExecutor.Create(new[] { GetNodeHttpServerUrl() }, Server.Certificate.Certificate, Server.Conventions), LazyThreadSafetyMode.ExecutionAndPublication);
+        private Lazy<ClusterRequestExecutor> CreateClusterRequestExecutor() => new(() => ClusterRequestExecutor.Create(new[] { GetNodeHttpServerUrl() }, Server.Certificate.ClientCertificate, Server.Conventions), LazyThreadSafetyMode.ExecutionAndPublication);
 
         internal readonly FifoSemaphore ServerWideConcurrentlyRunningIndexesLock;
 

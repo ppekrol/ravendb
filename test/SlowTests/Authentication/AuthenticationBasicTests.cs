@@ -79,8 +79,9 @@ namespace SlowTests.Authentication
         }
 
         [RavenTheory(RavenTestCategory.Certificates)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
-        public void CanGetDocWithValidPermission(Options options)
+        [RavenData(true, DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(false, DatabaseMode = RavenDatabaseMode.All)]
+        public void CanGetDocWithValidPermission(Options options, bool with2Eku)
         {
             var certificates = SetupServerAuthentication(Certificates);
             var dbName = GetDatabaseName();
@@ -107,8 +108,9 @@ namespace SlowTests.Authentication
         }
 
         [RavenTheory(RavenTestCategory.Certificates)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.Single)]
-        public void CanGetAttachmentWithValidPermission(Options options)
+        [RavenData(true, DatabaseMode = RavenDatabaseMode.Single)]
+        [RavenData(false, DatabaseMode = RavenDatabaseMode.Single)]
+        public void CanGetAttachmentWithValidPermission(Options options, bool with2Eku)
         {
             var certificates = SetupServerAuthentication(Certificates);
             var dbName = GetDatabaseName();
@@ -173,8 +175,9 @@ namespace SlowTests.Authentication
         }
 
         [RavenTheory(RavenTestCategory.Certificates)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
-        public void CanReachOperatorEndpointWithOperatorPermission(Options options)
+        [RavenData(true, DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(false, DatabaseMode = RavenDatabaseMode.All)]
+        public void CanReachOperatorEndpointWithOperatorPermission(Options options, bool with2Eku)
         {
             var certificates = SetupServerAuthentication(Certificates);
             var dbName = GetDatabaseName();
@@ -193,8 +196,9 @@ namespace SlowTests.Authentication
         }
 
         [RavenTheory(RavenTestCategory.Certificates)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
-        public void CannotReachOperatorEndpointWithoutOperatorPermission(Options options)
+        [RavenData(true, DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(false, DatabaseMode = RavenDatabaseMode.All)]
+        public void CannotReachOperatorEndpointWithoutOperatorPermission(Options options, bool with2Eku)
         {
             var certificates = SetupServerAuthentication(Certificates);
             var dbName = GetDatabaseName();
@@ -219,8 +223,9 @@ namespace SlowTests.Authentication
         }
 
         [RavenTheory(RavenTestCategory.Certificates)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
-        public void CanReachDatabaseAdminEndpointWithDatabaseAdminPermission(Options options)
+        [RavenData(true, DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(false, DatabaseMode = RavenDatabaseMode.All)]
+        public void CanReachDatabaseAdminEndpointWithDatabaseAdminPermission(Options options, bool with2Eku)
         {
             var certificates = SetupServerAuthentication(Certificates);
             var dbName = GetDatabaseName();
@@ -252,8 +257,9 @@ namespace SlowTests.Authentication
         }
 
         [RavenTheory(RavenTestCategory.Certificates)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
-        public void CannotReachDatabaseAdminEndpointWithoutDatabaseAdminPermission(Options options)
+        [RavenData(true, DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(false, DatabaseMode = RavenDatabaseMode.All)]
+        public void CannotReachDatabaseAdminEndpointWithoutDatabaseAdminPermission(Options options, bool with2Eku)
         {
             var certificates = SetupServerAuthentication(Certificates);
             var dbName = GetDatabaseName();
@@ -338,8 +344,9 @@ namespace SlowTests.Authentication
         }
 
         [RavenTheory(RavenTestCategory.Certificates)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
-        public void CannotGetDocWithInvalidPermission(Options options)
+        [RavenData(true, DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(false, DatabaseMode = RavenDatabaseMode.All)]
+        public void CannotGetDocWithInvalidPermission(Options options, bool with2Eku)
         {
             var certificates = SetupServerAuthentication(Certificates);
             var dbName = GetDatabaseName();
@@ -392,8 +399,9 @@ namespace SlowTests.Authentication
         }
 
         [RavenTheory(RavenTestCategory.Certificates)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
-        public void CannotGetDocWithExpiredCertificate(Options options)
+        [RavenData(true, DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(false, DatabaseMode = RavenDatabaseMode.All)]
+        public void CannotGetDocWithExpiredCertificate(Options options, bool with2Eku)
         {
             var certificates = SetupServerAuthentication(Certificates);
             var dbName = GetDatabaseName();
@@ -607,8 +615,9 @@ namespace SlowTests.Authentication
         }
 
         [RavenTheory(RavenTestCategory.Certificates)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
-        public void CanGetDocWith_Read_Permission(Options options)
+        [RavenData(true, DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(false, DatabaseMode = RavenDatabaseMode.All)]
+        public void CanGetDocWith_Read_Permission(Options options, bool with2Eku)
         {
             var certificates = SetupServerAuthentication(Certificates);
             var dbName = GetDatabaseName();
@@ -654,8 +663,9 @@ namespace SlowTests.Authentication
         }
 
         [RavenTheory(RavenTestCategory.Certificates)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
-        public void CannotPutDocWith_Read_Permission_MultiGet(Options options)
+        [RavenData(true, DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(false, DatabaseMode = RavenDatabaseMode.All)]
+        public void CannotPutDocWith_Read_Permission_MultiGet(Options options, bool with2Eku)
         {
             var certificates = SetupServerAuthentication(Certificates);
             var dbName = GetDatabaseName();
@@ -699,8 +709,9 @@ namespace SlowTests.Authentication
         }
 
         [RavenTheory(RavenTestCategory.Certificates)]
-        [RavenData(DatabaseMode = RavenDatabaseMode.All)]
-        public void CannotPutDocWith_Read_Permission(Options options)
+        [RavenData(true, DatabaseMode = RavenDatabaseMode.All)]
+        [RavenData(false, DatabaseMode = RavenDatabaseMode.All)]
+        public void CannotPutDocWith_Read_Permission(Options options, bool with2Eku)
         {
             var certificates = SetupServerAuthentication(Certificates);
             var dbName = GetDatabaseName();

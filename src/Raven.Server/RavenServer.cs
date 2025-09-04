@@ -80,6 +80,7 @@ using Sparrow.Utils;
 using Voron;
 using DateTime = System.DateTime;
 using Raven.Server.Monitoring.OpenTelemetry;
+using Constants = Raven.Server.Monitoring.OpenTelemetry.Constants;
 
 namespace Raven.Server
 {
