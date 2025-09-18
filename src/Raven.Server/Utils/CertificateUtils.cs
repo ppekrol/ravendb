@@ -541,7 +541,7 @@ namespace Raven.Server.Utils
                     // Create a certificate from the raw data
                     var rawData = octetString.GetOctets();
                     ValidateNoPrivateKeyInServerCert(rawData);
-                    var certificateFromExtension = CertificateLoaderUtil.CreateCertificateFromPfx(rawData);
+                    var certificateFromExtension = CertificateLoaderUtil.CreateCertificateFromAny(rawData);
                     return certificateFromExtension;
                 }
             }
