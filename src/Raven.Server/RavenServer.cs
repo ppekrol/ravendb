@@ -32,6 +32,7 @@ using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using Org.BouncyCastle.Pkcs;
 using Raven.Client.Documents.Changes;
 using Raven.Client.Documents.Conventions;
 using Raven.Client.Documents.Operations.Replication;
@@ -253,9 +254,9 @@ namespace Raven.Server
 
                     options.ConfigureEndpointDefaults(listenOptions => listenOptions.Protocols = Configuration.Http.Protocols);
 
-                    if (Certificate.ServerCertificate != null)
+                    if (Certificate?.ServerCertificate != null)
                     {
-                        _httpsConnectionMiddleware = new HttpsConnectionMiddleware(this, options, Certificate.ServerCertificate);
+                        _httpsConnectionMiddleware = new HttpsConnectionMiddleware(this, options, Certificate?.ServerCertificate);
 
                         foreach (var address in ListenEndpoints.Addresses)
                         {
@@ -344,21 +345,8 @@ namespace Raven.Server
 
                 var serverAddressesFeature = _webHost.ServerFeatures.Get<IServerAddressesFeature>();
                 WebUrl = GetWebUrl(serverAddressesFeature.Addresses.First()).TrimEnd('/');
-                
-                _tcpListenerStatus = StartTcpListener(ListenToNewTcpConnection);
 
-                try
-                {
-                    ServerStore.Initialize();
-                }
-                catch (Exception e)
-                {
-                    if (Logger.IsOperationsEnabled)
-                        Logger.Operations("Could not open the server store", e);
-                    throw;
-                }
-
-                if (Certificate.ClientCertificate != null)
+                if (Certificate?.ClientCertificate != null)
                 {
                     try
                     {
@@ -662,7 +650,7 @@ namespace Raven.Server
             catch (Exception exception)
             {
                 if (Logger.IsErrorEnabled)
-                    Logger.Error($"Failed to check the expiration date of the new server certificate '{Certificate.Certificate?.Subject} ({Certificate.Certificate?.Thumbprint})'", exception);
+                    Logger.Error($"Failed to check the expiration date of the new server certificate '{Certificate.ServerCertificate?.Subject} ({Certificate.ServerCertificate?.Thumbprint})'", exception);
             }
         }
 
@@ -1375,7 +1363,7 @@ namespace Raven.Server
                 // We don't want an alert here, this happens frequently.
                 if (Logger.IsInfoEnabled)
                     Logger.Info(
-                        $"Renew check: still have time left to renew the server certificate with thumbprint `{currentCertificate.Certificate.Thumbprint}`, estimated renewal date: {renewalDate}");
+                        $"Renew check: still have time left to renew the server certificate with thumbprint `{currentCertificate.ServerCertificate.Thumbprint}`, estimated renewal date: {renewalDate}");
                 return null;
             }
 
@@ -1478,14 +1466,14 @@ namespace Raven.Server
                 {
                     if (Logger.IsInfoEnabled)
                     {
-                        Logger.Info($"The new certificate matches the current one. No further steps needed. {Certificate.Certificate.GetBasicCertificateInfo()}");
+                        Logger.Info($"The new certificate matches the current one. No further steps needed. {Certificate.ServerCertificate.GetBasicCertificateInfo()}");
                     }
                     return;
                 }
 
                 if (Logger.IsInfoEnabled)
                 {
-                    Logger.Info($"Starting certificate replication. current:'{Certificate.Certificate.GetBasicCertificateInfo()}', new:'{newCertificate.GetBasicCertificateInfo()}'");
+                    Logger.Info($"Starting certificate replication. current:'{Certificate.ServerCertificate.GetBasicCertificateInfo()}', new:'{newCertificate.GetBasicCertificateInfo()}'");
                 }
 
                 // During replacement of a cluster certificate, we must have both the new and the old server certificates registered in the server store.

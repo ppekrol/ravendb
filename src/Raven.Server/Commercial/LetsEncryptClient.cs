@@ -14,6 +14,7 @@ using Polly;
 using Polly.Retry;
 using Raven.Client.Http;
 using Raven.Client.Util;
+using Raven.Server.Commercial.SetupWizard;
 using Raven.Server.Utils;
 using Sparrow.Platform;
 

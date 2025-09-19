@@ -25,6 +25,7 @@ using Raven.Server.Commercial;
 using Raven.Server.Commercial.SetupWizard;
 using Raven.Server.Config.Categories;
 using Raven.Server.Logging;
+using Raven.Server.ServerWide;
 using Sparrow;
 using Sparrow.Logging;
 using Sparrow.Platform;

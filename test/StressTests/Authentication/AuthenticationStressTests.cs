@@ -76,8 +76,8 @@ namespace StressTests.Authentication
             var databaseName1 = GetDatabaseName();
             var databaseName2 = GetDatabaseName();
             using var server = GetNewServer(new ServerCreationOptions { CustomSettings = settings, RegisterForDisposal = true });
-            var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificate.Value, certificates.ClientCertificate1.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin, server: server);
-            var userCert = Certificates.RegisterClientCertificate(certificates.ServerCertificate.Value, certificates.ClientCertificate2.Value, new Dictionary<string, DatabaseAccess>
+            var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate1.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin, server: server);
+            var userCert = Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate2.Value, new Dictionary<string, DatabaseAccess>
             {
                 [databaseName1] = DatabaseAccess.Read
             }, server: server);
@@ -173,8 +173,8 @@ namespace StressTests.Authentication
             var databaseName1 = GetDatabaseName();
             var databaseName2 = GetDatabaseName();
             using var server = GetNewServer(new ServerCreationOptions { CustomSettings = settings, RegisterForDisposal = true });
-            var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificate.Value, certificates.ClientCertificate1.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin, server);
-            var userCert = Certificates.RegisterClientCertificate(certificates.ServerCertificate.Value, certificates.ClientCertificate2.Value, new Dictionary<string, DatabaseAccess>
+            var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate1.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin, server);
+            var userCert = Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate2.Value, new Dictionary<string, DatabaseAccess>
             {
                 [databaseName1] = DatabaseAccess.ReadWrite
             }, server: server);
@@ -264,8 +264,8 @@ namespace StressTests.Authentication
             var databaseName1 = GetDatabaseName();
             var databaseName2 = GetDatabaseName();
             using var server = GetNewServer(new ServerCreationOptions { CustomSettings = settings, RegisterForDisposal = true });
-            var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificate.Value, certificates.ClientCertificate1.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin, server: server);
-            var userCert = Certificates.RegisterClientCertificate(certificates.ServerCertificate.Value, certificates.ClientCertificate2.Value, new Dictionary<string, DatabaseAccess>
+            var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate1.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin, server: server);
+            var userCert = Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate2.Value, new Dictionary<string, DatabaseAccess>
             {
                 [databaseName1] = DatabaseAccess.Admin
             }, server: server);
@@ -355,8 +355,8 @@ namespace StressTests.Authentication
             var databaseName1 = GetDatabaseName();
             var databaseName2 = GetDatabaseName();
             using var server = GetNewServer(new ServerCreationOptions { CustomSettings = settings, RegisterForDisposal = true });
-            var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificate.Value, certificates.ClientCertificate1.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin, server: server);
-            var userCert = Certificates.RegisterClientCertificate(certificates.ServerCertificate.Value, certificates.ClientCertificate2.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.Operator, server: server);
+            var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate1.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin, server: server);
+            var userCert = Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate2.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.Operator, server: server);
 
             using (var store = GetDocumentStore(new Options
             {
@@ -440,8 +440,8 @@ namespace StressTests.Authentication
             var databaseName1 = GetDatabaseName();
             var databaseName2 = GetDatabaseName();
             using var server = GetNewServer(new ServerCreationOptions { CustomSettings = settings, RegisterForDisposal = true });
-            var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificate.Value, certificates.ClientCertificate1.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin, server: server);
-            var userCert = Certificates.RegisterClientCertificate(certificates.ServerCertificate.Value, certificates.ClientCertificate2.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin, server: server);
+            var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate1.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin, server: server);
+            var userCert = Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate2.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin, server: server);
 
             using (var store = GetDocumentStore(new Options
             {

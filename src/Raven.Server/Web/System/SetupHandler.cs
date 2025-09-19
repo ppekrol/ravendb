@@ -528,7 +528,6 @@ namespace Raven.Server.Web.System
                     progress => SetupManager.SetupUnsecuredTask(progress,
                         unsecuredSetupInfo,
                         ServerStore,
-                        context,
                         operationCancelToken.Token),
                     token: operationCancelToken);
 
