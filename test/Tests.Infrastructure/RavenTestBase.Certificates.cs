@@ -158,7 +158,7 @@ public partial class RavenTestBase
                 X509Certificate2 serverCertificate;
                 try
                 {
-                    serverCertificate = CertificateHelper.CreateCertificateFromPfx(certBytes, (string)null, X509KeyStorageFlags.UserKeySet  | CertificateLoaderUtil.FlagsForExport);
+                    serverCertificate = CertificateHelper.CreateCertificateFromPfx(certBytes, (string)null, X509KeyStorageFlags.UserKeySet | CertificateLoaderUtil.FlagsForExport);
                 }
                 catch (Exception e)
                 {
