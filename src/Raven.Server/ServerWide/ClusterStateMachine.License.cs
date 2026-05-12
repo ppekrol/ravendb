@@ -690,7 +690,7 @@ public sealed partial class ClusterStateMachine
                 });
 
         var subscriptionCommandsCount = subscriptionsNamesPerDatabase.Sum(x => x.Value.Count);
-        if (clusterSubscriptionsCounts + subscriptionCommandsCount > maxSubscriptionsPerCluster == false)
+        if (clusterSubscriptionsCounts + subscriptionCommandsCount > maxSubscriptionsPerCluster)
             throw new LicenseLimitException(LimitType.Subscriptions,
                 $"The maximum number of subscriptions per cluster cannot exceed the limit of: {maxSubscriptionsPerCluster}");
 
