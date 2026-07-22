@@ -94,7 +94,7 @@ namespace Raven.Server.ServerWide.Maintenance
             }, null, ThreadNames.ForClusterObserver($"Cluster observer for term {_term}", _term));
         }
 
-        private static readonly int ClusterTransactionsCleanupBatchSize = PlatformDetails.Is32Bits ? 1 * 1024 : 10 * 1024;
+        internal static readonly int ClusterTransactionsCleanupBatchSize = PlatformDetails.Is32Bits ? 1 * 1024 : 10 * 1024;
 
         public bool Suspended = false; // don't really care about concurrency here
         internal long _iteration;
@@ -270,7 +270,7 @@ namespace Raven.Server.ServerWide.Maintenance
                             }
                         }
 
-                        var cleanUp = mergedState.States.Min(s => CleanUpDatabaseValues(s.Value) ?? -1);
+                        var cleanUp = mergedState.States.Min(s => CleanUpDatabaseValues(s.Value, context) ?? -1);
                         if (cleanUp > 0)
                         {
                             cleanUpState ??= new Dictionary<string, long>();
@@ -812,7 +812,7 @@ namespace Raven.Server.ServerWide.Maintenance
             return (bool)result.Result;
         }
 
-        private long? CleanUpDatabaseValues(DatabaseObservationState state)
+        private long? CleanUpDatabaseValues(DatabaseObservationState state, ClusterOperationContext context)
         {
             if (_server.Engine.CommandsVersionManager.CurrentClusterMinimalVersion <
                 ClusterCommandsVersionManager.ClusterCommandsVersions[nameof(CleanUpClusterStateCommand)])
@@ -839,7 +839,18 @@ namespace Raven.Server.ServerWide.Maintenance
             if (commandCount <= truncatedCount)
                 return null;
 
-            return Math.Min(commandCount, truncatedCount + ClusterTransactionsCleanupBatchSize);
+            var cleanupTarget = Math.Min(commandCount, truncatedCount + ClusterTransactionsCleanupBatchSize);
+
+            // the cleanup deletes whole command batches, so a single batch larger than ClusterTransactionsCleanupBatchSize
+            // can leave the truncated count more than one cleanup batch behind the first remaining batch. A capped target that
+            // lands below that batch would delete nothing, so the truncated count - and with it the cleanup command id, which
+            // is derived from the target - would never advance, blocking the cleanup forever. Raise the target to always cover
+            // the first remaining batch (at the cost of deleting a single oversized batch in one go - it cannot be split anyway).
+            var firstCommandsCount = ClusterTransactionCommand.ReadFirstClusterTransactionPreviousCount(context, state.RawDatabase.DatabaseName);
+            if (firstCommandsCount.HasValue && firstCommandsCount.Value < commandCount)
+                cleanupTarget = Math.Max(cleanupTarget, firstCommandsCount.Value + 1);
+
+            return cleanupTarget;
         }
 
         private static bool AllDatabaseNodesHasReport(DatabaseObservationState state)
