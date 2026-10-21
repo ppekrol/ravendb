@@ -1,5 +1,18 @@
 #Requires -Version 4.0
 #Requires -RunAsAdministrator
+
+<#
+.SYNOPSIS
+Stops and unregisters the RavenDB Server Windows service and removes its firewall rule. Data and settings are kept.
+
+.PARAMETER ServiceName
+Name of the Windows service. Default: RavenDB.
+#>
+param(
+    [ValidateNotNullOrEmpty()]
+    [string]$ServiceName = "RavenDB"
+)
+
 $ErrorActionPreference = "Stop";
 $ProgressPreference = "SilentlyContinue";
 
@@ -30,8 +43,9 @@ $scriptDirectory = Get-ScriptDirectory;
 $rvn = "rvn.exe";
 $serverDir = Join-Path $scriptDirectory "Server"
 
-$name = 'RavenDB'
- 
+# rvn registers the service under its name with whitespace and slashes replaced
+$name = $ServiceName -replace '[/\s]', '_'
+
 Push-Location $serverDir;
 
 Try
@@ -45,8 +59,14 @@ Try
         Stop-Service -Name $name
     }
 
-    Invoke-Expression -Command ".\$rvn windows-service unregister --service-name $name";
+    & ".\$rvn" windows-service unregister --service-name $ServiceName
     CheckLastExitCode
+
+    $firewallRuleName = "RavenDB-Server-$ServiceName"
+    if (Get-NetFirewallRule -Name $firewallRuleName -ErrorAction SilentlyContinue) {
+        Remove-NetFirewallRule -Name $firewallRuleName
+        write-host "Firewall rule '$firewallRuleName' removed."
+    }
 }
 catch
 {

@@ -11,7 +11,15 @@ Open Powershell
 Type:
     .\setup-as-service.ps1
 
-The above command is going to install 'RavenDB' service on your machine. Note it requires to be run as administrator. It is going to ask whether you'd like to setup secure RavenDB server. The server is going to start on port 8080 or 443, if you have chosen to run in secure mode. 
+The above command is going to install 'RavenDB' service on your machine. Note it requires to be run as administrator. On the first run the server is going to start on http://127.0.0.1:8080, where you can finish the setup.
+
+The script accepts optional parameters, e.g. to install the service without any questions:
+    .\setup-as-service.ps1 -Port 8081 -DataDir D:\RavenData -ServiceAccount 'NT AUTHORITY\NetworkService' -AddFirewallRule -Unattended
+
+To see all parameters, type:
+    Get-Help .\setup-as-service.ps1 -Detailed
+
+RavenDB requires the Microsoft Visual C++ Redistributable. Both scripts check that it is installed and print a download link if it is not.
 
 You can view its status using the Get-Service Powershell cmdlet:
 
