@@ -8,12 +8,13 @@ RAVEN_SERVER_SCHEME="http"
 
 # Determines server scheme (http/https)
 check_for_certificates() {
-    if grep -q "Server.Certificate.Path" /etc/ravendb/settings.json || \
-       grep -q "Server.Certificate.Load.Exec" /etc/ravendb/settings.json || \
-       [ -n "$RAVEN_Server_Certificate_Path" ] || \
-       [ -n "$RAVEN_Server_Certificate_Load_Exec" ] || \
-       [[ "$RAVEN_ARGS" == *"--Server.Certificate.Path"* ]] || \
-       [[ "$RAVEN_ARGS" == *"--Server.Certificate.Load.Exec"* ]]; then
+    local settings_path="${CUSTOM_SETTINGS_PATH:-$DEFAULT_SETTINGS_PATH}"
+    if grep -qs "Security.Certificate.Path" "$settings_path" || \
+       grep -qs "Security.Certificate.Load.Exec" "$settings_path" || \
+       [ -n "$RAVEN_Security_Certificate_Path" ] || \
+       [ -n "$RAVEN_Security_Certificate_Load_Exec" ] || \
+       [[ "$RAVEN_ARGS" == *"--Security.Certificate.Path"* ]] || \
+       [[ "$RAVEN_ARGS" == *"--Security.Certificate.Load.Exec"* ]]; then
         RAVEN_SERVER_SCHEME="https"
     fi
 }

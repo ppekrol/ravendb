@@ -8,13 +8,13 @@ if ([string]::IsNullOrEmpty($env:RAVEN_SETTINGS) -eq $False) {
 }
 
 function Get-RavenServerScheme {
-    if (Get-Content "settings.json" -Raw | Select-String -Pattern "Server.Certificate.Path|Server.Certificate.Load.Exec") {
+    if (Get-Content "settings.json" -Raw | Select-String -Pattern "Security.Certificate.Path|Security.Certificate.Load.Exec") {
         return "https"
     }
-    elseif (![string]::IsNullOrEmpty($env:RAVEN_Server_Certificate_Path) -or
-            ![string]::IsNullOrEmpty($env:RAVEN_Server_Certificate_Load_Exec) -or
-            $env:RAVEN_ARGS -like "*--Server.Certificate.Path*" -or
-            $env:RAVEN_ARGS -like "*--Server.Certificate.Load.Exec*") {
+    elseif (![string]::IsNullOrEmpty($env:RAVEN_Security_Certificate_Path) -or
+            ![string]::IsNullOrEmpty($env:RAVEN_Security_Certificate_Load_Exec) -or
+            $env:RAVEN_ARGS -like "*--Security.Certificate.Path*" -or
+            $env:RAVEN_ARGS -like "*--Security.Certificate.Load.Exec*") {
         return "https"
     }
     else {
