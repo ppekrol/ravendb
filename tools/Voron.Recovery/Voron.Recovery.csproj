@@ -8,7 +8,7 @@
 		<AssemblyName>Voron.Recovery</AssemblyName>
 		<OutputType>Exe</OutputType>
 		<PackageId>Voron.Recovery</PackageId>
-		<RuntimeIdentifiers>win-x64;win-x86;linux-x64;osx-x64</RuntimeIdentifiers>
+		<RuntimeIdentifiers>win-x64;win-x86;win-arm64;linux-x64;osx-x64</RuntimeIdentifiers>
 		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
 		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
 		<GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
