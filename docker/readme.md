@@ -20,20 +20,16 @@ The following tags are available:
 
 - `latest` / `ubuntu-latest` - contains the latest version of RavenDB running on Ubuntu container
 
-- `windows-1809-latest` - contains the latest version of RavenDB running running on Windows nanoserver (Windows version 1809)
-
-- `windows-ltsc2022-latest` - contains the latest version of RavenDB running running on Windows nanoserver (Windows version 2022)
+- `windows-ltsc2022-latest` - contains the latest version of RavenDB running on Windows nanoserver (Windows version 2022)
 
 #### Latest LTS
 
 - `latest-lts` / `ubuntu-latest-lts` - contains the latest LTS version of RavenDB running on Ubuntu container
 
-- `windows-1809-latest-lts` - contains the latest LTS version of RavenDB running on Windows nanoserver (Windows version 1809)
-
 - `windows-ltsc2022-latest-lts` - contains the latest LTS version of RavenDB running on Windows nanoserver (Windows version 2022)
 
 
-*Note: windows-latest and windows-latest-lts tags were recently removed due to incompatibilities between different Windows versions and containers based on them.*
+*Note: windows-latest and windows-latest-lts tags were removed due to incompatibilities between different Windows versions and containers based on them. Windows 1809 images (`windows-1809-*` tags) are no longer published; the last one is 7.2.0.*
 
 ### Running
 
@@ -54,7 +50,7 @@ $ docker run -p 8080:8080 ravendb/ravendb:ubuntu-arm32v7-latest
 Windows image:
 
 ```
-$ docker run -p 8080:8080 ravendb/ravendb:windows-latest
+$ docker run -p 8080:8080 ravendb/ravendb:windows-ltsc2022-latest
 ```
 
 Optionally *nightly* images can be found at [ravendb/ravendb-nightly](https://hub.docker.com/r/ravendb/ravendb-nightly/)

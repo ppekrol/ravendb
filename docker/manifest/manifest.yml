@@ -6,7 +6,7 @@ manifests:
       architecture: amd64
       os: linux
   -
-    image: ravendb/ravendb:windows-nanoserver-latest
+    image: ravendb/ravendb:7.2-windows-ltsc2022-latest
     platform:
       architecture: amd64
       os: windows
