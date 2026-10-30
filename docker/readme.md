@@ -162,6 +162,16 @@ RAVEN_ARGS='--log-to-console'
 
 Mount it as a docker volume and use `--config-path PATH_TO_CONFIG` command line argument in order to use settings file from outside of server directory.
 
+##### How do I enable HTTP/3?
+
+HTTP/3 requires a secured server and is enabled with the `Http.Protocols` configuration option. The Ubuntu images ship with `libmsquic`, which HTTP/3 needs on Linux. HTTP/3 runs over UDP on the same port as HTTPS, so the port has to be published for both TCP and UDP:
+
+```bash
+docker run -p 443:443 -p 443:443/udp -e RAVEN_Http_Protocols='Http1AndHttp2AndHttp3' ...
+```
+
+Clients keep using HTTP/2 until they opt in to HTTP/3 (`DocumentConventions.HttpVersion`). If the UDP port isn't reachable they fall back to HTTP/2, unless the version policy is `RequestVersionExact`. On Windows images HTTP/3 needs Windows Server 2022 or newer (`ltsc2022` tags).
+
 ##### What migration process from 5.4 image looks like?
 
 Data is stored in a different directory, and needs to be migrated or linked upon update. The container is now using the .deb package, which is well documented [here](https://ravendb.net/docs/article-page/latest/csharp/start/installation/gnu-linux/deb). The link describes new filesystem locations and permissions. 
