@@ -8,6 +8,7 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Quic;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Claims;
@@ -191,6 +192,41 @@ namespace Raven.Server
             return _tcpListenerStatus;
         }
 
+        public HttpProtocols EffectiveHttpProtocols { get; private set; }
+
+        private HttpProtocols GetEffectiveHttpProtocols()
+        {
+            var protocols = Configuration.Http.Protocols;
+            if ((protocols & HttpProtocols.Http3) != HttpProtocols.Http3)
+                return protocols;
+
+            string reason = null;
+            if (Certificate.ServerCertificate == null)
+                reason = "HTTP/3 requires the server to be secured with a certificate";
+#pragma warning disable CA1416
+            else if (QuicListener.IsSupported == false)
+#pragma warning restore CA1416
+                reason = "QUIC is not supported on this machine (it requires Windows 11 / Windows Server 2022 or newer, or Linux with libmsquic installed)";
+            else if (Configuration.Security.TlsCipherSuites is { Length: > 0 })
+                reason = $"custom TLS cipher suites ('{RavenConfiguration.GetKey(x => x.Security.TlsCipherSuites)}') are not supported with HTTP/3";
+            else if (Configuration.Core.ServerUrls.Any(url => new Uri(url).Port == 0))
+                reason = $"HTTP/3 requires an explicit port in '{RavenConfiguration.GetKey(x => x.Core.ServerUrls)}' (with a dynamic port the UDP port would differ from the TCP one)";
+
+            if (reason == null)
+                return protocols;
+
+            var protocolsWithoutHttp3 = protocols & ~HttpProtocols.Http3;
+            var message = $"'{RavenConfiguration.GetKey(x => x.Http.Protocols)}' is set to '{protocols}', but {reason}.";
+
+            if (protocolsWithoutHttp3 == HttpProtocols.None)
+                throw new InvalidOperationException(message);
+
+            if (Logger.IsWarnEnabled)
+                Logger.Warn($"{message} HTTP/3 will be disabled, using '{protocolsWithoutHttp3}' instead.");
+
+            return protocolsWithoutHttp3;
+        }
+
         public void Initialize()
         {
             var sp = Stopwatch.StartNew();
@@ -200,10 +236,12 @@ namespace Raven.Server
             Certificate = LoadCertificateAtStartup() ?? CertificateUtils.CertificateHolder.CreateEmpty();
             ReadWellKnownIssuers();
 
+            EffectiveHttpProtocols = GetEffectiveHttpProtocols();
+
             // Align default conventions with server protocol configuration for internal HTTP calls.
             // In unsecured + HTTP/2-only (h2c) mode, Kestrel expects HTTP/2 prior-knowledge (no HTTP/1.1 upgrade).
             // Ensure RequestExecutor uses RequestVersionExact so server-to-self calls succeed, without mutating frozen conventions instances.
-            if (Configuration.Http.Protocols == HttpProtocols.Http2 && Certificate.ServerCertificate == null)
+            if (EffectiveHttpProtocols == HttpProtocols.Http2 && Certificate.ServerCertificate == null)
                 DocumentConventions.DefaultHttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
             CpuUsageCalculator = string.IsNullOrEmpty(Configuration.Monitoring.CpuUsageMonitorExec)
@@ -318,7 +356,10 @@ namespace Raven.Server
                         Logger.Info($"HTTP/2: Profile={Configuration.Http.Http2Profile}, ConnWindow={connectionWindow.GetDoubleValue(SizeUnit.Kilobytes):F1}KB, StreamWindow={streamWindow.GetDoubleValue(SizeUnit.Kilobytes):F1}KB, MaxFrame={maxFrameSize.GetDoubleValue(SizeUnit.Kilobytes):F1}KB, MaxStreams={options.Limits.Http2.MaxStreamsPerConnection}");
                     }
 
-                    options.ConfigureEndpointDefaults(listenOptions => listenOptions.Protocols = Configuration.Http.Protocols);
+                    options.ConfigureEndpointDefaults(listenOptions => listenOptions.Protocols = EffectiveHttpProtocols);
+
+                    if (Logger.IsInfoEnabled)
+                        Logger.Info($"HTTP protocols: {EffectiveHttpProtocols}");
 
                     if (Certificate.ServerCertificate != null)
                     {
@@ -328,9 +369,8 @@ namespace Raven.Server
                         {
                             options.Listen(address, ListenEndpoints.Port, listenOptions =>
                             {
-                                listenOptions
-                                    .UseHttps()
-                                    .Use(_httpsConnectionMiddleware.OnConnectionAsync);
+                                _httpsConnectionMiddleware.UseHttps(listenOptions);
+                                listenOptions.DisableAltSvcHeader = Configuration.Http.Http3DisableAltSvcHeader;
                             });
                         }
 
@@ -352,6 +392,15 @@ namespace Raven.Server
                             .UseUrls(Configuration.Core.ServerUrls)
                             .UseStartup<RavenServerStartup>()
                             .UseShutdownTimeout(TimeSpan.FromSeconds(1));
+
+                        if ((EffectiveHttpProtocols & HttpProtocols.Http3) == HttpProtocols.Http3)
+                        {
+                            configure.UseQuic(options =>
+                            {
+                                // QUIC limits the stream count to 16 bits (higher values make every connection fail)
+                                options.MaxBidirectionalStreamCount = Math.Clamp(Configuration.Http.Http3MaxStreamsPerConnection ?? ushort.MaxValue, 1, ushort.MaxValue);
+                            });
+                        }
                     })
                     .ConfigureServices(services =>
                     {
@@ -2439,6 +2488,10 @@ namespace Raven.Server
 
                 case IHttpConnectionFeature http:
                     remoteAddress = $"{http.RemoteIpAddress}:{http.RemotePort}";
+                    break;
+
+                case EndPoint endPoint: // HTTP/3 (QUIC) connection
+                    remoteAddress = endPoint.ToString();
                     break;
             }
 

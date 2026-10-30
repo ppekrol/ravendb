@@ -99,7 +99,7 @@ namespace Raven.Server.Config.Categories
         [ConfigurationEntry("Http.StaticFilesResponseCompressionLevel", ConfigurationEntryScope.ServerWideOnly)]
         public CompressionLevel StaticFilesResponseCompressionLevel { get; set; }
 
-        [Description("Set HTTP protocols that should be supported by the server")]
+        [Description("Set HTTP protocols that should be supported by the server. HTTP/3 (e.g. 'Http1AndHttp2AndHttp3') requires a secured server (TLS 1.3), QUIC support on the OS (Windows 11 / Windows Server 2022 or newer, Linux with libmsquic) and UDP traffic allowed on the server port. If HTTP/3 cannot be used, it is disabled and the remaining protocols are used.")]
         [DefaultValue(DefaultValueSetInConstructor)]
         [ConfigurationEntry("Http.Protocols", ConfigurationEntryScope.ServerWideOnly)]
         public HttpProtocols Protocols { get; set; }
@@ -136,6 +136,16 @@ namespace Raven.Server.Config.Categories
         [SizeUnit(SizeUnit.Kilobytes)]
         [ConfigurationEntry("Http.Http2.MaxFrameSizeInKb", ConfigurationEntryScope.ServerWideOnly)]
         public Size? MaxFrameSize { get; set; }
+
+        [Description("Set Kestrel's HTTP3 max streams per connection (QUIC bidirectional streams, 1-65535). This limits the number of concurrent request streams per HTTP/3 connection. Default: 65535")]
+        [DefaultValue(null)]
+        [ConfigurationEntry("Http.Http3.MaxStreamsPerConnection", ConfigurationEntryScope.ServerWideOnly)]
+        public int? Http3MaxStreamsPerConnection { get; set; }
+
+        [Description("Set whether the server should stop advertising HTTP/3 to clients via the 'Alt-Svc' response header. Relevant only when HTTP/3 is enabled in 'Http.Protocols'.")]
+        [DefaultValue(false)]
+        [ConfigurationEntry("Http.Http3.DisableAltSvcHeader", ConfigurationEntryScope.ServerWideOnly)]
+        public bool Http3DisableAltSvcHeader { get; set; }
     }
 
     public enum Http2Profile

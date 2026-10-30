@@ -3,8 +3,10 @@ using System.Linq;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -22,6 +24,8 @@ namespace Raven.Server.Https
         // See http://oid-info.com/get/1.3.6.1.5.5.7.3.1
         // Indicates that a certificate can be used as a SSL server certificate
         private readonly X509Certificate2 _originalServerCertificate;
+        private readonly Lazy<SslStreamCertificateContext> _originalServerCertificateContext;
+
         public HttpsConnectionMiddleware(RavenServer server, KestrelServerOptions options, X509Certificate2 originalServerCertificate)
         {
             _server = server;
@@ -33,31 +37,14 @@ namespace Raven.Server.Https
 
             _originalServerCertificate = originalServerCertificate;
             EnsureCertificateIsAllowedForServerAuth(_originalServerCertificate);
+            _originalServerCertificateContext = new Lazy<SslStreamCertificateContext>(() => SslStreamCertificateContext.Create(_originalServerCertificate, additionalCertificates: null));
 
             options.ConfigureHttpsDefaults(o =>
             {
                 o.SslProtocols = SslProtocols.Tls13 | SslProtocols.Tls12;
                 o.CheckCertificateRevocation = false;
                 o.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
-                o.ClientCertificateValidation = (certificate, chain, sslPolicyErrors) =>
-                {
-                    if (certificate == null)
-                    {
-                        return true; // we handle the error from not having certificate higher in the stack
-                    }
-
-                    var certificate2 = ConvertToX509Certificate2(certificate);
-                    if (certificate2 == null)
-                        return false; // we require to be able to convert it in all cases
-
-                    // Here we are explicitly ignoring trust chain issues for client certificates
-                    // this is because we don't actually require trust, we just use the certificate
-                    // as a way to authenticate. The admin is going to tell us which specific certs
-                    // we can trust anyway, so we can ignore such errors.
-
-                    return sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors ||
-                           sslPolicyErrors == SslPolicyErrors.None;
-                };
+                o.ClientCertificateValidation = ValidateClientCertificate;
 
                 o.ServerCertificate = _originalServerCertificate;
 
@@ -77,25 +64,90 @@ namespace Raven.Server.Https
             });
         }
 
+        private static bool ValidateClientCertificate(X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            if (certificate == null)
+            {
+                return true; // we handle the error from not having certificate higher in the stack
+            }
+
+            var certificate2 = ConvertToX509Certificate2(certificate);
+            if (certificate2 == null)
+                return false; // we require to be able to convert it in all cases
+
+            // Here we are explicitly ignoring trust chain issues for client certificates
+            // this is because we don't actually require trust, we just use the certificate
+            // as a way to authenticate. The admin is going to tell us which specific certs
+            // we can trust anyway, so we can ignore such errors.
+            // A name mismatch is irrelevant for a client certificate, but it is reported for QUIC (HTTP/3) connections.
+
+            return (sslPolicyErrors & ~(SslPolicyErrors.RemoteCertificateChainErrors | SslPolicyErrors.RemoteCertificateNameMismatch)) == SslPolicyErrors.None;
+        }
+
+        public void UseHttps(ListenOptions listenOptions)
+        {
+            if ((listenOptions.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
+            {
+                // Kestrel does not support HttpsConnectionAdapterOptions.OnAuthenticate with HTTP/3 (it throws on bind),
+                // so we provide the TLS options per connection instead, for both TCP and QUIC connections
+                listenOptions.UseHttps(new TlsHandshakeCallbackOptions
+                {
+                    OnConnection = OnTlsHandshake
+                });
+
+                ((IMultiplexedConnectionBuilder)listenOptions).Use(next => context => OnMultiplexedConnectionAsync(context, next));
+            }
+            else
+            {
+                listenOptions.UseHttps();
+            }
+
+            listenOptions.Use(OnConnectionAsync);
+        }
+
+        private ValueTask<SslServerAuthenticationOptions> OnTlsHandshake(TlsHandshakeCallbackContext context)
+        {
+            // the server certificate holder is replaced on certificate refresh, so we always pick up the current one
+            return ValueTask.FromResult(new SslServerAuthenticationOptions
+            {
+                ServerCertificateContext = _server.Certificate?.ServerCertificateContext ?? _originalServerCertificateContext.Value,
+                EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls12,
+                CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
+                ClientCertificateRequired = true, // equivalent of ClientCertificateMode.AllowCertificate, a missing certificate is accepted by the validation callback
+                RemoteCertificateValidationCallback = (_, certificate, chain, sslPolicyErrors) => ValidateClientCertificate(certificate, chain, sslPolicyErrors)
+            });
+        }
+
         public async Task OnConnectionAsync(ConnectionContext context, Func<Task> next)
+        {
+            await AuthenticateAsync(context.Features, context.Features.Get<IHttpConnectionFeature>(), context.ConnectionClosed);
+
+            await next();
+        }
+
+        private async Task OnMultiplexedConnectionAsync(MultiplexedConnectionContext context, MultiplexedConnectionDelegate next)
+        {
+            await AuthenticateAsync(context.Features, context.RemoteEndPoint, context.ConnectionClosed);
+
+            await next(context);
+        }
+
+        private async Task AuthenticateAsync(IFeatureCollection features, object connectionInfo, CancellationToken connectionClosed)
         {
             if (_server.ServerStore.Initialized == false)
                 await _server.ServerStore.InitializationCompleted.WaitAsync();
 
-            var tlsConnectionFeature = context.Features.Get<ITlsConnectionFeature>();
+            var tlsConnectionFeature = features.Get<ITlsConnectionFeature>();
             X509Certificate2 certificate = null;
             if (tlsConnectionFeature != null)
-                certificate = await tlsConnectionFeature.GetClientCertificateAsync(context.ConnectionClosed);
+                certificate = await tlsConnectionFeature.GetClientCertificateAsync(connectionClosed);
 
             certificate = RavenServer.GetCertificateForAuthorization(certificate);
 
-            var httpConnectionFeature = context.Features.Get<IHttpConnectionFeature>();
-            var authenticationStatus = _server.AuthenticateConnectionCertificate(certificate, httpConnectionFeature);
+            var authenticationStatus = _server.AuthenticateConnectionCertificate(certificate, connectionInfo);
 
             // build the token
-            context.Features.Set<IHttpAuthenticationFeature>(authenticationStatus);
-
-            await next();
+            features.Set<IHttpAuthenticationFeature>(authenticationStatus);
         }
 
         internal static X509Certificate2 ConvertToX509Certificate2(X509Certificate certificate)

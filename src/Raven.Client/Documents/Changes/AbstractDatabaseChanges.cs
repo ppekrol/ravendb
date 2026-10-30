@@ -95,7 +95,7 @@ internal abstract class AbstractDatabaseChanges<TDatabaseConnectionState> : IDis
         var clientWebSocket = new ClientWebSocket();
 #if NET7_0_OR_GREATER
         if (requestExecutor.Conventions.HttpVersion != null)
-            clientWebSocket.Options.HttpVersion = requestExecutor.Conventions.HttpVersion;
+            clientWebSocket.Options.HttpVersion = HttpVersionHelper.ForWebSocket(requestExecutor.Conventions.HttpVersion);
 
         if (requestExecutor.Conventions.HttpVersionPolicy != null)
             clientWebSocket.Options.HttpVersionPolicy = requestExecutor.Conventions.HttpVersionPolicy.Value;

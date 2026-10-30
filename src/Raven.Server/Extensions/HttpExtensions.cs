@@ -4,6 +4,7 @@ using System.Net.WebSockets;
 using Raven.Client;
 using Microsoft.AspNetCore.Http;
 using Raven.Client.Documents.Conventions;
+using Raven.Client.Util;
 using Raven.Server.Utils;
 
 namespace Raven.Server.Extensions
@@ -59,7 +60,7 @@ namespace Raven.Server.Extensions
             if (conventions == null)
                 throw new ArgumentNullException(nameof(conventions));
 
-            clientWebSocket.Options.HttpVersion = conventions.HttpVersion;
+            clientWebSocket.Options.HttpVersion = HttpVersionHelper.ForWebSocket(conventions.HttpVersion);
             if (conventions.HttpVersionPolicy.HasValue)
                 clientWebSocket.Options.HttpVersionPolicy = conventions.HttpVersionPolicy.Value;
 
