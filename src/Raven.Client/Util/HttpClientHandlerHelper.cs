@@ -55,6 +55,9 @@ internal static class HttpClientHandlerHelper
             throw new ArgumentNullException(nameof(handler));
 
         handler.EnableMultipleHttp2Connections = true;
+#if NET9_0_OR_GREATER
+        handler.EnableMultipleHttp3Connections = true;
+#endif
 
         if (pooledConnectionLifetime == null && pooledConnectionIdleTimeout == null)
             return;

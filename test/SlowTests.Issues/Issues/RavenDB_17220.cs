@@ -163,6 +163,58 @@ public class RavenDB_17220 : RavenTestBase
     }
 
     [RavenFact(RavenTestCategory.Security | RavenTestCategory.Certificates)]
+    public async Task CertificateRegisteredAfterHttp3ConnectionWasEstablishedIsAccepted()
+    {
+        SkipIfQuicIsNotSupported();
+
+        var certificates = Certificates.SetupServerAuthentication(Http3Settings(), ServerUrl());
+        var dbName = GetDatabaseName();
+        var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate1.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin);
+
+        using (var store = GetDocumentStore(new Options
+        {
+            AdminCertificate = adminCert,
+            ClientCertificate = adminCert,
+            ModifyDatabaseName = _ => dbName
+        }))
+        {
+            using (var session = store.OpenSession())
+            {
+                session.Store(new User { Name = "Grisha" }, "users/1");
+                session.SaveChanges();
+            }
+
+            // the same client is used for both requests, so the second one reuses the QUIC connection which was authenticated
+            // before the certificate got registered, and it has to be re-authenticated by the request router
+            using var client = CreateHttpClient(certificates.ClientCertificate3.Value);
+
+            using (var response = await SendAsync())
+            {
+                Assert.Equal(Http3, response.Version);
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            }
+
+            Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate3.Value, new Dictionary<string, DatabaseAccess>
+            {
+                [dbName] = DatabaseAccess.ReadWrite
+            });
+
+            using (var response = await SendAsync())
+            {
+                Assert.Equal(Http3, response.Version);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Contains("Grisha", await response.Content.ReadAsStringAsync());
+            }
+
+            Task<HttpResponseMessage> SendAsync() => client.SendAsync(new HttpRequestMessage(HttpMethod.Get, $"{Server.WebUrl}/databases/{dbName}/docs?id=users/1")
+            {
+                Version = Http3,
+                VersionPolicy = HttpVersionPolicy.RequestVersionExact
+            });
+        }
+    }
+
+    [RavenFact(RavenTestCategory.Security | RavenTestCategory.Certificates)]
     public async Task RequestWithoutClientCertificateOverHttp3IsRejected()
     {
         SkipIfQuicIsNotSupported();
