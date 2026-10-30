@@ -115,6 +115,68 @@ public class RavenDB_17220 : RavenTestBase
         Assert.All(responseVersions, v => Assert.Equal(Http3, v));
     }
 
+    [RavenTheory(RavenTestCategory.Security | RavenTestCategory.Certificates)]
+    [InlineData(HttpProtocols.Http1AndHttp2AndHttp3, false, true)]
+    [InlineData(HttpProtocols.Http1AndHttp2AndHttp3, true, false)]
+    [InlineData(HttpProtocols.Http1AndHttp2, false, false)]
+    public void ClientRequestingHttp3SwitchesToItWhenServerAdvertisesIt(HttpProtocols protocols, bool disableAltSvcHeader, bool expectHttp3)
+    {
+        SkipIfQuicIsNotSupported();
+
+        var settings = new Dictionary<string, string>
+        {
+            [RavenConfiguration.GetKey(x => x.Http.Protocols)] = protocols.ToString(),
+            [RavenConfiguration.GetKey(x => x.Http.Http3DisableAltSvcHeader)] = disableAltSvcHeader.ToString()
+        };
+        var certificates = Certificates.SetupServerAuthentication(settings, ServerUrl());
+        var dbName = GetDatabaseName();
+        var adminCert = Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate1.Value, new Dictionary<string, DatabaseAccess>(), SecurityClearance.ClusterAdmin);
+        // a different certificate than the admin one, so the store doesn't share the (already upgraded) http client used to create the database
+        var userCert = Certificates.RegisterClientCertificate(certificates.ServerCertificateForCommunication.Value, certificates.ClientCertificate2.Value, new Dictionary<string, DatabaseAccess>
+        {
+            [dbName] = DatabaseAccess.ReadWrite
+        });
+
+        var responseVersions = new ConcurrentQueue<Version>();
+
+        using (var store = GetDocumentStore(new Options
+        {
+            AdminCertificate = adminCert,
+            ClientCertificate = userCert,
+            ModifyDatabaseName = _ => dbName,
+            ModifyDocumentStore = s =>
+            {
+                s.Conventions.HttpVersion = Http3;
+                // RequestVersionOrLower is what the request gets when the policy isn't set, it is set explicitly here only
+                // because DocumentConventions.DefaultHttpVersionPolicy is static and can be changed by other tests (h2c servers)
+                s.Conventions.HttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
+                s.OnSucceedRequest += (_, args) => responseVersions.Enqueue(args.Response.Version);
+            }
+        }))
+        {
+            using (var session = store.OpenSession())
+            {
+                session.Store(new User { Name = "Grisha" }, "users/1");
+                session.SaveChanges();
+            }
+
+            // the first request goes over TCP, the switch to HTTP/3 happens once a response with the 'Alt-Svc' header was received
+            for (var i = 0; i < 20 && responseVersions.LastOrDefault() != Http3; i++)
+            {
+                using (var session = store.OpenSession())
+                    Assert.Equal("Grisha", session.Load<User>("users/1").Name);
+            }
+        }
+
+        Assert.NotEmpty(responseVersions);
+        Assert.Equal(HttpVersion.Version20, responseVersions.First());
+
+        if (expectHttp3)
+            Assert.Equal(Http3, responseVersions.Last());
+        else
+            Assert.All(responseVersions, v => Assert.Equal(HttpVersion.Version20, v));
+    }
+
     [RavenFact(RavenTestCategory.Security | RavenTestCategory.Certificates)]
     public void AuthorizationIsEnforcedOverHttp3()
     {
