@@ -885,9 +885,10 @@ namespace Tests.Infrastructure
             bool watcherCluster = false,
             bool useReservedPorts = false,
             TestCertificatesHolder testCertificatesHolder = null,
-            bool with2Eku = true)
+            bool with2Eku = true,
+            DocumentConventions conventions = null)
         {
-            return CreateRaftClusterInternalAsync(numberOfNodes, shouldRunInMemory, leaderIndex, useSsl: true, commonCustomSettings: customSettings, customSettingsList: customSettingsList, watcherCluster: watcherCluster, useReservedPorts: useReservedPorts, testCertificatesHolder: testCertificatesHolder, with2Eku: with2Eku);
+            return CreateRaftClusterInternalAsync(numberOfNodes, shouldRunInMemory, leaderIndex, useSsl: true, commonCustomSettings: customSettings, customSettingsList: customSettingsList, watcherCluster: watcherCluster, useReservedPorts: useReservedPorts, testCertificatesHolder: testCertificatesHolder, with2Eku: with2Eku, conventions: conventions);
         }
 
         protected async Task<(RavenServer Leader, Dictionary<RavenServer, ProxyServer> Proxies)> CreateRaftClusterWithProxiesAsync(
@@ -974,7 +975,8 @@ namespace Tests.Infrastructure
             bool useReservedPorts = false,
             TestCertificatesHolder testCertificatesHolder = null,
             [CallerMemberName] string caller = null,
-            bool with2Eku = true)
+            bool with2Eku = true,
+            DocumentConventions conventions = null)
         {
             string[] allowedNodeTags = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
             var actualLeaderIndex = leaderIndex;
@@ -1033,7 +1035,8 @@ namespace Tests.Infrastructure
                     CustomSettings = customSettings,
                     RunInMemory = shouldRunInMemory,
                     RegisterForDisposal = false,
-                    NodeTag = allowedNodeTags[i]
+                    NodeTag = allowedNodeTags[i],
+                    Conventions = conventions
                 };
                 var server = GetNewServer(co, caller);
                 port = Convert.ToInt32(server.ServerStore.GetNodeHttpServerUrl().Split(':')[2]);

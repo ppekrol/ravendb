@@ -7,10 +7,12 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Quic;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using FastTests;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Raven.Client.Documents;
+using Raven.Client.Documents.Conventions;
 using Raven.Client.Exceptions.Security;
 using Raven.Client.ServerWide.Operations.Certificates;
 using Raven.Server.Config;
@@ -21,7 +23,7 @@ using Xunit;
 
 namespace SlowTests.Issues;
 
-public class RavenDB_17220 : RavenTestBase
+public class RavenDB_17220 : ClusterTestBase
 {
     private static readonly Version Http3 = new Version(3, 0);
 
@@ -276,6 +278,59 @@ public class RavenDB_17220 : RavenTestBase
         }
     }
 
+    [RavenFact(RavenTestCategory.Cluster | RavenTestCategory.Certificates)]
+    public async Task ClusterNodesCanCommunicateOverHttp3()
+    {
+        SkipIfQuicIsNotSupported();
+
+        Http3RecordingHttpClient.ResponseVersions.Clear();
+
+        // what RAVEN_HTTP_VERSION=3.0 does to DocumentConventions.DefaultForServer (which is frozen, so it can't be changed here),
+        // the http client records the responses of the requests the nodes send to each other
+        var conventions = new DocumentConventions
+        {
+            SendApplicationIdentifier = false,
+            DisposeCertificate = false,
+            DisableTopologyCache = true,
+            HttpVersion = Http3,
+            HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact,
+            HttpClientType = typeof(Http3RecordingHttpClient),
+            CreateHttpClient = handler => new Http3RecordingHttpClient(handler)
+        };
+
+        var settings = new Dictionary<string, string>(DefaultClusterSettings)
+        {
+            [RavenConfiguration.GetKey(x => x.Http.Protocols)] = HttpProtocols.Http1AndHttp2AndHttp3.ToString()
+        };
+
+        var (nodes, leader, certificates) = await CreateRaftClusterWithSsl(3, customSettings: settings, useReservedPorts: true, conventions: conventions);
+        Assert.All(nodes, n => Assert.Equal(HttpProtocols.Http1AndHttp2AndHttp3, n.EffectiveHttpProtocols));
+
+        var follower = nodes.First(n => n != leader);
+        var serverCertificate = certificates.ServerCertificateForCommunication.Value;
+
+        // the database is created through a follower, so the command is forwarded to the leader, which then waits for it to be applied on all the nodes
+        using (var store = GetDocumentStore(new Options
+        {
+            Server = follower,
+            ReplicationFactor = 3,
+            AdminCertificate = serverCertificate,
+            ClientCertificate = serverCertificate
+        }))
+        {
+            using (var session = store.OpenAsyncSession())
+            {
+                await session.StoreAsync(new User { Name = "Grisha" }, "users/1");
+                await session.SaveChangesAsync();
+            }
+
+            await WaitForDocumentInClusterAsync<User>(nodes, store.Database, "users/1", u => u.Name == "Grisha", TimeSpan.FromSeconds(15), serverCertificate);
+        }
+
+        Assert.NotEmpty(Http3RecordingHttpClient.ResponseVersions);
+        Assert.All(Http3RecordingHttpClient.ResponseVersions, v => Assert.Equal(Http3, v));
+    }
+
     [RavenFact(RavenTestCategory.Security | RavenTestCategory.Certificates)]
     public async Task RequestWithoutClientCertificateOverHttp3IsRejected()
     {
@@ -385,5 +440,29 @@ public class RavenDB_17220 : RavenTestBase
         if (QuicListener.IsSupported == false || QuicConnection.IsSupported == false)
 #pragma warning restore CA1416
             Assert.Skip("QUIC (HTTP/3) is not supported on this machine.");
+    }
+
+    // a distinct type gives it its own entry in the http client cache (which is per process), so the versions are recorded in a static queue
+    private class Http3RecordingHttpClient : HttpClient
+    {
+        public static readonly ConcurrentQueue<Version> ResponseVersions = new();
+
+        public Http3RecordingHttpClient(HttpMessageHandler handler) : base(new RecordingHandler(handler))
+        {
+        }
+
+        private class RecordingHandler : DelegatingHandler
+        {
+            public RecordingHandler(HttpMessageHandler innerHandler) : base(innerHandler)
+            {
+            }
+
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var response = await base.SendAsync(request, cancellationToken);
+                ResponseVersions.Enqueue(response.Version);
+                return response;
+            }
+        }
     }
 }
