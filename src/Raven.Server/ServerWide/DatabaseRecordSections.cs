@@ -101,6 +101,25 @@ namespace Raven.Server.ServerWide
             [nameof(DatabaseRecord.ClusterState)] = DatabaseRecordSections.None,
         };
 
+        // the sections that the database handles on every record change, regardless of the sections that were changed
+        internal const DatabaseRecordSections HandledOnEveryChange = DatabaseRecordSections.Configuration | DatabaseRecordSections.Topology;
+
+        /// <summary>
+        /// Whether the field is needed to handle a record change that none of the features (indexes, ETLs, backups etc.) has to handle,
+        /// see <see cref="JsonDeserializationCluster.DatabaseRecordForEveryChange"/>.
+        /// </summary>
+        internal static bool IsHandledOnEveryChange(string field)
+        {
+            // part of the replication section, but it is small and is read on every change
+            if (field == nameof(DatabaseRecord.SupportedFeatures))
+                return true;
+
+            if (SectionByField.TryGetValue(field, out var section) == false)
+                return true;
+
+            return (section & ~HandledOnEveryChange) == DatabaseRecordSections.None;
+        }
+
         public static DatabaseRecordSections ForTaskType(OngoingTaskType taskType)
         {
             switch (taskType)

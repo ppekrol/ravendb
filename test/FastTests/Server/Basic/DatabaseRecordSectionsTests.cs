@@ -1,10 +1,22 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Newtonsoft.Json;
+using Raven.Client.Documents.Conventions;
+using Raven.Client.Documents.Indexes;
+using Raven.Client.Documents.Operations.Backups;
+using Raven.Client.Documents.Operations.Configuration;
+using Raven.Client.Documents.Operations.ConnectionStrings;
+using Raven.Client.Documents.Operations.ETL;
+using Raven.Client.Documents.Operations.Expiration;
 using Raven.Client.Documents.Operations.OngoingTasks;
+using Raven.Client.Documents.Operations.Replication;
+using Raven.Client.Documents.Queries.Sorting;
 using Raven.Client.ServerWide;
 using Raven.Server.ServerWide;
 using Sparrow.Json;
+using Sparrow.Json.Parsing;
 using Tests.Infrastructure;
 using Xunit;
 
@@ -19,8 +31,7 @@ namespace FastTests.Server.Basic
         [RavenFact(RavenTestCategory.Cluster)]
         public void AllDatabaseRecordFieldsMustBeMappedToSection()
         {
-            var fields = typeof(DatabaseRecord).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                .Where(x => x.IsPublic || x.GetCustomAttribute<ForceJsonSerializationAttribute>() != null)
+            var fields = GetDatabaseRecordFields()
                 .Select(x => x.Name)
                 .ToHashSet();
 
@@ -88,6 +99,84 @@ namespace FastTests.Server.Basic
             record.ClusterState.Stamp(DatabaseRecordSections.Indexes, 9);
             Assert.True(consumer.ShouldProcess(record, forced: false, out version));
             Assert.Equal(9, version);
+        }
+
+        [RavenFact(RavenTestCategory.Cluster)]
+        public void CanDeserializeOnlySectionsHandledOnEveryChange()
+        {
+            var record = new DatabaseRecord("Test")
+            {
+                Topology = new DatabaseTopology { Members = { "A" } },
+                Expiration = new ExpirationConfiguration { Disabled = false, DeleteFrequencyInSec = 100 },
+                Client = new ClientConfiguration { MaxNumberOfRequestsPerSession = 10 },
+                Indexes = new Dictionary<string, IndexDefinition>
+                {
+                    ["Users/ByName"] = CreateIndexDefinition()
+                },
+                IndexesHistory = new Dictionary<string, List<IndexHistoryEntry>>
+                {
+                    ["Users/ByName"] = [new IndexHistoryEntry { Definition = CreateIndexDefinition(), Source = "Test" }]
+                },
+                Sorters = { ["MySorter"] = new SorterDefinition { Name = "MySorter", Code = "code" } },
+                PeriodicBackups = { new PeriodicBackupConfiguration { TaskId = 1, Name = "Backup" } },
+                ExternalReplications = { new ExternalReplication("ExternalDatabase", "ExternalConnection") },
+                RavenConnectionStrings = { ["ExternalConnection"] = new RavenConnectionString { Name = "ExternalConnection", Database = "ExternalDatabase" } },
+                RavenEtls = { new RavenEtlConfiguration { Name = "Etl", ConnectionStringName = "ExternalConnection" } },
+                ClusterState = new DatabaseRecordClusterState { LastIndexesIndex = 5 }
+            };
+
+            using (var context = JsonOperationContext.ShortTermSingleUse())
+            {
+                var json = DocumentConventions.Default.Serialization.DefaultConverter.ToBlittable(record, context);
+
+                // internal field, read on every change
+                json.Modifications = new DynamicJsonValue(json) { ["SupportedFeatures"] = new DynamicJsonArray { "Feature" } };
+                json = context.ReadObject(json, "record");
+
+                var full = JsonDeserializationCluster.DatabaseRecord(json);
+                var partial = JsonDeserializationCluster.DatabaseRecordForEveryChange(json);
+                var empty = new DatabaseRecord();
+
+                foreach (var field in GetDatabaseRecordFields())
+                {
+                    var expected = DatabaseRecordSectionsExtensions.IsHandledOnEveryChange(field.Name) ? field.GetValue(full) : field.GetValue(empty);
+                    Assert.True(JsonConvert.SerializeObject(expected) == JsonConvert.SerializeObject(field.GetValue(partial)), $"Unexpected value of '{field.Name}'");
+                }
+
+                Assert.Equal("Test", partial.DatabaseName);
+                Assert.Equal(new[] { "A" }, partial.Topology.Members);
+                Assert.Equal(100, partial.Expiration.DeleteFrequencyInSec);
+                Assert.Equal(10, partial.Client.MaxNumberOfRequestsPerSession);
+                Assert.Equal(5, partial.ClusterState.LastIndexesIndex);
+                Assert.Equal(new[] { "Feature" }, (IReadOnlyList<string>)typeof(DatabaseRecord).GetField("SupportedFeatures", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(partial));
+
+                Assert.Single(full.Indexes);
+                Assert.Single(full.IndexesHistory);
+                Assert.Single(full.Sorters);
+                Assert.Single(full.PeriodicBackups);
+                Assert.Single(full.ExternalReplications);
+                Assert.Single(full.RavenConnectionStrings);
+                Assert.Single(full.RavenEtls);
+
+                Assert.Null(partial.Indexes);
+                Assert.Null(partial.IndexesHistory);
+                Assert.Empty(partial.Sorters);
+                Assert.Empty(partial.PeriodicBackups);
+                Assert.Empty(partial.ExternalReplications);
+                Assert.Empty(partial.RavenConnectionStrings);
+                Assert.Empty(partial.RavenEtls);
+            }
+        }
+
+        private static IndexDefinition CreateIndexDefinition()
+        {
+            return new IndexDefinition { Name = "Users/ByName", Maps = { "from u in docs.Users select new { u.Name }" } };
+        }
+
+        private static IEnumerable<FieldInfo> GetDatabaseRecordFields()
+        {
+            return typeof(DatabaseRecord).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(x => x.IsPublic || x.GetCustomAttribute<ForceJsonSerializationAttribute>() != null);
         }
 
         [RavenFact(RavenTestCategory.Cluster)]

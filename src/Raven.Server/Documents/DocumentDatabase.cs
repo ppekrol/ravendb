@@ -141,6 +141,9 @@ namespace Raven.Server.Documents
         private readonly DatabaseRecordChangeConsumer _cdcSinkRecordConsumer = new(nameof(CdcSinkLoader),
             DatabaseRecordSections.CdcSinks | DatabaseRecordSections.ConnectionStrings | DatabaseRecordSections.Topology);
 
+        // all of the above, when none of them has to handle a change we don't deserialize their sections of the record
+        private readonly DatabaseRecordChangeConsumer[] _recordChangeConsumers;
+
         public readonly DatabaseLoggersContext Loggers;
 
         public DocumentsCompressionConfiguration DocumentsCompression => _documentsCompression;
@@ -173,6 +176,11 @@ namespace Raven.Server.Documents
             _disposeOnce = new DisposeOnce<SingleAttempt>(DisposeInternal);
 
             _databaseStateChange = new DatabasesLandlord.StateChange(ServerStore, name, _logger, UpdateOnStateChange, 0, _databaseShutdown.Token);
+            _recordChangeConsumers =
+            [
+                _indexStoreRecordConsumer, _replicationRecordConsumer, _periodicBackupRecordConsumer, _embeddingsGeneratorQueriesRecordConsumer,
+                _embeddingsGeneratorEtlRecordConsumer, _etlRecordConsumer, _subscriptionsRecordConsumer, _queueSinkRecordConsumer, _cdcSinkRecordConsumer
+            ];
 
             try
             {
@@ -1764,7 +1772,7 @@ namespace Raven.Server.Documents
                 ServerStore.DatabasesLandlord.ForTestingPurposes?.DelayNotifyFeaturesAboutStateChange?.Invoke();
 
                 var forced = DatabasesLandlord.ShouldForceFeaturesNotification(type, changeState);
-                await DatabasesLandlord.NotifyFeaturesAboutStateChangeAsync(index, _databaseStateChange, type, changeType, forced);
+                await DatabasesLandlord.NotifyFeaturesAboutStateChangeAsync(_ => ReadDatabaseRecordForStateChange(forced), index, _databaseStateChange, type, changeType, forced);
 
                 RachisLogIndexNotifications.NotifyListenersAbout(index, e: null);
             }
@@ -1787,6 +1795,31 @@ namespace Raven.Server.Documents
             }
         }
 
+        private DatabaseRecord ReadDatabaseRecordForStateChange(bool forced)
+        {
+            using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
+            using (context.OpenReadTransaction())
+            using (var rawRecord = _serverStore.Cluster.ReadRawDatabaseRecord(context, Name))
+            {
+                if (rawRecord == null)
+                    return null;
+
+                // called under the lock, so the features will make the same decision in UpdateOnStateChange
+                var withFeatureSections = forced || _recordChangeConsumers.Any(c => c.ShouldProcess(rawRecord.ClusterState, forced: false, out _));
+
+                ForTestingPurposes?.OnDatabaseRecordReadForStateChange?.Invoke(withFeatureSections);
+
+                // the sections of the features can be large (e.g. the index definitions and their history), most of the record changes don't need them
+                return withFeatureSections
+                    ? rawRecord.MaterializedRecord
+                    : JsonDeserializationCluster.DatabaseRecordForEveryChange(rawRecord.Raw);
+            }
+        }
+
+        /// <summary>
+        /// The record might contain only the sections handled on every change (<see cref="DatabaseRecordSectionsExtensions.HandledOnEveryChange"/>),
+        /// when none of the features that depend on the other sections has to handle it.
+        /// </summary>
         public async Task UpdateOnStateChange(DatabaseRecord record, long index, bool forced)
         {
             SetIds(record);
@@ -1863,7 +1896,11 @@ namespace Raven.Server.Documents
 
             OnDatabaseRecordChanged(record);
 
-            bool ShouldHandle(DatabaseRecordChangeConsumer consumer, out long v) => consumer.ShouldProcess(record, forced, out v);
+            bool ShouldHandle(DatabaseRecordChangeConsumer consumer, out long v)
+            {
+                Debug.Assert(_recordChangeConsumers.Contains(consumer), $"{consumer.Name} must be in {nameof(_recordChangeConsumers)}, otherwise it might get a record without its sections");
+                return consumer.ShouldProcess(record, forced, out v);
+            }
 
             void MarkHandled(DatabaseRecordChangeConsumer consumer, long v)
             {
@@ -2403,6 +2440,11 @@ namespace Raven.Server.Documents
             /// Called with the name of the feature that handled a database record change and the raft index of the change.
             /// </summary>
             internal Action<string, long> OnDatabaseRecordChangeHandled;
+
+            /// <summary>
+            /// Called when the database record is read to handle its change, with false if it was read without the sections of the features.
+            /// </summary>
+            internal Action<bool> OnDatabaseRecordReadForStateChange;
 
             /// <summary>
             /// Called with the name of the feature that handled a database value change and the raft index of the change.

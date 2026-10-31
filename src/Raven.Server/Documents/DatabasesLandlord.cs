@@ -1656,7 +1656,10 @@ namespace Raven.Server.Documents
             return changeState is not UpdateDatabaseCommand && type != nameof(AddDatabaseCommand);
         }
 
-        private static async ValueTask NotifyFeaturesAboutStateChangeAsync(Func<StateChange, DatabaseRecord> getRecord, long index, StateChange state, string type,
+        /// <summary>
+        /// The record is read by <paramref name="getRecord"/> under the lock, see <see cref="NotifyFeaturesAboutStateChangeAsync(long, StateChange, string, ClusterDatabaseChangeType?, bool)"/>.
+        /// </summary>
+        public static async ValueTask NotifyFeaturesAboutStateChangeAsync(Func<StateChange, DatabaseRecord> getRecord, long index, StateChange state, string type,
             DatabasesLandlord.ClusterDatabaseChangeType? changeType, bool forced)
         {
             if (forced == false && CanSkipDatabaseRecordChange())

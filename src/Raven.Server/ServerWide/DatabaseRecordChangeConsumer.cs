@@ -21,9 +21,11 @@ namespace Raven.Server.ServerWide
             Sections = sections;
         }
 
-        public bool ShouldProcess(DatabaseRecord record, bool forced, out long version)
+        public bool ShouldProcess(DatabaseRecord record, bool forced, out long version) => ShouldProcess(record.ClusterState, forced, out version);
+
+        public bool ShouldProcess(DatabaseRecordClusterState state, bool forced, out long version)
         {
-            version = record.ClusterState.GetVersion(Sections);
+            version = state.GetVersion(Sections);
 
             if (forced || _processedVersion == null)
                 return true;

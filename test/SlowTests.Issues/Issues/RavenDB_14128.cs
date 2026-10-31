@@ -7,6 +7,7 @@ using FastTests;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Operations.Backups;
+using Raven.Client.Documents.Operations.Configuration;
 using Raven.Client.Documents.Operations.ConnectionStrings;
 using Raven.Client.Documents.Operations.ETL;
 using Raven.Client.Documents.Operations.Expiration;
@@ -95,6 +96,48 @@ namespace SlowTests.Issues
 
                 AssertHandledOnly(handled, raftIndex, nameof(DocumentDatabase.ReplicationLoader));
                 Assert.Equal(raftIndex, (await GetClusterState(store)).LastReplicationIndex);
+            }
+        }
+
+        [RavenFact(RavenTestCategory.Cluster)]
+        public async Task ShouldReadOnlySectionsHandledOnEveryChangeWhenNoFeatureIsAffected()
+        {
+            using (var store = GetDocumentStore())
+            {
+                var database = await GetDatabase(store.Database);
+
+                var putIndexResults = await store.Maintenance.SendAsync(new PutIndexesOperation(CreateUsersByNameIndex()));
+                await database.RachisLogIndexNotifications.WaitForIndexNotification(putIndexResults[0].RaftCommandIndex, Timeout);
+
+                var backupResult = await store.Maintenance.SendAsync(new UpdatePeriodicBackupOperation(Backup.CreateBackupConfiguration(NewDataPath(forceCreateDir: true))));
+                await database.RachisLogIndexNotifications.WaitForIndexNotification(backupResult.RaftCommandIndex, Timeout);
+
+                var reads = new ConcurrentQueue<bool>();
+                database.ForTestingPurposesOnly().OnDatabaseRecordReadForStateChange = withFeatureSections => reads.Enqueue(withFeatureSections);
+
+                var expirationResult = await store.Maintenance.SendAsync(new ConfigureExpirationOperation(new ExpirationConfiguration { Disabled = false, DeleteFrequencyInSec = 100 }));
+                await database.RachisLogIndexNotifications.WaitForIndexNotification(expirationResult.RaftCommandIndex.Value, Timeout);
+
+                Assert.Contains(false, reads);
+                Assert.Equal(100, database.ExpiredDocumentsCleaner.ExpirationConfiguration.DeleteFrequencyInSec);
+
+                await store.Maintenance.SendAsync(new PutClientConfigurationOperation(new ClientConfiguration { MaxNumberOfRequestsPerSession = 50 }));
+                Assert.Equal(50, await WaitForValueAsync(() => database.ClientConfiguration?.MaxNumberOfRequestsPerSession, 50));
+
+                // the features kept what they handled before
+                Assert.NotNull(database.IndexStore.GetIndex(IndexName));
+                Assert.Equal(1, database.PeriodicBackupRunner.PeriodicBackups.Count);
+
+                reads.Clear();
+                var secondIndex = CreateUsersByNameIndex();
+                secondIndex.Name = "Users/ByName2";
+                putIndexResults = await store.Maintenance.SendAsync(new PutIndexesOperation(secondIndex));
+                await database.RachisLogIndexNotifications.WaitForIndexNotification(putIndexResults[0].RaftCommandIndex, Timeout);
+
+                Assert.Contains(true, reads);
+                Assert.NotNull(database.IndexStore.GetIndex(IndexName));
+                Assert.NotNull(database.IndexStore.GetIndex(secondIndex.Name));
+                Assert.Equal(1, database.PeriodicBackupRunner.PeriodicBackups.Count);
             }
         }
 
