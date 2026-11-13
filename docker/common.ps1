@@ -117,6 +117,65 @@ function GetWindowsImageTags($repo, $version, $WinVer, [bool]$useVersionTagsOnly
     }
 }
 
+function CreateImageSbom {
+    # Writes <ArtifactsDir>/RavenDB-<image tag>.docker.cdx.json: base image, OS, OS packages (Linux) and the
+    # RavenDB package SBOM of the archive that went into the image (scripts/sbom/generate-image-sbom.js).
+    param (
+        [Parameter(Mandatory = $true)][string]$ImageTag,
+        [Parameter(Mandatory = $true)][string]$DockerfilePath,
+        [Parameter(Mandatory = $true)][string]$PackageFilePath,
+        [Parameter(Mandatory = $true)][string]$ArtifactsDir,
+        [string]$OsName = "",
+        [string]$OsVersion = ""
+    )
+
+    $generator = Resolve-Path (Join-Path $PSScriptRoot "..\scripts\sbom\generate-image-sbom.js")
+    $baseImage = (Get-Content $DockerfilePath | Select-String -Pattern '^\s*FROM\s+(?:--platform=\S+\s+)?(\S+)' | Select-Object -Last 1).Matches[0].Groups[1].Value
+    $packageSbom = [io.path]::Combine((Split-Path $PackageFilePath -Parent), ((Split-Path $PackageFilePath -Leaf) -replace '\.(zip|tar\.bz2|tar)$', '') + ".cdx.json")
+    $sbomPath = Join-Path $ArtifactsDir "RavenDB-$($ImageTag.Split(':')[-1]).docker.cdx.json"
+
+    $nodeArgs = @($generator, "--image", $ImageTag, "--base-image", $baseImage, "--out", $sbomPath, "--exclude-os-package", "ravendb")
+
+    # base image digest: local image store first, then the registry (BuildKit keeps pulled base images in its own cache)
+    $baseDigest = docker image inspect $baseImage --format '{{range .RepoDigests}}{{println .}}{{end}}' 2>$null | Where-Object { $_ -match '@sha256:' } | Select-Object -First 1
+    if (-not $baseDigest) {
+        $baseDigest = docker buildx imagetools inspect $baseImage --format '{{.Manifest.Digest}}' 2>$null | Where-Object { $_ -match '^sha256:' } | Select-Object -First 1
+    }
+    if ($baseDigest) {
+        $nodeArgs += @("--base-digest", $baseDigest.Split('@')[-1].Trim())
+    }
+
+    if (Test-Path $packageSbom) {
+        $nodeArgs += @("--package-sbom", $packageSbom)
+    } else {
+        Write-Host "WARN: package SBOM $packageSbom not found, the image SBOM will not list RavenDB components."
+    }
+
+    $tempFiles = @()
+    try {
+        if ([string]::IsNullOrEmpty($OsName)) {
+            # Linux image: read the OS and the dpkg database from the built image itself
+            $osRelease = [IO.Path]::GetTempFileName(); $tempFiles += $osRelease
+            docker run --rm --entrypoint cat $ImageTag /etc/os-release | Set-Content -Path $osRelease -Encoding utf8
+            CheckLastExitCode
+
+            $dpkg = [IO.Path]::GetTempFileName(); $tempFiles += $dpkg
+            docker run --rm --entrypoint dpkg-query $ImageTag -W -f '${Package}\t${Version}\t${Architecture}\t${source:Package}\t${source:Version}\n' | Set-Content -Path $dpkg -Encoding utf8
+            CheckLastExitCode
+
+            $nodeArgs += @("--os-release", $osRelease, "--dpkg", $dpkg)
+        } else {
+            $nodeArgs += @("--os-name", $OsName, "--os-version", $OsVersion)
+        }
+
+        Write-Host "Create image SBOM $sbomPath..."
+        & node @nodeArgs
+        CheckLastExitCode
+    } finally {
+        $tempFiles | ForEach-Object { Remove-Item $_ -ErrorAction SilentlyContinue }
+    }
+}
+
 function GetManifestTags {
     param (
         $repo,

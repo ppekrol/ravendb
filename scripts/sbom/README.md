@@ -10,6 +10,17 @@ artifacts/RavenDB-<version>-<target>.Tools.cdx.json
 It is generated from the laid-out package directory (what actually ships), not from the source tree,
 by `generate-sbom.js` (called from `CreatePackageSbom` in `scripts/sbom.ps1`).
 
+`docker/build-ubuntu.ps1` and `docker/build-nanoserver.ps1` write an image SBOM next to them:
+
+```
+artifacts/RavenDB-<image tag>.docker.cdx.json      e.g. RavenDB-7.2.0-ubuntu.24.04-x64.docker.cdx.json
+```
+
+`generate-image-sbom.js` (called from `CreateImageSbom` in `docker/common.ps1`) combines the base image (`FROM` of
+the Dockerfile, digest from the local image store or the registry), the OS (`/etc/os-release`), the OS packages
+(`dpkg-query` in the built image, as `pkg:deb` purls - Linux images only) and the package SBOM of the archive that
+went into the image. The `ravendb` .deb itself is not listed separately; the package SBOM describes its content.
+
 ## Sources
 
 | What | Where it comes from |
@@ -77,4 +88,5 @@ node scripts/sbom/generate-sbom.js --scan-dir artifacts/windows-x64/ServerPackag
 ## Open items
 
 - SBOMs are not uploaded yet: `upload.ps1` only picks up `*.zip`, `*.tar`, `*.tar.bz2`.
-- Docker images are not covered (OS packages from the base image need an image scanner, e.g. `docker buildx --sbom`).
+- Image SBOMs are files only; they are not attached to the pushed images as registry attestations (that needs a
+  `docker buildx build --push` or the containerd image store, the images are built with `docker build` and pushed later).

@@ -43,6 +43,8 @@ function BuildWindowsDockerImage ($version, $WinVer) {
         CheckLastExitCode
     }
 
+    CreateImageSbom -ImageTag $fullNameTag -DockerfilePath "$DockerfileDir/Dockerfile.$WinVer" -PackageFilePath $artifactsPackagePath -ArtifactsDir $ArtifactsDir -OsName "windows" -OsVersion "nanoserver-$WinVer"
+
     Remove-Item -Path $dockerPackagePath
 }
 

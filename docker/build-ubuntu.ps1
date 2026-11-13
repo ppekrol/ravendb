@@ -169,6 +169,8 @@ function BuildUbuntuDockerImage ($version, $arch) {
         CheckLastExitCode
     }
 
+    CreateImageSbom -ImageTag $fullNameTag -DockerfilePath "$($DockerfileDir)/Dockerfile.$($arch)" -PackageFilePath $artifactsPackagePath -ArtifactsDir $ArtifactsDir
+
     Remove-Item -Path $dockerPackagePath
 }
 
