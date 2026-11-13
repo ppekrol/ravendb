@@ -18,9 +18,9 @@ namespace Raven.Server.Documents.AI.Settings;
 // can move back to Chat Completions and replay the same conversation.
 internal abstract partial class AbstractOpenAiResponsesProvider : AbstractChatCompletionProvider
 {
-    private readonly OpenAiBaseSettings _settings;
+    private readonly IOpenAiChatSettings _settings;
 
-    protected AbstractOpenAiResponsesProvider(OpenAiBaseSettings settings)
+    protected AbstractOpenAiResponsesProvider(IOpenAiChatSettings settings)
         : base(settings)
     {
         _settings = settings;

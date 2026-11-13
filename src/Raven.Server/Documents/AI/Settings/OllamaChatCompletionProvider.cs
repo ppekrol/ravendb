@@ -4,9 +4,9 @@ using Sparrow.Json;
 
 namespace Raven.Server.Documents.AI.Settings;
 
-internal class OllamaChatCompletionProvider : AbstractOpenAiChatCompletionProvider
+internal class OllamaChatCompletionProvider : AbstractOpenAiCompatibleChatCompletionProvider
 {
-    private new readonly OllamaSettings _settings;
+    private readonly OllamaSettings _settings;
 
     public OllamaChatCompletionProvider(OllamaSettings settings)
         : base(settings)
@@ -29,13 +29,18 @@ internal class OllamaChatCompletionProvider : AbstractOpenAiChatCompletionProvid
 
     public override void HandleCompletionRequestPayload(AsyncBlittableJsonTextWriter writer)
     {
-        base.HandleCompletionRequestPayload(writer);
-
         if (_settings.Think.HasValue)
         {
             writer.WriteComma();
             writer.WritePropertyName(Wire.RequestFields.Think);
             writer.WriteBool(_settings.Think.Value);
+        }
+
+        if (_settings.Temperature.HasValue)
+        {
+            writer.WriteComma();
+            writer.WritePropertyName(Wire.RequestFields.Temperature);
+            writer.WriteDouble(_settings.Temperature.Value);
         }
 
         if (string.IsNullOrWhiteSpace(_settings.ReasoningEffort) == false)

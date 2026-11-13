@@ -291,8 +291,6 @@ export function mapAiConnectionStringToDto(connection: AiConnection): AiConnecti
                       Endpoint: connection.googleSettings.endpoint,
                       EmbeddingsMaxConcurrentBatches: mapEmbeddingsMaxConcurrentBatchesToDto(connection),
                       EnablePromptCache: connection.googleSettings.enablePromptCache,
-                      // not supported for Google: the server rejects any value
-                      ReasoningEffort: null,
                   }
                 : null,
         HuggingFaceSettings:

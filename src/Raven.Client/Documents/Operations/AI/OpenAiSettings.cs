@@ -6,7 +6,7 @@ namespace Raven.Client.Documents.Operations.AI;
 /// <summary>
 /// Configuration for the OpenAI API client.
 /// </summary>
-public sealed class OpenAiSettings : OpenAiBaseSettings
+public sealed class OpenAiSettings : OpenAiBaseSettings, IOpenAiChatSettings
 {
     public OpenAiSettings(string apiKey, string endpoint, string model, string organizationId = null, 
         string projectId = null, int? dimensions = null, double? temperature = null,
@@ -37,7 +37,14 @@ public sealed class OpenAiSettings : OpenAiBaseSettings
         return uriBuilder.Uri;
     }
 
-    internal override OpenAiApiMode GetApiMode()
+    /// <summary>
+    /// The API that chat requests are sent to. When not set: <see cref="OpenAiApiMode.Responses"/> for OpenAI's own API
+    /// (no <see cref="OpenAiBaseSettings.Endpoint"/>, or <c>api.openai.com</c>), <see cref="OpenAiApiMode.ChatCompletions"/>
+    /// for any other endpoint.
+    /// </summary>
+    public OpenAiApiMode? ApiMode { get; set; }
+
+    internal OpenAiApiMode GetApiMode()
     {
         if (ApiMode.HasValue)
             return ApiMode.Value;
@@ -71,6 +78,23 @@ public sealed class OpenAiSettings : OpenAiBaseSettings
     public string ProjectId { get; set; }
 
     /// <summary>
+    /// The <c>reasoning_effort</c> to send to the provider, controlling the reasoning depth
+    /// of supported models (such as the GPT-5 family). Lower values reduce internal reasoning,
+    /// which may improve latency and reduce variability in responses.
+    ///
+    /// Typical values are <c>none</c>, <c>minimal</c>, <c>low</c>, <c>medium</c>, <c>high</c>,
+    /// <c>xhigh</c> and <c>max</c>. Model families accept different subsets, for example
+    /// <c>minimal</c> is rejected by <c>gpt-5.1</c> and later, which take <c>none</c> instead.
+    /// When not set the field is omitted and the model applies its own default.
+    ///
+    /// Sent as supplied apart from trimming, and not validated by RavenDB, so new provider values
+    /// can be used without waiting for a RavenDB release. Providers match it exactly: OpenAI accepts
+    /// lowercase values only. Legacy <see cref="OpenAiReasoningEffort"/> member names persisted by
+    /// older clients (e.g. <c>High</c>) are normalized to the provider form by the server.
+    /// </summary>
+    public string ReasoningEffort { get; set; }
+
+    /// <summary>
     /// Optional seed used to make the model's sampling more reproducible across requests.
     /// When provided, identical inputs and configuration may produce the same outputs
     /// more consistently across runs.
@@ -91,6 +115,9 @@ public sealed class OpenAiSettings : OpenAiBaseSettings
             ProjectId != openAiSettings.ProjectId)
             differences |= AiSettingsCompareDifferences.AuthenticationSettings;
 
+        if (ReasoningEffort != openAiSettings.ReasoningEffort || ApiMode != openAiSettings.ApiMode)
+            differences |= AiSettingsCompareDifferences.EndpointConfiguration;
+
         return differences;
     }
 
@@ -104,6 +131,12 @@ public sealed class OpenAiSettings : OpenAiBaseSettings
         if (string.IsNullOrWhiteSpace(ProjectId) == false)
             json[nameof(ProjectId)] = ProjectId;
 
+        if (string.IsNullOrWhiteSpace(ReasoningEffort) == false)
+            json[nameof(ReasoningEffort)] = ReasoningEffort;
+
+        if (ApiMode.HasValue)
+            json[nameof(ApiMode)] = ApiMode.Value;
+
         if (Seed.HasValue)
             json[nameof(Seed)] = Seed.Value;
 
@@ -112,7 +145,8 @@ public sealed class OpenAiSettings : OpenAiBaseSettings
 }
 
 /// <summary>
-/// The OpenAI API used for chat requests, see <see cref="OpenAiBaseSettings.ApiMode"/>.
+/// The OpenAI-family API used for chat requests, see <see cref="OpenAiSettings.ApiMode"/>,
+/// <see cref="AzureOpenAiSettings.ApiMode"/> and <see cref="OllamaSettings.ApiMode"/>.
 /// </summary>
 public enum OpenAiApiMode
 {
@@ -125,7 +159,7 @@ public enum OpenAiApiMode
 
 /// <summary>
 /// Specifies the reasoning effort level used by supported models.
-/// Kept for migration only; use the string-based <see cref="OpenAiBaseSettings.ReasoningEffort"/> instead.
+/// Kept for migration only; use the string-based <see cref="OpenAiSettings.ReasoningEffort"/> instead.
 /// </summary>
 [Obsolete("Use the string-based OpenAiSettings.ReasoningEffort instead, e.g. OpenAiReasoningEffort.High.ToReasoningEffort().")]
 public enum OpenAiReasoningEffort
