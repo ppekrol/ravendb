@@ -1,0 +1,38 @@
+<Project>
+  <!--
+    Publishing for a specific runtime (dotnet publish -r <rid>, as build.ps1 does) must not ship native binaries for other platforms:
+      - Raven.Client is RID-agnostic and copies libzstd for every platform to its output (its NuGet package needs all of them under runtimes/),
+        which flows into every project that references it.
+      - Microsoft.Diagnostics.Tracing.TraceEvent (Raven.Debug) ships Windows native helpers for x86, amd64 and arm64; older versions copy all of
+        them unconditionally, newer ones still copy all of them when the build is AnyCPU (ProcessorArchitecture msil). Kept as a safety net.
+    Builds without a RuntimeIdentifier (dev builds, tests, Raven.Embedded) keep everything.
+  -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <RavenZstdForRuntime Condition="'$(RuntimeIdentifier)' == 'win-x64'">libzstd.win.x64.dll</RavenZstdForRuntime>
+    <RavenZstdForRuntime Condition="'$(RuntimeIdentifier)' == 'win-x86'">libzstd.win.x86.dll</RavenZstdForRuntime>
+    <RavenZstdForRuntime Condition="'$(RuntimeIdentifier)' == 'win-arm64'">libzstd.win.arm64.dll</RavenZstdForRuntime>
+    <RavenZstdForRuntime Condition="'$(RuntimeIdentifier)' == 'linux-x64'">libzstd.linux.x64.so</RavenZstdForRuntime>
+    <RavenZstdForRuntime Condition="'$(RuntimeIdentifier)' == 'linux-arm64'">libzstd.arm.64.so</RavenZstdForRuntime>
+    <RavenZstdForRuntime Condition="'$(RuntimeIdentifier)' == 'linux-arm'">libzstd.arm.32.so</RavenZstdForRuntime>
+    <RavenZstdForRuntime Condition="'$(RuntimeIdentifier)' == 'osx-x64'">libzstd.mac.x64.dylib</RavenZstdForRuntime>
+    <RavenZstdForRuntime Condition="'$(RuntimeIdentifier)' == 'osx-arm64'">libzstd.mac.arm64.dylib</RavenZstdForRuntime>
+
+    <!-- TraceEvent picks its native helpers from a subdirectory named after the process architecture; empty = not Windows, ship none -->
+    <RavenTraceEventNativeDir Condition="'$(RuntimeIdentifier)' == 'win-x64'">amd64</RavenTraceEventNativeDir>
+    <RavenTraceEventNativeDir Condition="'$(RuntimeIdentifier)' == 'win-x86'">x86</RavenTraceEventNativeDir>
+    <RavenTraceEventNativeDir Condition="'$(RuntimeIdentifier)' == 'win-arm64'">arm64</RavenTraceEventNativeDir>
+  </PropertyGroup>
+
+  <Target Name="RavenRemoveNativesForOtherRuntimes"
+          AfterTargets="ComputeResolvedFilesToPublishList"
+          Condition="'$(RuntimeIdentifier)' != '' AND '$(RavenZstdForRuntime)' != ''">
+    <ItemGroup>
+      <_RavenNativeForOtherRuntime Include="@(ResolvedFileToPublish)"
+                                   Condition="$([System.String]::Copy('%(Filename)%(Extension)').StartsWith('libzstd.')) AND '%(Filename)%(Extension)' != '$(RavenZstdForRuntime)'" />
+      <_RavenNativeForOtherRuntime Include="@(ResolvedFileToPublish)"
+                                   Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(RelativePath)', '(?i)^(x86|amd64|arm64)[\\/](KernelTraceControl(\.Win61)?|msdia140|msvcp140|vcruntime140(_1)?)\.dll$')) AND !$([System.Text.RegularExpressions.Regex]::IsMatch('%(RelativePath)', '(?i)^$(RavenTraceEventNativeDir)[\\/]'))" />
+      <ResolvedFileToPublish Remove="@(_RavenNativeForOtherRuntime)" />
+    </ItemGroup>
+    <Message Importance="normal" Text="Not publishing native files for other runtimes than $(RuntimeIdentifier): @(_RavenNativeForOtherRuntime->'%(RelativePath)', ', ')" />
+  </Target>
+</Project>

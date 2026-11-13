@@ -1,4 +1,6 @@
 <Project>
+  <Import Project="$(MSBuildThisFileDirectory)src\PublishNativesForRuntime.targets" />
+
   <!--
     Microsoft.SemanticKernel.Connectors.Onnx pulls in Microsoft.ML.OnnxRuntimeGenAI, but we only use the BERT embeddings (plain Microsoft.ML.OnnxRuntime),
     so the GenAI native libraries are never loaded. ExcludeAssets="native" on a PackageReference does not flow to referencing projects,
