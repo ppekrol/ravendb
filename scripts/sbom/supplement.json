@@ -22,12 +22,16 @@
       }
     },
     "Lextm.SharpSnmpLib.Engine@11.3.102": {
+      "supplier": "Hibernating Rhinos",
       "licenses": ["MIT"],
       "purlQualifiers": "repository_url=https://github.com/ravendb/ravendb/tree/HEAD/libs",
       "pedigree": {
-        "ancestors": [{ "type": "library", "name": "Lextm.SharpSnmpLib.Engine", "purl": "pkg:nuget/Lextm.SharpSnmpLib.Engine" }],
-        "commits": [{ "uid": "5f6d8b88ee861f634ea8e103b9c925ea328cce50", "url": "https://github.com/lextm/sharpsnmplib/commit/5f6d8b88ee861f634ea8e103b9c925ea328cce50" }],
-        "notes": "Build of the upstream #SNMP sources (github.com/lextm/sharpsnmplib) at the commit above, authored by Lex Li and contributors; this version was never published on nuget.org (which lists only 11.0.0). Distributed via the in-repo libs/ feed."
+        "ancestors": [{ "type": "library", "name": "Lextm.SharpSnmpLib.Engine", "version": "11.0.0", "purl": "pkg:nuget/Lextm.SharpSnmpLib.Engine@11.0.0" }],
+        "commits": [
+          { "uid": "5f6d8b88ee861f634ea8e103b9c925ea328cce50", "url": "https://github.com/ravendb/sharpsnmplib-samples/commit/5f6d8b88ee861f634ea8e103b9c925ea328cce50", "message": "SharpSnmpLib.Engine.dll 11.3.102 (tag 11.3.102)" },
+          { "uid": "e2273e21eeac67fa7c528aa364c0b484f880e964", "url": "https://github.com/ravendb/sharpsnmplib/commit/e2273e21eeac67fa7c528aa364c0b484f880e964", "message": "SharpSnmpLib.dll 11.3.100 (master)" }
+        ],
+        "notes": "RavenDB fork of #SNMP (upstream github.com/lextudio/sharpsnmplib and sharpsnmplib-samples) branched after 11.0.0: ArrayPool/ObjectPool, removed LINQ (RavenDB-14126), externally provided EngineBoots and isInTime customization (RDBCL-1125). The package bundles SharpSnmpLib.dll from github.com/ravendb/sharpsnmplib and SharpSnmpLib.Engine.dll from github.com/ravendb/sharpsnmplib-samples. Not published on nuget.org; distributed only via the in-repo libs/ feed. The nuspec <repository> element names lextm/sharpsnmplib but the commit belongs to sharpsnmplib-samples."
       }
     }
   },
