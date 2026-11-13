@@ -39,6 +39,7 @@ $ErrorActionPreference = "Stop"
 . '.\scripts\clean.ps1'
 . '.\scripts\archive.ps1'
 . '.\scripts\package.ps1'
+. '.\scripts\sbom.ps1'
 . '.\scripts\buildProjects.ps1'
 . '.\scripts\buildQuill.ps1'
 . '.\scripts\getScriptDirectory.ps1'

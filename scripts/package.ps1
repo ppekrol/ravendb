@@ -14,7 +14,9 @@ function CreateServerPackage ( $projectDir, $releaseDir, $packOpts ) {
     } else {
         CreateArchiveFromDir $releaseArchivePath $packageDir $target
     }
-    
+
+    CreatePackageSbom $projectDir $releaseDir $packageDir $releaseArchiveFile "RavenDB Server" $packOpts
+
     Remove-Item -Recurse -ErrorAction SilentlyContinue "$($packOpts.OutDirs.Server)"
     Remove-Item -Recurse -ErrorAction SilentlyContinue "$($packOpts.OutDirs.Rvn)"
     Remove-Item -Recurse -ErrorAction SilentlyContinue "$($packOpts.OutDirs.Debug)"
@@ -35,7 +37,9 @@ function CreateToolsPackage( $projectDir, $releaseDir, $packOpts ) {
     } else {
         CreateArchiveFromDir $releaseArchivePath $packageDir $target
     }
-    
+
+    CreatePackageSbom $projectDir $releaseDir $packageDir $releaseArchiveFile "RavenDB Tools" $packOpts
+
     Remove-Item -Recurse -ErrorAction SilentlyContinue "$($packOpts.OutDirs.Migrator)"
     Remove-Item -Recurse -ErrorAction SilentlyContinue "$($packOpts.OutDirs.Drtools)"
 }

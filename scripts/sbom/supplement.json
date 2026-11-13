@@ -1,0 +1,88 @@
+{
+  "_comment": "Hand-maintained SBOM data for what no .deps.json describes. See scripts/sbom/README.md. 'overrides' patch NuGet components that are custom builds published under upstream package IDs (source commit is in the nupkg's nuspec <repository>); 'components' describe native binaries. Entries that match nothing in a given package are skipped. When a libs/*.nupkg is replaced, update its entry here.",
+  "overrides": {
+    "Lucene.Net@3.0.60019": {
+      "supplier": "Hibernating Rhinos",
+      "licenses": ["Apache-2.0"],
+      "purlQualifiers": "repository_url=https://github.com/ravendb/ravendb/tree/HEAD/libs",
+      "pedigree": {
+        "ancestors": [{ "type": "library", "name": "Lucene.Net", "version": "3.0.3", "purl": "pkg:nuget/Lucene.Net@3.0.3" }],
+        "commits": [{ "uid": "c7dbb2320fff29e1b5e2968fb4b849d0b2b2a539", "url": "https://github.com/ravendb/lucenenet/commit/c7dbb2320fff29e1b5e2968fb4b849d0b2b2a539" }],
+        "notes": "RavenDB fork of Apache Lucene.Net 3.0.3, built from github.com/ravendb/lucenenet branch ravendb/v6.0. Not published on nuget.org; distributed only via the in-repo libs/ feed."
+      }
+    },
+    "Lucene.Net.Contrib.Spatial.NTS@3.0.60019": {
+      "supplier": "Hibernating Rhinos",
+      "licenses": ["Apache-2.0"],
+      "purlQualifiers": "repository_url=https://github.com/ravendb/ravendb/tree/HEAD/libs",
+      "pedigree": {
+        "ancestors": [{ "type": "library", "name": "Lucene.Net.Contrib.Spatial.NTS", "version": "3.0.3", "purl": "pkg:nuget/Lucene.Net.Contrib.Spatial.NTS@3.0.3" }],
+        "commits": [{ "uid": "c7dbb2320fff29e1b5e2968fb4b849d0b2b2a539", "url": "https://github.com/ravendb/lucenenet/commit/c7dbb2320fff29e1b5e2968fb4b849d0b2b2a539" }],
+        "notes": "RavenDB fork of Apache Lucene.Net.Contrib.Spatial.NTS 3.0.3, built from github.com/ravendb/lucenenet branch ravendb/v6.0. Not published on nuget.org; distributed only via the in-repo libs/ feed."
+      }
+    },
+    "Lextm.SharpSnmpLib.Engine@11.3.102": {
+      "licenses": ["MIT"],
+      "purlQualifiers": "repository_url=https://github.com/ravendb/ravendb/tree/HEAD/libs",
+      "pedigree": {
+        "ancestors": [{ "type": "library", "name": "Lextm.SharpSnmpLib.Engine", "purl": "pkg:nuget/Lextm.SharpSnmpLib.Engine" }],
+        "commits": [{ "uid": "5f6d8b88ee861f634ea8e103b9c925ea328cce50", "url": "https://github.com/lextm/sharpsnmplib/commit/5f6d8b88ee861f634ea8e103b9c925ea328cce50" }],
+        "notes": "Build of the upstream #SNMP sources (github.com/lextm/sharpsnmplib) at the commit above, authored by Lex Li and contributors; this version was never published on nuget.org (which lists only 11.0.0). Distributed via the in-repo libs/ feed."
+      }
+    }
+  },
+  "bundledFiles": {
+    "Microsoft.Azure.DocumentDB.Core": ["Cosmos.CRTCompat.dll", "Microsoft.Azure.Documents.ServiceInterop.dll"]
+  },
+  "components": [
+    {
+      "name": "librvnpal",
+      "supplier": "Hibernating Rhinos",
+      "licenses": ["LicenseRef-RavenDB-EULA"],
+      "files": ["librvnpal.*"],
+      "versionFrom": { "file": "src/Raven.Pal/pal.ver" },
+      "usedBy": "Sparrow.Server",
+      "description": "RavenDB platform abstraction layer (first-party native code, src/Raven.Pal)."
+    },
+    {
+      "name": "zstd",
+      "supplier": "Hibernating Rhinos",
+      "licenses": ["BSD-3-Clause"],
+      "purl": "pkg:github/facebook/zstd@v{version}",
+      "files": ["libzstd.*"],
+      "versionFrom": { "pattern": "\\b1\\.[0-9]\\.[0-9]{1,2}\\b" },
+      "usedBy": "Sparrow.Server",
+      "description": "Unmodified upstream zstd release tag, multi-threaded shared library, built by src/Raven.Pal/build-zstd.ps1 (Docker cross-build + MSVC for win-arm64) and build-libs/build-zstd-macos.sh.",
+      "pedigree": {
+        "ancestors": [{ "type": "library", "name": "zstd", "version": "{version}", "purl": "pkg:github/facebook/zstd@v{version}" }]
+      }
+    },
+    {
+      "name": "Microsoft Visual C++ Runtime",
+      "supplier": "Microsoft Corporation",
+      "licenses": ["LicenseRef-Microsoft-Visual-C-Redistributable"],
+      "files": ["msvcp140.dll", "vcruntime140.dll", "vcruntime140_1.dll"],
+      "versionFrom": { "pe": true },
+      "usedBy": "nuget:Microsoft.Diagnostics.Tracing.TraceEvent",
+      "description": "Bundled with Microsoft.Diagnostics.Tracing.TraceEvent native assets."
+    },
+    {
+      "name": "Microsoft DIA SDK (msdia140)",
+      "supplier": "Microsoft Corporation",
+      "licenses": ["LicenseRef-Microsoft-Visual-Studio"],
+      "files": ["msdia140.dll"],
+      "versionFrom": { "pe": true },
+      "usedBy": "nuget:Microsoft.Diagnostics.Tracing.TraceEvent",
+      "description": "Bundled with Microsoft.Diagnostics.Tracing.TraceEvent native assets."
+    },
+    {
+      "name": "KernelTraceControl",
+      "supplier": "Microsoft Corporation",
+      "licenses": ["LicenseRef-Microsoft-Windows-Performance-Toolkit"],
+      "files": ["KernelTraceControl.dll", "KernelTraceControl.Win61.dll"],
+      "versionFrom": { "pe": true },
+      "usedBy": "nuget:Microsoft.Diagnostics.Tracing.TraceEvent",
+      "description": "Bundled with Microsoft.Diagnostics.Tracing.TraceEvent native assets."
+    }
+  ]
+}
