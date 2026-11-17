@@ -19,6 +19,7 @@ using Raven.Server.Documents.Revisions;
 using Raven.Server.NotificationCenter;
 using Raven.Server.ServerWide;
 using Raven.Server.ServerWide.Context;
+using Raven.Server.Utils;
 using Raven.Tests.Core.Utils.Entities;
 using Tests.Infrastructure;
 using Tests.Infrastructure.Entities;
@@ -448,8 +449,20 @@ namespace SlowTests.Server.Documents.Revisions
 
                 await Task.WhenAll(PutMultiDocuments(store1), PutMultiDocuments(store2));
 
-                await EnsureReplicatingAsync(store1, store2);
-                await EnsureReplicatingAsync(store2, store1);
+                if (options.DatabaseMode == RavenDatabaseMode.Single)
+                {
+                    await EnsureReplicatingAsync(store1, store2);
+                    await EnsureReplicatingAsync(store2, store1);
+                }
+                else
+                {
+                    // EnsureReplicatingAsync waits for the marker through the destination's orchestrator, which may serve it from the source node,
+                    // so the second marker can be written before the first one is replicated. Concurrent writes on both nodes leave the shard
+                    // database change vectors in a state that heartbeats never reconcile (each node knows the other's etag better than its own),
+                    // so we make sure each marker reached the other node's shard before writing the next one
+                    await EnsureShardsReplicatingAsync(store1, store2, database);
+                    await EnsureShardsReplicatingAsync(store2, store1, database);
+                }
 
                 Assert.True(await WaitForChangeVectorInClusterForModeAsync(new List<RavenServer>{ cluster.Nodes[0], cluster.Nodes[1] }, database, mode: options.DatabaseMode, replicationFactor: 2, timeout: 30_000));
 
@@ -528,6 +541,32 @@ namespace SlowTests.Server.Documents.Revisions
                 var user = new User { Name = RandomString(5) };
                 await session.StoreAsync(user, "foo/bar");
                 await session.SaveChangesAsync();
+            }
+        }
+
+        private async Task EnsureShardsReplicatingAsync(IDocumentStore src, IDocumentStore dst, string database)
+        {
+            // src and dst point to different nodes of the same database (with topology updates disabled),
+            // so opening a session on a shard database talks to that shard on that node directly
+            var sharding = await Sharding.GetShardingConfigurationAsync(src);
+            foreach (var shardNumber in sharding.Shards.Keys)
+            {
+                var shardDatabase = ShardHelper.ToShardName(database, shardNumber);
+                var id = $"marker/{Guid.NewGuid()}${Sharding.GetRandomIdForShard(sharding, shardNumber)}";
+
+                using (var session = src.OpenAsyncSession(shardDatabase))
+                {
+                    await session.StoreAsync(new User(), id);
+                    await session.SaveChangesAsync();
+                }
+
+                var replicated = await WaitForValueAsync(async () =>
+                {
+                    using (var session = dst.OpenAsyncSession(shardDatabase))
+                        return await session.Advanced.ExistsAsync(id);
+                }, true, timeout: 30_000, interval: 100);
+
+                Assert.True(replicated, $"Marker '{id}' was not replicated to '{shardDatabase}' on '{dst.Urls[0]}'");
             }
         }
 
