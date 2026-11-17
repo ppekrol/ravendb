@@ -453,28 +453,33 @@ namespace Raven.Server.Documents.Indexes
 
         public bool IsIndexInvalid(RavenTransaction tx)
         {
+            return ReadFailureInformation(tx).IsInvalidIndex(isStale: false);
+        }
+
+        public IndexFailureInformation ReadFailureInformation(RavenTransaction tx)
+        {
             var statsTree = tx.InnerTransaction.ReadTree(IndexSchema.StatsTree);
 
-            var mapAttempts = statsTree.Read(IndexSchema.MapAttemptsSlice)?.Reader.ReadLittleEndianInt64() ?? 0;
-            var mapErrors = statsTree.Read(IndexSchema.MapErrorsSlice)?.Reader.ReadLittleEndianInt64() ?? 0;
-
-            long? reduceAttempts = null, reduceErrors = null;
+            var result = new IndexFailureInformation
+            {
+                Name = _index.Name,
+                MapAttempts = statsTree.Read(IndexSchema.MapAttemptsSlice)?.Reader.ReadLittleEndianInt64() ?? 0,
+                MapErrors = statsTree.Read(IndexSchema.MapErrorsSlice)?.Reader.ReadLittleEndianInt64() ?? 0
+            };
 
             if (_index.Type.IsMapReduce())
             {
-                reduceAttempts = statsTree.Read(IndexSchema.ReduceAttemptsSlice)?.Reader.ReadLittleEndianInt64() ?? 0;
-                reduceErrors = statsTree.Read(IndexSchema.ReduceErrorsSlice)?.Reader.ReadLittleEndianInt64() ?? 0;
+                result.ReduceAttempts = statsTree.Read(IndexSchema.ReduceAttemptsSlice)?.Reader.ReadLittleEndianInt64() ?? 0;
+                result.ReduceErrors = statsTree.Read(IndexSchema.ReduceErrorsSlice)?.Reader.ReadLittleEndianInt64() ?? 0;
             }
 
-            long mapReferenceAttempts = 0, mapReferenceErrors = 0;
             if (_index.GetReferencedCollections()?.Count > 0)
             {
-                mapReferenceAttempts = statsTree.Read(IndexSchema.MapReferencedAttemptsSlice)?.Reader.ReadLittleEndianInt64() ?? 0;
-                mapReferenceErrors = statsTree.Read(IndexSchema.MapReferenceErrorsSlice)?.Reader.ReadLittleEndianInt64() ?? 0;
+                result.MapReferenceAttempts = statsTree.Read(IndexSchema.MapReferencedAttemptsSlice)?.Reader.ReadLittleEndianInt64() ?? 0;
+                result.MapReferenceErrors = statsTree.Read(IndexSchema.MapReferenceErrorsSlice)?.Reader.ReadLittleEndianInt64() ?? 0;
             }
 
-            return IndexFailureInformation.CheckIndexInvalid(mapAttempts, mapErrors,
-                mapReferenceAttempts, mapReferenceErrors, reduceAttempts, reduceErrors, false);
+            return result;
         }
 
         public IndexStats ReadStats(RavenTransaction tx)

@@ -2406,6 +2406,27 @@ namespace Raven.Server.Documents.Indexes
             }
         }
 
+        /// <summary>
+        /// Re-evaluates the persisted failure rate and marks the index as errored if needed.
+        /// The check done by the indexing thread after a batch can be skipped: when Start() still holds
+        /// the queries write lock, IsStaleInternal() reports the index as stale (can't take the read lock)
+        /// and the failure rate of a small, non-stale index is not evaluated. A test index is queried right
+        /// after its sample documents are processed and won't run another batch, so it calls this to get
+        /// a deterministic result.
+        /// </summary>
+        internal void HandleIndexFailureInformation()
+        {
+            IndexFailureInformation failureInformation;
+
+            using (_contextPool.AllocateOperationContext(out TransactionOperationContext context))
+            using (var tx = context.OpenReadTransaction())
+            {
+                failureInformation = _indexStorage.ReadFailureInformation(tx);
+            }
+
+            HandleIndexFailureInformation(failureInformation);
+        }
+
         private void HandleIndexFailureInformation(IndexFailureInformation failureInformation)
         {
             if (failureInformation.IsInvalidIndex(IsStaleInternal()) == false)
