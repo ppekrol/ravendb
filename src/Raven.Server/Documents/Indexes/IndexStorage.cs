@@ -456,6 +456,11 @@ namespace Raven.Server.Documents.Indexes
 
         public bool IsIndexInvalid(RavenTransaction tx)
         {
+            return ReadFailureInformation(tx).IsInvalidIndex(isStale: false);
+        }
+
+        public IndexFailureInformation ReadFailureInformation(RavenTransaction tx)
+        {
             var statsTree = tx.InnerTransaction.ReadTree(IndexSchema.StatsTree);
 
             long mapAttempts = 0;
@@ -481,9 +486,12 @@ namespace Raven.Server.Documents.Indexes
                     reduceErrors = 0;
             }
 
-            long mapReferenceAttempts = 0, mapReferenceErrors = 0;
+            long? mapReferenceAttempts = null, mapReferenceErrors = null;
             if (_index.GetReferencedCollections()?.Count > 0)
             {
+                mapReferenceAttempts = 0;
+                mapReferenceErrors = 0;
+
                 if (statsTree.TryRead(IndexSchema.MapReferencedAttemptsSlice, out var mapReferenceAttemptsReader))
                     mapReferenceAttempts = mapReferenceAttemptsReader.ReadLittleEndianInt64();
 
@@ -491,8 +499,16 @@ namespace Raven.Server.Documents.Indexes
                     mapReferenceErrors = mapReferenceErrorsReader.ReadLittleEndianInt64();
             }
 
-            return IndexFailureInformation.CheckIndexInvalid(mapAttempts, mapErrors,
-                mapReferenceAttempts, mapReferenceErrors, reduceAttempts, reduceErrors, false);
+            return new IndexFailureInformation
+            {
+                Name = _index.Name,
+                MapAttempts = mapAttempts,
+                MapErrors = mapErrors,
+                MapReferenceAttempts = mapReferenceAttempts,
+                MapReferenceErrors = mapReferenceErrors,
+                ReduceAttempts = reduceAttempts,
+                ReduceErrors = reduceErrors
+            };
         }
 
         public IndexStats ReadStats(RavenTransaction tx)
