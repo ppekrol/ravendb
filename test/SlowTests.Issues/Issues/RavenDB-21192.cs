@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using FastTests;
 using Lextm.SharpSnmpLib;
@@ -1499,7 +1500,11 @@ public class RavenDB_21192 : RavenTestBase
             
             await WaitForEtlStatsAsync(src, EtlProcess.GetProcessName(etlName1, transformationName1), stats => stats.LoadSuccesses == 4);
             await WaitForEtlStatsAsync(src, EtlProcess.GetProcessName(etlName1, transformationName2), stats => stats.TransformationErrors == 127);
-            
+
+            // the counters above are incremented per item during a batch, while the errors read below via SNMP are persisted later in the batch
+            await WaitForPersistedItemErrorsAsync(src, EtlProcess.GetProcessName(etlName1, transformationName1), 123);
+            await WaitForPersistedItemErrorsAsync(src, EtlProcess.GetProcessName(etlName1, transformationName2), 127);
+
             var ip = new Uri(Server.WebUrl).Host;
             var endpoint = new IPEndPoint(IPAddress.Parse(ip), port);
             
@@ -1709,6 +1714,76 @@ public class RavenDB_21192 : RavenTestBase
 
                Assert.Equal(SnmpType.Gauge32, result.Single().Data.TypeCode);
             }
+        }
+    }
+
+    [RavenFact(RavenTestCategory.Etl)]
+    public async Task StatisticsOfProcessInFirstBatchShouldNotBeResetWhenAnotherProcessPersistsItsState()
+    {
+        // RavenDB-28039: the value change caused by the state update of one ETL process used to reset the statistics (including
+        // the health status) of other processes of the database which hadn't persisted their state yet, as if their ETL was reset
+
+        using (var src = GetDocumentStore())
+        using (var dest = GetDocumentStore())
+        {
+            const string etlName = "ETL1";
+            const string transformationName1 = "Transformation1";
+            const string transformationName2 = "Transformation2";
+
+            const string script1 = """
+                                   if (this.Name == "James Doe") {
+                                       throw new Error("dummy error");
+                                   }
+
+                                   loadToUsers(this);
+                                   """;
+
+            const string script2 = """
+                                   throw new Error("dummy error");
+                                   loadToUsers(this);
+                                   """;
+
+            using (var session = src.OpenSession())
+            {
+                session.Store(new User { Name = "James Doe" }, "users/1");
+                session.Store(new User { Name = "Joe Doe" }, "users/2");
+                session.SaveChanges();
+            }
+
+            var database = await GetDatabase(src.Database);
+
+            var secondProcessStatePersisted = new ManualResetEventSlim();
+            var firstProcessBatchCompleted = new ManualResetEventSlim();
+
+            var testingStuff = database.ForTestingPurposesOnly();
+
+            testingStuff.OnEtlItemExtracted = (process, item, _) =>
+            {
+                // hold the first process in its first batch (after it recorded the transformation error of users/1)
+                // until the second process persists its state and the value change gets handled
+                if (process.TransformationName == transformationName1 && string.Equals(item.DocumentId?.ToString(), "users/2", StringComparison.OrdinalIgnoreCase))
+                    secondProcessStatePersisted.Wait(TimeSpan.FromSeconds(30));
+            };
+
+            testingStuff.OnEtlBatchCompleted = process =>
+            {
+                // invoked after the process persisted its state
+                if (process.TransformationName == transformationName2)
+                    secondProcessStatePersisted.Set();
+                else if (process.TransformationName == transformationName1)
+                    firstProcessBatchCompleted.Set();
+            };
+
+            AddEtlTask(src, dest, etlName, "ConnectionString1", [transformationName1, transformationName2], [script1, script2], ["Users"]);
+
+            Assert.True(secondProcessStatePersisted.Wait(TimeSpan.FromSeconds(30)), "second process didn't persist its state");
+            Assert.True(firstProcessBatchCompleted.Wait(TimeSpan.FromSeconds(30)), "first process didn't complete its batch");
+
+            var stats = await GetEtlStatsAsync(src, EtlProcess.GetProcessName(etlName, transformationName1));
+
+            Assert.Equal(1, stats.TransformationErrors);
+            Assert.Equal(1, stats.LoadSuccesses);
+            Assert.Equal(OngoingTaskHealthStatus.Impaired, stats.HealthStatus); // 1 error out of 2 items
         }
     }
 

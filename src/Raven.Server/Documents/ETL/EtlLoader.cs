@@ -1201,12 +1201,31 @@ namespace Raven.Server.Documents.ETL
 
         public void HandleDatabaseValueChanged()
         {
+            // A missing state means that the ETL was reset only if the process had persisted (or seen) its state before.
+            // A process that hasn't done it yet (e.g. it's still processing its first batch) must not be reset when another process
+            // of this database persists its state, it would lose the statistics (including the health status) of its in-flight batch.
+            // The flags have to be read before opening the read transaction, so that a state persisted after we took the snapshot
+            // can't be seen as removed.
+            List<EtlProcess> processesWithPersistedState = null;
+
+            foreach (var process in _processes)
+            {
+                if (process.HasPersistedState == false)
+                    continue;
+
+                processesWithPersistedState ??= new List<EtlProcess>();
+                processesWithPersistedState.Add(process);
+            }
+
+            if (processesWithPersistedState == null)
+                return;
+
             var dbName = ShardHelper.ToDatabaseName(_database.Name);
 
             using (_serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
             {
-                foreach (var process in _processes)
+                foreach (var process in processesWithPersistedState)
                 {
                     var state = _serverStore.Cluster.Read(context, EtlProcessState.GenerateItemName(dbName, process.ConfigurationName, process.TransformationName));
 

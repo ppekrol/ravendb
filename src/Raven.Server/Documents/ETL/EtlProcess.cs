@@ -93,6 +93,19 @@ namespace Raven.Server.Documents.ETL
 
         public abstract void Reset();
 
+        private volatile bool _hasPersistedState;
+
+        /// <summary>
+        /// Whether this process has seen its state in the cluster (on creation or at the beginning of a batch) or has written it there.
+        /// A process that hasn't persisted its state yet (e.g. it's still processing its first batch) has no state that could have
+        /// been removed by an ETL reset, so <see cref="EtlLoader.HandleDatabaseValueChanged"/> must not reset it.
+        /// </summary>
+        internal bool HasPersistedState
+        {
+            get => _hasPersistedState;
+            set => _hasPersistedState = value;
+        }
+
         public abstract void NotifyAboutWork(DatabaseChange change);
 
         public abstract bool ShouldTrackCounters();
@@ -122,10 +135,17 @@ namespace Raven.Server.Documents.ETL
 
         public static EtlProcessState GetProcessState(ServerStore serverStore, string database, string configurationName, string transformationName)
         {
+            return GetProcessState(serverStore, database, configurationName, transformationName, out _);
+        }
+
+        private protected static EtlProcessState GetProcessState(ServerStore serverStore, string database, string configurationName, string transformationName, out bool persisted)
+        {
             using (serverStore.ContextPool.AllocateOperationContext(out TransactionOperationContext context))
             using (context.OpenReadTransaction())
             {
                 var stateBlittable = serverStore.Cluster.Read(context, EtlProcessState.GenerateItemName(database, configurationName, transformationName));
+
+                persisted = stateBlittable != null;
 
                 if (stateBlittable != null)
                 {
@@ -203,7 +223,17 @@ namespace Raven.Server.Documents.ETL
             if (transformation.ApplyToAllDocuments == false)
                 _collections = new HashSet<string>(Transformation.Collections, StringComparer.OrdinalIgnoreCase);
 
-            LastProcessState = GetProcessState(Database, Configuration.Name, Transformation.Name);
+            LastProcessState = GetProcessStateAndTrackIfPersisted();
+        }
+
+        private EtlProcessState GetProcessStateAndTrackIfPersisted()
+        {
+            var state = GetProcessState(Database.ServerStore, ShardHelper.ToDatabaseName(Database.Name), Configuration.Name, Transformation.Name, out var persisted);
+
+            if (persisted)
+                HasPersistedState = true; // only EtlLoader.HandleDatabaseValueChanged sets it back to false, when it resets this process
+
+            return state;
         }
 
         protected CancellationToken CancellationToken => _cts.Token;
@@ -694,6 +724,7 @@ namespace Raven.Server.Documents.ETL
 
         public override void Reset()
         {
+            HasPersistedState = false;
             Statistics.Reset();
 
             if (_longRunningWork == null)
@@ -824,7 +855,7 @@ namespace Raven.Server.Documents.ETL
 
                     var didWork = false;
 
-                    var state = LastProcessState = GetProcessState(Database, Configuration.Name, Transformation.Name);
+                    var state = LastProcessState = GetProcessStateAndTrackIfPersisted();
 
                     var startEtag = state.GetLastProcessedEtag(Database.DbBase64Id, _serverStore.NodeTag);
 
@@ -1059,6 +1090,8 @@ namespace Raven.Server.Documents.ETL
             var (etag, _) = sendToLeaderTask.Result;
 
             Database.RachisLogIndexNotifications.WaitForIndexNotification(etag, _serverStore.Engine.OperationTimeout).Wait(CancellationToken);
+
+            HasPersistedState = true;
         }
 
         private void PauseIfCpuCreditsBalanceIsTooLow()
