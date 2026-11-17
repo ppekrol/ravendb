@@ -924,6 +924,28 @@ namespace Raven.Server.Documents.Indexes
             }
         }
 
+        private bool IsStaleFromIndexingThread()
+        {
+            // Must be called only from the indexing thread. Unlike IsStaleInternal(), it doesn't try to take the
+            // read lock of running queries, which fails (and reports the index as stale) whenever someone holds
+            // the write lock, e.g. Start() while it is starting this very thread. Skipping the lock is safe here,
+            // because every operation which replaces or disposes the storage environment under that lock
+            // (RestartEnvironment) first waits for the indexing thread to exit.
+            if (_indexingProcessCancellationTokenSource.IsCancellationRequested)
+                return true;
+
+            if (Type == IndexType.Faulty)
+                return true;
+
+            using (var queryContext = QueryOperationContext.Allocate(DocumentDatabase, this))
+            using (queryContext.OpenReadTransaction())
+            using (_contextPool.AllocateOperationContext(out TransactionOperationContext indexContext))
+            using (indexContext.OpenReadTransaction())
+            {
+                return IsStale(queryContext, indexContext);
+            }
+        }
+
         private void InitializeComponentsUsingEnvironment(DocumentDatabase documentDatabase, StorageEnvironment environment)
         {
             _contextPool?.Dispose();
@@ -2406,30 +2428,9 @@ namespace Raven.Server.Documents.Indexes
             }
         }
 
-        /// <summary>
-        /// Re-evaluates the persisted failure rate and marks the index as errored if needed.
-        /// The check done by the indexing thread after a batch can be skipped: when Start() still holds
-        /// the queries write lock, IsStaleInternal() reports the index as stale (can't take the read lock)
-        /// and the failure rate of a small, non-stale index is not evaluated. A test index is queried right
-        /// after its sample documents are processed and won't run another batch, so it calls this to get
-        /// a deterministic result.
-        /// </summary>
-        internal void HandleIndexFailureInformation()
-        {
-            IndexFailureInformation failureInformation;
-
-            using (_contextPool.AllocateOperationContext(out TransactionOperationContext context))
-            using (var tx = context.OpenReadTransaction())
-            {
-                failureInformation = _indexStorage.ReadFailureInformation(tx);
-            }
-
-            HandleIndexFailureInformation(failureInformation);
-        }
-
         private void HandleIndexFailureInformation(IndexFailureInformation failureInformation)
         {
-            if (failureInformation.IsInvalidIndex(IsStaleInternal()) == false)
+            if (failureInformation.IsInvalidIndex(IsStaleFromIndexingThread()) == false)
                 return;
 
             var message = failureInformation.GetErrorMessage();

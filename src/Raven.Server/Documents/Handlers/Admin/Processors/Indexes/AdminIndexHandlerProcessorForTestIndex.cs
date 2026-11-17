@@ -84,11 +84,7 @@ internal sealed class AdminIndexHandlerProcessorForTestIndex : AbstractAdminInde
 
                 var timespanToWaitForProcessing = TimeSpan.FromSeconds(waitForNonStaleResultsTimeoutInSec);
                 index.TestRun.WaitForProcessingOfSampleDocs(timespanToWaitForProcessing);
-
-                // the failure rate check done by the indexing thread can be skipped if the batch completed
-                // while Start() was still holding the queries lock, so evaluate it again before querying
-                index.HandleIndexFailureInformation();
-
+                    
                 using (var token = RequestHandler.CreateHttpRequestBoundTimeLimitedOperationTokenForQuery())
                 using (var queryContext = QueryOperationContext.Allocate(RequestHandler.Database))
                 {
